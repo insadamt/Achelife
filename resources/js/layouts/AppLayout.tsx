@@ -21,7 +21,7 @@ const destinations: NavigationDestination[] = [
     { label: 'Diary', icon: 'diary', href: '/diary' },
     { label: 'Objectives', icon: 'objectives' },
     { label: 'Constitution', icon: 'constitution', href: '/constitution' },
-    { label: 'Money', icon: 'money' },
+    { label: 'Money', icon: 'money', href: '/money' },
 ];
 
 const mobilePrimaryLabels = new Set(['Today', 'Tasks', 'Habits']);
@@ -109,6 +109,8 @@ export default function AppLayout({ children }: PropsWithChildren) {
           ? 'var(--diary-accent)'
         : page.url.startsWith('/constitution')
           ? 'var(--constitution-accent)'
+        : page.url.startsWith('/money')
+          ? 'var(--money-accent)'
         : page.url.startsWith('/seasons')
           ? 'var(--season-accent)'
           : undefined;

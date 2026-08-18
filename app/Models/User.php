@@ -72,6 +72,30 @@ class User extends Authenticatable
         return $this->hasMany(Violation::class);
     }
 
+    /** @return HasMany<MoneyAccount, $this> */
+    public function moneyAccounts(): HasMany
+    {
+        return $this->hasMany(MoneyAccount::class);
+    }
+
+    /** @return HasMany<MoneyCategory, $this> */
+    public function moneyCategories(): HasMany
+    {
+        return $this->hasMany(MoneyCategory::class);
+    }
+
+    /** @return HasMany<MoneySubcategory, $this> */
+    public function moneySubcategories(): HasMany
+    {
+        return $this->hasMany(MoneySubcategory::class);
+    }
+
+    /** @return HasMany<MoneyTransaction, $this> */
+    public function moneyTransactions(): HasMany
+    {
+        return $this->hasMany(MoneyTransaction::class);
+    }
+
     /**
      * Get the attributes that should be cast.
      *

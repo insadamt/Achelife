@@ -30,6 +30,7 @@
     --habit-accent: #d7e66b;
     --diary-accent: #d89adf;
     --constitution-accent: #d8bd7a;
+    --money-accent: #73d5c5;
     --module-accent: var(--accent);
     --focus-ring: color-mix(in srgb, var(--module-accent) 74%, white);
     --radius-panel: 1.75rem;
@@ -46,6 +47,12 @@
     background:
         radial-gradient(circle at 50% 0%, color-mix(in srgb, var(--module-accent) 18%, transparent), transparent 48%),
         var(--surface-elevated);
+}
+
+.money-balance-hero {
+    background:
+        radial-gradient(circle at 82% 18%, color-mix(in srgb, var(--money-accent) 24%, transparent), transparent 34%),
+        linear-gradient(135deg, color-mix(in srgb, var(--money-accent) 9%, var(--surface-primary)), var(--surface-primary) 62%);
 }
 
 .season-introduction-current {
