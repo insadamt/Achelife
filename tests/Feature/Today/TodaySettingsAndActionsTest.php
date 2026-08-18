@@ -31,27 +31,22 @@ class TodaySettingsAndActionsTest extends TestCase
         $secondUser = $this->todayUser('2026-08-02');
 
         $this->actingAs($firstUser)->get('/home')->assertInertia(fn (Assert $page) => $page
-            ->where('settings.showFlexibleHabits', true)
-            ->where('settings.showUpcomingTasks', true));
+            ->where('settings.showFlexibleHabits', true));
 
         $this->actingAs($firstUser)->put('/today/settings', [
             'show_flexible_habits' => false,
-            'show_upcoming_tasks' => false,
         ])->assertRedirect();
 
         $this->assertDatabaseHas('today_settings', [
             'user_id' => $firstUser->id,
             'show_flexible_habits' => false,
-            'show_upcoming_tasks' => false,
         ]);
         $this->actingAs($secondUser)->get('/home')->assertInertia(fn (Assert $page) => $page
-            ->where('settings.showFlexibleHabits', true)
-            ->where('settings.showUpcomingTasks', true));
+            ->where('settings.showFlexibleHabits', true));
 
         auth()->logout();
         $this->put('/today/settings', [
             'show_flexible_habits' => false,
-            'show_upcoming_tasks' => false,
         ])->assertRedirect('/login');
     }
 
@@ -65,13 +60,15 @@ class TodaySettingsAndActionsTest extends TestCase
         $this->actingAs($user)->get('/home')->assertInertia(fn (Assert $page) => $page
             ->where('dailyProgress.completed', 0)
             ->where('dailyProgress.total', 1)
-            ->has('constitution.laws', 1));
+            ->where('dailyProgress.todaySp', 0));
 
         $this->from('/home')->post("/seasons/{$season->id}/objectives/{$objective->id}/toggle")->assertRedirect('/home');
         $this->assertSame(300, $season->refresh()->season_points);
         $this->actingAs($user)->get('/home')->assertInertia(fn (Assert $page) => $page
             ->where('dailyProgress.completed', 0)
             ->where('dailyProgress.total', 1)
+            ->where('dailyProgress.todaySp', 300)
+            ->where('progressPanel.todaySp', 300)
             ->where('currentSeason.seasonPoints', 300)
             ->where('currentSeason.objectives.0.completed', true));
 
@@ -82,6 +79,9 @@ class TodaySettingsAndActionsTest extends TestCase
             'sequence_number' => 1,
             'penalty_sp' => -10,
         ]);
+        $this->get('/home')->assertInertia(fn (Assert $page) => $page
+            ->where('dailyProgress.todaySp', 290)
+            ->where('progressPanel.todaySp', 290));
 
         $this->from('/home')->post("/seasons/{$season->id}/objectives/{$objective->id}/toggle")->assertRedirect('/home');
         $this->assertSame(-10, $season->refresh()->season_points);
@@ -98,6 +98,7 @@ class TodaySettingsAndActionsTest extends TestCase
 
         $this->actingAs($user)->get('/home')->assertInertia(fn (Assert $page) => $page
             ->has('tasks.overdue', 1)
+            ->where('tasks.overdueCount', 1)
             ->where('dailyProgress.completed', 0)
             ->where('dailyProgress.total', 1));
 
@@ -105,19 +106,19 @@ class TodaySettingsAndActionsTest extends TestCase
 
         $this->get('/home')->assertInertia(fn (Assert $page) => $page
             ->has('tasks.overdue', 0)
+            ->where('tasks.overdueCount', 0)
             ->where('dailyProgress.completed', 0)
             ->where('dailyProgress.total', 1));
         $this->assertSame(2, $task->refresh()->earned_sp);
     }
 
-    public function test_money_quick_action_endpoints_preserve_sp_and_derive_balances_per_currency(): void
+    public function test_money_actions_preserve_sp_without_exposing_money_on_today(): void
     {
         $user = $this->todayUser();
         $season = $user->seasons()->firstOrFail();
         $season->update(['season_points' => 42]);
         $bank = $this->moneyAccount($user, 'Bank', 'MAD', 100000);
         $cash = $this->moneyAccount($user, 'Cash', 'MAD');
-        $usd = $this->moneyAccount($user, 'USD Wallet', 'USD', 5000);
         $income = $this->moneyCategory($user, MoneyCategoryType::Income, 'Salary');
         $expense = $this->moneyCategory($user, MoneyCategoryType::Expense, 'Food');
 
@@ -125,6 +126,8 @@ class TodaySettingsAndActionsTest extends TestCase
             'type' => 'income', 'amount' => '200.00', 'account_id' => $bank->id,
             'category_id' => $income->id, 'date' => '2026-08-18',
         ])->assertRedirect('/home');
+
+        $rankBeforeMoneyMutations = 'bronze_i';
         $this->from('/home')->post('/money/transactions', [
             'type' => 'expense', 'amount' => '50.00', 'account_id' => $bank->id,
             'category_id' => $expense->id, 'date' => '2026-08-18',
@@ -137,28 +140,18 @@ class TodaySettingsAndActionsTest extends TestCase
         $this->assertSame(42, $season->refresh()->season_points);
         $this->assertDatabaseCount('money_transactions', 3);
         $this->get('/home')->assertInertia(fn (Assert $page) => $page
-            ->where('money.totalsByCurrency.MAD', 115000)
-            ->where('money.totalsByCurrency.USD', 5000)
-            ->where('money.canTransfer', true)
-            ->where('currentSeason.seasonPoints', 42));
-
-        $this->assertNotSame($usd->currency, $bank->currency);
+            ->missing('money')
+            ->where('currentSeason.seasonPoints', 42)
+            ->where('currentSeason.rank.key', $rankBeforeMoneyMutations));
     }
 
-    public function test_archived_and_other_users_capabilities_are_not_exposed_on_today(): void
+    public function test_today_does_not_expose_constitution_or_money_payloads(): void
     {
         $user = $this->todayUser();
-        $other = $this->todayUser('2026-08-02');
-        $activeLaw = app(CreateLaw::class)->execute($user, 'Active Law', LawSeverity::Major);
-        $archivedLaw = app(CreateLaw::class)->execute($user, 'Archived Law', LawSeverity::Minor);
-        $archivedLaw->update(['archived_at' => now()]);
-        app(CreateLaw::class)->execute($other, 'Other Law', LawSeverity::Critical);
-        $this->moneyAccount($other, 'Other Account');
 
         $this->actingAs($user)->get('/home')->assertInertia(fn (Assert $page) => $page
-            ->has('constitution.laws', 1)
-            ->where('constitution.laws.0.id', $activeLaw->id)
-            ->has('money.accounts', 0));
+            ->missing('constitution')
+            ->missing('money'));
     }
 
     private function todayUser(string $createdOn = '2026-08-01'): User

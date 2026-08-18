@@ -65,11 +65,17 @@ class TodayAggregationTest extends TestCase
             ->where('dailyProgress.completed', 4)
             ->where('dailyProgress.total', 6)
             ->where('dailyProgress.percentage', 67)
+            ->where('dailyProgress.todaySp', 16)
+            ->where('dailyProgress.breakdown.tasks', ['completed' => 1, 'total' => 2])
+            ->where('dailyProgress.breakdown.habits', ['completed' => 2, 'total' => 3])
+            ->where('dailyProgress.breakdown.diary', ['completed' => 1, 'total' => 1])
+            ->where('progressPanel.todaySp', 16)
+            ->where('progressPanel.season.number', 1)
+            ->where('progressPanel.diary.state', 'completed')
             ->has('tasks.today', 2)
             ->has('tasks.overdue', 1)
             ->where('tasks.overdueCount', 1)
-            ->where('tasks.upcomingVisible', false)
-            ->has('tasks.upcoming', 0)
+            ->missing('tasks.upcoming')
             ->has('habits.required', 3)
             ->has('habits.flexible', 1)
             ->where('diary.state', 'completed')
@@ -77,30 +83,34 @@ class TodayAggregationTest extends TestCase
             ->has('currentSeason.objectives', 1));
     }
 
-    public function test_upcoming_visibility_depends_only_on_today_tasks_and_the_today_setting(): void
+    public function test_progress_panel_is_shared_on_authenticated_pages_outside_today(): void
     {
         $user = $this->todayUser();
-        $todayTask = $this->task($user, 'Today Task', '2026-08-18');
+        $task = $this->task($user, 'Shared progress Task', '2026-08-18');
+        app(CompleteTask::class)->execute($user, $task, CarbonImmutable::now());
+
+        $this->actingAs($user)->get('/tasks')->assertInertia(fn (Assert $page) => $page
+            ->component('tasks/Index')
+            ->where('progressPanel.todaySp', 4)
+            ->where('progressPanel.season.number', 1)
+            ->where('progressPanel.diary.state', 'pending'));
+    }
+
+    public function test_today_task_payload_includes_bounded_overdue_tasks_but_excludes_future_tasks(): void
+    {
+        $user = $this->todayUser();
+        $this->task($user, 'Today Task', '2026-08-18');
         $this->task($user, 'Overdue Task', '2026-08-17');
         $this->task($user, 'Upcoming Task', '2026-08-19');
 
         $this->actingAs($user)->get('/home')->assertInertia(fn (Assert $page) => $page
-            ->where('tasks.upcomingVisible', false)
-            ->has('tasks.upcoming', 0));
-
-        app(CompleteTask::class)->execute($user, $todayTask, CarbonImmutable::now());
-        $this->actingAs($user)->get('/home')->assertInertia(fn (Assert $page) => $page
-            ->where('tasks.upcomingVisible', true)
-            ->has('tasks.upcoming', 1)
-            ->has('tasks.overdue', 1));
-
-        TodaySetting::query()->where('user_id', $user->id)->update(['show_upcoming_tasks' => false]);
-        $this->actingAs($user)->get('/home')->assertInertia(fn (Assert $page) => $page
-            ->where('tasks.upcomingVisible', false)
-            ->has('tasks.upcoming', 0));
+            ->has('tasks.today', 1)
+            ->has('tasks.overdue', 1)
+            ->where('tasks.overdueCount', 1)
+            ->missing('tasks.upcoming'));
     }
 
-    public function test_zero_today_tasks_reveals_upcoming_and_flexible_habits_never_change_progress(): void
+    public function test_flexible_habits_never_change_daily_progress(): void
     {
         $user = $this->todayUser();
         $this->task($user, 'Tomorrow', '2026-08-19');
@@ -114,8 +124,7 @@ class TodayAggregationTest extends TestCase
         app(UpdateHabitOccurrence::class)->toggleBoolean($user, $flexibleHabit, CarbonImmutable::today(), CarbonImmutable::today());
 
         $this->actingAs($user)->get('/home')->assertInertia(fn (Assert $page) => $page
-            ->where('tasks.upcomingVisible', true)
-            ->has('tasks.upcoming', 1)
+            ->has('tasks.today', 0)
             ->has('habits.flexible', 1)
             ->where('dailyProgress.completed', 0)
             ->where('dailyProgress.total', 1));

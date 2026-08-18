@@ -1,5 +1,23 @@
 export type SeasonState = 'completed' | 'current' | 'locked';
 
+export type RankTier = 'unranked' | 'bronze' | 'silver' | 'gold' | 'platinum' | 'diamond' | 'master' | 'grandmaster' | 'legend';
+
+export interface RankViewData {
+    key: string;
+    name: string;
+    tier: RankTier;
+    division: string | null;
+    displayName: string;
+    minimumSp: number | null;
+    nextThreshold: number | null;
+    nextRank: string | null;
+    progressCurrent: number | null;
+    progressRequired: number | null;
+    progressPercent: number | null;
+    spToNext: number | null;
+    topRank: boolean;
+}
+
 export interface ObjectiveViewData {
     id: number;
     title: string;
@@ -20,7 +38,7 @@ export interface SeasonViewData {
     day: number | null;
     progressPercentage: number;
     seasonPoints: number;
-    rank: string | null;
+    rank: RankViewData | null;
     objectives: ObjectiveViewData[];
     objectiveCount: number;
     objectiveCompletedCount: number;

@@ -6,6 +6,7 @@ use App\Actions\Seasons\SynchronizeUserSeasons;
 use App\Models\User;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Inertia\Testing\AssertableInertia as Assert;
 use Tests\TestCase;
 
 class SeasonLifecycleTest extends TestCase
@@ -75,6 +76,43 @@ class SeasonLifecycleTest extends TestCase
         $this->synchronizeUserSeasons->execute($user, $today);
 
         $this->assertDatabaseCount('seasons', 4);
+    }
+
+    public function test_ended_season_rank_is_snapshotted_once_and_the_new_season_resets_to_bronze_one(): void
+    {
+        CarbonImmutable::setTestNow('2026-01-30 12:00:00');
+        $user = $this->userCreatedOn('2026-01-01');
+        $firstSeason = $this->synchronizeUserSeasons->execute($user, CarbonImmutable::today());
+        $firstSeason->update(['season_points' => 1550, 'introduced_at' => now()]);
+
+        CarbonImmutable::setTestNow('2026-01-31 12:00:00');
+        $secondSeason = $this->synchronizeUserSeasons->execute($user, CarbonImmutable::today());
+        $secondSeason->update(['introduced_at' => now()]);
+
+        $this->assertSame('master_i', $firstSeason->refresh()->rank);
+        $this->assertNull($secondSeason->rank);
+        $this->assertSame(0, $secondSeason->season_points);
+
+        $firstSeason->update(['season_points' => 0]);
+        $this->synchronizeUserSeasons->execute($user, CarbonImmutable::today());
+        $this->assertSame('master_i', $firstSeason->refresh()->rank);
+
+        $this->actingAs($user)->get('/seasons')->assertInertia(fn (Assert $page) => $page
+            ->where('seasons.0.rank.key', 'master_i')
+            ->where('seasons.0.rank.nextRank', null)
+            ->where('seasons.1.rank.key', 'bronze_i')
+            ->where('seasons.1.rank.progressCurrent', 0));
+    }
+
+    public function test_missing_historical_rank_is_backfilled_from_frozen_final_sp(): void
+    {
+        $user = $this->userCreatedOn('2026-01-01');
+        $this->synchronizeUserSeasons->execute($user, CarbonImmutable::parse('2026-01-30'))
+            ->update(['season_points' => 1463]);
+
+        $this->synchronizeUserSeasons->execute($user, CarbonImmutable::parse('2026-01-31'));
+
+        $this->assertSame('diamond_iii', $user->seasons()->where('season_number', 1)->value('rank'));
     }
 
     private function userCreatedOn(string $date): User

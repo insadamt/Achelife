@@ -8,7 +8,7 @@ Phase 0.5 establishes Achelife's global visual language, reusable UI primitives,
 
 - League Spartan is bundled through `@fontsource-variable/league-spartan` and used as the unified interface typeface.
 - Semantic color tokens live in `resources/css/app.css` for the application background, surfaces, borders, text hierarchy, accent, and feedback states.
-- `--module-accent` is the extension point for future module identity. Components can inherit it from a page or receive a local accent override.
+- Lime is the application-wide primary accent. The legacy module accent tokens resolve to the same lime value so navigation, controls, progress, focus, and active surfaces remain harmonized across every destination.
 - Surfaces use restrained borders, rounded geometry, controlled elevation, and accent glow only for meaningful active states.
 - Interaction transitions use a 160–220ms motion range and collapse when reduced motion is requested.
 
@@ -28,6 +28,8 @@ The primitives in `resources/js/components/ui` include:
 At medium and larger widths, authenticated pages use a fixed compact sidebar with all planned destinations. Today links to the temporary showcase; unavailable module destinations are visibly disabled and labeled `Soon`.
 
 On smaller widths, the shell uses a bottom bar for Today, Tasks, and Habits plus a More action. More opens a focus-managed drawer with every destination and account controls. This is intentionally separate from the desktop sidebar layout.
+
+Authenticated pages also expose a narrow pull notch attached to the right viewport edge. It opens a focus-managed, screen-attached progress panel shared by the application shell rather than a page-specific standard drawer.
 
 ## Authentication
 

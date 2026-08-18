@@ -2,13 +2,15 @@
 
 ## Scope
 
-Phase 8 replaces the temporary home-page showcase with Today, Achelife's daily operational screen. Today aggregates Seasons, Tasks, Habits, Diary, Season Objectives, Constitution, and Money. It does not own any module mutation, add Statistics, or introduce ranks.
+Phase 8 replaces the temporary home-page showcase with Today, Achelife's daily operational screen. Today presents Seasons, Tasks, Habits, Diary, and Season Objectives. It does not own any module mutation or add Statistics.
 
 ## Aggregation architecture
 
-`TodayViewDataFactory` is the dedicated authenticated read layer. It synchronizes recurring Tasks and Habit occurrences through the application-local current date, then queries only the compact current-day and utility data needed by Today. Existing module view-data factories serialize Tasks, Seasons, Laws, Money Accounts, and Money Categories so their established presentation rules remain consistent.
+`TodayViewDataFactory` is the dedicated authenticated read layer. It synchronizes recurring Tasks and Habit occurrences through the application-local current date, then queries only the compact current-day data needed by Today. Existing module view-data factories serialize Tasks and Seasons so their established presentation rules remain consistent.
 
-Today reuses the existing Task completion, Habit occurrence, Objective toggle, Violation recording, and Money transaction endpoints. Each action redirects back to Today, where Inertia refreshes the aggregate from authoritative backend state and current Season SP.
+`ProgressPanelViewDataFactory` supplies the authenticated application shell independently of Today, so the same current Season, Today SP, Diary, and Objective summary remains available on every application page. `SeasonPointsAttributedOnDate` is the shared authority for the date-attributed SP total.
+
+Today reuses the existing Task completion, Habit occurrence, and Objective toggle endpoints. Each action redirects back to Today, where Inertia refreshes the aggregate from authoritative backend state and current Season SP.
 
 ## Daily Progress
 
@@ -16,9 +18,9 @@ Daily Progress includes only Tasks scheduled today, required Habit occurrences t
 
 ## Tasks and Habits
 
-Today shows a compact bounded Overdue list, all visible Tasks scheduled today, and a five-item Upcoming preview only when no incomplete Today Task remains and its Today preference is enabled. Overdue Tasks do not block Upcoming.
+Today shows a bounded Overdue list followed by Tasks scheduled for the current date. They can be completed or reversed from the focused checklist, while creation, editing, subtasks, upcoming planning, and history remain on Tasks. Completed Tasks move into a collapsed group.
 
-Required Habits remain prominent and expose Boolean completion, Numeric value entry, and an explicit Skip action. Flexible extras use the same valid occurrence actions but stay in a collapsed secondary section and never affect Daily Progress. Turning off the Flexible preference prevents that section from being returned to Today.
+Required Habits use compact progress cards and expose Boolean completion, Numeric value entry, and a guarded Skip action. Flexible extras use the same valid occurrence actions but stay in a collapsed secondary section and never affect Daily Progress. Turning off the Flexible preference prevents that section from being returned to Today.
 
 ## Diary and Objectives
 
@@ -26,22 +28,21 @@ The Diary panel deep-links to the real current date and displays its backend-der
 
 Current-Season Objectives expose completion toggles only. Definition setup, renaming, and removal remain on Seasons. Objective rewards update shared Season SP through the existing Objective action and do not affect Daily Progress.
 
-## Quick actions
+## Today SP
 
-The Constitution utility lists only active Laws, lets the user select one, then reuses the existing violation dialog with today's date, sequence, multiplier, and penalty preview. The Money utility shows currency-separated balances and opens the existing transaction drawer with Income, Expense, or Transfer preselected. Transaction actions are withheld when there are no active Accounts, and Transfer is disabled when no matching-currency Account pair exists.
+Today SP sums Task completions, Habit occurrences, Diary rewards, Objective completions, and Constitution penalties attributed to the current calendar date and current Season. Money remains excluded. The value is informational, never mutates progression independently, and is exposed through the global progress notch on every authenticated application page.
 
 ## Today settings
 
-`today_settings` stores two user-owned Boolean preferences, both defaulting to enabled:
+`today_settings` retains its original user-owned Boolean columns for backward compatibility. The redesigned Today interface exposes one active preference, enabled by default:
 
 - show Flexible Habits;
-- show upcoming Tasks after Today Tasks are clear.
 
-The compact header dialog persists both values through the authenticated Today settings route. Preferences affect Today presentation only.
+The header settings control opens a compact dialog that persists this value through the authenticated Today settings route. The preference affects Today presentation only.
 
 ## Interface
 
-The page uses a dominant progress hero followed by the daily flow on the primary desktop column and Season Objectives plus utilities on the secondary column. Mobile collapses to a single vertical mission flow. Completed obligations remain visible with reduced emphasis, optional Habits remain collapsed, and all direct state controls have accessible labels and keyboard behavior.
+Desktop presents Tasks and Habits inside two distinct side-by-side containers. Mobile uses a two-state switcher to preserve working space. Tasks use a restrained checklist; Habits use compact progress cards with checkbox controls. Settings remain in the page header. The global application-shell notch is a tall, narrow arrow attached to the viewport edge; it opens a custom attached panel containing only Today SP, Season total and Rank brief, Diary status, and Objectives. Today uses Lucide icons for consistent action and status symbols. All direct state controls have accessible labels and keyboard behavior.
 
 ## Verification
 
@@ -56,4 +57,4 @@ npm run build
 git diff --check
 ```
 
-The Today tests cover aggregation, exact Daily Progress math, Skipped and Flexible Habit semantics, overdue exclusion, Upcoming reveal rules, settings defaults and isolation, Objective and Constitution SP behavior, Money transaction integration and currency-separated balances, cross-user isolation, and Season Day 30-to-Day 1 transition.
+The Today tests cover aggregation, exact Daily Progress math, Skipped and Flexible Habit semantics, bounded Overdue presentation, settings defaults and isolation, globally shared date-attributed SP, Objective and Constitution SP behavior, Money isolation, cross-user isolation, and Season Day 30-to-Day 1 transition.

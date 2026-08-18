@@ -6,6 +6,7 @@ use App\Actions\Seasons\SynchronizeUserSeasons;
 use App\Models\Season;
 use App\Services\Objectives\ObjectiveRewardCalculator;
 use App\Services\Seasons\SeasonLifecycle;
+use App\Services\Seasons\SeasonRankCalculator;
 use Carbon\CarbonImmutable;
 
 class SeasonViewDataFactory
@@ -13,6 +14,7 @@ class SeasonViewDataFactory
     public function __construct(
         private readonly SeasonLifecycle $seasonLifecycle,
         private readonly ObjectiveRewardCalculator $objectiveRewardCalculator,
+        private readonly SeasonRankCalculator $seasonRankCalculator,
     ) {}
 
     /** @return array<string, mixed> */
@@ -26,6 +28,11 @@ class SeasonViewDataFactory
         $objectiveCount = $objectives->count();
         $rewardPerObjective = $this->objectiveRewardCalculator->rewardPerObjective($objectiveCount);
         $setupIsOpen = $this->seasonLifecycle->objectiveSetupIsOpen($season, $today);
+        $rank = $isCurrent
+            ? $this->seasonRankCalculator->calculate($season->season_points)
+            : $this->seasonRankCalculator->fromSnapshot(
+                $season->rank ?? $this->seasonRankCalculator->calculate($season->season_points)->key,
+            );
 
         return [
             'id' => $season->id,
@@ -36,7 +43,7 @@ class SeasonViewDataFactory
             'day' => $day,
             'progressPercentage' => $isCurrent ? (int) round(($day / SynchronizeUserSeasons::DAYS_PER_SEASON) * 100) : 100,
             'seasonPoints' => $season->season_points,
-            'rank' => $season->rank,
+            'rank' => $rank->toArray(),
             'objectives' => $objectives->values()->map(fn ($objective, int $index): array => [
                 'id' => $objective->id,
                 'title' => $objective->title,

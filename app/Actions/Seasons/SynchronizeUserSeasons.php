@@ -4,6 +4,7 @@ namespace App\Actions\Seasons;
 
 use App\Models\Season;
 use App\Models\User;
+use App\Services\Seasons\SeasonRankCalculator;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;
@@ -11,6 +12,8 @@ use RuntimeException;
 class SynchronizeUserSeasons
 {
     public const DAYS_PER_SEASON = 30;
+
+    public function __construct(private readonly SeasonRankCalculator $seasonRankCalculator) {}
 
     public function execute(User $user, ?CarbonImmutable $today = null): Season
     {
@@ -41,6 +44,7 @@ class SynchronizeUserSeasons
                         'season_number' => $seasonNumber,
                         'start_date' => $expectedStart,
                         'end_date' => $expectedEnd,
+                        'season_points' => 0,
                         'introduced_at' => $seasonNumber < $currentSeasonNumber ? now() : null,
                     ]);
                     $existingSeasons->put($seasonNumber, $season);
@@ -48,13 +52,30 @@ class SynchronizeUserSeasons
 
                 $this->assertExpectedDates($season, $expectedStart, $expectedEnd);
 
-                if ($seasonNumber < $currentSeasonNumber && $season->introduced_at === null) {
-                    $season->update(['introduced_at' => now()]);
+                if ($seasonNumber < $currentSeasonNumber) {
+                    $this->finalizeEndedSeason($season);
                 }
             }
 
             return $existingSeasons->get($currentSeasonNumber)->refresh();
         }, 3);
+    }
+
+    private function finalizeEndedSeason(Season $season): void
+    {
+        $updates = [];
+
+        if ($season->rank === null || ! $this->seasonRankCalculator->supportsSnapshot($season->rank)) {
+            $updates['rank'] = $this->seasonRankCalculator->calculate($season->season_points)->key;
+        }
+
+        if ($season->introduced_at === null) {
+            $updates['introduced_at'] = now();
+        }
+
+        if ($updates !== []) {
+            $season->update($updates);
+        }
     }
 
     private function assertExpectedDates(Season $season, CarbonImmutable $expectedStart, CarbonImmutable $expectedEnd): void

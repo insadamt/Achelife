@@ -1,6 +1,4 @@
-import type { LawViewData } from '../constitution/types';
 import type { HabitViewData } from '../habits/types';
-import type { MoneyAccountData, MoneyCategoryData } from '../money/types';
 import type { SeasonViewData } from '../seasons/types';
 import type { TaskViewData } from '../tasks/types';
 
@@ -8,14 +6,23 @@ export interface TodayProgressData {
     completed: number;
     total: number;
     percentage: number;
+    todaySp: number;
+    breakdown: {
+        tasks: TodayProgressBreakdown;
+        habits: TodayProgressBreakdown;
+        diary: TodayProgressBreakdown;
+    };
+}
+
+export interface TodayProgressBreakdown {
+    completed: number;
+    total: number;
 }
 
 export interface TodayTaskData {
     today: TaskViewData[];
     overdue: TaskViewData[];
     overdueCount: number;
-    upcoming: TaskViewData[];
-    upcomingVisible: boolean;
 }
 
 export interface TodayDiaryData {
@@ -27,7 +34,6 @@ export interface TodayDiaryData {
 
 export interface TodaySettingsData {
     showFlexibleHabits: boolean;
-    showUpcomingTasks: boolean;
 }
 
 export interface TodayPageProps {
@@ -40,14 +46,5 @@ export interface TodayPageProps {
         flexible: HabitViewData[];
     };
     diary: TodayDiaryData;
-    constitution: {
-        laws: LawViewData[];
-    };
-    money: {
-        accounts: MoneyAccountData[];
-        categories: MoneyCategoryData[];
-        totalsByCurrency: Record<string, number>;
-        canTransfer: boolean;
-    };
     settings: TodaySettingsData;
 }

@@ -1,10 +1,11 @@
 import { Link, router, usePage } from '@inertiajs/react';
 import { useState } from 'react';
-import type { CSSProperties, PropsWithChildren } from 'react';
+import type { PropsWithChildren } from 'react';
 
 import { BrandMark } from '../components/BrandMark';
 import { Button, Drawer, Icon } from '../components/ui';
 import type { IconName } from '../components/ui';
+import { ProgressNotch } from '../features/progress/ProgressNotch';
 import type { SharedPageProps } from '../types';
 
 interface NavigationDestination {
@@ -100,26 +101,13 @@ export default function AppLayout({ children }: PropsWithChildren) {
     const { auth } = page.props;
     const [mobileNavigationOpen, setMobileNavigationOpen] = useState(false);
     const user = auth.user;
-    const moduleAccent = page.url.startsWith('/tasks')
-        ? 'var(--task-accent)'
-        : page.url.startsWith('/habits')
-          ? 'var(--habit-accent)'
-        : page.url.startsWith('/diary')
-          ? 'var(--diary-accent)'
-        : page.url.startsWith('/constitution')
-          ? 'var(--constitution-accent)'
-        : page.url.startsWith('/money')
-          ? 'var(--money-accent)'
-        : page.url.startsWith('/seasons')
-          ? 'var(--season-accent)'
-          : undefined;
 
     function logOut() {
         router.post('/logout');
     }
 
     return (
-        <div className="min-h-screen bg-app text-foreground" style={{ '--module-accent': moduleAccent } as CSSProperties}>
+        <div className="min-h-screen bg-app text-foreground">
             <aside className="fixed top-4 bottom-4 left-4 z-30 hidden w-20 rounded-[2rem] border border-border-subtle bg-surface/96 shadow-[0_24px_60px_rgba(0,0,0,0.32)] md:flex md:flex-col">
                 <div className="flex justify-center py-4">
                     <BrandMark compact />
@@ -190,6 +178,8 @@ export default function AppLayout({ children }: PropsWithChildren) {
                     </div>
                 )}
             </Drawer>
+
+            {page.props.progressPanel && <ProgressNotch data={page.props.progressPanel} />}
         </div>
     );
 }

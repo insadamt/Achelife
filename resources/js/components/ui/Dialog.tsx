@@ -1,5 +1,6 @@
 import { useEffect, useId, useRef } from 'react';
 import type { PropsWithChildren } from 'react';
+import { X } from 'lucide-react';
 
 import { Button } from './Button';
 import { classNames } from './classNames';
@@ -120,9 +121,7 @@ export function Dialog({
                         )}
                     </div>
                     <Button aria-label="Close" className="-mr-2 -mt-2 size-10 px-0" onClick={onClose} variant="ghost">
-                        <span aria-hidden="true" className="text-xl leading-none">
-                            ×
-                        </span>
+                        <X aria-hidden="true" size={19} />
                     </Button>
                 </div>
                 <div className="mt-6">{children}</div>

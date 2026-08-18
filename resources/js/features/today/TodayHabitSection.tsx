@@ -1,7 +1,7 @@
 import { router } from '@inertiajs/react';
+import { Check, ChevronDown, MoreVertical } from 'lucide-react';
 import { useState } from 'react';
 
-import { Button } from '../../components/ui';
 import { classNames } from '../../components/ui/classNames';
 import { NumericValueDialog } from '../habits/NumericValueDialog';
 import { SkipConfirmationDialog } from '../habits/SkipConfirmationDialog';
@@ -13,82 +13,103 @@ interface SelectedHabitDay {
     day: HabitDayData;
 }
 
-function HabitRow({ habit, onNumeric, onSkip }: {
+function numericProgress(day: HabitDayData) {
+    const value = Number(day.numericValue ?? 0);
+    const target = Number(day.target ?? 0);
+
+    return target > 0 ? Math.min(100, Math.max(0, (value / target) * 100)) : 0;
+}
+
+function HabitCard({ habit, onNumeric, onSkip }: {
     habit: HabitViewData;
     onNumeric: (selection: SelectedHabitDay) => void;
     onSkip: (selection: SelectedHabitDay) => void;
 }) {
     const day = habit.days[0]!;
-    const resolved = day.state === 'completed' || day.state === 'skipped';
+    const completed = day.state === 'completed';
+    const skipped = day.state === 'skipped';
+    const progress = habit.type === 'numeric' ? numericProgress(day) : completed ? 100 : 0;
 
-    function primaryAction() {
-        if (habit.type === 'numeric') onNumeric({ habit, day });
-        else router.post(`/habits/${habit.id}/occurrences/${day.date}/toggle`, {}, { preserveScroll: true });
+    function performPrimaryAction() {
+        if (habit.type === 'numeric') {
+            onNumeric({ habit, day });
+            return;
+        }
+
+        router.post(`/habits/${habit.id}/occurrences/${day.date}/toggle`, {}, { preserveScroll: true });
     }
 
+    const valueLabel = habit.type === 'numeric'
+        ? `${formatNumber(day.numericValue ?? '0')} / ${formatNumber(day.target)}${habit.unit ? ` ${habit.unit}` : ''}`
+        : skipped
+          ? 'Skipped'
+          : null;
+
     return (
-        <div className={classNames('flex items-center gap-3 border-b border-border-subtle py-3 last:border-b-0', resolved && 'opacity-70')}>
-            <button
-                aria-label={habit.type === 'numeric' ? `Edit ${habit.name} value` : `${resolved ? 'Undo' : 'Complete'} ${habit.name}`}
-                className={classNames(
-                    'focus-ring grid size-9 shrink-0 place-items-center rounded-full border-2 font-bold transition-colors',
-                    day.state === 'completed' && 'border-success bg-success text-accent-foreground',
-                    day.state === 'skipped' && 'border-warning text-warning',
-                    !resolved && 'border-border-strong hover:border-[var(--habit-accent)]',
+        <div className={classNames('relative isolate min-h-16 overflow-hidden rounded-2xl border bg-surface', completed ? 'border-[color-mix(in_srgb,var(--habit-accent)_34%,var(--border-subtle))]' : 'border-border-subtle')}>
+            {progress > 0 && <span aria-hidden="true" className="absolute inset-y-0 left-0 -z-10 bg-[color-mix(in_srgb,var(--habit-accent)_12%,transparent)] transition-[width] duration-200" style={{ width: `${progress}%` }} />}
+            <div className="flex min-h-16 items-center gap-2 px-3">
+                <button
+                    aria-label={`${habit.type === 'numeric' ? 'Update' : completed || skipped ? 'Reset' : 'Complete'} ${habit.name}`}
+                    className="focus-ring flex min-w-0 flex-1 items-center gap-3 rounded-xl py-2 text-left"
+                    onClick={performPrimaryAction}
+                    type="button"
+                >
+                    <span className={classNames('grid size-9 shrink-0 place-items-center rounded-full border-2 transition-colors', completed ? 'border-[var(--habit-accent)] bg-[var(--habit-accent)] text-accent-foreground' : skipped ? 'border-warning text-warning' : 'border-border-strong hover:border-[var(--habit-accent)]')}>
+                        {completed && <Check aria-hidden="true" size={18} strokeWidth={3} />}
+                    </span>
+                    <span className={classNames('min-w-0 flex-1 truncate text-base font-bold', completed && 'line-through opacity-60')}>{habit.name}</span>
+                    {valueLabel && <span className={classNames('shrink-0 text-xs font-bold', skipped ? 'text-warning' : 'text-secondary')}>{valueLabel}</span>}
+                </button>
+                {day.required && !skipped && (
+                    <button aria-label={`Skip ${habit.name}`} className="focus-ring grid size-9 shrink-0 place-items-center rounded-full text-muted hover:bg-surface-hover hover:text-foreground" onClick={() => onSkip({ habit, day })} title={`Skip ${habit.name}`} type="button">
+                        <MoreVertical aria-hidden="true" size={17} />
+                    </button>
                 )}
-                onClick={primaryAction}
-                type="button"
-            >
-                {day.state === 'completed' ? '✓' : day.state === 'skipped' ? '—' : '○'}
-            </button>
-            <button className="focus-ring min-w-0 flex-1 rounded-lg text-left" onClick={primaryAction} type="button">
-                <span className={classNames('block truncate text-base font-bold', day.state === 'completed' && 'line-through')}>{habit.name}</span>
-                <span className="mt-0.5 block text-xs text-muted">
-                    {habit.type === 'numeric'
-                        ? `${formatNumber(day.numericValue ?? '0')} / ${formatNumber(day.target)} ${habit.unit ?? ''}`
-                        : `Streak ${habit.currentStreak}`}
-                </span>
-            </button>
-            {day.required && day.state !== 'skipped' && (
-                <Button aria-label={`Skip ${habit.name}`} onClick={() => onSkip({ habit, day })} size="small" variant="ghost">Skip</Button>
-            )}
-            <span className="w-12 shrink-0 text-right text-xs font-bold text-[var(--habit-accent)]">+{day.state === 'completed' ? day.earnedSp : habit.baseReward} SP</span>
+            </div>
         </div>
     );
+}
+
+function HabitCards({ habits, onNumeric, onSkip }: {
+    habits: HabitViewData[];
+    onNumeric: (selection: SelectedHabitDay) => void;
+    onSkip: (selection: SelectedHabitDay) => void;
+}) {
+    return <div className="grid gap-2">{habits.map((habit) => <HabitCard habit={habit} key={habit.id} onNumeric={onNumeric} onSkip={onSkip} />)}</div>;
 }
 
 export function TodayHabitSection({ required, flexible }: { required: HabitViewData[]; flexible: HabitViewData[] }) {
     const [numericSelection, setNumericSelection] = useState<SelectedHabitDay | null>(null);
     const [skipSelection, setSkipSelection] = useState<SelectedHabitDay | null>(null);
+    const resolvedCount = required.filter((habit) => ['completed', 'skipped'].includes(habit.days[0]!.state ?? '')).length;
 
     return (
-        <>
-            <section>
-                <div className="mb-3 flex items-end justify-between gap-3">
-                    <div><p className="text-xs font-bold tracking-[0.18em] text-[var(--habit-accent)] uppercase">Habits</p><h2 className="mt-1 text-2xl font-bold">Required today</h2></div>
-                    <span className="text-xs font-semibold text-muted">{required.length} required</span>
-                </div>
-                <div className="rounded-3xl border border-border-subtle bg-surface px-4 sm:px-5">
-                    {required.length > 0
-                        ? required.map((habit) => <HabitRow habit={habit} key={habit.id} onNumeric={setNumericSelection} onSkip={setSkipSelection} />)
-                        : <p className="py-7 text-sm text-secondary">No required Habits today.</p>}
-                </div>
-            </section>
+        <section aria-labelledby="today-habit-list-title" className="min-w-0">
+            <div className="mb-4 flex items-center justify-between gap-4">
+                <h2 className="text-2xl font-bold" id="today-habit-list-title">Habits</h2>
+                <span className="text-sm font-semibold text-muted">{resolvedCount} / {required.length}</span>
+            </div>
+
+            {required.length > 0
+                ? <HabitCards habits={required} onNumeric={setNumericSelection} onSkip={setSkipSelection} />
+                : <div className="rounded-2xl border border-border-subtle bg-surface px-4 py-6 text-sm text-muted">No habits.</div>}
 
             {flexible.length > 0 && (
-                <details className="group rounded-3xl border border-border-subtle bg-surface px-4 sm:px-5">
-                    <summary className="focus-ring flex cursor-pointer list-none items-center justify-between gap-4 rounded-xl py-4">
-                        <span><span className="block text-xs font-bold tracking-[0.16em] text-muted uppercase">Optional Habits</span><span className="mt-1 block text-sm text-secondary">{flexible.length} available</span></span>
-                        <span aria-hidden="true" className="text-xl text-muted transition-transform group-open:rotate-45">+</span>
+                <details className="group mt-3">
+                    <summary className="focus-ring flex min-h-12 cursor-pointer list-none items-center justify-between gap-4 rounded-2xl border border-border-subtle bg-surface px-4">
+                        <span className="text-sm font-bold text-secondary">Flexible</span>
+                        <span className="flex items-center gap-2 text-xs text-muted">
+                            {flexible.length}
+                            <ChevronDown aria-hidden="true" className="transition-transform group-open:rotate-180" size={16} />
+                        </span>
                     </summary>
-                    <div className="border-t border-border-subtle pb-1">
-                        {flexible.map((habit) => <HabitRow habit={habit} key={habit.id} onNumeric={setNumericSelection} onSkip={setSkipSelection} />)}
-                    </div>
+                    <div className="mt-2"><HabitCards habits={flexible} onNumeric={setNumericSelection} onSkip={setSkipSelection} /></div>
                 </details>
             )}
 
             {numericSelection && <NumericValueDialog day={numericSelection.day} habit={numericSelection.habit} onClose={() => setNumericSelection(null)} />}
             {skipSelection && <SkipConfirmationDialog day={skipSelection.day} habit={skipSelection.habit} onClose={() => setSkipSelection(null)} />}
-        </>
+        </section>
     );
 }

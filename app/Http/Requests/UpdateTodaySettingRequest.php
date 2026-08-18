@@ -16,7 +16,6 @@ class UpdateTodaySettingRequest extends FormRequest
     {
         return [
             'show_flexible_habits' => ['required', 'boolean'],
-            'show_upcoming_tasks' => ['required', 'boolean'],
         ];
     }
 }

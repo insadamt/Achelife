@@ -15,8 +15,8 @@
     --text-primary: #f5f7f8;
     --text-secondary: #afb6c0;
     --text-muted: #737c89;
-    --accent: #9bb3ff;
-    --accent-foreground: #080a10;
+    --accent: #d7e66b;
+    --accent-foreground: #0b0d06;
     --success: #55d58a;
     --warning: #f1b84b;
     --danger: #f06d72;
@@ -25,12 +25,12 @@
     --preview-orange: #ff8a45;
     --preview-green: #7ddc69;
     --preview-pink: #ec63bc;
-    --season-accent: #7f9cff;
-    --task-accent: #68d6b2;
-    --habit-accent: #d7e66b;
-    --diary-accent: #d89adf;
-    --constitution-accent: #d8bd7a;
-    --money-accent: #73d5c5;
+    --season-accent: var(--accent);
+    --task-accent: var(--accent);
+    --habit-accent: var(--accent);
+    --diary-accent: var(--accent);
+    --constitution-accent: var(--accent);
+    --money-accent: var(--accent);
     --module-accent: var(--accent);
     --focus-ring: color-mix(in srgb, var(--module-accent) 74%, white);
     --radius-panel: 1.75rem;
@@ -59,6 +59,10 @@
     background:
         radial-gradient(circle at 18% 0%, color-mix(in srgb, var(--accent) 24%, transparent), transparent 42%),
         linear-gradient(125deg, color-mix(in srgb, var(--accent) 10%, var(--surface-primary)), var(--surface-primary) 64%);
+}
+
+.progress-notch-panel {
+    animation: progress-notch-enter var(--motion-standard) cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 .season-introduction-current {
@@ -136,6 +140,17 @@
     to {
         opacity: 1;
         transform: translateY(0);
+    }
+}
+
+@keyframes progress-notch-enter {
+    from {
+        opacity: 0;
+        transform: translateX(2rem);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
     }
 }
 

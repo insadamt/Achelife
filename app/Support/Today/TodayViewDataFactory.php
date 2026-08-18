@@ -3,24 +3,18 @@
 namespace App\Support\Today;
 
 use App\Actions\Habits\SynchronizeHabitOccurrences;
-use App\Actions\Money\EnsureDefaultMoneyCategories;
 use App\Actions\Tasks\SynchronizeRecurringTaskOccurrences;
 use App\Enums\HabitOccurrenceKind;
 use App\Enums\HabitOccurrenceState;
 use App\Models\Habit;
 use App\Models\HabitOccurrence;
-use App\Models\Law;
-use App\Models\MoneyAccount;
-use App\Models\MoneyCategory;
 use App\Models\Season;
 use App\Models\Task;
 use App\Models\TodaySetting;
 use App\Models\User;
 use App\Services\Habits\HabitDefinitionResolver;
 use App\Services\Habits\HabitSchedule;
-use App\Services\Money\AccountBalanceCalculator;
-use App\Support\Constitution\ConstitutionViewDataFactory;
-use App\Support\Money\MoneyViewDataFactory;
+use App\Services\Seasons\SeasonPointsAttributedOnDate;
 use App\Support\Seasons\SeasonViewDataFactory;
 use App\Support\Tasks\TaskViewDataFactory;
 use Carbon\CarbonImmutable;
@@ -32,14 +26,11 @@ class TodayViewDataFactory
     public function __construct(
         private readonly SynchronizeRecurringTaskOccurrences $synchronizeTasks,
         private readonly SynchronizeHabitOccurrences $synchronizeHabits,
-        private readonly EnsureDefaultMoneyCategories $ensureMoneyCategories,
         private readonly TaskViewDataFactory $taskViewDataFactory,
         private readonly HabitDefinitionResolver $habitDefinitionResolver,
         private readonly HabitSchedule $habitSchedule,
         private readonly SeasonViewDataFactory $seasonViewDataFactory,
-        private readonly ConstitutionViewDataFactory $constitutionViewDataFactory,
-        private readonly MoneyViewDataFactory $moneyViewDataFactory,
-        private readonly AccountBalanceCalculator $balanceCalculator,
+        private readonly SeasonPointsAttributedOnDate $seasonPointsAttributedOnDate,
     ) {}
 
     /** @return array<string, mixed> */
@@ -47,16 +38,20 @@ class TodayViewDataFactory
     {
         $this->synchronizeTasks->execute($user, $today);
         $currentSeason = $this->synchronizeHabits->execute($user, $today);
-        $this->ensureMoneyCategories->execute($user);
         $settings = TodaySetting::query()->firstOrCreate(
             ['user_id' => $user->id],
             ['show_flexible_habits' => true, 'show_upcoming_tasks' => true],
         );
 
-        $tasks = $this->tasks($user, $currentSeason, $today, $settings->show_upcoming_tasks);
+        $tasks = $this->tasks($user, $currentSeason, $today);
         $habits = $this->habits($user, $currentSeason, $today, $settings->show_flexible_habits);
         $diary = $this->diary($user, $today);
-        $dailyProgress = $this->dailyProgress($tasks['today'], $habits['required'], $diary);
+        $dailyProgress = $this->dailyProgress(
+            $tasks['today'],
+            $habits['required'],
+            $diary,
+            $this->seasonPointsAttributedOnDate->calculate($user, $currentSeason, $today),
+        );
 
         $currentSeason = $currentSeason->refresh()->load('objectives');
 
@@ -67,17 +62,14 @@ class TodayViewDataFactory
             'tasks' => $tasks,
             'habits' => $habits,
             'diary' => $diary,
-            'constitution' => $this->constitution($user, $currentSeason),
-            'money' => $this->money($user),
             'settings' => [
                 'showFlexibleHabits' => $settings->show_flexible_habits,
-                'showUpcomingTasks' => $settings->show_upcoming_tasks,
             ],
         ];
     }
 
-    /** @return array{today: Collection<int, array<string, mixed>>, overdue: Collection<int, array<string, mixed>>, overdueCount: int, upcoming: Collection<int, array<string, mixed>>, upcomingVisible: bool} */
-    private function tasks(User $user, Season $season, CarbonImmutable $today, bool $showUpcoming): array
+    /** @return array{today: Collection<int, array<string, mixed>>, overdue: Collection<int, array<string, mixed>>, overdueCount: int} */
+    private function tasks(User $user, Season $season, CarbonImmutable $today): array
     {
         $relations = ['series', 'subtasks', 'reschedules', 'rewardSeason'];
         $baseQuery = $user->tasks();
@@ -114,30 +106,10 @@ class TodayViewDataFactory
             ->get()
             ->map(fn (Task $task): array => $this->taskViewDataFactory->make($task, $today, $season->id));
 
-        $todayIsClear = $todayTasks->every(fn (array $task): bool => $task['state'] === 'completed');
-        $upcomingVisible = $showUpcoming && $todayIsClear;
-        $upcomingTasks = collect();
-
-        if ($upcomingVisible) {
-            $upcomingTasks = (clone $baseQuery)->with($relations)
-                ->whereNull('completed_at')
-                ->whereDate('scheduled_date', '>', $today)
-                ->where(function (Builder $query) use ($visibleRecurringTaskIds): void {
-                    $query->whereNull('task_series_id')->orWhereIn('id', $visibleRecurringTaskIds);
-                })
-                ->orderBy('scheduled_date')
-                ->orderByDesc('important')
-                ->limit(5)
-                ->get()
-                ->map(fn (Task $task): array => $this->taskViewDataFactory->make($task, $today, $season->id));
-        }
-
         return [
             'today' => $todayTasks,
             'overdue' => $overdueTasks,
             'overdueCount' => $overdueCount,
-            'upcoming' => $upcomingTasks,
-            'upcomingVisible' => $upcomingVisible,
         ];
     }
 
@@ -241,9 +213,9 @@ class TodayViewDataFactory
     /** @param Collection<int, array<string, mixed>> $todayTasks
      * @param  Collection<int, array<string, mixed>>  $requiredHabits
      * @param  array<string, mixed>  $diary
-     * @return array{completed: int, total: int, percentage: int}
+     * @return array<string, mixed>
      */
-    private function dailyProgress(Collection $todayTasks, Collection $requiredHabits, array $diary): array
+    private function dailyProgress(Collection $todayTasks, Collection $requiredHabits, array $diary, int $todaySp): array
     {
         $completedTasks = $todayTasks->where('state', 'completed')->count();
         $resolvedHabits = $requiredHabits->filter(function (array $habit): bool {
@@ -258,54 +230,12 @@ class TodayViewDataFactory
             'completed' => $completed,
             'total' => $total,
             'percentage' => $total === 0 ? 0 : (int) round(($completed / $total) * 100),
-        ];
-    }
-
-    /** @return array<string, mixed> */
-    private function constitution(User $user, Season $season): array
-    {
-        $laws = $user->laws()
-            ->whereNull('archived_at')
-            ->withCount('violations')
-            ->with(['violations' => fn ($query) => $query
-                ->where('season_id', $season->id)
-                ->orderBy('violation_date')
-                ->orderBy('created_at')
-                ->orderBy('id')])
-            ->orderBy('created_at')
-            ->get()
-            ->map(fn (Law $law): array => $this->constitutionViewDataFactory->makeActiveLaw($law));
-
-        return ['laws' => $laws];
-    }
-
-    /** @return array<string, mixed> */
-    private function money(User $user): array
-    {
-        $accounts = $user->moneyAccounts()
-            ->whereNull('archived_at')
-            ->withCount(['transactions', 'incomingTransfers'])
-            ->orderBy('created_at')
-            ->get();
-        $balances = $this->balanceCalculator->forAccounts($user, $accounts);
-        $accountData = $accounts->map(
-            fn (MoneyAccount $account): array => $this->moneyViewDataFactory->account($account, $balances[$account->id]),
-        );
-        $categories = $user->moneyCategories()
-            ->whereNull('archived_at')
-            ->withCount('transactions')
-            ->with(['subcategories' => fn ($query) => $query->whereNull('archived_at')->withCount('transactions')->orderBy('name')])
-            ->orderBy('type')
-            ->orderBy('name')
-            ->get()
-            ->map(fn (MoneyCategory $category): array => $this->moneyViewDataFactory->category($category));
-        $currencyCounts = $accounts->countBy('currency');
-
-        return [
-            'accounts' => $accountData,
-            'categories' => $categories,
-            'totalsByCurrency' => $this->balanceCalculator->totalsByCurrency($accounts, $balances),
-            'canTransfer' => $currencyCounts->contains(fn (int $count): bool => $count >= 2),
+            'todaySp' => $todaySp,
+            'breakdown' => [
+                'tasks' => ['completed' => $completedTasks, 'total' => $todayTasks->count()],
+                'habits' => ['completed' => $resolvedHabits, 'total' => $requiredHabits->count()],
+                'diary' => ['completed' => $diary['state'] === 'completed' ? 1 : 0, 'total' => 1],
+            ],
         ];
     }
 }

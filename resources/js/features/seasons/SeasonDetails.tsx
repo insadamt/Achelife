@@ -1,5 +1,6 @@
 import { useState } from 'react';
 
+import { SeasonRankSummary } from '../../components/rank';
 import { StatusChip, Surface } from '../../components/ui';
 import { classNames } from '../../components/ui/classNames';
 import { formatFullDate, formatSeasonRange } from './dateFormat';
@@ -13,7 +14,7 @@ function Overview({ season }: { season: SeasonViewData }) {
     const completedDays = season.state === 'completed' ? 30 : (season.day ?? 0);
 
     return (
-        <div className="grid gap-8 lg:grid-cols-[1.25fr_0.75fr] lg:gap-12">
+        <div>
             <div>
                 <h3 className="text-3xl font-bold tracking-[-0.045em] sm:text-4xl">
                     {season.state === 'current' ? `Day ${season.day} of 30` : 'Season complete'}
@@ -36,20 +37,6 @@ function Overview({ season }: { season: SeasonViewData }) {
                     <SegmentedSeasonProgress completedDays={completedDays} label={`Season ${season.number} progress: ${completedDays} of 30 days`} />
                 </div>
             </div>
-
-            <dl className="grid grid-cols-2 gap-px overflow-hidden rounded-2xl border border-border-subtle bg-border-subtle lg:grid-cols-1">
-                <div className="bg-surface p-5 sm:p-6">
-                    <dt className="text-[0.625rem] font-bold tracking-[0.17em] text-muted uppercase">
-                        {season.state === 'completed' ? 'Final Season SP' : 'Season SP'}
-                    </dt>
-                    <dd className="mt-2 text-4xl font-bold tracking-[-0.04em] text-foreground">{season.seasonPoints.toLocaleString()}</dd>
-                </div>
-                <div className="bg-surface p-5 sm:p-6">
-                    <dt className="text-[0.625rem] font-bold tracking-[0.17em] text-muted uppercase">Rank</dt>
-                    <dd className="mt-2 text-4xl font-bold tracking-[-0.04em] text-foreground">{season.rank ?? '—'}</dd>
-                    {!season.rank && <p className="mt-2 text-xs text-muted">Rank system pending</p>}
-                </div>
-            </dl>
         </div>
     );
 }
@@ -79,20 +66,22 @@ export function SeasonDetails({ season }: { season: SeasonViewData }) {
                             {season.state === 'current' ? 'Current' : 'Completed'}
                         </StatusChip>
                     </div>
-                    <div className="flex items-center gap-5 text-left sm:text-right">
-                        <div>
-                            <p className="text-[0.625rem] font-bold tracking-[0.14em] text-muted uppercase">
-                                {season.state === 'current' ? 'Current day' : 'Status'}
-                            </p>
-                            <p className="mt-1 text-lg font-bold">{season.state === 'current' ? `${season.day} / 30` : 'Complete'}</p>
-                        </div>
-                        <div className="h-10 w-px bg-border-subtle" />
-                        <div>
-                            <p className="text-[0.625rem] font-bold tracking-[0.14em] text-muted uppercase">Season SP</p>
-                            <p className="mt-1 text-lg font-bold">{season.seasonPoints.toLocaleString()} SP</p>
-                        </div>
+                    <div className="text-left sm:text-right">
+                        <p className="text-[0.625rem] font-bold tracking-[0.14em] text-muted uppercase">
+                            {season.state === 'current' ? 'Current day' : 'Status'}
+                        </p>
+                        <p className="mt-1 text-lg font-bold">{season.state === 'current' ? `${season.day} / 30` : 'Complete'}</p>
                     </div>
                 </div>
+
+                {season.rank && (
+                    <SeasonRankSummary
+                        className="mt-7"
+                        completed={season.state === 'completed'}
+                        rank={season.rank}
+                        seasonPoints={season.seasonPoints}
+                    />
+                )}
 
                 <div className="my-7 flex border-b border-border-subtle" role="tablist" aria-label="Season details views">
                     {(['overview', 'objectives'] as const).map((view) => (

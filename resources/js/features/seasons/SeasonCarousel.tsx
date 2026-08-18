@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import type { KeyboardEvent } from 'react';
 
+import { RankBadge } from '../../components/rank';
 import { StatusChip } from '../../components/ui';
 import { classNames } from '../../components/ui/classNames';
 import type { SeasonViewData } from './types';
@@ -98,9 +99,8 @@ export function SeasonCarousel({ seasons, selectedSeasonNumber, onSelect }: Seas
                                 {season.state === 'current' && (
                                     <span>
                                         <span className="block text-3xl font-bold text-foreground">Day {season.day} / 30</span>
-                                        <span className="mt-2 block text-xs font-bold tracking-[0.12em] text-[var(--module-accent)] uppercase">
-                                            {season.seasonPoints.toLocaleString()} SP · Rank {season.rank ?? '—'}
-                                        </span>
+                                        {season.rank && <RankBadge className="mt-3 justify-center" compact rank={season.rank} />}
+                                        <span className="mt-2 block text-sm font-bold text-foreground">{season.seasonPoints.toLocaleString()} SP</span>
                                         <span className="mt-2 block text-[0.625rem] font-bold tracking-[0.12em] text-muted uppercase">
                                             Objectives {season.objectiveCompletedCount} / {season.objectiveCount}
                                         </span>
@@ -109,8 +109,9 @@ export function SeasonCarousel({ seasons, selectedSeasonNumber, onSelect }: Seas
 
                                 {season.state === 'completed' && (
                                     <span>
-                                        <span className="block text-sm font-bold tracking-[0.12em] text-secondary uppercase">Rank {season.rank ?? '—'}</span>
-                                        <span className="mt-2 block text-xl font-bold text-foreground">{season.seasonPoints.toLocaleString()} final SP</span>
+                                        <span className="block text-[0.625rem] font-bold tracking-[0.16em] text-muted uppercase">Final Rank</span>
+                                        {season.rank && <RankBadge className="mt-3 justify-center" compact rank={season.rank} />}
+                                        <span className="mt-3 block text-xl font-bold text-foreground">{season.seasonPoints.toLocaleString()} SP</span>
                                     </span>
                                 )}
 

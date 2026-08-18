@@ -6,6 +6,7 @@ interface ProgressBarProps {
     value: number;
     maximum?: number;
     label?: string;
+    ariaLabel?: string;
     showValue?: boolean;
     accent?: string;
     activeGlow?: boolean;
@@ -18,6 +19,7 @@ export function ProgressBar({
     value,
     maximum = 100,
     label,
+    ariaLabel,
     showValue = true,
     accent,
     activeGlow = false,
@@ -36,7 +38,7 @@ export function ProgressBar({
                 </div>
             )}
             <div
-                aria-label={label}
+                aria-label={ariaLabel ?? label}
                 aria-valuemax={safeMaximum}
                 aria-valuemin={0}
                 aria-valuenow={Math.min(safeMaximum, Math.max(0, value))}
