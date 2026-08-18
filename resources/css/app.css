@@ -25,11 +25,53 @@
     --preview-orange: #ff8a45;
     --preview-green: #7ddc69;
     --preview-pink: #ec63bc;
+    --season-accent: #7f9cff;
     --module-accent: var(--accent);
     --focus-ring: color-mix(in srgb, var(--module-accent) 74%, white);
     --radius-panel: 1.75rem;
     --motion-fast: 160ms;
     --motion-standard: 220ms;
+}
+
+.season-carousel-track {
+    padding-inline: max(1rem, calc(50% - 9rem));
+    scroll-padding-inline: max(1rem, calc(50% - 9rem));
+}
+
+.season-current-card {
+    background:
+        radial-gradient(circle at 50% 0%, color-mix(in srgb, var(--module-accent) 18%, transparent), transparent 48%),
+        var(--surface-elevated);
+}
+
+.season-introduction-current {
+    animation: season-enter 700ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.season-introduction-previous {
+    animation: season-history 620ms ease-out both;
+}
+
+@keyframes season-enter {
+    from {
+        opacity: 0;
+        transform: translateY(1.25rem) scale(0.98);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@keyframes season-history {
+    from {
+        opacity: 0;
+        transform: translateY(-0.75rem);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 @theme inline {

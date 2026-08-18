@@ -15,7 +15,7 @@ interface NavigationDestination {
 
 const destinations: NavigationDestination[] = [
     { label: 'Today', icon: 'today', href: '/home' },
-    { label: 'Seasons', icon: 'seasons' },
+    { label: 'Seasons', icon: 'seasons', href: '/seasons' },
     { label: 'Tasks', icon: 'tasks' },
     { label: 'Habits', icon: 'habits' },
     { label: 'Diary', icon: 'diary' },
@@ -24,7 +24,7 @@ const destinations: NavigationDestination[] = [
     { label: 'Money', icon: 'money' },
 ];
 
-const mobilePrimaryLabels = new Set(['Today', 'Tasks', 'Habits']);
+const mobilePrimaryLabels = new Set(['Today', 'Seasons', 'Tasks']);
 
 function NavigationItem({
     destination,
@@ -35,7 +35,8 @@ function NavigationItem({
     mobile?: boolean;
     rail?: boolean;
 }) {
-    const active = destination.href === '/home';
+    const { url } = usePage();
+    const active = destination.href === '/home' ? url === '/home' : destination.href !== undefined && url.startsWith(destination.href);
     const itemClassName = rail
         ? `focus-ring group relative flex size-12 items-center justify-center rounded-2xl transition-[background-color,color,transform] duration-200 hover:-translate-y-0.5 ${
               active ? 'bg-[var(--module-accent)] text-accent-foreground' : 'text-muted hover:bg-surface-hover hover:text-foreground'
