@@ -19,7 +19,6 @@ const destinations: NavigationDestination[] = [
     { label: 'Tasks', icon: 'tasks', href: '/tasks' },
     { label: 'Habits', icon: 'habits', href: '/habits' },
     { label: 'Diary', icon: 'diary', href: '/diary' },
-    { label: 'Objectives', icon: 'objectives' },
     { label: 'Constitution', icon: 'constitution', href: '/constitution' },
     { label: 'Money', icon: 'money', href: '/money' },
 ];

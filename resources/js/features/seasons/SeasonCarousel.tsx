@@ -101,6 +101,9 @@ export function SeasonCarousel({ seasons, selectedSeasonNumber, onSelect }: Seas
                                         <span className="mt-2 block text-xs font-bold tracking-[0.12em] text-[var(--module-accent)] uppercase">
                                             {season.seasonPoints.toLocaleString()} SP · Rank {season.rank ?? '—'}
                                         </span>
+                                        <span className="mt-2 block text-[0.625rem] font-bold tracking-[0.12em] text-muted uppercase">
+                                            Objectives {season.objectiveCompletedCount} / {season.objectiveCount}
+                                        </span>
                                     </span>
                                 )}
 

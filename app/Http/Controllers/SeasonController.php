@@ -18,7 +18,10 @@ class SeasonController extends Controller
     ): Response {
         $today = CarbonImmutable::today();
         $currentSeason = $synchronizeUserSeasons->execute($request->user(), $today);
-        $realSeasons = $request->user()->seasons()->orderBy('season_number')->get();
+        $realSeasons = $request->user()->seasons()
+            ->with(['objectives' => fn ($query) => $query->orderBy('creation_order')])
+            ->orderBy('season_number')
+            ->get();
 
         $seasons = $realSeasons
             ->map(fn ($season) => $viewDataFactory->forSeason($season, $today))

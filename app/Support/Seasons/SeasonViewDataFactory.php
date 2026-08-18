@@ -4,15 +4,28 @@ namespace App\Support\Seasons;
 
 use App\Actions\Seasons\SynchronizeUserSeasons;
 use App\Models\Season;
+use App\Services\Objectives\ObjectiveRewardCalculator;
+use App\Services\Seasons\SeasonLifecycle;
 use Carbon\CarbonImmutable;
 
 class SeasonViewDataFactory
 {
-    /** @return array<string, int|string|null> */
+    public function __construct(
+        private readonly SeasonLifecycle $seasonLifecycle,
+        private readonly ObjectiveRewardCalculator $objectiveRewardCalculator,
+    ) {}
+
+    /** @return array<string, mixed> */
     public function forSeason(Season $season, CarbonImmutable $today): array
     {
-        $isCurrent = $today->betweenIncluded($season->start_date, $season->end_date);
-        $day = $isCurrent ? (int) $season->start_date->diffInDays($today) + 1 : null;
+        $isCurrent = $this->seasonLifecycle->isActive($season, $today);
+        $day = $this->seasonLifecycle->day($season, $today);
+        $objectives = $season->relationLoaded('objectives')
+            ? $season->objectives
+            : $season->objectives()->orderBy('creation_order')->get();
+        $objectiveCount = $objectives->count();
+        $rewardPerObjective = $this->objectiveRewardCalculator->rewardPerObjective($objectiveCount);
+        $setupIsOpen = $this->seasonLifecycle->objectiveSetupIsOpen($season, $today);
 
         return [
             'id' => $season->id,
@@ -24,10 +37,28 @@ class SeasonViewDataFactory
             'progressPercentage' => $isCurrent ? (int) round(($day / SynchronizeUserSeasons::DAYS_PER_SEASON) * 100) : 100,
             'seasonPoints' => $season->season_points,
             'rank' => $season->rank,
+            'objectives' => $objectives->values()->map(fn ($objective, int $index): array => [
+                'id' => $objective->id,
+                'title' => $objective->title,
+                'order' => $index + 1,
+                'creationOrder' => $objective->creation_order,
+                'completed' => $objective->completed_at !== null,
+                'completedAt' => $objective->completed_at?->toIso8601String(),
+                'earnedSp' => $objective->earned_sp,
+                'rewardSp' => $objective->earned_sp ?? $rewardPerObjective,
+            ]),
+            'objectiveCount' => $objectiveCount,
+            'objectiveCompletedCount' => $objectives->whereNotNull('completed_at')->count(),
+            'objectiveEarnedSp' => $objectives->sum('earned_sp'),
+            'objectiveRewardPerObjective' => $rewardPerObjective,
+            'objectiveRewardMaximum' => $objectiveCount === 0 ? 0 : 300,
+            'objectiveSetupOpen' => $setupIsOpen,
+            'objectiveSetupDaysRemaining' => $setupIsOpen ? max(0, SeasonLifecycle::OBJECTIVE_SETUP_DAYS - (int) $day) : 0,
+            'objectiveCompletionMutable' => $isCurrent,
         ];
     }
 
-    /** @return array<string, int|string|null> */
+    /** @return array<string, mixed> */
     public function lockedPlaceholder(Season $currentSeason, int $offset): array
     {
         $startDate = $currentSeason->start_date->addDays($offset * SynchronizeUserSeasons::DAYS_PER_SEASON);
@@ -42,6 +73,15 @@ class SeasonViewDataFactory
             'progressPercentage' => 0,
             'seasonPoints' => 0,
             'rank' => null,
+            'objectives' => [],
+            'objectiveCount' => 0,
+            'objectiveCompletedCount' => 0,
+            'objectiveEarnedSp' => 0,
+            'objectiveRewardPerObjective' => 0,
+            'objectiveRewardMaximum' => 0,
+            'objectiveSetupOpen' => false,
+            'objectiveSetupDaysRemaining' => 0,
+            'objectiveCompletionMutable' => false,
         ];
     }
 }

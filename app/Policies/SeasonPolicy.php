@@ -16,4 +16,9 @@ class SeasonPolicy
     {
         return $user->is($season->user);
     }
+
+    public function createObjective(User $user, Season $season): bool
+    {
+        return $this->view($user, $season);
+    }
 }

@@ -72,6 +72,12 @@ class User extends Authenticatable
         return $this->hasMany(Violation::class);
     }
 
+    /** @return HasMany<Objective, $this> */
+    public function objectives(): HasMany
+    {
+        return $this->hasMany(Objective::class);
+    }
+
     /** @return HasMany<MoneyAccount, $this> */
     public function moneyAccounts(): HasMany
     {

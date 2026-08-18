@@ -18,6 +18,8 @@ use App\Http\Controllers\MoneyController;
 use App\Http\Controllers\MoneyHistoryController;
 use App\Http\Controllers\MoneySubcategoryController;
 use App\Http\Controllers\MoneyTransactionController;
+use App\Http\Controllers\ObjectiveCompletionController;
+use App\Http\Controllers\ObjectiveController;
 use App\Http\Controllers\PersonController;
 use App\Http\Controllers\SeasonController;
 use App\Http\Controllers\SeasonIntroductionController;
@@ -116,6 +118,12 @@ Route::middleware('auth')->group(function (): void {
     Route::post('/money/subcategories/{subcategory}/archive', [MoneySubcategoryController::class, 'archive'])->name('money.subcategories.archive');
     Route::post('/money/subcategories/{subcategory}/reactivate', [MoneySubcategoryController::class, 'reactivate'])->name('money.subcategories.reactivate');
     Route::delete('/money/subcategories/{subcategory}', [MoneySubcategoryController::class, 'destroy'])->name('money.subcategories.destroy');
+    Route::scopeBindings()->group(function (): void {
+        Route::post('/seasons/{season}/objectives', [ObjectiveController::class, 'store'])->name('objectives.store');
+        Route::put('/seasons/{season}/objectives/{objective}', [ObjectiveController::class, 'update'])->name('objectives.update');
+        Route::delete('/seasons/{season}/objectives/{objective}', [ObjectiveController::class, 'destroy'])->name('objectives.destroy');
+        Route::post('/seasons/{season}/objectives/{objective}/toggle', ObjectiveCompletionController::class)->name('objectives.toggle');
+    });
     Route::post('/diary/people', [PersonController::class, 'store'])->name('diary.people.store');
     Route::put('/diary/people/{person}', [PersonController::class, 'update'])->name('diary.people.update');
     Route::post('/diary/people/{person}/archive', [PersonController::class, 'archive'])->name('diary.people.archive');

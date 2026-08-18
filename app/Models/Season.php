@@ -48,6 +48,12 @@ class Season extends Model
         return $this->hasMany(Violation::class);
     }
 
+    /** @return HasMany<Objective, $this> */
+    public function objectives(): HasMany
+    {
+        return $this->hasMany(Objective::class);
+    }
+
     /** @return array<string, string> */
     protected function casts(): array
     {
