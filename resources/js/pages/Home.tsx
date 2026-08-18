@@ -1,140 +1,143 @@
-import { Head } from '@inertiajs/react';
-import { useState } from 'react';
+import { Head, Link, router } from '@inertiajs/react';
+import { useMemo, useState } from 'react';
+import type { CSSProperties } from 'react';
 
-import {
-    Button,
-    Checkbox,
-    CircularProgress,
-    Dialog,
-    Field,
-    Metric,
-    ProgressBar,
-    SelectField,
-    StatusChip,
-    Surface,
-} from '../components/ui';
+import { ProgressBar, Surface } from '../components/ui';
+import { classNames } from '../components/ui/classNames';
+import { TaskDetailsDrawer } from '../features/tasks/TaskDetailsDrawer';
+import type { TaskViewData } from '../features/tasks/types';
+import { TodayHabitSection } from '../features/today/TodayHabitSection';
+import { TodayQuickActions } from '../features/today/TodayQuickActions';
+import { TodaySettingsDialog } from '../features/today/TodaySettingsDialog';
+import { TodayTaskRow } from '../features/today/TodayTaskRow';
+import type { TodayPageProps } from '../features/today/types';
 
-export default function Home() {
-    const [dialogOpen, setDialogOpen] = useState(false);
-    const [previewProgress, setPreviewProgress] = useState(64);
+const todayStyle = { '--module-accent': 'var(--accent)' } as CSSProperties;
+
+function calendarDateLabel(date: string) {
+    return new Intl.DateTimeFormat(undefined, {
+        weekday: 'long',
+        month: 'long',
+        day: 'numeric',
+        year: 'numeric',
+        timeZone: 'UTC',
+    }).format(new Date(`${date}T00:00:00Z`));
+}
+
+function shortDateLabel(date: string) {
+    return new Intl.DateTimeFormat(undefined, { weekday: 'long', month: 'short', day: 'numeric', timeZone: 'UTC' })
+        .format(new Date(`${date}T00:00:00Z`));
+}
+
+function SectionHeading({ eyebrow, title, context }: { eyebrow: string; title: string; context?: string }) {
+    return (
+        <div className="mb-3 flex items-end justify-between gap-3">
+            <div><p className="text-xs font-bold tracking-[0.18em] text-muted uppercase">{eyebrow}</p><h2 className="mt-1 text-2xl font-bold">{title}</h2></div>
+            {context && <span className="text-xs font-semibold text-muted">{context}</span>}
+        </div>
+    );
+}
+
+function TaskList({ tasks, onOpen }: { tasks: TaskViewData[]; onOpen: (task: TaskViewData) => void }) {
+    return <div className="rounded-3xl border border-border-subtle bg-surface px-4 sm:px-5">{tasks.map((task) => <TodayTaskRow key={task.id} onOpen={() => onOpen(task)} task={task} />)}</div>;
+}
+
+export default function Home(props: TodayPageProps) {
+    const [settingsOpen, setSettingsOpen] = useState(false);
+    const [selectedTaskId, setSelectedTaskId] = useState<number | null>(null);
+    const allTasks = useMemo(() => [...props.tasks.overdue, ...props.tasks.today, ...props.tasks.upcoming], [props.tasks]);
+    const selectedTask = allTasks.find((task) => task.id === selectedTaskId) ?? null;
+    const season = props.currentSeason;
+    const objectives = season.objectives;
+
+    function toggleObjective(objectiveId: number) {
+        router.post(`/seasons/${season.id}/objectives/${objectiveId}/toggle`, {}, { preserveScroll: true });
+    }
 
     return (
-        <>
-            <Head title="UI Foundation" />
-            <header className="mb-8 flex flex-col justify-between gap-5 pb-3 sm:flex-row sm:items-end">
+        <div style={todayStyle}>
+            <Head title="Today" />
+
+            <header className="mb-7 flex items-start justify-between gap-4">
                 <div>
-                    <p className="text-xs font-bold tracking-[0.18em] text-accent uppercase">Phase 0.5</p>
-                    <h1 className="mt-2 text-4xl font-bold tracking-[-0.045em] sm:text-6xl">Interface playground</h1>
-                    <p className="mt-3 max-w-2xl text-base leading-7 text-secondary">
-                        A temporary, neutral preview of the primitives future Achelife modules will inherit.
-                    </p>
+                    <p className="text-xs font-bold tracking-[0.22em] text-accent uppercase">Today</p>
+                    <h1 className="mt-2 text-4xl font-bold tracking-[-0.045em] sm:text-6xl">{calendarDateLabel(props.today)}</h1>
+                    <p className="mt-2 text-sm text-secondary sm:text-base">Your daily mission, gathered in one place.</p>
                 </div>
-                <StatusChip status="active">Foundation preview</StatusChip>
+                <button aria-label="Open Today settings" className="focus-ring grid size-11 shrink-0 place-items-center rounded-full border border-border-strong bg-elevated text-xl transition-colors hover:bg-surface-hover" onClick={() => setSettingsOpen(true)} title="Today settings" type="button">⚙</button>
             </header>
 
-            <div className="grid gap-4 xl:grid-cols-[1.35fr_0.65fr]">
-                <Surface accent="var(--preview-blue)" className="p-5 sm:p-7" tinted>
-                    <div className="flex flex-col justify-between gap-7 sm:flex-row sm:items-center">
-                        <Metric context="Large values establish hierarchy" label="Preview value" suffix="PTS" value="1,240" />
-                        <CircularProgress label="Foundation progress preview" value={previewProgress} />
+            <Surface accent="var(--accent)" className="today-progress-hero mb-6 overflow-hidden p-5 sm:p-7" elevated tinted>
+                <div className="flex flex-col justify-between gap-6 md:flex-row md:items-end">
+                    <div>
+                        <p className="text-xs font-bold tracking-[0.18em] text-accent uppercase">Daily progress</p>
+                        {props.dailyProgress.total > 0 ? <div className="mt-2 flex items-end gap-4"><p className="text-5xl font-bold tracking-[-0.055em] sm:text-7xl">{props.dailyProgress.completed} / {props.dailyProgress.total}</p><p className="pb-1 text-2xl font-bold text-accent sm:text-3xl">{props.dailyProgress.percentage}%</p></div> : <p className="mt-3 text-3xl font-bold">No daily obligations</p>}
                     </div>
-                    <ProgressBar activeGlow className="mt-8" label="Interactive progress preview" value={previewProgress} />
-                    <label className="mt-5 block text-sm font-semibold text-secondary" htmlFor="progress-preview">
-                        Adjust preview
-                    </label>
-                    <input
-                        aria-valuetext={`${previewProgress}%`}
-                        className="mt-2 w-full accent-[var(--module-accent)]"
-                        id="progress-preview"
-                        max="100"
-                        min="0"
-                        onChange={(event) => setPreviewProgress(Number(event.target.value))}
-                        type="range"
-                        value={previewProgress}
-                    />
-                </Surface>
-
-                <Surface accent="var(--preview-violet)" className="p-5 sm:p-7" elevated tinted>
-                    <p className="text-xs font-bold tracking-[0.16em] text-muted uppercase">State language</p>
-                    <h2 className="mt-2 text-2xl font-bold tracking-[-0.025em]">Clear at a glance</h2>
-                    <div className="mt-6 flex flex-wrap gap-2">
-                        <StatusChip status="active">Active</StatusChip>
-                        <StatusChip status="completed">Completed</StatusChip>
-                        <StatusChip status="locked">Locked</StatusChip>
-                        <StatusChip status="warning">Warning</StatusChip>
-                        <StatusChip status="danger">Danger</StatusChip>
-                        <StatusChip>Neutral</StatusChip>
+                    <div className="grid grid-cols-3 gap-5 border-t border-border-subtle pt-5 md:border-t-0 md:border-l md:pt-0 md:pl-7">
+                        <div><p className="text-[0.625rem] font-bold tracking-wider text-muted uppercase">Season</p><p className="mt-1 text-xl font-bold">{String(season.number).padStart(2, '0')}</p></div>
+                        <div><p className="text-[0.625rem] font-bold tracking-wider text-muted uppercase">Day</p><p className="mt-1 text-xl font-bold">{season.day} / 30</p></div>
+                        <div><p className="text-[0.625rem] font-bold tracking-wider text-muted uppercase">Season SP</p><p className="mt-1 text-xl font-bold">{season.seasonPoints.toLocaleString()}</p></div>
                     </div>
-                    <div className="mt-7 border-t border-border-subtle pt-6">
-                        <Metric context="Secondary context" label="Medium metric" suffix="UNITS" value="18" />
-                    </div>
-                </Surface>
-            </div>
-
-            <section className="mt-4 grid gap-4 lg:grid-cols-[0.85fr_1.15fr]">
-                <Surface accent="var(--preview-orange)" className="p-5 sm:p-7" tinted>
-                    <p className="text-xs font-bold tracking-[0.16em] text-muted uppercase">Controls</p>
-                    <h2 className="mt-2 text-2xl font-bold tracking-[-0.025em]">Decisive actions</h2>
-                    <div className="mt-6 flex flex-wrap gap-3">
-                        <Button>Complete</Button>
-                        <Button variant="secondary">Secondary</Button>
-                        <Button variant="ghost">Ghost</Button>
-                        <Button variant="destructive">Delete</Button>
-                        <Button disabled>Disabled</Button>
-                    </div>
-                    <div className="mt-7 grid gap-3 sm:grid-cols-2">
-                        <Surface className="p-4">
-                            <p className="text-sm font-semibold text-foreground">Default surface</p>
-                            <p className="mt-1 text-sm text-muted">Meaningful grouping without emphasis.</p>
-                        </Surface>
-                        <Surface active className="p-4" interactive>
-                            <p className="text-sm font-semibold text-foreground">Selected surface</p>
-                            <p className="mt-1 text-sm text-muted">Accent responds to active state.</p>
-                        </Surface>
-                    </div>
-                </Surface>
-
-                <Surface accent="var(--preview-pink)" className="p-5 sm:p-7">
-                    <p className="text-xs font-bold tracking-[0.16em] text-muted uppercase">Form system</p>
-                    <h2 className="mt-2 text-2xl font-bold tracking-[-0.025em]">Accessible inputs</h2>
-                    <div className="mt-6 grid gap-5 sm:grid-cols-2">
-                        <Field label="Text" placeholder="Type a value" />
-                        <Field label="Number" min="0" placeholder="0" type="number" />
-                        <Field label="Date" type="date" />
-                        <SelectField
-                            defaultValue="neutral"
-                            label="Select"
-                            options={[
-                                { label: 'Neutral option', value: 'neutral' },
-                                { label: 'Alternate option', value: 'alternate' },
-                            ]}
-                        />
-                    </div>
-                    <div className="mt-5">
-                        <Checkbox description="A clear supporting description." label="Checkbox control" />
-                    </div>
-                </Surface>
-            </section>
-
-            <Surface accent="var(--preview-green)" className="mt-4 flex flex-col justify-between gap-5 p-5 sm:flex-row sm:items-center sm:p-7" tinted>
-                <div>
-                    <p className="text-xs font-bold tracking-[0.16em] text-muted uppercase">Overlay pattern</p>
-                    <h2 className="mt-2 text-xl font-bold">Keyboard-ready dialog</h2>
-                    <p className="mt-1 text-sm text-secondary">Focus is contained, Escape closes, and focus returns to the trigger.</p>
                 </div>
-                <Button onClick={() => setDialogOpen(true)} variant="secondary">
-                    Open dialog
-                </Button>
+                {props.dailyProgress.total > 0 && <ProgressBar activeGlow className="mt-6" label="Daily obligations resolved" maximum={props.dailyProgress.total} showValue={false} value={props.dailyProgress.completed} />}
             </Surface>
 
-            <Dialog description="This reusable overlay demonstrates focus management without adding feature behavior." onClose={() => setDialogOpen(false)} open={dialogOpen} title="Dialog preview">
-                <div className="flex justify-end gap-3">
-                    <Button onClick={() => setDialogOpen(false)} variant="ghost">
-                        Cancel
-                    </Button>
-                    <Button onClick={() => setDialogOpen(false)}>Confirm</Button>
-                </div>
-            </Dialog>
-        </>
+            <div className="grid items-start gap-7 xl:grid-cols-[minmax(0,1.55fr)_minmax(20rem,0.75fr)]">
+                <main className="space-y-8">
+                    <section>
+                        <SectionHeading context={`${props.tasks.overdueCount} ${props.tasks.overdueCount === 1 ? 'task' : 'tasks'}`} eyebrow="Attention" title="Overdue" />
+                        {props.tasks.overdue.length > 0 ? <div className="rounded-3xl border border-warning/30 bg-warning/5 px-4 sm:px-5">{props.tasks.overdue.map((task) => <TodayTaskRow key={task.id} onOpen={() => setSelectedTaskId(task.id)} task={task} />)}{props.tasks.overdueCount > props.tasks.overdue.length && <Link className="block border-t border-border-subtle py-3 text-center text-sm font-bold text-warning" href="/tasks">View all {props.tasks.overdueCount} overdue Tasks</Link>}</div> : <p className="rounded-3xl border border-border-subtle bg-surface px-5 py-5 text-sm text-secondary">No overdue Tasks.</p>}
+                    </section>
+
+                    <section>
+                        <SectionHeading context={`${props.tasks.today.length} scheduled`} eyebrow="Current mission" title="Today Tasks" />
+                        {props.tasks.today.length > 0 ? <TaskList onOpen={(task) => setSelectedTaskId(task.id)} tasks={props.tasks.today} /> : <p className="rounded-3xl border border-border-subtle bg-surface px-5 py-7 text-sm text-secondary">No Tasks scheduled today.</p>}
+                    </section>
+
+                    {props.tasks.upcomingVisible && (
+                        <section>
+                            <SectionHeading context={`${props.tasks.upcoming.length} next`} eyebrow="Today is clear" title="Upcoming" />
+                            {props.tasks.upcoming.length > 0 ? <div className="rounded-3xl border border-border-subtle bg-surface px-4 sm:px-5">{props.tasks.upcoming.map((task, index) => <div key={task.id}>{(index === 0 || props.tasks.upcoming[index - 1]!.scheduledDate !== task.scheduledDate) && <p className="border-b border-border-subtle pt-4 pb-2 text-[0.625rem] font-bold tracking-[0.14em] text-muted uppercase">{shortDateLabel(task.scheduledDate)}</p>}<TodayTaskRow onOpen={() => setSelectedTaskId(task.id)} task={task} /></div>)}</div> : <p className="rounded-3xl border border-border-subtle bg-surface px-5 py-7 text-sm text-secondary">Nothing upcoming. The runway is clear.</p>}
+                        </section>
+                    )}
+
+                    <TodayHabitSection flexible={props.habits.flexible} required={props.habits.required} />
+
+                    <section>
+                        <SectionHeading eyebrow="Daily reflection" title="Diary" />
+                        <Link className="focus-ring block rounded-3xl" href={props.diary.href}>
+                            <Surface accent="var(--diary-accent)" className="flex items-center gap-4 p-5 transition-colors hover:border-[var(--diary-accent)]" interactive>
+                                <span className={classNames('grid size-11 shrink-0 place-items-center rounded-full border-2 text-lg font-bold', props.diary.state === 'completed' ? 'border-success bg-success text-accent-foreground' : 'border-border-strong')}>{props.diary.state === 'completed' ? '✓' : '○'}</span>
+                                <span className="min-w-0 flex-1"><span className="block text-lg font-bold">{props.diary.state === 'completed' ? "Today's entry completed" : "Write today's entry"}</span><span className="mt-1 block text-sm text-secondary">Streak {props.diary.streak}{props.diary.state === 'completed' ? ` · +${props.diary.earnedSp} SP earned` : ''}</span></span>
+                                <span className="text-2xl text-muted" aria-hidden="true">→</span>
+                            </Surface>
+                        </Link>
+                    </section>
+                </main>
+
+                <aside className="space-y-6 xl:sticky xl:top-8">
+                    <section>
+                        <SectionHeading context={`${season.objectiveCompletedCount} / ${season.objectiveCount}`} eyebrow="Season mission" title="Objectives" />
+                        <Surface className="px-4 sm:px-5">
+                            {objectives.length > 0 ? objectives.map((objective) => (
+                                <div className={classNames('flex items-center gap-3 border-b border-border-subtle py-4 last:border-b-0', objective.completed && 'opacity-65')} key={objective.id}>
+                                    <button aria-label={`${objective.completed ? 'Mark incomplete' : 'Complete'} ${objective.title}`} className={classNames('focus-ring grid size-9 shrink-0 place-items-center rounded-full border-2 font-bold', objective.completed ? 'border-success bg-success text-accent-foreground' : 'border-border-strong hover:border-[var(--season-accent)]')} disabled={!season.objectiveCompletionMutable} onClick={() => toggleObjective(objective.id)} type="button">{objective.completed ? '✓' : '○'}</button>
+                                    <span className={classNames('min-w-0 flex-1 text-sm font-bold', objective.completed && 'line-through')}>{objective.title}</span>
+                                    <span className="shrink-0 text-xs font-bold text-[var(--season-accent)]">+{objective.rewardSp} SP</span>
+                                </div>
+                            )) : <div className="py-6"><p className="text-sm text-secondary">No Objectives set for this Season.</p><Link className="mt-3 inline-block text-sm font-bold text-[var(--season-accent)] hover:underline" href="/seasons">View Season</Link></div>}
+                        </Surface>
+                    </section>
+
+                    <section>
+                        <SectionHeading eyebrow="Utilities" title="Quick actions" />
+                        <TodayQuickActions laws={props.constitution.laws} money={props.money} season={season} today={props.today} />
+                    </section>
+                </aside>
+            </div>
+
+            {settingsOpen && <TodaySettingsDialog onClose={() => setSettingsOpen(false)} settings={props.settings} />}
+            {selectedTask && <TaskDetailsDrawer onClose={() => setSelectedTaskId(null)} task={selectedTask} />}
+        </div>
     );
 }

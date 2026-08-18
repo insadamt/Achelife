@@ -27,10 +27,11 @@ use App\Http\Controllers\StopTaskSeriesController;
 use App\Http\Controllers\SubtaskCompletionController;
 use App\Http\Controllers\TaskCompletionController;
 use App\Http\Controllers\TaskController;
+use App\Http\Controllers\TodayController;
+use App\Http\Controllers\TodaySettingController;
 use App\Http\Controllers\ViolationController;
 use App\Http\Middleware\SynchronizeSeasonState;
 use Illuminate\Support\Facades\Route;
-use Inertia\Inertia;
 
 Route::redirect('/', '/home');
 
@@ -46,7 +47,7 @@ Route::middleware('guest')->group(function (): void {
 
 Route::middleware('auth')->group(function (): void {
     Route::middleware(SynchronizeSeasonState::class)->group(function (): void {
-        Route::get('/home', fn () => Inertia::render('Home'))->name('home');
+        Route::get('/home', TodayController::class)->name('home');
         Route::get('/seasons', SeasonController::class)->name('seasons.index');
         Route::get('/tasks', [TaskController::class, 'index'])->name('tasks.index');
         Route::get('/habits', [HabitController::class, 'index'])->name('habits.index');
@@ -88,6 +89,7 @@ Route::middleware('auth')->group(function (): void {
     Route::delete('/habits/{habit}/occurrences/{date}', [HabitOccurrenceController::class, 'clear'])
         ->where('date', '\\d{4}-\\d{2}-\\d{2}')
         ->name('habits.occurrences.clear');
+    Route::put('/today/settings', [TodaySettingController::class, 'update'])->name('today.settings.update');
     Route::put('/habits/settings/calendar-labels', [HabitSettingController::class, 'update'])->name('habits.settings.update');
     Route::put('/diary/entries/{date}', [DiaryController::class, 'update'])
         ->where('date', '\\d{4}-\\d{2}-\\d{2}')

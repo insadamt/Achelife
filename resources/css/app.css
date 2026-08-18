@@ -55,6 +55,12 @@
         linear-gradient(135deg, color-mix(in srgb, var(--money-accent) 9%, var(--surface-primary)), var(--surface-primary) 62%);
 }
 
+.today-progress-hero {
+    background:
+        radial-gradient(circle at 18% 0%, color-mix(in srgb, var(--accent) 24%, transparent), transparent 42%),
+        linear-gradient(125deg, color-mix(in srgb, var(--accent) 10%, var(--surface-primary)), var(--surface-primary) 64%);
+}
+
 .season-introduction-current {
     animation: season-enter 700ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }
