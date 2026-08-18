@@ -4,8 +4,130 @@
 @source '../../storage/framework/views/*.php';
 @source '../js/**/*.tsx';
 
+:root {
+    color-scheme: dark;
+    --app-background: #121315;
+    --surface-primary: #060708;
+    --surface-elevated: #18191c;
+    --surface-hover: #222328;
+    --border-subtle: #26272b;
+    --border-strong: #3b3d43;
+    --text-primary: #f5f7f8;
+    --text-secondary: #afb6c0;
+    --text-muted: #737c89;
+    --accent: #9bb3ff;
+    --accent-foreground: #080a10;
+    --success: #55d58a;
+    --warning: #f1b84b;
+    --danger: #f06d72;
+    --preview-blue: #43a5ff;
+    --preview-violet: #9a73ff;
+    --preview-orange: #ff8a45;
+    --preview-green: #7ddc69;
+    --preview-pink: #ec63bc;
+    --module-accent: var(--accent);
+    --focus-ring: color-mix(in srgb, var(--module-accent) 74%, white);
+    --radius-panel: 1.75rem;
+    --motion-fast: 160ms;
+    --motion-standard: 220ms;
+}
+
+@theme inline {
+    --font-sans: 'League Spartan Variable', ui-sans-serif, system-ui, sans-serif;
+    --color-app: var(--app-background);
+    --color-surface: var(--surface-primary);
+    --color-elevated: var(--surface-elevated);
+    --color-surface-hover: var(--surface-hover);
+    --color-border-subtle: var(--border-subtle);
+    --color-border-strong: var(--border-strong);
+    --color-foreground: var(--text-primary);
+    --color-secondary: var(--text-secondary);
+    --color-muted: var(--text-muted);
+    --color-accent: var(--accent);
+    --color-accent-foreground: var(--accent-foreground);
+    --color-success: var(--success);
+    --color-warning: var(--warning);
+    --color-danger: var(--danger);
+}
+
 @layer base {
+    * {
+        border-color: var(--border-subtle);
+    }
+
+    html {
+        background: var(--app-background);
+    }
+
     body {
-        font-family: ui-sans-serif, system-ui, sans-serif;
+        min-width: 320px;
+        min-height: 100vh;
+        margin: 0;
+        background: var(--app-background);
+        color: var(--text-primary);
+        font-family: 'League Spartan Variable', ui-sans-serif, system-ui, sans-serif;
+        font-synthesis: none;
+        text-rendering: optimizeLegibility;
+    }
+
+    button,
+    input,
+    select,
+    textarea {
+        font: inherit;
+    }
+
+    button,
+    a {
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    ::selection {
+        background: color-mix(in srgb, var(--module-accent) 35%, transparent);
+        color: var(--text-primary);
+    }
+}
+
+@layer components {
+    .focus-ring {
+        outline: none;
+    }
+
+    .focus-ring:focus-visible {
+        box-shadow: 0 0 0 2px var(--app-background), 0 0 0 4px var(--focus-ring);
+    }
+
+    .accent-text {
+        color: var(--module-accent);
+    }
+
+    .accent-background {
+        background: var(--module-accent);
+        color: var(--accent-foreground);
+    }
+
+    .accent-border {
+        border-color: color-mix(in srgb, var(--module-accent) 55%, var(--border-subtle));
+    }
+
+    .accent-glow {
+        box-shadow: 0 18px 42px color-mix(in srgb, var(--module-accent) 10%, transparent);
+    }
+
+    .accent-surface {
+        background:
+            radial-gradient(circle at 88% 8%, color-mix(in srgb, var(--module-accent) 36%, transparent), transparent 42%),
+            linear-gradient(145deg, color-mix(in srgb, var(--module-accent) 19%, var(--surface-primary)), var(--surface-primary) 68%);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        scroll-behavior: auto !important;
+        transition-duration: 0.01ms !important;
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
     }
 }

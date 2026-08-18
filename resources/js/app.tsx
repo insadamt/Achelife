@@ -1,4 +1,5 @@
 import { createInertiaApp } from '@inertiajs/react';
+import '@fontsource-variable/league-spartan';
 
 import AppLayout from './layouts/AppLayout';
 import AuthLayout from './layouts/AuthLayout';
@@ -10,6 +11,6 @@ createInertiaApp({
     layout: (pageName) => (pageName.startsWith('auth/') ? AuthLayout : AppLayout),
     strictMode: true,
     progress: {
-        color: '#334155',
+        color: '#9bb3ff',
     },
 });

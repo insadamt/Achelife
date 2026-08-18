@@ -1,6 +1,8 @@
 import { Head, Link, useForm } from '@inertiajs/react';
 import type { FormEvent } from 'react';
 
+import { Button, Checkbox, Field } from '../../components/ui';
+
 export default function Login() {
     const form = useForm({
         email: '',
@@ -18,55 +20,45 @@ export default function Login() {
     return (
         <>
             <Head title="Log in" />
-            <h1 className="text-xl font-semibold">Log in</h1>
-            <form className="mt-6 space-y-4" onSubmit={submit}>
-                <label className="block">
-                    <span className="text-sm font-medium">Email</span>
-                    <input
-                        autoComplete="email"
-                        autoFocus
-                        className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2"
-                        onChange={(event) => form.setData('email', event.target.value)}
-                        required
-                        type="email"
-                        value={form.data.email}
-                    />
-                    {form.errors.email && <span className="mt-1 block text-sm text-red-600">{form.errors.email}</span>}
-                </label>
-                <label className="block">
-                    <span className="text-sm font-medium">Password</span>
-                    <input
-                        autoComplete="current-password"
-                        className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2"
-                        onChange={(event) => form.setData('password', event.target.value)}
-                        required
-                        type="password"
-                        value={form.data.password}
-                    />
-                    {form.errors.password && (
-                        <span className="mt-1 block text-sm text-red-600">{form.errors.password}</span>
-                    )}
-                </label>
-                <label className="flex items-center gap-2 text-sm">
-                    <input
-                        checked={form.data.remember}
-                        onChange={(event) => form.setData('remember', event.target.checked)}
-                        type="checkbox"
-                    />
-                    Remember me
-                </label>
-                <button
-                    className="w-full rounded-md bg-slate-900 px-4 py-2 font-medium text-white disabled:opacity-60"
-                    disabled={form.processing}
-                    type="submit"
-                >
-                    Log in
-                </button>
+            <p className="text-xs font-bold tracking-[0.18em] text-accent uppercase">Return to your path</p>
+            <h1 className="mt-2 text-3xl font-bold tracking-[-0.035em]">Welcome back</h1>
+            <p className="mt-2 text-sm leading-6 text-secondary">Enter Achelife and pick up where you left off.</p>
+            <form className="mt-7 space-y-5" onSubmit={submit}>
+                <Field
+                    autoComplete="email"
+                    autoFocus
+                    error={form.errors.email}
+                    label="Email"
+                    name="email"
+                    onChange={(event) => form.setData('email', event.target.value)}
+                    required
+                    type="email"
+                    value={form.data.email}
+                />
+                <Field
+                    autoComplete="current-password"
+                    error={form.errors.password}
+                    label="Password"
+                    name="password"
+                    onChange={(event) => form.setData('password', event.target.value)}
+                    required
+                    type="password"
+                    value={form.data.password}
+                />
+                <Checkbox
+                    checked={form.data.remember}
+                    label="Remember me"
+                    name="remember"
+                    onChange={(event) => form.setData('remember', event.target.checked)}
+                />
+                <Button disabled={form.processing} fullWidth type="submit">
+                    {form.processing ? 'Entering…' : 'Enter Achelife'}
+                </Button>
             </form>
-            <p className="mt-6 text-center text-sm text-slate-600">
+            <p className="mt-7 text-center text-sm text-secondary">
                 Need an account?{' '}
-                <Link className="font-medium text-slate-900 underline" href="/register">
-                    Register
+                <Link className="focus-ring rounded font-bold text-foreground underline decoration-border-strong underline-offset-4 hover:text-accent" href="/register">
+                    Create account
                 </Link>
             </p>
         </>

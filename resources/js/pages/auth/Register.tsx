@@ -1,6 +1,8 @@
 import { Head, Link, useForm } from '@inertiajs/react';
 import type { FormEvent } from 'react';
 
+import { Button, Field } from '../../components/ui';
+
 export default function Register() {
     const form = useForm({
         name: '',
@@ -19,69 +21,22 @@ export default function Register() {
     return (
         <>
             <Head title="Register" />
-            <h1 className="text-xl font-semibold">Create an account</h1>
-            <form className="mt-6 space-y-4" onSubmit={submit}>
-                <label className="block">
-                    <span className="text-sm font-medium">Name</span>
-                    <input
-                        autoComplete="name"
-                        autoFocus
-                        className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2"
-                        onChange={(event) => form.setData('name', event.target.value)}
-                        required
-                        value={form.data.name}
-                    />
-                    {form.errors.name && <span className="mt-1 block text-sm text-red-600">{form.errors.name}</span>}
-                </label>
-                <label className="block">
-                    <span className="text-sm font-medium">Email</span>
-                    <input
-                        autoComplete="email"
-                        className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2"
-                        onChange={(event) => form.setData('email', event.target.value)}
-                        required
-                        type="email"
-                        value={form.data.email}
-                    />
-                    {form.errors.email && <span className="mt-1 block text-sm text-red-600">{form.errors.email}</span>}
-                </label>
-                <label className="block">
-                    <span className="text-sm font-medium">Password</span>
-                    <input
-                        autoComplete="new-password"
-                        className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2"
-                        onChange={(event) => form.setData('password', event.target.value)}
-                        required
-                        type="password"
-                        value={form.data.password}
-                    />
-                    {form.errors.password && (
-                        <span className="mt-1 block text-sm text-red-600">{form.errors.password}</span>
-                    )}
-                </label>
-                <label className="block">
-                    <span className="text-sm font-medium">Confirm password</span>
-                    <input
-                        autoComplete="new-password"
-                        className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2"
-                        onChange={(event) => form.setData('password_confirmation', event.target.value)}
-                        required
-                        type="password"
-                        value={form.data.password_confirmation}
-                    />
-                </label>
-                <button
-                    className="w-full rounded-md bg-slate-900 px-4 py-2 font-medium text-white disabled:opacity-60"
-                    disabled={form.processing}
-                    type="submit"
-                >
-                    Register
-                </button>
+            <p className="text-xs font-bold tracking-[0.18em] text-accent uppercase">Begin with intention</p>
+            <h1 className="mt-2 text-3xl font-bold tracking-[-0.035em]">Create your account</h1>
+            <p className="mt-2 text-sm leading-6 text-secondary">Set up your identity. Your journey begins after this step.</p>
+            <form className="mt-7 space-y-5" onSubmit={submit}>
+                <Field autoComplete="name" autoFocus error={form.errors.name} label="Name" name="name" onChange={(event) => form.setData('name', event.target.value)} required value={form.data.name} />
+                <Field autoComplete="email" error={form.errors.email} label="Email" name="email" onChange={(event) => form.setData('email', event.target.value)} required type="email" value={form.data.email} />
+                <Field autoComplete="new-password" error={form.errors.password} label="Password" name="password" onChange={(event) => form.setData('password', event.target.value)} required type="password" value={form.data.password} />
+                <Field autoComplete="new-password" label="Confirm password" name="password_confirmation" onChange={(event) => form.setData('password_confirmation', event.target.value)} required type="password" value={form.data.password_confirmation} />
+                <Button disabled={form.processing} fullWidth type="submit">
+                    {form.processing ? 'Creating…' : 'Create account'}
+                </Button>
             </form>
-            <p className="mt-6 text-center text-sm text-slate-600">
+            <p className="mt-7 text-center text-sm text-secondary">
                 Already registered?{' '}
-                <Link className="font-medium text-slate-900 underline" href="/login">
-                    Log in
+                <Link className="focus-ring rounded font-bold text-foreground underline decoration-border-strong underline-offset-4 hover:text-accent" href="/login">
+                    Enter Achelife
                 </Link>
             </p>
         </>
