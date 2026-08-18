@@ -60,6 +60,18 @@ class User extends Authenticatable
         return $this->hasMany(Person::class);
     }
 
+    /** @return HasMany<Law, $this> */
+    public function laws(): HasMany
+    {
+        return $this->hasMany(Law::class);
+    }
+
+    /** @return HasMany<Violation, $this> */
+    public function violations(): HasMany
+    {
+        return $this->hasMany(Violation::class);
+    }
+
     /**
      * Get the attributes that should be cast.
      *

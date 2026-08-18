@@ -29,6 +29,7 @@
     --task-accent: #68d6b2;
     --habit-accent: #d7e66b;
     --diary-accent: #d89adf;
+    --constitution-accent: #d8bd7a;
     --module-accent: var(--accent);
     --focus-ring: color-mix(in srgb, var(--module-accent) 74%, white);
     --radius-panel: 1.75rem;

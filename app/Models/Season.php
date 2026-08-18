@@ -42,6 +42,12 @@ class Season extends Model
         return $this->hasMany(DiaryEntry::class);
     }
 
+    /** @return HasMany<Violation, $this> */
+    public function violations(): HasMany
+    {
+        return $this->hasMany(Violation::class);
+    }
+
     /** @return array<string, string> */
     protected function casts(): array
     {

@@ -20,7 +20,7 @@ const destinations: NavigationDestination[] = [
     { label: 'Habits', icon: 'habits', href: '/habits' },
     { label: 'Diary', icon: 'diary', href: '/diary' },
     { label: 'Objectives', icon: 'objectives' },
-    { label: 'Constitution', icon: 'constitution' },
+    { label: 'Constitution', icon: 'constitution', href: '/constitution' },
     { label: 'Money', icon: 'money' },
 ];
 
@@ -107,6 +107,8 @@ export default function AppLayout({ children }: PropsWithChildren) {
           ? 'var(--habit-accent)'
         : page.url.startsWith('/diary')
           ? 'var(--diary-accent)'
+        : page.url.startsWith('/constitution')
+          ? 'var(--constitution-accent)'
         : page.url.startsWith('/seasons')
           ? 'var(--season-accent)'
           : undefined;
@@ -167,7 +169,7 @@ export default function AppLayout({ children }: PropsWithChildren) {
             </nav>
 
             <Drawer
-                description="Additional destinations and account controls. Feature modules unlock in later phases."
+                description="Additional destinations and account controls."
                 onClose={() => setMobileNavigationOpen(false)}
                 open={mobileNavigationOpen}
                 title="Navigate"

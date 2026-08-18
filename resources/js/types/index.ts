@@ -9,5 +9,8 @@ export interface SharedPageProps {
     auth: {
         user: AuthenticatedUser | null;
     };
+    flash: {
+        constitutionPenalty: number | null;
+    };
     [key: string]: unknown;
 }

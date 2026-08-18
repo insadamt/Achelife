@@ -26,6 +26,9 @@ class HandleInertiaRequests extends Middleware
                     'email' => $user->email,
                 ],
             ],
+            'flash' => [
+                'constitutionPenalty' => $request->session()->get('constitutionPenalty'),
+            ],
         ];
     }
 }

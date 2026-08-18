@@ -1,13 +1,16 @@
 <?php
 
 use App\Http\Controllers\ArchiveHabitController;
+use App\Http\Controllers\ArchiveLawController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\RegisteredUserController;
+use App\Http\Controllers\ConstitutionController;
 use App\Http\Controllers\DiaryController;
 use App\Http\Controllers\DiarySettingController;
 use App\Http\Controllers\HabitController;
 use App\Http\Controllers\HabitOccurrenceController;
 use App\Http\Controllers\HabitSettingController;
+use App\Http\Controllers\LawController;
 use App\Http\Controllers\PersonController;
 use App\Http\Controllers\SeasonController;
 use App\Http\Controllers\SeasonIntroductionController;
@@ -15,6 +18,7 @@ use App\Http\Controllers\StopTaskSeriesController;
 use App\Http\Controllers\SubtaskCompletionController;
 use App\Http\Controllers\TaskCompletionController;
 use App\Http\Controllers\TaskController;
+use App\Http\Controllers\ViolationController;
 use App\Http\Middleware\SynchronizeSeasonState;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -39,6 +43,8 @@ Route::middleware('auth')->group(function (): void {
         Route::get('/habits', [HabitController::class, 'index'])->name('habits.index');
         Route::get('/habits/archived', [HabitController::class, 'archived'])->name('habits.archived');
         Route::get('/diary', [DiaryController::class, 'index'])->name('diary.index');
+        Route::get('/constitution', [ConstitutionController::class, 'index'])->name('constitution.index');
+        Route::get('/constitution/archived', [ConstitutionController::class, 'archived'])->name('constitution.archived');
     });
 
     Route::get('/season-introduction', [SeasonIntroductionController::class, 'show'])
@@ -73,6 +79,13 @@ Route::middleware('auth')->group(function (): void {
         ->where('date', '\\d{4}-\\d{2}-\\d{2}')
         ->name('diary.entries.update');
     Route::put('/diary/settings/languages', [DiarySettingController::class, 'update'])->name('diary.settings.update');
+    Route::post('/constitution/laws', [LawController::class, 'store'])->name('laws.store');
+    Route::put('/constitution/laws/{law}', [LawController::class, 'update'])->name('laws.update');
+    Route::post('/constitution/laws/{law}/archive', ArchiveLawController::class)->name('laws.archive');
+    Route::delete('/constitution/laws/{law}', [LawController::class, 'destroy'])->name('laws.destroy');
+    Route::post('/constitution/laws/{law}/violations', [ViolationController::class, 'store'])->name('violations.store');
+    Route::put('/constitution/violations/{violation}', [ViolationController::class, 'update'])->name('violations.update');
+    Route::delete('/constitution/violations/{violation}', [ViolationController::class, 'destroy'])->name('violations.destroy');
     Route::post('/diary/people', [PersonController::class, 'store'])->name('diary.people.store');
     Route::put('/diary/people/{person}', [PersonController::class, 'update'])->name('diary.people.update');
     Route::post('/diary/people/{person}/archive', [PersonController::class, 'archive'])->name('diary.people.archive');

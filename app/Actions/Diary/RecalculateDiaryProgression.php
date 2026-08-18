@@ -8,7 +8,6 @@ use App\Models\User;
 use App\Services\Diary\DiaryRewardCalculator;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
-use RuntimeException;
 
 class RecalculateDiaryProgression
 {
@@ -56,10 +55,6 @@ class RecalculateDiaryProgression
 
             $delta = $recalculatedReward - $previousReward;
             $newSeasonPoints = $lockedSeason->season_points + $delta;
-
-            if ($newSeasonPoints < 0) {
-                throw new RuntimeException('Season SP cannot cover the Diary reward recalculation delta.');
-            }
 
             if ($delta !== 0) {
                 $lockedSeason->update(['season_points' => $newSeasonPoints]);

@@ -8,7 +8,6 @@ use App\Models\HabitOccurrence;
 use App\Models\Season;
 use App\Services\Habits\HabitRewardCalculator;
 use Illuminate\Support\Facades\DB;
-use RuntimeException;
 
 class RecalculateHabitProgression
 {
@@ -52,10 +51,6 @@ class RecalculateHabitProgression
 
             $seasonPointDelta = $recalculatedHabitReward - $previousHabitReward;
             $newSeasonPoints = $lockedSeason->season_points + $seasonPointDelta;
-
-            if ($newSeasonPoints < 0) {
-                throw new RuntimeException('Season SP cannot cover the Habit reward recalculation delta.');
-            }
 
             if ($seasonPointDelta !== 0) {
                 $lockedSeason->update(['season_points' => $newSeasonPoints]);
