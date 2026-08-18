@@ -17,14 +17,14 @@ const destinations: NavigationDestination[] = [
     { label: 'Today', icon: 'today', href: '/home' },
     { label: 'Seasons', icon: 'seasons', href: '/seasons' },
     { label: 'Tasks', icon: 'tasks', href: '/tasks' },
-    { label: 'Habits', icon: 'habits' },
-    { label: 'Diary', icon: 'diary' },
+    { label: 'Habits', icon: 'habits', href: '/habits' },
+    { label: 'Diary', icon: 'diary', href: '/diary' },
     { label: 'Objectives', icon: 'objectives' },
     { label: 'Constitution', icon: 'constitution' },
     { label: 'Money', icon: 'money' },
 ];
 
-const mobilePrimaryLabels = new Set(['Today', 'Seasons', 'Tasks']);
+const mobilePrimaryLabels = new Set(['Today', 'Tasks', 'Habits']);
 
 function NavigationItem({
     destination,
@@ -103,6 +103,10 @@ export default function AppLayout({ children }: PropsWithChildren) {
     const user = auth.user;
     const moduleAccent = page.url.startsWith('/tasks')
         ? 'var(--task-accent)'
+        : page.url.startsWith('/habits')
+          ? 'var(--habit-accent)'
+        : page.url.startsWith('/diary')
+          ? 'var(--diary-accent)'
         : page.url.startsWith('/seasons')
           ? 'var(--season-accent)'
           : undefined;

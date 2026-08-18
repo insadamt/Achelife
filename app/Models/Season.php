@@ -30,6 +30,18 @@ class Season extends Model
         return $this->hasMany(Task::class, 'reward_season_id');
     }
 
+    /** @return HasMany<HabitOccurrence, $this> */
+    public function habitOccurrences(): HasMany
+    {
+        return $this->hasMany(HabitOccurrence::class);
+    }
+
+    /** @return HasMany<DiaryEntry, $this> */
+    public function diaryEntries(): HasMany
+    {
+        return $this->hasMany(DiaryEntry::class);
+    }
+
     /** @return array<string, string> */
     protected function casts(): array
     {

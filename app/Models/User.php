@@ -36,6 +36,30 @@ class User extends Authenticatable
         return $this->hasMany(TaskSeries::class);
     }
 
+    /** @return HasMany<Habit, $this> */
+    public function habits(): HasMany
+    {
+        return $this->hasMany(Habit::class);
+    }
+
+    /** @return HasMany<HabitOccurrence, $this> */
+    public function habitOccurrences(): HasMany
+    {
+        return $this->hasMany(HabitOccurrence::class);
+    }
+
+    /** @return HasMany<DiaryEntry, $this> */
+    public function diaryEntries(): HasMany
+    {
+        return $this->hasMany(DiaryEntry::class);
+    }
+
+    /** @return HasMany<Person, $this> */
+    public function people(): HasMany
+    {
+        return $this->hasMany(Person::class);
+    }
+
     /**
      * Get the attributes that should be cast.
      *

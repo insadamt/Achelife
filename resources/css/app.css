@@ -27,6 +27,8 @@
     --preview-pink: #ec63bc;
     --season-accent: #7f9cff;
     --task-accent: #68d6b2;
+    --habit-accent: #d7e66b;
+    --diary-accent: #d89adf;
     --module-accent: var(--accent);
     --focus-ring: color-mix(in srgb, var(--module-accent) 74%, white);
     --radius-panel: 1.75rem;
@@ -51,6 +53,54 @@
 
 .season-introduction-previous {
     animation: season-history 620ms ease-out both;
+}
+
+.diary-page {
+    --diary-paper-line: color-mix(in srgb, var(--border-subtle) 60%, transparent);
+}
+
+.diary-writing-surface,
+.diary-editor {
+    background-image: repeating-linear-gradient(
+        to bottom,
+        transparent 0,
+        transparent calc(1.9em - 1px),
+        var(--diary-paper-line) calc(1.9em - 1px),
+        var(--diary-paper-line) 1.9em
+    );
+    background-attachment: local;
+}
+
+.diary-editor-overlay {
+    overflow-wrap: break-word;
+    pointer-events: none;
+}
+
+.diary-mention {
+    display: inline;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    font: inherit;
+    line-height: inherit;
+    vertical-align: baseline;
+    box-decoration-break: clone;
+    -webkit-box-decoration-break: clone;
+}
+
+.mood-wheel {
+    background: radial-gradient(circle, var(--surface-primary) 0 28%, transparent 29%), conic-gradient(
+        from -22.5deg,
+        color-mix(in srgb, #f4c95d 13%, transparent),
+        color-mix(in srgb, #79c8c8 13%, transparent),
+        color-mix(in srgb, #e69755 13%, transparent),
+        color-mix(in srgb, #6e8fc7 13%, transparent),
+        color-mix(in srgb, #d86a6a 13%, transparent),
+        color-mix(in srgb, #aa82ce 13%, transparent),
+        color-mix(in srgb, #89929e 13%, transparent),
+        color-mix(in srgb, #85ad77 13%, transparent),
+        color-mix(in srgb, #f4c95d 13%, transparent)
+    );
 }
 
 @keyframes season-enter {

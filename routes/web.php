@@ -1,7 +1,14 @@
 <?php
 
+use App\Http\Controllers\ArchiveHabitController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\RegisteredUserController;
+use App\Http\Controllers\DiaryController;
+use App\Http\Controllers\DiarySettingController;
+use App\Http\Controllers\HabitController;
+use App\Http\Controllers\HabitOccurrenceController;
+use App\Http\Controllers\HabitSettingController;
+use App\Http\Controllers\PersonController;
 use App\Http\Controllers\SeasonController;
 use App\Http\Controllers\SeasonIntroductionController;
 use App\Http\Controllers\StopTaskSeriesController;
@@ -29,6 +36,9 @@ Route::middleware('auth')->group(function (): void {
         Route::get('/home', fn () => Inertia::render('Home'))->name('home');
         Route::get('/seasons', SeasonController::class)->name('seasons.index');
         Route::get('/tasks', [TaskController::class, 'index'])->name('tasks.index');
+        Route::get('/habits', [HabitController::class, 'index'])->name('habits.index');
+        Route::get('/habits/archived', [HabitController::class, 'archived'])->name('habits.archived');
+        Route::get('/diary', [DiaryController::class, 'index'])->name('diary.index');
     });
 
     Route::get('/season-introduction', [SeasonIntroductionController::class, 'show'])
@@ -42,5 +52,30 @@ Route::middleware('auth')->group(function (): void {
     Route::delete('/tasks/{task}/completion', [TaskCompletionController::class, 'destroy'])->name('tasks.uncomplete');
     Route::put('/tasks/{task}/subtasks/{subtask}', [SubtaskCompletionController::class, 'update'])->name('subtasks.update');
     Route::delete('/tasks/{task}/future', StopTaskSeriesController::class)->name('tasks.stop-series');
+    Route::post('/habits', [HabitController::class, 'store'])->name('habits.store');
+    Route::put('/habits/{habit}', [HabitController::class, 'update'])->name('habits.update');
+    Route::post('/habits/{habit}/archive', ArchiveHabitController::class)->name('habits.archive');
+    Route::delete('/habits/{habit}', [HabitController::class, 'destroy'])->name('habits.destroy');
+    Route::post('/habits/{habit}/occurrences/{date}/toggle', [HabitOccurrenceController::class, 'toggle'])
+        ->where('date', '\\d{4}-\\d{2}-\\d{2}')
+        ->name('habits.occurrences.toggle');
+    Route::put('/habits/{habit}/occurrences/{date}/numeric', [HabitOccurrenceController::class, 'numeric'])
+        ->where('date', '\\d{4}-\\d{2}-\\d{2}')
+        ->name('habits.occurrences.numeric');
+    Route::post('/habits/{habit}/occurrences/{date}/skip', [HabitOccurrenceController::class, 'skip'])
+        ->where('date', '\\d{4}-\\d{2}-\\d{2}')
+        ->name('habits.occurrences.skip');
+    Route::delete('/habits/{habit}/occurrences/{date}', [HabitOccurrenceController::class, 'clear'])
+        ->where('date', '\\d{4}-\\d{2}-\\d{2}')
+        ->name('habits.occurrences.clear');
+    Route::put('/habits/settings/calendar-labels', [HabitSettingController::class, 'update'])->name('habits.settings.update');
+    Route::put('/diary/entries/{date}', [DiaryController::class, 'update'])
+        ->where('date', '\\d{4}-\\d{2}-\\d{2}')
+        ->name('diary.entries.update');
+    Route::put('/diary/settings/languages', [DiarySettingController::class, 'update'])->name('diary.settings.update');
+    Route::post('/diary/people', [PersonController::class, 'store'])->name('diary.people.store');
+    Route::put('/diary/people/{person}', [PersonController::class, 'update'])->name('diary.people.update');
+    Route::post('/diary/people/{person}/archive', [PersonController::class, 'archive'])->name('diary.people.archive');
+    Route::delete('/diary/people/{person}', [PersonController::class, 'destroy'])->name('diary.people.destroy');
     Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])->name('logout');
 });
