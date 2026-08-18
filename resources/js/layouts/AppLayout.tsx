@@ -1,6 +1,6 @@
 import { Link, router, usePage } from '@inertiajs/react';
 import { useState } from 'react';
-import type { PropsWithChildren } from 'react';
+import type { CSSProperties, PropsWithChildren } from 'react';
 
 import { BrandMark } from '../components/BrandMark';
 import { Button, Drawer, Icon } from '../components/ui';
@@ -16,7 +16,7 @@ interface NavigationDestination {
 const destinations: NavigationDestination[] = [
     { label: 'Today', icon: 'today', href: '/home' },
     { label: 'Seasons', icon: 'seasons', href: '/seasons' },
-    { label: 'Tasks', icon: 'tasks' },
+    { label: 'Tasks', icon: 'tasks', href: '/tasks' },
     { label: 'Habits', icon: 'habits' },
     { label: 'Diary', icon: 'diary' },
     { label: 'Objectives', icon: 'objectives' },
@@ -97,16 +97,22 @@ function UserIdentity({ name, email }: { name: string; email: string }) {
 }
 
 export default function AppLayout({ children }: PropsWithChildren) {
-    const { auth } = usePage<SharedPageProps>().props;
+    const page = usePage<SharedPageProps>();
+    const { auth } = page.props;
     const [mobileNavigationOpen, setMobileNavigationOpen] = useState(false);
     const user = auth.user;
+    const moduleAccent = page.url.startsWith('/tasks')
+        ? 'var(--task-accent)'
+        : page.url.startsWith('/seasons')
+          ? 'var(--season-accent)'
+          : undefined;
 
     function logOut() {
         router.post('/logout');
     }
 
     return (
-        <div className="min-h-screen bg-app text-foreground">
+        <div className="min-h-screen bg-app text-foreground" style={{ '--module-accent': moduleAccent } as CSSProperties}>
             <aside className="fixed top-4 bottom-4 left-4 z-30 hidden w-20 rounded-[2rem] border border-border-subtle bg-surface/96 shadow-[0_24px_60px_rgba(0,0,0,0.32)] md:flex md:flex-col">
                 <div className="flex justify-center py-4">
                     <BrandMark compact />

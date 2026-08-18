@@ -24,6 +24,18 @@ class User extends Authenticatable
         return $this->hasMany(Season::class);
     }
 
+    /** @return HasMany<Task, $this> */
+    public function tasks(): HasMany
+    {
+        return $this->hasMany(Task::class);
+    }
+
+    /** @return HasMany<TaskSeries, $this> */
+    public function taskSeries(): HasMany
+    {
+        return $this->hasMany(TaskSeries::class);
+    }
+
     /**
      * Get the attributes that should be cast.
      *

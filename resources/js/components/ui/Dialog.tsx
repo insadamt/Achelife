@@ -104,7 +104,7 @@ export function Dialog({
                     'border border-border-strong bg-elevated shadow-2xl',
                     placement === 'center'
                         ? 'w-full max-w-md rounded-[var(--radius-panel)] p-5 sm:p-6'
-                        : 'h-full w-[min(88vw,22rem)] border-y-0 border-r-0 p-5',
+                        : 'h-full w-[min(94vw,28rem)] overflow-y-auto border-y-0 border-r-0 p-5',
                 )}
                 ref={dialogRef}
             >

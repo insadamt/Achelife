@@ -26,6 +26,7 @@
     --preview-green: #7ddc69;
     --preview-pink: #ec63bc;
     --season-accent: #7f9cff;
+    --task-accent: #68d6b2;
     --module-accent: var(--accent);
     --focus-ring: color-mix(in srgb, var(--module-accent) 74%, white);
     --radius-panel: 1.75rem;
