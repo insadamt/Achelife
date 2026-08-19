@@ -6,8 +6,8 @@ use App\Actions\Money\EnsureDefaultMoneyCategories;
 use App\Enums\MoneyTransactionType;
 use App\Models\MoneyCategory;
 use App\Models\MoneyTransaction;
+use App\Services\Calendar\UserCalendar;
 use App\Support\Money\MoneyViewDataFactory;
-use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -16,7 +16,7 @@ use Inertia\Response;
 
 class MoneyHistoryController extends Controller
 {
-    public function __invoke(Request $request, EnsureDefaultMoneyCategories $ensureDefaults, MoneyViewDataFactory $factory): Response
+    public function __invoke(Request $request, EnsureDefaultMoneyCategories $ensureDefaults, MoneyViewDataFactory $factory, UserCalendar $calendar): Response
     {
         $user = $request->user();
         $ensureDefaults->execute($user);
@@ -38,7 +38,7 @@ class MoneyHistoryController extends Controller
             ->withCount('transactions')->orderBy('type')->orderBy('name')->get();
 
         return Inertia::render('money/History', [
-            'today' => CarbonImmutable::today()->toDateString(),
+            'today' => $calendar->today($user)->toDateString(),
             'transactions' => $transactions,
             'accounts' => $user->moneyAccounts()->orderBy('name')->get(['id', 'name', 'currency', 'archived_at']),
             'categories' => $categories->map(fn (MoneyCategory $category) => $factory->category($category)),

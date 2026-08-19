@@ -10,11 +10,13 @@ use App\Models\MoneyCategory;
 use App\Models\MoneySubcategory;
 use App\Models\MoneyTransaction;
 use App\Models\User;
-use Carbon\CarbonImmutable;
+use App\Services\Calendar\UserCalendar;
 use Illuminate\Validation\ValidationException;
 
 class MoneyTransactionValidator
 {
+    public function __construct(private readonly UserCalendar $userCalendar) {}
+
     /** @return array{account: MoneyAccount, destination: ?MoneyAccount, category: ?MoneyCategory, subcategory: ?MoneySubcategory} */
     public function validate(User $user, MoneyTransactionData $data, ?MoneyTransaction $existing = null): array
     {
@@ -22,7 +24,7 @@ class MoneyTransactionValidator
             $this->fail('amount', 'The amount must be greater than zero.');
         }
 
-        if ($data->date->startOfDay()->isAfter(CarbonImmutable::today())) {
+        if ($data->date->startOfDay()->isAfter($this->userCalendar->today($user))) {
             $this->fail('date', 'Future Money transactions are not available in Phase 6.');
         }
 

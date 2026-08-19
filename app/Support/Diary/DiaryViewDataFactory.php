@@ -24,7 +24,7 @@ class DiaryViewDataFactory
 
         return [
             'today' => $today->toDateString(),
-            'accountCreatedOn' => $user->created_at->toImmutable()->toDateString(),
+            'accountCreatedOn' => $user->calendar_started_on->toDateString(),
             'selectedDate' => $selectedDate->toDateString(),
             'selectedDay' => $this->day($selectedDate, $today, $user, $currentSeason, $selectedEntry),
             'dateRail' => $this->dateRail($today, $user, $currentSeason, $entries),
@@ -49,7 +49,7 @@ class DiaryViewDataFactory
     /** @return array<string, mixed> */
     private function day(CarbonImmutable $date, CarbonImmutable $today, User $user, Season $currentSeason, ?DiaryEntry $entry): array
     {
-        $unavailable = $date->isAfter($today) || $date->isBefore($user->created_at->toImmutable()->startOfDay());
+        $unavailable = $date->isAfter($today) || $date->isBefore($user->calendar_started_on);
         $editable = ! $unavailable && $date->betweenIncluded($currentSeason->start_date, $currentSeason->end_date);
         $state = $unavailable ? 'unavailable' : ($entry?->is_completed ? 'completed' : ($date->isSameDay($today) ? 'pending' : 'missed'));
         $language = $entry?->language_code ? $this->languageCatalog->get($entry->language_code) : null;
@@ -82,7 +82,7 @@ class DiaryViewDataFactory
 
         for ($offset = 0; $offset < 14; $offset++) {
             $date = $today->subDays($offset);
-            if ($date->isBefore($user->created_at->toImmutable()->startOfDay())) {
+            if ($date->isBefore($user->calendar_started_on)) {
                 break;
             }
             $days[] = $this->day($date, $today, $user, $currentSeason, $entries->get($date->toDateString()));

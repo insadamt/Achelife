@@ -25,6 +25,7 @@ const destinations: NavigationDestination[] = [
 ];
 
 const mobilePrimaryLabels = new Set(['Today', 'Tasks', 'Habits']);
+const settingsDestination: NavigationDestination = { label: 'Settings', icon: 'settings', href: '/settings/general' };
 
 function NavigationItem({
     destination,
@@ -123,6 +124,7 @@ export default function AppLayout({ children }: PropsWithChildren) {
                         <span className="grid size-10 place-items-center rounded-full bg-[linear-gradient(145deg,var(--preview-violet),var(--preview-orange))] text-sm font-bold text-white" title={`${user.name} — ${user.email}`}>
                             {user.name.charAt(0).toUpperCase()}
                         </span>
+                        <NavigationItem destination={settingsDestination} rail />
                         <Button aria-label="Log out" className="size-10 px-0" onClick={logOut} size="small" title="Log out" variant="ghost">
                             <Icon name="logout" />
                         </Button>
@@ -171,6 +173,9 @@ export default function AppLayout({ children }: PropsWithChildren) {
                 {user && (
                     <div className="mt-8 border-t border-border-subtle pt-6">
                         <UserIdentity email={user.email} name={user.name} />
+                        <div className="mt-5">
+                            <NavigationItem destination={settingsDestination} />
+                        </div>
                         <Button className="mt-5" fullWidth onClick={logOut} variant="secondary">
                             <Icon name="logout" />
                             Log out

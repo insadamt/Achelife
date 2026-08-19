@@ -4,6 +4,7 @@ namespace App\Actions\Objectives;
 
 use App\Models\Objective;
 use App\Models\Season;
+use App\Services\Calendar\UserCalendar;
 use App\Services\Seasons\SeasonLifecycle;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
@@ -13,11 +14,12 @@ class DeleteObjective
     public function __construct(
         private readonly SeasonLifecycle $seasonLifecycle,
         private readonly RebalanceObjectiveRewards $rebalanceRewards,
+        private readonly UserCalendar $userCalendar,
     ) {}
 
     public function execute(Objective $objective, ?CarbonImmutable $today = null): void
     {
-        $calendarToday = ($today ?? CarbonImmutable::today())->startOfDay();
+        $calendarToday = ($today ?? $this->userCalendar->today($objective->season()->firstOrFail()->user()->firstOrFail()))->startOfDay();
 
         DB::transaction(function () use ($objective, $calendarToday): void {
             $lockedSeason = Season::query()->lockForUpdate()->findOrFail($objective->season_id);

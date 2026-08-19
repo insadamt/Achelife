@@ -34,6 +34,7 @@ Each Violation retains its original severity and base penalty. Editing a Law's s
 ## Date and Season rules
 
 - New Violations may use today or an earlier date in the active Season.
+- Today and new Law creation dates use the user's saved timezone. Each Law keeps a stable calendar creation date for historical validation.
 - Future dates, completed-Season dates, and dates before the Law was created are rejected.
 - Current-Season Violation dates may be corrected and current-Season Violations may be deleted.
 - Once a Season completes, every Violation attributed to it is permanently immutable.
@@ -44,9 +45,9 @@ Active Laws may be renamed or assigned a new severity. A Law may be hard-deleted
 
 ## Interface
 
-`/constitution` shows the active Season SP total, Constitution-only Violation count and SP lost, active Law cards, next multiplier, next potential penalty, and the record action. The record dialog previews the likely chronological position for its chosen date while the backend remains authoritative.
+`/constitution` uses a compact Law ledger with active Season SP, Constitution-only Violation count and SP lost, severity, current-Season impact, and each Law's next consequence. Active and archived Laws use linked views, while Law creation remains the single primary page action.
 
-Selecting a Law opens its current-Season details drawer with exact snapshot penalties and date-correction/delete actions. `/constitution/archived` shows permanent read-only Laws. Long-term Season browsing, charts, and analytics are reserved for Constitution Statistics.
+Recording remains a deliberate review action. Its dialog previews the new record penalty and the full Season SP adjustment, including chronological replay caused by backdating. Successful records use a short-lived undo toast. Selecting a Law opens its current-Season drawer with summary metrics, recording and editing actions, a newest-first violation ledger, exact snapshot penalties, and projected SP adjustments before date correction or deletion. `/constitution/archived` shows compact permanent read-only Laws. Long-term Season browsing, charts, and analytics are reserved for Constitution Statistics.
 
 ## Verification
 

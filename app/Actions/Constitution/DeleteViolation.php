@@ -6,6 +6,7 @@ use App\Actions\Seasons\SynchronizeUserSeasons;
 use App\Models\Law;
 use App\Models\User;
 use App\Models\Violation;
+use App\Services\Calendar\UserCalendar;
 use Carbon\CarbonImmutable;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Support\Facades\DB;
@@ -16,6 +17,7 @@ class DeleteViolation
     public function __construct(
         private readonly SynchronizeUserSeasons $synchronizeUserSeasons,
         private readonly RecalculateLawViolations $recalculateViolations,
+        private readonly UserCalendar $userCalendar,
     ) {}
 
     public function execute(User $user, Violation $violation, ?CarbonImmutable $today = null): void
@@ -24,7 +26,7 @@ class DeleteViolation
             throw new AuthorizationException;
         }
 
-        $calendarToday = ($today ?? CarbonImmutable::today())->startOfDay();
+        $calendarToday = ($today ?? $this->userCalendar->today($user))->startOfDay();
 
         DB::transaction(function () use ($user, $violation, $calendarToday): void {
             $currentSeason = $this->synchronizeUserSeasons->execute($user, $calendarToday);

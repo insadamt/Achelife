@@ -20,7 +20,7 @@ class UpdateMoneyTransactionRequest extends FormRequest
             'destination_account_id' => ['nullable', 'integer'],
             'category_id' => ['nullable', 'integer'],
             'subcategory_id' => ['nullable', 'integer'],
-            'date' => ['required', 'date_format:Y-m-d', 'before_or_equal:today'],
+            'date' => ['required', 'date_format:Y-m-d'],
             'note' => ['nullable', 'string', 'max:1000'],
         ];
     }

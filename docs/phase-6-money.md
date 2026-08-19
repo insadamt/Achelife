@@ -22,6 +22,8 @@ A Transfer is one `money_transactions` row, not two user-visible records. Its so
 
 Income, Expense, and Transfer mutations validate positive amounts, ownership, active selections, Category type, Subcategory parentage, matching Transfer currencies, distinct Transfer Accounts, and dates no later than today. Historical rows remain editable and deletable without any Season lookup or SP mutation. An archived entity may remain unchanged on an existing historical row, but cannot be newly selected.
 
+The future-date boundary uses the user's saved timezone while transaction dates remain date-only values.
+
 ## Accounts and categorization
 
 Accounts are user-owned, single-currency records with an initial balance, automatically assigned card theme, decorative four-digit wallet identifier, timestamps, and reversible archive timestamp. Currency and initial balance become immutable after the first transaction involving the Account. Unused Accounts may be deleted; used Accounts retain history and must be archived.
@@ -32,11 +34,11 @@ Every user receives one built-in Expense Category identified by the stable `char
 
 ## Interface and history
 
-`/money` uses a digital-wallet presentation with currency-grouped total balances, responsive physical-card-style Account objects, quick actions, and recent activity. Mobile Account cards scroll horizontally without shrinking. Each Account opens `/money/accounts/{account}` with its large card, contextual balance, preselected actions, lifecycle controls, and context-aware transfer direction.
+`/money` uses a hybrid digital-wallet presentation with independent balance panels for each currency, compact physical-card-style Account objects, direct Income, Expense, and Transfer actions, and date-grouped recent activity. Account cards remain in a horizontal snap carousel at every viewport size, with touch scrolling on mobile and previous/next controls on desktop. Different currencies are explicitly presented as separate balances and are never implied to be one converted total. Each Account opens `/money/accounts/{account}` with one authoritative balance presentation, preselected actions, compact details, lifecycle controls, and context-aware transfer direction.
 
-Transactions use a compact responsive drawer. Generic creation first asks for Income, Expense, or Transfer and then shows only relevant fields. Existing records open in a details drawer before editing or confirmed deletion.
+Transactions use a compact responsive drawer with a persistent type selector, amount-first hierarchy, currency context, and only the fields relevant to the chosen Income, Expense, or Transfer type. Money drawers remain edge-attached on mobile and become contained card panels on desktop. Existing records open in a concise details drawer before editing or styled confirmed deletion, and primary actions use recognizable icons alongside short labels.
 
-`/money/history` provides operational pagination and portable filters for type, Account, Category, date range, plus escaped `LIKE` search across notes and Category/Subcategory names. `/money/categories` manages the two-level hierarchy and archives. `/money/accounts/archived` preserves balances and supports Account reactivation.
+`/money/history` provides operational pagination, date-grouped results, visible applied-filter chips, responsive filters for type, Account, Category, and date range, plus escaped `LIKE` search across notes and Category/Subcategory names. `/money/categories` manages the two-level hierarchy through Income, Expense, and Archived views with styled rename and lifecycle interactions. `/money/accounts/archived` preserves balances and supports Account reactivation.
 
 ## Future Statistics readiness
 

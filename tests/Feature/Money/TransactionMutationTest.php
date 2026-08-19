@@ -37,6 +37,28 @@ class TransactionMutationTest extends TestCase
         $this->assertSame('August salary', $user->moneyTransactions()->where('type', 'income')->first()->note);
     }
 
+    public function test_local_today_is_accepted_before_utc_reaches_that_date(): void
+    {
+        CarbonImmutable::setTestNow(CarbonImmutable::parse('2026-08-18 23:30:00', 'UTC'));
+        $user = $this->moneyUser();
+        $user->update(['timezone' => 'Asia/Dubai']);
+        $account = $this->moneyAccount($user);
+        $category = $this->moneyCategory($user);
+
+        $this->actingAs($user)->post('/money/transactions', [
+            'type' => 'expense',
+            'amount' => '10.00',
+            'account_id' => $account->id,
+            'category_id' => $category->id,
+            'date' => '2026-08-19',
+        ])->assertRedirect();
+
+        $this->assertDatabaseHas('money_transactions', [
+            'user_id' => $user->id,
+            'transaction_date' => '2026-08-19 00:00:00',
+        ]);
+    }
+
     public function test_editing_amount_and_account_recomputes_from_the_single_source_of_truth(): void
     {
         $user = $this->moneyUser();

@@ -4,6 +4,7 @@ namespace App\Actions\Seasons;
 
 use App\Models\Season;
 use App\Models\User;
+use App\Services\Calendar\UserCalendar;
 use App\Services\Seasons\SeasonRankCalculator;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
@@ -13,15 +14,22 @@ class SynchronizeUserSeasons
 {
     public const DAYS_PER_SEASON = 30;
 
-    public function __construct(private readonly SeasonRankCalculator $seasonRankCalculator) {}
+    public function __construct(
+        private readonly SeasonRankCalculator $seasonRankCalculator,
+        private readonly UserCalendar $userCalendar,
+    ) {}
 
     public function execute(User $user, ?CarbonImmutable $today = null): Season
     {
-        $calendarDate = ($today ?? CarbonImmutable::today())->startOfDay();
+        $calendarDate = ($today ?? $this->userCalendar->today($user))->startOfDay();
 
         return DB::transaction(function () use ($user, $calendarDate): Season {
             $lockedUser = User::query()->lockForUpdate()->findOrFail($user->getKey());
-            $firstSeasonStart = $lockedUser->created_at->toImmutable()->startOfDay();
+            $firstSeasonStart = $lockedUser->calendar_started_on;
+
+            if ($firstSeasonStart === null) {
+                throw new RuntimeException('The user calendar start date is missing.');
+            }
 
             if ($calendarDate->isBefore($firstSeasonStart)) {
                 throw new RuntimeException('A Season cannot be synchronized before the account creation date.');

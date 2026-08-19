@@ -11,8 +11,8 @@ use App\Data\Tasks\TaskData;
 use App\Http\Requests\StoreTaskRequest;
 use App\Http\Requests\UpdateTaskRequest;
 use App\Models\Task;
+use App\Services\Calendar\UserCalendar;
 use App\Support\Tasks\TaskViewDataFactory;
-use Carbon\CarbonImmutable;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -26,8 +26,9 @@ class TaskController extends Controller
         SynchronizeRecurringTaskOccurrences $synchronizeOccurrences,
         SynchronizeUserSeasons $synchronizeUserSeasons,
         TaskViewDataFactory $viewDataFactory,
+        UserCalendar $calendar,
     ): Response {
-        $today = CarbonImmutable::today();
+        $today = $calendar->today($request->user());
         $synchronizeOccurrences->execute($request->user(), $today);
         $currentSeason = $synchronizeUserSeasons->execute($request->user(), $today);
         $relations = ['series', 'subtasks', 'reschedules', 'rewardSeason'];

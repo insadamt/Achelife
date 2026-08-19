@@ -7,6 +7,7 @@ use App\Models\DiaryEntry;
 use App\Models\DiarySetting;
 use App\Models\Season;
 use App\Models\User;
+use App\Services\Calendar\UserCalendar;
 use App\Services\Diary\DiaryContentNormalizer;
 use App\Support\Diary\DiaryLanguageCatalog;
 use App\Support\Diary\DiaryMoodCatalog;
@@ -22,12 +23,13 @@ class AutosaveDiaryEntry
         private readonly DiaryLanguageCatalog $languageCatalog,
         private readonly DiaryMoodCatalog $moodCatalog,
         private readonly RecalculateDiaryProgression $recalculateProgression,
+        private readonly UserCalendar $userCalendar,
     ) {}
 
     /** @param array<string, mixed> $data */
     public function execute(User $user, CarbonImmutable $date, array $data, ?CarbonImmutable $today = null): DiaryEntry
     {
-        $calendarToday = ($today ?? CarbonImmutable::today())->startOfDay();
+        $calendarToday = ($today ?? $this->userCalendar->today($user))->startOfDay();
         $currentSeason = $this->synchronizeSeasons->execute($user, $calendarToday);
         $season = $this->editableSeason($user, $date, $calendarToday, $currentSeason);
         $normalized = $this->contentNormalizer->normalize($user, $data['content']);
@@ -83,7 +85,7 @@ class AutosaveDiaryEntry
 
     private function editableSeason(User $user, CarbonImmutable $date, CarbonImmutable $today, Season $currentSeason): Season
     {
-        if ($date->isAfter($today) || $date->isBefore($user->created_at->toImmutable()->startOfDay())) {
+        if ($date->isAfter($today) || $date->isBefore($user->calendar_started_on)) {
             throw ValidationException::withMessages(['date' => 'This Diary date is unavailable.']);
         }
 

@@ -1,7 +1,11 @@
+import type { RecordedViolationFlashData } from '../features/constitution/types';
+import type { ProgressPanelData } from '../features/progress/types';
+
 export interface AuthenticatedUser {
     id: number;
     name: string;
     email: string;
+    timezone: string;
 }
 
 export interface SharedPageProps {
@@ -10,9 +14,8 @@ export interface SharedPageProps {
         user: AuthenticatedUser | null;
     };
     flash: {
-        constitutionPenalty: number | null;
+        constitutionViolation: RecordedViolationFlashData | null;
     };
     progressPanel: ProgressPanelData | null;
     [key: string]: unknown;
 }
-import type { ProgressPanelData } from '../features/progress/types';

@@ -11,6 +11,7 @@ use App\Models\HabitDefinitionVersion;
 use App\Models\HabitOccurrence;
 use App\Models\Season;
 use App\Models\User;
+use App\Services\Calendar\UserCalendar;
 use App\Services\Habits\HabitDefinitionResolver;
 use App\Services\Habits\HabitSchedule;
 use Carbon\CarbonImmutable;
@@ -26,6 +27,7 @@ class UpdateHabitOccurrence
         private readonly HabitDefinitionResolver $definitionResolver,
         private readonly HabitSchedule $schedule,
         private readonly RecalculateHabitProgression $recalculateProgression,
+        private readonly UserCalendar $userCalendar,
     ) {}
 
     public function toggleBoolean(User $user, Habit $habit, CarbonImmutable $date, ?CarbonImmutable $today = null): void
@@ -115,7 +117,7 @@ class UpdateHabitOccurrence
             throw new AuthorizationException;
         }
 
-        $calendarDate = ($today ?? CarbonImmutable::today())->startOfDay();
+        $calendarDate = ($today ?? $this->userCalendar->today($user))->startOfDay();
         $currentSeason = $this->synchronizeOccurrences->execute($user, $calendarDate);
 
         DB::transaction(function () use ($habit, $date, $calendarDate, $currentSeason, $change, $requiredType): void {

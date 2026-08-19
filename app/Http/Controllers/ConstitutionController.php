@@ -4,8 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Actions\Seasons\SynchronizeUserSeasons;
 use App\Models\Law;
+use App\Services\Calendar\UserCalendar;
 use App\Support\Constitution\ConstitutionViewDataFactory;
-use Carbon\CarbonImmutable;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -16,8 +16,9 @@ class ConstitutionController extends Controller
         Request $request,
         SynchronizeUserSeasons $synchronizeUserSeasons,
         ConstitutionViewDataFactory $viewDataFactory,
+        UserCalendar $calendar,
     ): Response {
-        $today = CarbonImmutable::today();
+        $today = $calendar->today($request->user());
         $currentSeason = $synchronizeUserSeasons->execute($request->user(), $today);
         $laws = $request->user()->laws()
             ->whereNull('archived_at')

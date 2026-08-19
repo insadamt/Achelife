@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use LogicException;
 
-#[Fillable(['user_id', 'name', 'severity', 'archived_at'])]
+#[Fillable(['user_id', 'name', 'severity', 'created_on', 'archived_at'])]
 class Law extends Model
 {
     protected static function booted(): void
@@ -38,6 +38,7 @@ class Law extends Model
     {
         return [
             'severity' => LawSeverity::class,
+            'created_on' => 'immutable_date',
             'archived_at' => 'immutable_datetime',
         ];
     }

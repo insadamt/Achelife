@@ -10,7 +10,7 @@ interface DialogProps {
     onClose: () => void;
     title: string;
     description?: string;
-    placement?: 'center' | 'right';
+    placement?: 'center' | 'right' | 'right-card';
 }
 
 const focusableSelector =
@@ -103,7 +103,11 @@ export function Dialog({
             aria-modal="true"
             className={classNames(
                 'fixed inset-0 z-50 flex bg-black/72 backdrop-blur-[2px]',
-                placement === 'center' ? 'items-center justify-center p-4' : 'justify-end',
+                placement === 'center'
+                    ? 'items-center justify-center p-4'
+                    : placement === 'right-card'
+                        ? 'justify-end sm:items-center sm:p-4'
+                        : 'justify-end',
             )}
             onMouseDown={(event) => {
                 if (event.target === event.currentTarget) {
@@ -117,7 +121,9 @@ export function Dialog({
                     'border border-border-strong bg-elevated shadow-2xl',
                     placement === 'center'
                         ? 'w-full max-w-md rounded-[var(--radius-panel)] p-5 sm:p-6'
-                        : 'h-full w-[min(94vw,28rem)] overflow-y-auto border-y-0 border-r-0 p-5',
+                        : placement === 'right-card'
+                            ? 'h-full w-[min(94vw,30rem)] overflow-y-auto border-y-0 border-r-0 p-5 sm:h-[min(92vh,54rem)] sm:rounded-[var(--radius-panel)] sm:border'
+                            : 'h-full w-[min(94vw,28rem)] overflow-y-auto border-y-0 border-r-0 p-5',
                 )}
                 ref={dialogRef}
             >

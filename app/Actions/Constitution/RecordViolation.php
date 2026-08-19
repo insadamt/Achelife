@@ -5,6 +5,7 @@ namespace App\Actions\Constitution;
 use App\Models\Law;
 use App\Models\User;
 use App\Models\Violation;
+use App\Services\Calendar\UserCalendar;
 use App\Services\Constitution\ViolationDateGuard;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
@@ -14,11 +15,12 @@ class RecordViolation
     public function __construct(
         private readonly ViolationDateGuard $dateGuard,
         private readonly RecalculateLawViolations $recalculateViolations,
+        private readonly UserCalendar $userCalendar,
     ) {}
 
     public function execute(User $user, Law $law, CarbonImmutable $date, ?CarbonImmutable $today = null): Violation
     {
-        $calendarToday = ($today ?? CarbonImmutable::today())->startOfDay();
+        $calendarToday = ($today ?? $this->userCalendar->today($user))->startOfDay();
 
         return DB::transaction(function () use ($user, $law, $date, $calendarToday): Violation {
             $lockedLaw = Law::query()->lockForUpdate()->findOrFail($law->id);

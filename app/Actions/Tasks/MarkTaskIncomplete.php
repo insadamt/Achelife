@@ -6,6 +6,7 @@ use App\Actions\Seasons\SynchronizeUserSeasons;
 use App\Models\Season;
 use App\Models\Task;
 use App\Models\User;
+use App\Services\Calendar\UserCalendar;
 use Carbon\CarbonImmutable;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Support\Facades\DB;
@@ -14,7 +15,10 @@ use RuntimeException;
 
 class MarkTaskIncomplete
 {
-    public function __construct(private readonly SynchronizeUserSeasons $synchronizeUserSeasons) {}
+    public function __construct(
+        private readonly SynchronizeUserSeasons $synchronizeUserSeasons,
+        private readonly UserCalendar $userCalendar,
+    ) {}
 
     public function execute(User $user, Task $task, ?CarbonImmutable $today = null): Task
     {
@@ -22,7 +26,7 @@ class MarkTaskIncomplete
             throw new AuthorizationException;
         }
 
-        $calendarDate = ($today ?? CarbonImmutable::today())->startOfDay();
+        $calendarDate = ($today ?? $this->userCalendar->today($user))->startOfDay();
 
         return DB::transaction(function () use ($user, $task, $calendarDate): Task {
             $currentSeason = $this->synchronizeUserSeasons->execute($user, $calendarDate);

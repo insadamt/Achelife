@@ -5,6 +5,7 @@ namespace App\Actions\Constitution;
 use App\Models\Law;
 use App\Models\User;
 use App\Models\Violation;
+use App\Services\Calendar\UserCalendar;
 use App\Services\Constitution\ViolationDateGuard;
 use Carbon\CarbonImmutable;
 use Illuminate\Auth\Access\AuthorizationException;
@@ -16,6 +17,7 @@ class CorrectViolationDate
     public function __construct(
         private readonly ViolationDateGuard $dateGuard,
         private readonly RecalculateLawViolations $recalculateViolations,
+        private readonly UserCalendar $userCalendar,
     ) {}
 
     public function execute(User $user, Violation $violation, CarbonImmutable $date, ?CarbonImmutable $today = null): Violation
@@ -24,7 +26,7 @@ class CorrectViolationDate
             throw new AuthorizationException;
         }
 
-        $calendarToday = ($today ?? CarbonImmutable::today())->startOfDay();
+        $calendarToday = ($today ?? $this->userCalendar->today($user))->startOfDay();
 
         return DB::transaction(function () use ($user, $violation, $date, $calendarToday): Violation {
             $lockedViolation = Violation::query()->lockForUpdate()->findOrFail($violation->id);

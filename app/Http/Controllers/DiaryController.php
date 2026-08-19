@@ -6,6 +6,7 @@ use App\Actions\Diary\AutosaveDiaryEntry;
 use App\Actions\Seasons\SynchronizeUserSeasons;
 use App\Http\Requests\AutosaveDiaryEntryRequest;
 use App\Models\DiarySetting;
+use App\Services\Calendar\UserCalendar;
 use App\Support\Diary\DiaryLanguageCatalog;
 use App\Support\Diary\DiaryMoodCatalog;
 use App\Support\Diary\DiaryViewDataFactory;
@@ -24,9 +25,10 @@ class DiaryController extends Controller
         DiaryViewDataFactory $viewDataFactory,
         DiaryLanguageCatalog $languageCatalog,
         DiaryMoodCatalog $moodCatalog,
+        UserCalendar $calendar,
     ): Response {
-        $today = CarbonImmutable::today();
         $user = $request->user();
+        $today = $calendar->today($user);
         $currentSeason = $synchronizeSeasons->execute($user, $today);
         $selectedDate = $this->dateFromQuery($request->query('date'), $today, 'date');
         $calendarMonth = $this->dateFromQuery($request->query('month'), $selectedDate, 'month')->startOfMonth();
@@ -40,15 +42,20 @@ class DiaryController extends Controller
         ]);
     }
 
-    public function update(AutosaveDiaryEntryRequest $request, string $date, AutosaveDiaryEntry $autosave): JsonResponse
-    {
-        $entryDate = $this->requiredDate($date);
-        $entry = $autosave->execute($request->user(), $entryDate, $request->validated());
+    public function update(
+        AutosaveDiaryEntryRequest $request,
+        string $date,
+        AutosaveDiaryEntry $autosave,
+        UserCalendar $calendar,
+    ): JsonResponse {
+        $today = $calendar->today($request->user());
+        $entryDate = $this->requiredDate($date, $today);
+        $entry = $autosave->execute($request->user(), $entryDate, $request->validated(), $today);
 
         return response()->json([
             'entry' => [
                 'date' => $entry->entry_date->toDateString(),
-                'state' => $entry->is_completed ? 'completed' : ($entryDate->isToday() ? 'pending' : 'missed'),
+                'state' => $entry->is_completed ? 'completed' : ($entryDate->isSameDay($today) ? 'pending' : 'missed'),
                 'characterCount' => $entry->valid_character_count,
                 'languageCode' => $entry->language_code,
                 'languageName' => $entry->language_name_snapshot,
@@ -80,8 +87,8 @@ class DiaryController extends Controller
         return $date;
     }
 
-    private function requiredDate(string $value): CarbonImmutable
+    private function requiredDate(string $value, CarbonImmutable $today): CarbonImmutable
     {
-        return $this->dateFromQuery($value, CarbonImmutable::today(), 'date');
+        return $this->dateFromQuery($value, $today, 'date');
     }
 }

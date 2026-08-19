@@ -1,4 +1,5 @@
 import { useForm } from '@inertiajs/react';
+import { Info, Plus, Save, Scale } from 'lucide-react';
 import type { FormEvent } from 'react';
 
 import { Button, Drawer, Field } from '../../components/ui';
@@ -30,16 +31,15 @@ export function LawFormDrawer({ law = null, onClose }: { law?: LawViewData | nul
 
     return (
         <Drawer
-            description={editing ? 'Name and severity govern future records.' : 'Define one clear rule and its fixed consequence.'}
             onClose={onClose}
             open
             title={editing ? 'Edit Law' : 'New Law'}
         >
-            <form className="space-y-7" onSubmit={submit}>
+            <form className="space-y-6" onSubmit={submit}>
                 <Field
                     autoComplete="off"
                     error={form.errors.name}
-                    label="Name"
+                    label="Law"
                     maxLength={255}
                     onChange={(event) => form.setData('name', event.target.value)}
                     placeholder="No social media after 1 AM"
@@ -48,7 +48,7 @@ export function LawFormDrawer({ law = null, onClose }: { law?: LawViewData | nul
                 />
 
                 <fieldset>
-                    <legend className="text-sm font-semibold text-secondary">Severity</legend>
+                    <legend className="icon-text flex items-center gap-2 text-sm font-semibold text-secondary"><Scale aria-hidden="true" size={16} />Severity</legend>
                     <div className="mt-2 grid gap-2">
                         {(['minor', 'major', 'critical'] as const).map((severity) => {
                             const styles = severityStyles[severity];
@@ -62,17 +62,28 @@ export function LawFormDrawer({ law = null, onClose }: { law?: LawViewData | nul
                                     onClick={() => form.setData('severity', severity)}
                                     type="button"
                                 >
-                                    <span className={`font-bold tracking-[0.08em] uppercase ${styles.text}`}>{severityLabels[severity]}</span>
+                                    <span>
+                                        <span className={`block text-left font-bold tracking-[0.08em] uppercase ${styles.text}`}>{severityLabels[severity]}</span>
+                                        <span className="mt-0.5 block text-left text-xs font-semibold text-muted">
+                                            {severityPenalties[severity]} · {severityPenalties[severity] * 2} · {severityPenalties[severity] * 3} SP
+                                        </span>
+                                    </span>
                                     <span className={`text-lg font-bold ${styles.text}`}>{severityPenalties[severity]} SP</span>
                                 </button>
                             );
                         })}
                     </div>
                     {form.errors.severity && <p className="mt-2 text-sm text-danger">{form.errors.severity}</p>}
-                    {editing && <p className="mt-3 text-sm font-semibold text-warning">Severity changes apply to future violations only.</p>}
+                    {editing && law.violationCount > 0 && (
+                        <p className="icon-text mt-3 flex items-start gap-2 text-sm font-semibold text-warning">
+                            <Info aria-hidden="true" className="mt-0.5 shrink-0" size={15} />
+                            {law.violationCount} existing {law.violationCount === 1 ? 'record keeps' : 'records keep'} the saved severity.
+                        </p>
+                    )}
                 </fieldset>
 
                 <Button disabled={form.processing} fullWidth type="submit">
+                    {editing ? <Save aria-hidden="true" size={18} /> : <Plus aria-hidden="true" size={18} />}
                     {editing ? 'Save Law' : 'Create Law'}
                 </Button>
             </form>

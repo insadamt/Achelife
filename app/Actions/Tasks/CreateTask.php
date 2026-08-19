@@ -5,11 +5,15 @@ namespace App\Actions\Tasks;
 use App\Data\Tasks\TaskData;
 use App\Models\Task;
 use App\Models\User;
+use App\Services\Calendar\UserCalendar;
 use Illuminate\Support\Facades\DB;
 
 class CreateTask
 {
-    public function __construct(private readonly SynchronizeRecurringTaskOccurrences $synchronizeOccurrences) {}
+    public function __construct(
+        private readonly SynchronizeRecurringTaskOccurrences $synchronizeOccurrences,
+        private readonly UserCalendar $userCalendar,
+    ) {}
 
     public function execute(User $user, TaskData $data): Task
     {
@@ -36,7 +40,7 @@ class CreateTask
 
             $this->synchronizeOccurrences->synchronizeSeries(
                 $series,
-                now()->toImmutable()->startOfDay(),
+                $this->userCalendar->today($user),
             );
 
             return $series->tasks()->orderBy('occurrence_date')->firstOrFail();

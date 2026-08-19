@@ -4,8 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Actions\Seasons\SynchronizeUserSeasons;
 use App\Models\Season;
+use App\Services\Calendar\UserCalendar;
 use App\Support\Seasons\SeasonViewDataFactory;
-use Carbon\CarbonImmutable;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -18,8 +18,9 @@ class SeasonIntroductionController extends Controller
         Request $request,
         SynchronizeUserSeasons $synchronizeUserSeasons,
         SeasonViewDataFactory $viewDataFactory,
+        UserCalendar $calendar,
     ): Response|RedirectResponse {
-        $today = CarbonImmutable::today();
+        $today = $calendar->today($request->user());
         $currentSeason = $synchronizeUserSeasons->execute($request->user(), $today);
 
         if ($currentSeason->introduced_at !== null) {

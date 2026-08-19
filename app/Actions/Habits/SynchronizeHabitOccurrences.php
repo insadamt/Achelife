@@ -9,6 +9,7 @@ use App\Models\Habit;
 use App\Models\HabitDefinitionVersion;
 use App\Models\Season;
 use App\Models\User;
+use App\Services\Calendar\UserCalendar;
 use App\Services\Habits\HabitDefinitionResolver;
 use App\Services\Habits\HabitSchedule;
 use Carbon\CarbonImmutable;
@@ -23,11 +24,12 @@ class SynchronizeHabitOccurrences
         private readonly HabitDefinitionResolver $definitionResolver,
         private readonly HabitSchedule $schedule,
         private readonly RecalculateHabitProgression $recalculateProgression,
+        private readonly UserCalendar $userCalendar,
     ) {}
 
     public function execute(User $user, ?CarbonImmutable $today = null): Season
     {
-        $calendarDate = ($today ?? CarbonImmutable::today())->startOfDay();
+        $calendarDate = ($today ?? $this->userCalendar->today($user))->startOfDay();
         $currentSeason = $this->synchronizeUserSeasons->execute($user, $calendarDate);
         $seasons = $user->seasons()->orderBy('start_date')->get();
         $habits = $user->habits()->whereNull('archived_at')->with('definitionVersions')->get();

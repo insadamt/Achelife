@@ -5,13 +5,16 @@ namespace App\Actions\Tasks;
 use App\Data\Tasks\SubtaskData;
 use App\Data\Tasks\TaskData;
 use App\Models\Task;
-use Carbon\CarbonImmutable;
+use App\Services\Calendar\UserCalendar;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 class UpdateTask
 {
-    public function __construct(private readonly SynchronizeRecurringTaskOccurrences $synchronizeOccurrences) {}
+    public function __construct(
+        private readonly SynchronizeRecurringTaskOccurrences $synchronizeOccurrences,
+        private readonly UserCalendar $userCalendar,
+    ) {}
 
     public function execute(Task $task, TaskData $data): Task
     {
@@ -102,6 +105,9 @@ class UpdateTask
             ->whereNull('completed_at')
             ->delete();
 
-        $this->synchronizeOccurrences->synchronizeSeries($series->refresh(), CarbonImmutable::today());
+        $this->synchronizeOccurrences->synchronizeSeries(
+            $series->refresh(),
+            $this->userCalendar->today($task->user()->firstOrFail()),
+        );
     }
 }

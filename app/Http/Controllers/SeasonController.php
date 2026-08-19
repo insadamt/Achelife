@@ -3,8 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Actions\Seasons\SynchronizeUserSeasons;
+use App\Services\Calendar\UserCalendar;
 use App\Support\Seasons\SeasonViewDataFactory;
-use Carbon\CarbonImmutable;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -15,8 +15,9 @@ class SeasonController extends Controller
         Request $request,
         SynchronizeUserSeasons $synchronizeUserSeasons,
         SeasonViewDataFactory $viewDataFactory,
+        UserCalendar $calendar,
     ): Response {
-        $today = CarbonImmutable::today();
+        $today = $calendar->today($request->user());
         $currentSeason = $synchronizeUserSeasons->execute($request->user(), $today);
         $realSeasons = $request->user()->seasons()
             ->with(['objectives' => fn ($query) => $query->orderBy('creation_order')])

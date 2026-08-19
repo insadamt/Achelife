@@ -17,6 +17,23 @@ class ViolationProgressionTest extends TestCase
 {
     use CreatesConstitution, RefreshDatabase;
 
+    public function test_recording_a_violation_flashes_the_data_required_for_undo_feedback(): void
+    {
+        CarbonImmutable::setTestNow('2026-08-18 10:00:00');
+        $user = $this->constitutionUserCreatedOn('2026-08-01');
+        $law = $this->createLaw($user, LawSeverity::Major, 'No late nights');
+        CarbonImmutable::setTestNow('2026-08-18 10:00:00');
+
+        $this->actingAs($user)
+            ->from('/constitution')
+            ->post("/constitution/laws/{$law->id}/violations", ['date' => '2026-08-18'])
+            ->assertRedirect('/constitution')
+            ->assertSessionHas('constitutionViolation.id')
+            ->assertSessionHas('constitutionViolation.lawName', 'No late nights')
+            ->assertSessionHas('constitutionViolation.sequence', 1)
+            ->assertSessionHas('constitutionViolation.penalty', -50);
+    }
+
     public function test_multiplier_continues_and_each_law_has_an_independent_counter(): void
     {
         $user = $this->constitutionUserCreatedOn('2026-08-01');

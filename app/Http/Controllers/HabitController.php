@@ -12,8 +12,8 @@ use App\Http\Requests\StoreHabitRequest;
 use App\Http\Requests\UpdateHabitRequest;
 use App\Models\Habit;
 use App\Models\HabitSetting;
+use App\Services\Calendar\UserCalendar;
 use App\Support\Habits\HabitViewDataFactory;
-use Carbon\CarbonImmutable;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -26,8 +26,9 @@ class HabitController extends Controller
         Request $request,
         SynchronizeHabitOccurrences $synchronizeOccurrences,
         HabitViewDataFactory $viewDataFactory,
+        UserCalendar $calendar,
     ): Response {
-        $today = CarbonImmutable::today();
+        $today = $calendar->today($request->user());
         $currentSeason = $synchronizeOccurrences->execute($request->user(), $today);
         $settings = HabitSetting::query()->firstOrCreate(
             ['user_id' => $request->user()->id],

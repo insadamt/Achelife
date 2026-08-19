@@ -40,3 +40,10 @@ export interface ArchivedLawViewData {
     archivedAt: string;
     violationCount: number;
 }
+
+export interface RecordedViolationFlashData {
+    id: number;
+    lawName: string;
+    sequence: number;
+    penalty: number;
+}

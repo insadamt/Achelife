@@ -4,6 +4,7 @@ namespace App\Actions\Habits;
 
 use App\Data\Habits\HabitData;
 use App\Models\Habit;
+use App\Services\Calendar\UserCalendar;
 use App\Services\Habits\HabitDefinitionResolver;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
@@ -11,11 +12,14 @@ use Illuminate\Validation\ValidationException;
 
 class UpdateHabitDefinition
 {
-    public function __construct(private readonly HabitDefinitionResolver $definitionResolver) {}
+    public function __construct(
+        private readonly HabitDefinitionResolver $definitionResolver,
+        private readonly UserCalendar $userCalendar,
+    ) {}
 
     public function execute(Habit $habit, HabitData $data, ?CarbonImmutable $today = null): Habit
     {
-        $calendarDate = ($today ?? CarbonImmutable::today())->startOfDay();
+        $calendarDate = ($today ?? $this->userCalendar->today($habit->user()->firstOrFail()))->startOfDay();
 
         return DB::transaction(function () use ($habit, $data, $calendarDate): Habit {
             $lockedHabit = Habit::query()->lockForUpdate()->findOrFail($habit->id);

@@ -25,7 +25,12 @@ class ViolationController extends Controller
             $this->calendarDate($request->validated('date')),
         );
 
-        return back()->with('constitutionPenalty', $violation->penalty_sp);
+        return back()->with('constitutionViolation', [
+            'id' => $violation->id,
+            'lawName' => $law->name,
+            'sequence' => $violation->sequence_number,
+            'penalty' => $violation->penalty_sp,
+        ]);
     }
 
     public function update(

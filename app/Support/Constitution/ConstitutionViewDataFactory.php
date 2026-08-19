@@ -19,7 +19,7 @@ class ConstitutionViewDataFactory
             'name' => $law->name,
             'severity' => $law->severity->value,
             'basePenalty' => $law->severity->basePenalty(),
-            'createdOn' => $law->created_at->toDateString(),
+            'createdOn' => $law->created_on->toDateString(),
             'violationCount' => $law->violations_count,
             'currentSeasonViolationCount' => $currentSeasonViolationCount,
             'nextMultiplier' => $nextMultiplier,

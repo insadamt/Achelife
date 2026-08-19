@@ -12,10 +12,10 @@ use App\Http\Requests\UpdateMoneyAccountRequest;
 use App\Models\MoneyAccount;
 use App\Models\MoneyCategory;
 use App\Models\MoneyTransaction;
+use App\Services\Calendar\UserCalendar;
 use App\Services\Money\AccountBalanceCalculator;
 use App\Support\Money\MoneyAmount;
 use App\Support\Money\MoneyViewDataFactory;
-use Carbon\CarbonImmutable;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -24,7 +24,7 @@ use Inertia\Response;
 
 class MoneyAccountController extends Controller
 {
-    public function show(Request $request, MoneyAccount $account, AccountBalanceCalculator $calculator, MoneyViewDataFactory $factory): Response
+    public function show(Request $request, MoneyAccount $account, AccountBalanceCalculator $calculator, MoneyViewDataFactory $factory, UserCalendar $calendar): Response
     {
         Gate::authorize('view', $account);
         $account->loadCount(['transactions', 'incomingTransfers']);
@@ -39,7 +39,7 @@ class MoneyAccountController extends Controller
         $activeAccounts = $request->user()->moneyAccounts()->whereNull('archived_at')->orderBy('name')->get();
 
         return Inertia::render('money/accounts/Show', [
-            'today' => CarbonImmutable::today()->toDateString(),
+            'today' => $calendar->today($request->user())->toDateString(),
             'account' => $factory->account($account, $balances[$account->id]),
             'accounts' => $activeAccounts->map(fn ($item) => $factory->account($item, 0)),
             'categories' => $categories->map(fn (MoneyCategory $category) => $factory->category($category)),

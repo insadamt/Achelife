@@ -7,6 +7,7 @@ use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\ConstitutionController;
 use App\Http\Controllers\DiaryController;
 use App\Http\Controllers\DiarySettingController;
+use App\Http\Controllers\GeneralSettingController;
 use App\Http\Controllers\HabitController;
 use App\Http\Controllers\HabitOccurrenceController;
 use App\Http\Controllers\HabitSettingController;
@@ -62,6 +63,7 @@ Route::middleware('auth')->group(function (): void {
         Route::get('/money/accounts/archived', [MoneyArchiveController::class, 'accounts'])->name('money.accounts.archived');
         Route::get('/money/categories', [MoneyArchiveController::class, 'categories'])->name('money.categories.index');
         Route::get('/money/accounts/{account}', [MoneyAccountController::class, 'show'])->name('money.accounts.show');
+        Route::get('/settings/general', [GeneralSettingController::class, 'index'])->name('settings.general');
     });
 
     Route::get('/season-introduction', [SeasonIntroductionController::class, 'show'])
@@ -92,6 +94,7 @@ Route::middleware('auth')->group(function (): void {
         ->where('date', '\\d{4}-\\d{2}-\\d{2}')
         ->name('habits.occurrences.clear');
     Route::put('/today/settings', [TodaySettingController::class, 'update'])->name('today.settings.update');
+    Route::put('/settings/general', [GeneralSettingController::class, 'update'])->name('settings.general.update');
     Route::put('/habits/settings/calendar-labels', [HabitSettingController::class, 'update'])->name('habits.settings.update');
     Route::put('/diary/entries/{date}', [DiaryController::class, 'update'])
         ->where('date', '\\d{4}-\\d{2}-\\d{2}')

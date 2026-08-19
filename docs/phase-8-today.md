@@ -6,7 +6,7 @@ Phase 8 replaces the temporary home-page showcase with Today, Achelife's daily o
 
 ## Aggregation architecture
 
-`TodayViewDataFactory` is the dedicated authenticated read layer. It synchronizes recurring Tasks and Habit occurrences through the application-local current date, then queries only the compact current-day data needed by Today. Existing module view-data factories serialize Tasks and Seasons so their established presentation rules remain consistent.
+`TodayViewDataFactory` is the dedicated authenticated read layer. It synchronizes recurring Tasks and Habit occurrences through the authenticated user's local current date, then queries only the compact current-day data needed by Today. Existing module view-data factories serialize Tasks and Seasons so their established presentation rules remain consistent.
 
 `ProgressPanelViewDataFactory` supplies the authenticated application shell independently of Today, so the same current Season, Today SP, Diary, and Objective summary remains available on every application page. `SeasonPointsAttributedOnDate` is the shared authority for the date-attributed SP total.
 

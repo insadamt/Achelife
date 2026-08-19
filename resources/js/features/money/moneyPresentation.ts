@@ -1,6 +1,6 @@
 import type { MoneyTransactionData } from './types';
 
-export function formatMinorUnits(minorUnits: number, currency: string): string {
+export function formatMinorUnits(minorUnits: number, currency: string, includeCurrency = true): string {
     const amount = minorUnits / 100;
     const hasFraction = Math.abs(minorUnits) % 100 !== 0;
     const number = new Intl.NumberFormat(undefined, {
@@ -8,7 +8,35 @@ export function formatMinorUnits(minorUnits: number, currency: string): string {
         maximumFractionDigits: 2,
     }).format(amount);
 
-    return `${number} ${currency}`;
+    return includeCurrency ? `${number} ${currency}` : number;
+}
+
+export function formatMoneyGroupDate(value: string): string {
+    const relativeDate = formatMoneyDate(value);
+
+    if (relativeDate === 'Today' || relativeDate === 'Yesterday') return relativeDate;
+
+    const date = new Date(`${value}T12:00:00`);
+    const currentYear = new Date().getFullYear();
+
+    return new Intl.DateTimeFormat(undefined, {
+        weekday: 'long',
+        month: 'short',
+        day: 'numeric',
+        year: date.getFullYear() === currentYear ? undefined : 'numeric',
+    }).format(date);
+}
+
+export function groupTransactionsByDate(transactions: MoneyTransactionData[]): Array<[string, MoneyTransactionData[]]> {
+    const groups = new Map<string, MoneyTransactionData[]>();
+
+    for (const transaction of transactions) {
+        const existingGroup = groups.get(transaction.date) ?? [];
+        existingGroup.push(transaction);
+        groups.set(transaction.date, existingGroup);
+    }
+
+    return Array.from(groups.entries());
 }
 
 export function minorUnitsInput(minorUnits: number): string {

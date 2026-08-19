@@ -1,8 +1,12 @@
-import { router, useForm } from '@inertiajs/react';
+import { Link, router, useForm } from '@inertiajs/react';
+import { ArrowDownLeft, ArrowRightLeft, ArrowUpRight, Pencil, Plus, Trash2 } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import type { FormEvent } from 'react';
 
-import { Button, Drawer, Field, SelectField } from '../../components/ui';
+import { Button, Field, SelectField, StatusChip } from '../../components/ui';
+import { classNames } from '../../components/ui/classNames';
+import { MoneyConfirmationDialog } from './MoneyConfirmationDialog';
+import { MoneyDrawer } from './MoneyDrawer';
 import { formatMinorUnits, formatMoneyDate, minorUnitsInput, transactionTitle } from './moneyPresentation';
 import type { MoneyAccountData, MoneyCategoryData, MoneyTransactionData, MoneyTransactionType } from './types';
 
@@ -17,15 +21,65 @@ interface TransactionPayload {
     note: string;
 }
 
+const transactionTypes: Array<{ icon: typeof ArrowDownLeft; label: string; type: MoneyTransactionType }> = [
+    { icon: ArrowDownLeft, label: 'Income', type: 'income' },
+    { icon: ArrowUpRight, label: 'Expense', type: 'expense' },
+    { icon: ArrowRightLeft, label: 'Transfer', type: 'transfer' },
+];
+
 function accountOptions(accounts: MoneyAccountData[], transaction: MoneyTransactionData | null) {
     const options = accounts.map((account) => ({ id: account.id, name: account.name, currency: account.currency }));
+
     for (const account of [transaction?.account, transaction?.destinationAccount]) {
         if (account && !options.some((option) => option.id === account.id)) options.push(account);
     }
+
     return options;
 }
 
-export function TransactionDrawer({ accounts, categories, today, transaction = null, initialType = null, initialAccountId, onClose }: {
+function TransactionTypeControl({ onChange, value }: { onChange: (type: MoneyTransactionType) => void; value: MoneyTransactionType }) {
+    return (
+        <fieldset>
+            <legend className="mb-2 text-sm font-semibold text-secondary">Transaction type</legend>
+            <div className="grid grid-cols-3 gap-2 rounded-2xl border border-border-subtle bg-app p-1.5">
+                {transactionTypes.map((item) => {
+                    const TypeIcon = item.icon;
+                    const selected = value === item.type;
+
+                    return (
+                        <button
+                            aria-pressed={selected}
+                            className={classNames(
+                                'focus-ring flex min-h-12 items-center justify-center gap-2 rounded-xl border px-2 text-xs font-bold uppercase transition-colors',
+                                selected
+                                    ? 'border-[color-mix(in_srgb,var(--money-accent)_40%,transparent)] bg-elevated text-foreground shadow-sm'
+                                    : 'border-transparent text-muted hover:text-foreground',
+                                selected && item.type === 'income' && 'text-success',
+                                selected && item.type === 'expense' && 'text-danger',
+                            )}
+                            key={item.type}
+                            onClick={() => onChange(item.type)}
+                            type="button"
+                        >
+                            <TypeIcon aria-hidden="true" size={17} />
+                            <span>{item.label}</span>
+                        </button>
+                    );
+                })}
+            </div>
+        </fieldset>
+    );
+}
+
+export function TransactionDrawer({
+    accounts,
+    categories,
+    today,
+    transaction = null,
+    initialType = null,
+    initialAccountId,
+    onClose,
+}: {
     accounts: MoneyAccountData[];
     categories: MoneyCategoryData[];
     today: string;
@@ -35,7 +89,7 @@ export function TransactionDrawer({ accounts, categories, today, transaction = n
     onClose: () => void;
 }) {
     const [editing, setEditing] = useState(transaction === null);
-    const [chosenType, setChosenType] = useState<MoneyTransactionType | null>(transaction?.type ?? initialType);
+    const [deleteConfirmationOpen, setDeleteConfirmationOpen] = useState(false);
     const accountsWithHistory = useMemo(() => accountOptions(accounts, transaction), [accounts, transaction]);
     const form = useForm<TransactionPayload>({
         type: transaction?.type ?? initialType ?? 'expense',
@@ -47,72 +101,180 @@ export function TransactionDrawer({ accounts, categories, today, transaction = n
         date: transaction?.date ?? today,
         note: transaction?.note ?? '',
     });
-    const type = chosenType ?? form.data.type;
+    const type = form.data.type;
     const selectedAccount = accountsWithHistory.find((account) => account.id === Number(form.data.account_id));
-    const matchingDestinations = accountsWithHistory.filter((account) => account.id !== Number(form.data.account_id) && account.currency === selectedAccount?.currency);
-    const relevantCategories = categories.filter((category) => category.type === type && (category.archivedAt === null || category.id === Number(form.data.category_id)));
+    const matchingDestinations = accountsWithHistory.filter(
+        (account) => account.id !== Number(form.data.account_id) && account.currency === selectedAccount?.currency,
+    );
+    const relevantCategories = categories.filter(
+        (category) => category.type === type && (category.archivedAt === null || category.id === Number(form.data.category_id)),
+    );
     const selectedCategory = relevantCategories.find((category) => category.id === Number(form.data.category_id));
-    const subcategories = selectedCategory?.subcategories.filter((subcategory) => subcategory.archivedAt === null || subcategory.id === Number(form.data.subcategory_id)) ?? [];
+    const subcategories = selectedCategory?.subcategories.filter(
+        (subcategory) => subcategory.archivedAt === null || subcategory.id === Number(form.data.subcategory_id),
+    ) ?? [];
 
     function chooseType(nextType: MoneyTransactionType) {
-        setChosenType(nextType);
         form.setData({ ...form.data, type: nextType, destination_account_id: '', category_id: '', subcategory_id: '' });
+    }
+
+    function chooseAccount(accountId: number) {
+        form.setData({ ...form.data, account_id: accountId, destination_account_id: '' });
     }
 
     function submit(event: FormEvent) {
         event.preventDefault();
         form.transform((data) => ({
             ...data,
-            type,
             destination_account_id: type === 'transfer' ? data.destination_account_id : null,
             category_id: type === 'transfer' ? null : data.category_id,
             subcategory_id: type === 'transfer' || data.subcategory_id === '' ? null : data.subcategory_id,
         }));
+
         if (transaction) form.put(`/money/transactions/${transaction.id}`, { preserveScroll: true, onSuccess: onClose });
         else form.post('/money/transactions', { preserveScroll: true, onSuccess: onClose });
     }
 
     function destroy() {
-        if (transaction && window.confirm('Delete this transaction permanently? Its complete financial effect will be reversed.')) {
-            router.delete(`/money/transactions/${transaction.id}`, { preserveScroll: true, onSuccess: onClose });
-        }
+        if (!transaction) return;
+
+        router.delete(`/money/transactions/${transaction.id}`, { preserveScroll: true, onSuccess: onClose });
     }
 
     if (transaction && !editing) {
         return (
-            <Drawer description="A single financial history item." onClose={onClose} open title="Transaction details">
-                <div className="rounded-[1.5rem] border border-border-subtle bg-app p-5">
-                    <p className="text-xs font-bold tracking-[0.16em] text-muted uppercase">{transaction.type}</p>
-                    <p className={`mt-2 text-4xl font-bold ${transaction.type === 'income' ? 'text-success' : transaction.type === 'expense' ? 'text-foreground' : 'text-[var(--money-accent)]'}`}>{formatMinorUnits(transaction.amountMinor, transaction.account.currency)}</p>
-                    <dl className="mt-6 space-y-4 text-sm">
-                        <div><dt className="text-muted">Operation</dt><dd className="mt-1 font-semibold">{transactionTitle(transaction)}</dd></div>
-                        <div><dt className="text-muted">Account{transaction.type === 'transfer' ? 's' : ''}</dt><dd className="mt-1 font-semibold">{transaction.type === 'transfer' ? `${transaction.account.name} → ${transaction.destinationAccount?.name}` : transaction.account.name}</dd></div>
-                        <div><dt className="text-muted">Date</dt><dd className="mt-1 font-semibold">{formatMoneyDate(transaction.date)}</dd></div>
-                        {transaction.note && <div><dt className="text-muted">Note</dt><dd className="mt-1 whitespace-pre-wrap font-semibold">{transaction.note}</dd></div>}
-                    </dl>
-                </div>
-                <div className="mt-6 flex gap-2"><Button className="flex-1" onClick={() => setEditing(true)}>Edit</Button><Button onClick={destroy} variant="destructive">Delete</Button></div>
-            </Drawer>
+            <>
+                <MoneyDrawer onClose={onClose} open title="Transaction details">
+                    <div className="rounded-[1.5rem] border border-border-subtle bg-app p-5">
+                        <div className="flex items-center justify-between gap-3">
+                            <StatusChip status={transaction.type === 'income' ? 'completed' : transaction.type === 'expense' ? 'danger' : 'active'}>
+                                {transaction.type}
+                            </StatusChip>
+                            <p className="text-sm font-semibold text-muted">{formatMoneyDate(transaction.date)}</p>
+                        </div>
+                        <p className={classNames(
+                            'mt-5 text-4xl font-bold tracking-[-0.04em] tabular-nums',
+                            transaction.type === 'income' ? 'text-success' : transaction.type === 'expense' ? 'text-foreground' : 'text-[var(--money-accent)]',
+                        )}>
+                            {formatMinorUnits(transaction.amountMinor, transaction.account.currency)}
+                        </p>
+                        <p className="mt-2 font-bold text-secondary">{transactionTitle(transaction)}</p>
+                        <dl className="mt-6 divide-y divide-border-subtle text-sm">
+                            <div className="py-3"><dt className="text-muted">Account{transaction.type === 'transfer' ? 's' : ''}</dt><dd className="mt-1 font-semibold">{transaction.type === 'transfer' ? `${transaction.account.name} → ${transaction.destinationAccount?.name}` : transaction.account.name}</dd></div>
+                            {transaction.note && <div className="py-3"><dt className="text-muted">Note</dt><dd className="mt-1 whitespace-pre-wrap font-semibold">{transaction.note}</dd></div>}
+                        </dl>
+                    </div>
+                    <div className="mt-6 flex gap-2">
+                        <Button className="flex-1" onClick={() => setEditing(true)}><Pencil aria-hidden="true" size={16} />Edit</Button>
+                        <Button onClick={() => setDeleteConfirmationOpen(true)} variant="destructive"><Trash2 aria-hidden="true" size={16} />Delete</Button>
+                    </div>
+                </MoneyDrawer>
+                <MoneyConfirmationDialog
+                    confirmLabel="Delete transaction"
+                    destructive
+                    description="This permanently removes the record and reverses its complete effect on the involved Account balances."
+                    onClose={() => setDeleteConfirmationOpen(false)}
+                    onConfirm={destroy}
+                    open={deleteConfirmationOpen}
+                    title="Delete this transaction?"
+                />
+            </>
         );
     }
 
     return (
-        <Drawer description={transaction ? 'Corrections immediately replace the previous financial effect.' : 'Record actual money movement. No SP is involved.'} onClose={onClose} open title={transaction ? `Edit ${transaction.type}` : chosenType ? `New ${chosenType}` : 'New transaction'}>
-            {!transaction && chosenType === null ? (
-                <div className="grid gap-3">
-                    {(['income', 'expense', 'transfer'] as const).map((item) => <button className="focus-ring rounded-2xl border border-border-strong bg-app px-5 py-5 text-left text-lg font-bold capitalize transition-colors hover:border-[var(--money-accent)] hover:bg-surface-hover" key={item} onClick={() => chooseType(item)} type="button">{item}<span className="mt-1 block text-sm font-normal text-muted">{item === 'income' ? 'Money received' : item === 'expense' ? 'Money spent' : 'Move between matching-currency Accounts'}</span></button>)}
+        <MoneyDrawer onClose={onClose} open title={transaction ? `Edit ${transaction.type}` : `New ${type}`}>
+            <form className="space-y-6" onSubmit={submit}>
+                {!transaction && <TransactionTypeControl onChange={chooseType} value={type} />}
+
+                <div>
+                    <label className="text-sm font-semibold text-secondary" htmlFor="money-amount">Amount</label>
+                    <div className={classNames('mt-2 flex items-center rounded-2xl border bg-app transition-colors focus-within:border-[var(--money-accent)]', form.errors.amount ? 'border-danger' : 'border-border-strong')}>
+                        <input
+                            aria-invalid={Boolean(form.errors.amount)}
+                            autoFocus={!transaction}
+                            className="focus-ring min-w-0 flex-1 bg-transparent px-4 py-4 text-3xl font-bold tracking-[-0.04em] text-foreground tabular-nums placeholder:text-muted"
+                            id="money-amount"
+                            inputMode="decimal"
+                            onChange={(event) => form.setData('amount', event.target.value)}
+                            placeholder="0.00"
+                            required
+                            value={form.data.amount}
+                        />
+                        <span className="pr-4 text-sm font-bold tracking-[0.12em] text-[var(--money-accent)]">{selectedAccount?.currency ?? '—'}</span>
+                    </div>
+                    {form.errors.amount && <p className="mt-2 text-sm font-medium text-danger">{form.errors.amount}</p>}
                 </div>
-            ) : (
-                <form className="space-y-5" onSubmit={submit}>
-                    {!transaction && <div className="grid grid-cols-3 gap-2">{(['income', 'expense', 'transfer'] as const).map((item) => <button aria-pressed={type === item} className={`focus-ring rounded-xl border px-2 py-3 text-xs font-bold uppercase ${type === item ? 'border-[var(--money-accent)] bg-[color-mix(in_srgb,var(--money-accent)_12%,transparent)]' : 'border-border-strong bg-app'}`} key={item} onClick={() => chooseType(item)} type="button">{item}</button>)}</div>}
-                    <div className="grid grid-cols-[1fr_auto] items-end gap-3"><Field error={form.errors.amount} inputMode="decimal" label="Amount" onChange={(event) => form.setData('amount', event.target.value)} placeholder="0.00" required value={form.data.amount} /><span className="mb-3 font-bold text-[var(--money-accent)]">{selectedAccount?.currency ?? '—'}</span></div>
-                    <SelectField error={form.errors.account_id} label={type === 'transfer' ? 'From' : 'Account'} onChange={(event) => form.setData('account_id', Number(event.target.value))} options={[{ label: 'Choose Account', value: '' }, ...accountsWithHistory.map((account) => ({ label: `${account.name} · ${account.currency}`, value: String(account.id) }))]} required value={form.data.account_id} />
-                    {type === 'transfer' ? <><SelectField error={form.errors.destination_account_id} label="To" onChange={(event) => form.setData('destination_account_id', Number(event.target.value))} options={[{ label: 'Choose matching-currency Account', value: '' }, ...matchingDestinations.map((account) => ({ label: `${account.name} · ${account.currency}`, value: String(account.id) }))]} required value={form.data.destination_account_id} /><p className="text-sm text-muted">Transfers require matching currencies. No conversion is performed.</p></> : <><SelectField error={form.errors.category_id} label="Category" onChange={(event) => form.setData({ ...form.data, category_id: Number(event.target.value), subcategory_id: '' })} options={[{ label: 'Choose Category', value: '' }, ...relevantCategories.map((category) => ({ label: category.name, value: String(category.id) }))]} required value={form.data.category_id} />{subcategories.length > 0 && <SelectField error={form.errors.subcategory_id} label="Subcategory (optional)" onChange={(event) => form.setData('subcategory_id', event.target.value ? Number(event.target.value) : '')} options={[{ label: 'None', value: '' }, ...subcategories.map((subcategory) => ({ label: subcategory.name, value: String(subcategory.id) }))]} value={form.data.subcategory_id} />}</>}
-                    <Field error={form.errors.date} label="Date" max={today} onChange={(event) => form.setData('date', event.target.value)} required type="date" value={form.data.date} />
-                    <div><label className="text-sm font-semibold text-secondary" htmlFor="money-note">Note (optional)</label><textarea className="focus-ring mt-2 min-h-24 w-full resize-y rounded-2xl border border-border-strong bg-app px-4 py-3 text-foreground" id="money-note" maxLength={1000} onChange={(event) => form.setData('note', event.target.value)} value={form.data.note} />{form.errors.note && <p className="mt-2 text-sm text-danger">{form.errors.note}</p>}</div>
-                    <Button disabled={form.processing} fullWidth type="submit">{transaction ? 'Save correction' : `Add ${type}`}</Button>
-                </form>
-            )}
-        </Drawer>
+
+                <SelectField
+                    error={form.errors.account_id}
+                    label={type === 'transfer' ? 'From Account' : 'Account'}
+                    onChange={(event) => chooseAccount(Number(event.target.value))}
+                    options={[{ label: 'Choose Account', value: '' }, ...accountsWithHistory.map((account) => ({ label: `${account.name} · ${account.currency}`, value: String(account.id) }))]}
+                    required
+                    value={form.data.account_id}
+                />
+
+                {type === 'transfer' ? (
+                    <div className="space-y-3">
+                        <SelectField
+                            error={form.errors.destination_account_id}
+                            label="To Account"
+                            onChange={(event) => form.setData('destination_account_id', Number(event.target.value))}
+                            options={[{ label: 'Choose matching-currency Account', value: '' }, ...matchingDestinations.map((account) => ({ label: `${account.name} · ${account.currency}`, value: String(account.id) }))]}
+                            required
+                            value={form.data.destination_account_id}
+                        />
+                        {selectedAccount && matchingDestinations.length === 0 && (
+                            <p className="rounded-2xl border border-warning/25 bg-warning/8 px-4 py-3 text-sm text-secondary">
+                                No other active {selectedAccount.currency} Account is available. Transfers do not perform currency conversion.
+                            </p>
+                        )}
+                    </div>
+                ) : (
+                    <div className="space-y-5">
+                        <SelectField
+                            error={form.errors.category_id}
+                            label="Category"
+                            onChange={(event) => form.setData({ ...form.data, category_id: Number(event.target.value), subcategory_id: '' })}
+                            options={[{ label: 'Choose Category', value: '' }, ...relevantCategories.map((category) => ({ label: category.name, value: String(category.id) }))]}
+                            required
+                            value={form.data.category_id}
+                        />
+                        {relevantCategories.length === 0 && (
+                            <p className="rounded-2xl border border-warning/25 bg-warning/8 px-4 py-3 text-sm text-secondary">
+                                No active {type} Categories are available. <Link className="font-bold text-[var(--money-accent)] hover:underline" href="/money/categories">Create one in Categories</Link> before recording this transaction.
+                            </p>
+                        )}
+                        {subcategories.length > 0 && (
+                            <SelectField
+                                error={form.errors.subcategory_id}
+                                label="Subcategory (optional)"
+                                onChange={(event) => form.setData('subcategory_id', event.target.value ? Number(event.target.value) : '')}
+                                options={[{ label: 'None', value: '' }, ...subcategories.map((subcategory) => ({ label: subcategory.name, value: String(subcategory.id) }))]}
+                                value={form.data.subcategory_id}
+                            />
+                        )}
+                    </div>
+                )}
+
+                <div className="rounded-2xl border border-border-subtle bg-surface p-4">
+                    <p className="mb-4 text-xs font-bold tracking-[0.15em] text-muted uppercase">Details</p>
+                    <div className="space-y-5">
+                        <Field error={form.errors.date} label="Date" max={today} onChange={(event) => form.setData('date', event.target.value)} required type="date" value={form.data.date} />
+                        <div>
+                            <label className="text-sm font-semibold text-secondary" htmlFor="money-note">Note (optional)</label>
+                            <textarea className="focus-ring mt-2 min-h-24 w-full resize-y rounded-2xl border border-border-strong bg-app px-4 py-3 text-foreground" id="money-note" maxLength={1000} onChange={(event) => form.setData('note', event.target.value)} placeholder="What was this for?" value={form.data.note} />
+                            {form.errors.note && <p className="mt-2 text-sm text-danger">{form.errors.note}</p>}
+                        </div>
+                    </div>
+                </div>
+
+                <Button disabled={form.processing || (type !== 'transfer' && relevantCategories.length === 0) || (type === 'transfer' && matchingDestinations.length === 0)} fullWidth type="submit">
+                    {transaction ? <Pencil aria-hidden="true" size={17} /> : <Plus aria-hidden="true" size={17} />}
+                    {transaction ? 'Save changes' : `Add ${type}`}
+                </Button>
+            </form>
+        </MoneyDrawer>
     );
 }

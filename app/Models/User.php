@@ -3,6 +3,7 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Carbon\CarbonImmutable;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
@@ -12,12 +13,26 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
-#[Fillable(['name', 'email', 'password'])]
+#[Fillable(['name', 'email', 'password', 'timezone', 'calendar_started_on'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
+
+    protected static function booted(): void
+    {
+        static::creating(function (User $user): void {
+            $user->timezone ??= 'UTC';
+
+            if ($user->calendar_started_on === null) {
+                $createdAt = $user->created_at === null
+                    ? CarbonImmutable::now('UTC')
+                    : CarbonImmutable::parse($user->created_at, 'UTC');
+                $user->calendar_started_on = $createdAt->setTimezone($user->timezone)->toDateString();
+            }
+        });
+    }
 
     /** @return HasMany<Season, $this> */
     public function seasons(): HasMany
@@ -117,6 +132,7 @@ class User extends Authenticatable
     protected function casts(): array
     {
         return [
+            'calendar_started_on' => 'immutable_date',
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];

@@ -4,6 +4,7 @@ namespace App\Actions\Objectives;
 
 use App\Models\Objective;
 use App\Models\Season;
+use App\Services\Calendar\UserCalendar;
 use App\Services\Objectives\ObjectiveRewardCalculator;
 use App\Services\Seasons\SeasonLifecycle;
 use Carbon\CarbonImmutable;
@@ -15,11 +16,12 @@ class ToggleObjectiveCompletion
         private readonly SeasonLifecycle $seasonLifecycle,
         private readonly ObjectiveRewardCalculator $rewardCalculator,
         private readonly RebalanceObjectiveRewards $rebalanceRewards,
+        private readonly UserCalendar $userCalendar,
     ) {}
 
     public function execute(Objective $objective, ?CarbonImmutable $today = null): Objective
     {
-        $calendarToday = ($today ?? CarbonImmutable::today())->startOfDay();
+        $calendarToday = ($today ?? $this->userCalendar->today($objective->season()->firstOrFail()->user()->firstOrFail()))->startOfDay();
 
         return DB::transaction(function () use ($objective, $calendarToday): Objective {
             $lockedSeason = Season::query()->lockForUpdate()->findOrFail($objective->season_id);

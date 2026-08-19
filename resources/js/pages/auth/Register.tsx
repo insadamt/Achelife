@@ -1,4 +1,5 @@
 import { Head, Link, useForm } from '@inertiajs/react';
+import { useEffect } from 'react';
 import type { FormEvent } from 'react';
 
 import { Button, Field } from '../../components/ui';
@@ -9,7 +10,17 @@ export default function Register() {
         email: '',
         password: '',
         password_confirmation: '',
+        timezone: 'UTC',
     });
+    const setFormData = form.setData;
+
+    useEffect(() => {
+        const detectedTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+        if (detectedTimezone) {
+            setFormData('timezone', detectedTimezone);
+        }
+    }, [setFormData]);
 
     function submit(event: FormEvent<HTMLFormElement>) {
         event.preventDefault();
@@ -25,6 +36,7 @@ export default function Register() {
             <h1 className="mt-2 text-3xl font-bold tracking-[-0.035em]">Create your account</h1>
             <p className="mt-2 text-sm leading-6 text-secondary">Set up your identity. Your journey begins after this step.</p>
             <form className="mt-7 space-y-5" onSubmit={submit}>
+                <input name="timezone" type="hidden" value={form.data.timezone} />
                 <Field autoComplete="name" autoFocus error={form.errors.name} label="Name" name="name" onChange={(event) => form.setData('name', event.target.value)} required value={form.data.name} />
                 <Field autoComplete="email" error={form.errors.email} label="Email" name="email" onChange={(event) => form.setData('email', event.target.value)} required type="email" value={form.data.email} />
                 <Field autoComplete="new-password" error={form.errors.password} label="Password" name="password" onChange={(event) => form.setData('password', event.target.value)} required type="password" value={form.data.password} />

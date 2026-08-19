@@ -1,8 +1,9 @@
 import { useForm } from '@inertiajs/react';
-import type { FormEvent } from 'react';
+import { CircleAlert, Hash, RefreshCw, TrendingDown } from 'lucide-react';
+import type { FormEvent, ReactNode } from 'react';
 
 import { Button, Dialog, Field } from '../../components/ui';
-import { formatPenalty, severityStyles } from './constitutionPresentation';
+import { formatPenalty, formatSpDelta, projectRecordedViolation, severityLabels, severityStyles } from './constitutionPresentation';
 import type { ConstitutionSeasonData, LawViewData } from './types';
 
 interface ViolationFormPayload {
@@ -21,8 +22,7 @@ export function RecordViolationDialog({
     onClose: () => void;
 }) {
     const form = useForm<ViolationFormPayload>({ date: today });
-    const multiplier = law.violations.filter((violation) => violation.date <= form.data.date).length + 1;
-    const penalty = law.basePenalty * multiplier;
+    const projection = projectRecordedViolation(law.basePenalty, form.data.date, law.violations);
     const earliestDate = law.createdOn > season.startDate ? law.createdOn : season.startDate;
     const styles = severityStyles[law.severity];
 
@@ -35,8 +35,18 @@ export function RecordViolationDialog({
     }
 
     return (
-        <Dialog description={law.name} onClose={onClose} open title="Record Violation">
+        <Dialog onClose={onClose} open title="Record Violation">
             <form className="space-y-6" onSubmit={submit}>
+                <div className="flex items-center gap-3 rounded-2xl border border-border-subtle bg-app p-3">
+                    <span className={`grid size-10 shrink-0 place-items-center rounded-xl border ${styles.border} ${styles.background} ${styles.text}`}>
+                        <CircleAlert aria-hidden="true" size={18} />
+                    </span>
+                    <span className="min-w-0">
+                        <span className="block truncate font-bold">{law.name}</span>
+                        <span className={`text-xs font-bold ${styles.text}`}>{severityLabels[law.severity]} · {formatPenalty(law.basePenalty)} base</span>
+                    </span>
+                </div>
+
                 <Field
                     error={form.errors.date}
                     label="Date"
@@ -48,27 +58,35 @@ export function RecordViolationDialog({
                     value={form.data.date}
                 />
 
-                <div className={`rounded-2xl border p-4 ${styles.border} ${styles.background}`}>
-                    <div className="flex items-center justify-between gap-4">
-                        <div>
-                            <p className="text-[0.625rem] font-bold tracking-[0.14em] text-muted uppercase">Violation</p>
-                            <p className="mt-1 text-2xl font-bold">#{multiplier}</p>
-                        </div>
-                        <div className="text-center">
-                            <p className="text-[0.625rem] font-bold tracking-[0.14em] text-muted uppercase">Multiplier</p>
-                            <p className={`mt-1 text-3xl font-bold ${styles.text}`}>×{multiplier}</p>
-                        </div>
-                        <div className="text-right">
-                            <p className="text-[0.625rem] font-bold tracking-[0.14em] text-muted uppercase">Penalty</p>
-                            <p className={`mt-1 text-2xl font-bold ${styles.text}`}>{formatPenalty(penalty)}</p>
-                        </div>
-                    </div>
+                <div className="grid grid-cols-2 gap-2">
+                    <ImpactMetric icon={<Hash size={17} />} label="Sequence" value={`#${projection.sequence} · ×${projection.sequence}`} />
+                    <ImpactMetric danger icon={<TrendingDown size={17} />} label="Violation" value={formatPenalty(projection.recordPenalty)} />
+                    <ImpactMetric className="col-span-2" danger={projection.seasonAdjustment < 0} icon={<RefreshCw size={17} />} label="Season adjustment" value={formatSpDelta(projection.seasonAdjustment)} />
                 </div>
 
-                <p className="text-xs leading-5 text-muted">Backdated records may renumber later violations. The saved Season SP delta is calculated by the server.</p>
-
-                <Button disabled={form.processing} fullWidth type="submit">Record Violation</Button>
+                <Button disabled={form.processing} fullWidth type="submit" variant="destructive">
+                    <CircleAlert aria-hidden="true" size={18} />
+                    Record {formatPenalty(projection.recordPenalty)}
+                </Button>
             </form>
         </Dialog>
+    );
+}
+
+function ImpactMetric({ className = '', danger = false, icon, label, value }: {
+    className?: string;
+    danger?: boolean;
+    icon: ReactNode;
+    label: string;
+    value: string;
+}) {
+    return (
+        <div className={`flex items-center gap-3 rounded-2xl border border-border-subtle bg-app p-3 ${className}`}>
+            <span className={`grid size-9 shrink-0 place-items-center rounded-xl bg-elevated ${danger ? 'text-danger' : 'text-[var(--module-accent)]'}`}>{icon}</span>
+            <span>
+                <span className="block text-[0.625rem] font-bold tracking-[0.12em] text-muted uppercase">{label}</span>
+                <span className={`mt-0.5 block font-bold ${danger ? 'text-danger' : 'text-foreground'}`}>{value}</span>
+            </span>
+        </div>
     );
 }

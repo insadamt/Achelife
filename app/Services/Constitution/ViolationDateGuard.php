@@ -48,7 +48,7 @@ class ViolationDateGuard
             throw ValidationException::withMessages(['date' => 'Violations can only be recorded in the current Season.']);
         }
 
-        if ($date->isBefore($law->created_at->toImmutable()->startOfDay())) {
+        if ($date->isBefore($law->created_on)) {
             throw ValidationException::withMessages(['date' => 'A violation cannot predate the Law.']);
         }
 

@@ -41,6 +41,8 @@ Deleting one recurring occurrence writes an exclusion. Deleting that occurrence 
 
 The composer and incomplete Task rows show a live projection, but completion recalculates the result from the actual completion date. `CompleteTask` synchronizes the Season containing that timestamp, adds the reward to it, and persists the exact reward and Season on the Task in one transaction.
 
+The completion timestamp remains a UTC instant. Its completion date, timing classification, recurrence advancement, and receiving Season are derived from the user's saved timezone.
+
 During the same active reward Season, `MarkTaskIncomplete` subtracts exactly the stored reward from that same Season and clears the completion attribution. A later completion recalculates from its new timestamp. Once another Season is current, the completion, Task, and historical SP are permanently locked.
 
 ## Interface

@@ -6,6 +6,8 @@ Phase 1 introduces Achelife's first domain module: automatic 30-calendar-day Sea
 
 ## Calendar model
 
+- Calendar dates use the authenticated user's saved IANA timezone. UTC remains the timestamp storage timezone.
+- A permanent user-owned calendar start date anchors Season 1, so later timezone changes never rewrite the Season timeline.
 - Season 1 starts on the account creation date and ends 29 days later.
 - Every following Season starts the day after the previous Season ends.
 - The start date is Day 1, so Day 30 remains in the same Season and Day 31 begins the next.

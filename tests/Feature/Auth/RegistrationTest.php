@@ -33,6 +33,8 @@ class RegistrationTest extends TestCase
         $this->assertDatabaseHas('users', [
             'name' => 'Test User',
             'email' => 'test@example.com',
+            'timezone' => 'UTC',
+            'calendar_started_on' => '2026-08-18 00:00:00',
         ]);
         $this->assertDatabaseHas('seasons', [
             'season_number' => 1,
@@ -41,6 +43,30 @@ class RegistrationTest extends TestCase
             'season_points' => 0,
             'rank' => null,
             'introduced_at' => null,
+        ]);
+    }
+
+    public function test_registration_anchors_the_calendar_in_the_browser_timezone(): void
+    {
+        CarbonImmutable::setTestNow(CarbonImmutable::parse('2026-08-18 23:30:00', 'UTC'));
+
+        $this->post('/register', [
+            'name' => 'Local User',
+            'email' => 'local@example.com',
+            'password' => 'password',
+            'password_confirmation' => 'password',
+            'timezone' => 'Asia/Dubai',
+        ])->assertRedirect('/season-introduction');
+
+        $this->assertDatabaseHas('users', [
+            'email' => 'local@example.com',
+            'timezone' => 'Asia/Dubai',
+            'calendar_started_on' => '2026-08-19 00:00:00',
+        ]);
+        $this->assertDatabaseHas('seasons', [
+            'season_number' => 1,
+            'start_date' => '2026-08-19 00:00:00',
+            'end_date' => '2026-09-17 00:00:00',
         ]);
     }
 }

@@ -5,6 +5,7 @@ namespace App\Actions\Tasks;
 use App\Actions\Seasons\SynchronizeUserSeasons;
 use App\Models\Task;
 use App\Models\User;
+use App\Services\Calendar\UserCalendar;
 use App\Services\Tasks\TaskRewardCalculator;
 use Carbon\CarbonImmutable;
 use Illuminate\Auth\Access\AuthorizationException;
@@ -17,6 +18,7 @@ class CompleteTask
         private readonly SynchronizeUserSeasons $synchronizeUserSeasons,
         private readonly TaskRewardCalculator $rewardCalculator,
         private readonly SynchronizeRecurringTaskOccurrences $synchronizeOccurrences,
+        private readonly UserCalendar $userCalendar,
     ) {}
 
     public function execute(User $user, Task $task, ?CarbonImmutable $completedAt = null): Task
@@ -26,9 +28,10 @@ class CompleteTask
         }
 
         $completionTime = $completedAt ?? CarbonImmutable::now();
+        $completionDate = $this->userCalendar->dateOf($user, $completionTime);
 
-        return DB::transaction(function () use ($user, $task, $completionTime): Task {
-            $rewardSeason = $this->synchronizeUserSeasons->execute($user, $completionTime->startOfDay());
+        return DB::transaction(function () use ($user, $task, $completionTime, $completionDate): Task {
+            $rewardSeason = $this->synchronizeUserSeasons->execute($user, $completionDate);
             $lockedTask = Task::query()->with('subtasks')->lockForUpdate()->findOrFail($task->id);
 
             if ($lockedTask->completed_at !== null) {
@@ -42,7 +45,7 @@ class CompleteTask
             $reward = $this->rewardCalculator->calculate(
                 $lockedTask->important,
                 $lockedTask->scheduled_date,
-                $completionTime,
+                $completionDate,
             );
 
             $rewardSeason->increment('season_points', $reward->points);
@@ -57,7 +60,7 @@ class CompleteTask
             if ($lockedTask->task_series_id !== null) {
                 $this->synchronizeOccurrences->synchronizeSeries(
                     $lockedTask->series()->firstOrFail(),
-                    $completionTime->startOfDay(),
+                    $completionDate,
                 );
             }
 

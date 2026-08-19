@@ -7,9 +7,9 @@ use App\Models\MoneyAccount;
 use App\Models\MoneyCategory;
 use App\Models\MoneyTransaction;
 use App\Models\User;
+use App\Services\Calendar\UserCalendar;
 use App\Services\Money\AccountBalanceCalculator;
 use App\Support\Money\MoneyViewDataFactory;
-use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
@@ -23,6 +23,7 @@ class MoneyController extends Controller
         EnsureDefaultMoneyCategories $ensureDefaults,
         AccountBalanceCalculator $balanceCalculator,
         MoneyViewDataFactory $viewDataFactory,
+        UserCalendar $calendar,
     ): Response {
         $user = $request->user();
         $ensureDefaults->execute($user);
@@ -34,7 +35,7 @@ class MoneyController extends Controller
         $balances = $balanceCalculator->forAccounts($user, $accounts);
 
         return Inertia::render('money/Index', [
-            'today' => CarbonImmutable::today()->toDateString(),
+            'today' => $calendar->today($user)->toDateString(),
             'accounts' => $accounts->map(fn (MoneyAccount $account) => $viewDataFactory->account($account, $balances[$account->id])),
             'totalsByCurrency' => $balanceCalculator->totalsByCurrency($accounts, $balances),
             'categories' => $this->categories($user, $viewDataFactory),

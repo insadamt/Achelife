@@ -6,6 +6,8 @@ use App\Actions\Money\EnsureDefaultMoneyCategories;
 use App\Actions\Seasons\SynchronizeUserSeasons;
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use Carbon\CarbonImmutable;
+use DateTimeZone;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -28,7 +30,13 @@ class RegisteredUserController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
             'password' => ['required', 'confirmed', Password::defaults()],
+            'timezone' => ['nullable', 'string', 'max:64'],
         ]);
+
+        $attributes['timezone'] = $this->resolvedTimezone($attributes['timezone'] ?? null);
+        $attributes['calendar_started_on'] = CarbonImmutable::now('UTC')
+            ->setTimezone($attributes['timezone'])
+            ->toDateString();
 
         $user = DB::transaction(function () use ($attributes, $synchronizeUserSeasons, $ensureMoneyCategories): User {
             $user = User::create($attributes);
@@ -43,5 +51,16 @@ class RegisteredUserController extends Controller
         $request->session()->regenerate();
 
         return redirect()->route('seasons.introduction');
+    }
+
+    private function resolvedTimezone(mixed $requestedTimezone): string
+    {
+        if (! is_string($requestedTimezone)) {
+            return 'UTC';
+        }
+
+        return in_array($requestedTimezone, [...DateTimeZone::listIdentifiers(), 'UTC'], true)
+            ? $requestedTimezone
+            : 'UTC';
     }
 }

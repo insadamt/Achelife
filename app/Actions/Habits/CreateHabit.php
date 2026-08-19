@@ -6,6 +6,7 @@ use App\Actions\Seasons\SynchronizeUserSeasons;
 use App\Data\Habits\HabitData;
 use App\Models\Habit;
 use App\Models\User;
+use App\Services\Calendar\UserCalendar;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
 
@@ -14,11 +15,12 @@ class CreateHabit
     public function __construct(
         private readonly SynchronizeUserSeasons $synchronizeUserSeasons,
         private readonly SynchronizeHabitOccurrences $synchronizeOccurrences,
+        private readonly UserCalendar $userCalendar,
     ) {}
 
     public function execute(User $user, HabitData $data, ?CarbonImmutable $today = null): Habit
     {
-        $calendarDate = ($today ?? CarbonImmutable::today())->startOfDay();
+        $calendarDate = ($today ?? $this->userCalendar->today($user))->startOfDay();
         $currentSeason = $this->synchronizeUserSeasons->execute($user, $calendarDate);
 
         $habit = DB::transaction(function () use ($user, $data, $calendarDate): Habit {

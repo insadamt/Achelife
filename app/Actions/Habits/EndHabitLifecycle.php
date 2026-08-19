@@ -6,6 +6,7 @@ use App\Models\Habit;
 use App\Models\HabitOccurrence;
 use App\Models\Season;
 use App\Models\User;
+use App\Services\Calendar\UserCalendar;
 use Carbon\CarbonImmutable;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Support\Facades\DB;
@@ -17,6 +18,7 @@ class EndHabitLifecycle
     public function __construct(
         private readonly SynchronizeHabitOccurrences $synchronizeOccurrences,
         private readonly RecalculateHabitProgression $recalculateProgression,
+        private readonly UserCalendar $userCalendar,
     ) {}
 
     public function archive(User $user, Habit $habit, ?CarbonImmutable $today = null): void
@@ -35,7 +37,7 @@ class EndHabitLifecycle
             throw new AuthorizationException;
         }
 
-        $calendarDate = ($today ?? CarbonImmutable::today())->startOfDay();
+        $calendarDate = ($today ?? $this->userCalendar->today($user))->startOfDay();
         $currentSeason = $this->synchronizeOccurrences->execute($user, $calendarDate);
 
         DB::transaction(function () use ($habit, $delete, $calendarDate, $currentSeason): void {

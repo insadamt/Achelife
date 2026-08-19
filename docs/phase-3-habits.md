@@ -15,6 +15,8 @@ Phase 3 adds global Boolean and Numeric Habit definitions, effective-dated rules
 
 `SynchronizeHabitOccurrences` runs whenever Habits are accessed and before occurrence or lifecycle mutations. It first synchronizes the user's Season timeline, then advances each active Habit's watermark through today.
 
+Today is resolved through the user's saved timezone, so required occurrences remain available until local midnight rather than UTC midnight.
+
 Only required dates are materialized. Past required dates become Missed and today's required date becomes Pending. Existing Pending rows before today are finalized as Missed, including preserved partial Numeric values. Non-scheduled days and ignored Flexible dates create no rows. Future dates are calculated for calendar rendering and are never materialized. The unique Habit/date database constraint makes synchronization idempotent.
 
 This access-driven strategy does not require cron for correctness. A user returning after an absence receives all required elapsed outcomes before the page or mutation is processed.
