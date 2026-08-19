@@ -49,7 +49,7 @@ export function TodayTaskList({ tasks, overdue, overdueCount }: TodayTaskListPro
                 <details className="group mt-3 overflow-hidden rounded-2xl border border-border-subtle bg-surface">
                     <summary className="focus-ring flex min-h-12 cursor-pointer list-none items-center justify-between gap-4 rounded-2xl px-4">
                         <span className="text-sm font-bold text-secondary">Completed</span>
-                        <span className="flex items-center gap-2 text-xs text-muted">
+                        <span className="icon-text flex items-center gap-2 text-xs text-muted">
                             {completedTasks.length}
                             <ChevronDown aria-hidden="true" className="transition-transform group-open:rotate-180" size={16} />
                         </span>

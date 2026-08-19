@@ -61,6 +61,12 @@
         linear-gradient(125deg, color-mix(in srgb, var(--accent) 10%, var(--surface-primary)), var(--surface-primary) 64%);
 }
 
+.habit-card {
+    background:
+        linear-gradient(145deg, var(--surface-primary), color-mix(in srgb, var(--surface-primary) 95%, var(--habit-accent)));
+    box-shadow: 0 10px 28px rgb(0 0 0 / 20%);
+}
+
 .progress-notch-panel {
     animation: progress-notch-enter var(--motion-standard) cubic-bezier(0.22, 1, 0.36, 1) both;
 }
@@ -106,19 +112,8 @@
     -webkit-box-decoration-break: clone;
 }
 
-.mood-wheel {
-    background: radial-gradient(circle, var(--surface-primary) 0 28%, transparent 29%), conic-gradient(
-        from -22.5deg,
-        color-mix(in srgb, #f4c95d 13%, transparent),
-        color-mix(in srgb, #79c8c8 13%, transparent),
-        color-mix(in srgb, #e69755 13%, transparent),
-        color-mix(in srgb, #6e8fc7 13%, transparent),
-        color-mix(in srgb, #d86a6a 13%, transparent),
-        color-mix(in srgb, #aa82ce 13%, transparent),
-        color-mix(in srgb, #89929e 13%, transparent),
-        color-mix(in srgb, #85ad77 13%, transparent),
-        color-mix(in srgb, #f4c95d 13%, transparent)
-    );
+.mood-family-grid {
+    background: radial-gradient(circle at 50% 45%, color-mix(in srgb, var(--diary-accent) 7%, transparent), transparent 62%);
 }
 
 @keyframes season-enter {
@@ -217,6 +212,14 @@
 
     .focus-ring:focus-visible {
         box-shadow: 0 0 0 2px var(--app-background), 0 0 0 4px var(--focus-ring);
+    }
+
+    .icon-text {
+        line-height: 1;
+    }
+
+    .icon-text > svg {
+        transform: translateY(-0.0625rem);
     }
 
     .accent-text {

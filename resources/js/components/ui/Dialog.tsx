@@ -15,6 +15,7 @@ interface DialogProps {
 
 const focusableSelector =
     'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+const openDialogStack: symbol[] = [];
 
 export function Dialog({
     open,
@@ -25,6 +26,7 @@ export function Dialog({
     children,
 }: PropsWithChildren<DialogProps>) {
     const dialogRef = useRef<HTMLDivElement>(null);
+    const dialogKeyRef = useRef(Symbol('dialog'));
     const titleId = useId();
     const descriptionId = useId();
 
@@ -35,7 +37,9 @@ export function Dialog({
 
         const previouslyFocusedElement = document.activeElement instanceof HTMLElement ? document.activeElement : null;
         const dialog = dialogRef.current;
+        const dialogKey = dialogKeyRef.current;
         const bodyOverflow = document.body.style.overflow;
+        openDialogStack.push(dialogKey);
         document.body.style.overflow = 'hidden';
 
         window.requestAnimationFrame(() => {
@@ -43,6 +47,10 @@ export function Dialog({
         });
 
         function handleKeyDown(event: KeyboardEvent) {
+            if (openDialogStack.at(-1) !== dialogKey) {
+                return;
+            }
+
             if (event.key === 'Escape') {
                 event.preventDefault();
                 onClose();
@@ -74,6 +82,10 @@ export function Dialog({
         document.addEventListener('keydown', handleKeyDown);
 
         return () => {
+            const dialogIndex = openDialogStack.lastIndexOf(dialogKey);
+            if (dialogIndex >= 0) {
+                openDialogStack.splice(dialogIndex, 1);
+            }
             document.body.style.overflow = bodyOverflow;
             document.removeEventListener('keydown', handleKeyDown);
             previouslyFocusedElement?.focus();

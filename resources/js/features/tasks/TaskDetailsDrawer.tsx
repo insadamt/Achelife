@@ -1,158 +1,195 @@
-import { router, useForm } from '@inertiajs/react';
-import type { FormEvent } from 'react';
+import { router } from '@inertiajs/react';
+import { CalendarDays, Check, ChevronRight, ListChecks, LockKeyhole, MoreHorizontal, Repeat2, Star } from 'lucide-react';
+import { useState } from 'react';
+import type { ReactNode } from 'react';
 
-import { Button, Checkbox, Drawer, Field, StatusChip } from '../../components/ui';
+import { Button, Dialog, Drawer } from '../../components/ui';
+import { classNames } from '../../components/ui/classNames';
 import { formatCompletionDate, formatTaskDateLong } from './taskPresentation';
-import { RecurrenceControls } from './RecurrenceControls';
-import { SubtaskEditor } from './SubtaskEditor';
-import type { TaskFormData, TaskViewData } from './types';
+import { TaskEditorDialog } from './TaskEditorDialog';
+import type { TaskEditor } from './TaskEditorDialog';
+import type { TaskViewData } from './types';
+
+type DeleteAction = 'occurrence' | 'future' | null;
 
 interface TaskDetailsDrawerProps {
     task: TaskViewData;
+    today: string;
     onClose: () => void;
 }
 
-export function TaskDetailsDrawer({ task, onClose }: TaskDetailsDrawerProps) {
+export function TaskDetailsDrawer({ task, today, onClose }: TaskDetailsDrawerProps) {
+    const [editor, setEditor] = useState<TaskEditor | null>(null);
+    const [menuOpen, setMenuOpen] = useState(false);
+    const [deleteAction, setDeleteAction] = useState<DeleteAction>(null);
     const completed = task.state === 'completed';
-    const form = useForm<TaskFormData>({
-        title: task.title,
-        scheduled_date: task.scheduledDate,
-        important: task.important,
-        recurrence_type: task.recurrence?.type ?? null,
-        weekdays: task.recurrence?.weekdays ?? [],
-        subtasks: task.subtasks.map((subtask) => ({ id: subtask.id, title: subtask.title })),
-    });
 
-    function save(event: FormEvent<HTMLFormElement>) {
-        event.preventDefault();
-        form.transform((data) => ({
-            ...data,
-            title: data.title.trim(),
-            weekdays: data.recurrence_type === 'weekdays' ? data.weekdays : [],
-            subtasks: data.subtasks.filter((subtask) => subtask.title.trim()).map((subtask) => ({ ...subtask, title: subtask.title.trim() })),
-        }));
-        form.put(`/tasks/${task.id}`, {
-            preserveScroll: true,
-            onSuccess: onClose,
-        });
+    function closeTopLayer() {
+        if (deleteAction) {
+            setDeleteAction(null);
+            return;
+        }
+        if (editor) {
+            setEditor(null);
+            return;
+        }
+        onClose();
     }
 
     function markIncomplete() {
         router.delete(`/tasks/${task.id}/completion`, { preserveScroll: true, onSuccess: onClose });
     }
 
-    function deleteOccurrence() {
-        router.delete(`/tasks/${task.id}`, { preserveScroll: true, onSuccess: onClose });
+    function confirmDeletion(action: Exclude<DeleteAction, null>) {
+        setMenuOpen(false);
+        setDeleteAction(action);
     }
 
-    function deleteThisAndFuture() {
-        router.delete(`/tasks/${task.id}/future`, { preserveScroll: true, onSuccess: onClose });
-    }
-
-    function toggleSubtask(subtaskId: number, nextCompleted: boolean) {
-        router.put(`/tasks/${task.id}/subtasks/${subtaskId}`, { completed: nextCompleted }, { preserveScroll: true });
+    function deleteTask() {
+        const endpoint = deleteAction === 'future' ? `/tasks/${task.id}/future` : `/tasks/${task.id}`;
+        router.delete(endpoint, { preserveScroll: true, onSuccess: onClose });
     }
 
     return (
-        <Drawer description="Task details, scheduling, recurrence, checklist, and allowed actions." onClose={onClose} open title="Task details">
-            {completed ? (
-                <div>
-                    <div className="flex items-center gap-2">
-                        <StatusChip status={task.completionLocked ? 'locked' : 'completed'}>{task.completionLocked ? 'Locked' : 'Completed'}</StatusChip>
-                        {task.recurrence && <span className="text-xs font-bold text-muted">↻ {task.recurrence.label}</span>}
-                    </div>
-                    <h3 className="mt-5 text-2xl font-bold tracking-[-0.03em] text-foreground">{task.title}</h3>
-                    <p className="mt-2 text-sm text-secondary">Scheduled {formatTaskDateLong(task.scheduledDate)}</p>
-
-                    <div className="mt-6 rounded-2xl border border-success/25 bg-success/7 p-5">
-                        <p className="text-xs font-bold tracking-[0.15em] text-success uppercase">Reward earned</p>
-                        <p className="mt-1 text-4xl font-bold text-foreground">+{task.earnedSp} SP</p>
-                        <p className="mt-2 text-sm text-secondary">{task.rewardContext}</p>
-                        {task.lateRewardReduced && <p className="mt-1 text-xs font-bold text-warning">50% late reward</p>}
-                        {task.completedAt && <p className="mt-4 text-xs text-muted">Completed {formatCompletionDate(task.completedAt)} · Season {task.rewardSeasonNumber}</p>}
-                    </div>
-
-                    {task.subtasks.length > 0 && (
-                        <div className="mt-7">
-                            <p className="text-xs font-bold tracking-[0.14em] text-muted uppercase">Subtask snapshot</p>
-                            <ul className="mt-3 space-y-2">
-                                {task.subtasks.map((subtask) => <li className="flex gap-2 text-sm text-secondary" key={subtask.id}><span className="text-success">✓</span>{subtask.title}</li>)}
-                            </ul>
-                        </div>
+        <Drawer onClose={closeTopLayer} open title="Task">
+            <div className="relative">
+                <div className="flex items-start gap-3">
+                    <button
+                        className={classNames(
+                            'focus-ring min-w-0 flex-1 rounded-xl text-left',
+                            task.canEdit ? 'hover:text-[var(--module-accent)]' : 'cursor-default',
+                        )}
+                        disabled={!task.canEdit}
+                        onClick={() => setEditor('title')}
+                        type="button"
+                    >
+                        <span className={classNames('block text-2xl font-bold tracking-[-0.03em]', completed && 'text-secondary line-through')}>{task.title}</span>
+                    </button>
+                    {(task.canDelete || task.canUncomplete) && (
+                        <button
+                            aria-expanded={menuOpen}
+                            aria-label="Task actions"
+                            className="focus-ring grid size-11 shrink-0 place-items-center rounded-full text-muted hover:bg-surface-hover hover:text-foreground"
+                            onClick={() => setMenuOpen(!menuOpen)}
+                            type="button"
+                        >
+                            <MoreHorizontal size={20} />
+                        </button>
                     )}
+                </div>
 
-                    <div className="mt-8 border-t border-border-subtle pt-6">
-                        {task.canUncomplete ? (
-                            <Button fullWidth onClick={markIncomplete} variant="secondary">Mark incomplete</Button>
-                        ) : (
-                            <p className="rounded-2xl border border-border-subtle bg-app p-4 text-sm leading-6 text-muted">This completion belongs to a finished Season. Its Task and awarded SP are permanently locked.</p>
+                {menuOpen && (
+                    <div className="absolute top-12 right-0 z-10 w-64 rounded-2xl border border-border-strong bg-elevated p-1.5 shadow-2xl">
+                        {task.canUncomplete && <MenuAction onClick={markIncomplete}>Mark incomplete</MenuAction>}
+                        {task.canDelete && (
+                            <>
+                                <MenuAction destructive onClick={() => confirmDeletion('occurrence')}>
+                                    {task.recurrence ? 'Delete this occurrence' : 'Delete task'}
+                                </MenuAction>
+                                {task.recurrence && <MenuAction destructive onClick={() => confirmDeletion('future')}>Stop future occurrences</MenuAction>}
+                            </>
+                        )}
+                    </div>
+                )}
+
+                <div className="mt-7 space-y-3">
+                    <DetailSection editable={task.canEdit} icon={<CalendarDays size={19} />} label="Schedule" onClick={() => setEditor('schedule')}>
+                        <span>{formatTaskDateLong(task.scheduledDate)}</span>
+                        {task.important && <Star aria-label="Important" className="text-warning" fill="currentColor" size={14} />}
+                        {task.recurrence && <span className="icon-text inline-flex items-center gap-1"><Repeat2 size={14} />{task.recurrence.label}</span>}
+                    </DetailSection>
+
+                    <DetailSection editable={task.canEdit} icon={<ListChecks size={20} />} label="Checklist" onClick={() => setEditor('checklist')}>
+                        {task.totalSubtasks > 0 ? `${task.completedSubtasks} of ${task.totalSubtasks} completed` : 'None'}
+                    </DetailSection>
+
+                    <div className="rounded-2xl border border-border-subtle bg-app p-4">
+                        <div className="flex items-center justify-between gap-4">
+                            <span className="text-xs font-bold tracking-[0.14em] text-muted uppercase">Reward</span>
+                            <span className={classNames('text-2xl font-bold', completed ? 'text-success' : 'text-[var(--module-accent)]')}>
+                                +{completed ? task.earnedSp : task.projectedSp} SP
+                            </span>
+                        </div>
+                        {completed && task.completedAt && (
+                            <p className="icon-text mt-2 flex items-center gap-1.5 text-xs text-muted">
+                                {task.completionLocked ? <LockKeyhole size={13} /> : <Check size={13} />}
+                                {formatCompletionDate(task.completedAt)}
+                            </p>
                         )}
                     </div>
                 </div>
-            ) : (
-                <form onSubmit={save}>
-                    <div className="rounded-2xl border border-border-subtle bg-app p-4">
-                        <p className="text-xs font-bold tracking-[0.14em] text-[var(--module-accent)] uppercase">Current reward</p>
-                        <p className="mt-1 text-3xl font-bold text-foreground">+{task.projectedSp} SP</p>
-                        <p className="mt-1 text-sm text-secondary">{task.rewardContext}</p>
-                        {task.lateRewardReduced && <p className="mt-1 text-xs font-bold text-warning">50% late reward</p>}
-                    </div>
 
-                    <div className="mt-6 space-y-5">
-                        <Field error={form.errors.title} label="Title" onChange={(event) => form.setData('title', event.target.value)} required value={form.data.title} />
-                        <Field error={form.errors.scheduled_date} label="Scheduled date" onChange={(event) => form.setData('scheduled_date', event.target.value)} required type="date" value={form.data.scheduled_date} />
-                        <Checkbox checked={form.data.important} label="Important" onChange={(event) => form.setData('important', event.target.checked)} />
-                    </div>
+                {task.rescheduleHistory.length > 0 && (
+                    <details className="mt-5 rounded-2xl border border-border-subtle px-4 py-3">
+                        <summary className="focus-ring cursor-pointer rounded text-sm font-semibold text-secondary">Schedule history</summary>
+                        <ul className="mt-3 space-y-2 text-sm text-muted">
+                            {task.rescheduleHistory.map((reschedule, index) => (
+                                <li key={`${reschedule.rescheduledAt}-${index}`}>{formatTaskDateLong(reschedule.fromDate)} → {formatTaskDateLong(reschedule.toDate)}</li>
+                            ))}
+                        </ul>
+                    </details>
+                )}
 
-                    <div className="mt-7 border-t border-border-subtle pt-6">
-                        <p className="mb-3 text-xs font-bold tracking-[0.14em] text-muted uppercase">Recurrence</p>
-                        {task.recurrence ? (
-                            <RecurrenceControls
-                                allowNone={false}
-                                onTypeChange={(type) => type && form.setData('recurrence_type', type)}
-                                onWeekdaysChange={(weekdays) => form.setData('weekdays', weekdays)}
-                                type={form.data.recurrence_type}
-                                weekdays={form.data.weekdays}
-                            />
-                        ) : <p className="text-sm text-secondary">Does not repeat</p>}
-                        {task.recurrence && <p className="mt-3 text-xs leading-5 text-muted">Changes apply to this occurrence and future occurrences. Earlier history stays unchanged.</p>}
-                    </div>
+                {task.completionLocked && (
+                    <p className="icon-text mt-5 flex items-start gap-2 rounded-2xl border border-border-subtle bg-app p-4 text-sm leading-6 text-muted">
+                        <LockKeyhole className="mt-0.5 shrink-0" size={16} />
+                        Locked with its completed Season.
+                    </p>
+                )}
+            </div>
 
-                    <div className="mt-7 border-t border-border-subtle pt-6">
-                        <p className="text-xs font-bold tracking-[0.14em] text-muted uppercase">Checklist</p>
-                        {task.subtasks.length > 0 && (
-                            <div className="mt-3 mb-5 space-y-2 rounded-2xl bg-app p-3">
-                                {task.subtasks.map((subtask) => (
-                                    <label className="flex cursor-pointer items-center gap-2 text-sm text-secondary" key={subtask.id}>
-                                        <input checked={subtask.completed} className="accent-[var(--module-accent)]" onChange={() => toggleSubtask(subtask.id, !subtask.completed)} type="checkbox" />
-                                        <span className={subtask.completed ? 'line-through text-muted' : ''}>{subtask.title}</span>
-                                    </label>
-                                ))}
-                            </div>
-                        )}
-                        <SubtaskEditor onChange={(subtasks) => form.setData('subtasks', subtasks)} subtasks={form.data.subtasks} />
-                    </div>
+            {editor && <TaskEditorDialog editor={editor} key={`${task.id}-${editor}`} onClose={() => setEditor(null)} task={task} today={today} />}
 
-                    {task.rescheduleHistory.length > 0 && (
-                        <div className="mt-7 border-t border-border-subtle pt-6">
-                            <p className="text-xs font-bold tracking-[0.14em] text-muted uppercase">Scheduling history</p>
-                            <ul className="mt-3 space-y-2 text-sm text-secondary">
-                                {task.rescheduleHistory.map((reschedule, index) => <li key={`${reschedule.rescheduledAt}-${index}`}>{formatTaskDateLong(reschedule.fromDate)} → {formatTaskDateLong(reschedule.toDate)}</li>)}
-                            </ul>
-                        </div>
-                    )}
-
-                    <Button className="mt-8" disabled={form.processing || !form.data.title.trim()} fullWidth type="submit">Save changes</Button>
-
-                    <div className="mt-8 border-t border-border-subtle pt-6">
-                        <p className="text-xs font-bold tracking-[0.14em] text-muted uppercase">Remove</p>
-                        <div className="mt-3 space-y-2">
-                            <Button fullWidth onClick={deleteOccurrence} variant="destructive">{task.recurrence ? 'Delete this occurrence' : 'Delete Task'}</Button>
-                            {task.recurrence && <Button fullWidth onClick={deleteThisAndFuture} variant="destructive">Delete this and future occurrences</Button>}
-                        </div>
-                    </div>
-                </form>
-            )}
+            <Dialog onClose={() => setDeleteAction(null)} open={deleteAction !== null} title={deleteAction === 'future' ? 'Stop future occurrences?' : task.recurrence ? 'Delete this occurrence?' : 'Delete task?'}>
+                <p className="text-sm leading-6 text-secondary">
+                    {deleteAction === 'future'
+                        ? 'This occurrence and every incomplete occurrence after it will be removed.'
+                        : 'This cannot be undone.'}
+                </p>
+                <div className="mt-6 flex gap-2">
+                    <Button fullWidth onClick={() => setDeleteAction(null)} variant="secondary">Cancel</Button>
+                    <Button fullWidth onClick={deleteTask} variant="destructive">Delete</Button>
+                </div>
+            </Dialog>
         </Drawer>
+    );
+}
+
+function DetailSection({ children, editable, icon, label, onClick }: {
+    children: ReactNode;
+    editable: boolean;
+    icon: ReactNode;
+    label: string;
+    onClick: () => void;
+}) {
+    const content = (
+        <>
+            <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-elevated text-[var(--module-accent)]">{icon}</span>
+            <span className="min-w-0 flex-1">
+                <span className="block text-xs font-bold tracking-[0.12em] text-muted uppercase">{label}</span>
+                <span className="mt-1 flex flex-wrap items-center gap-2 text-sm font-semibold text-secondary">{children}</span>
+            </span>
+            {editable && <ChevronRight className="shrink-0 text-muted" size={18} />}
+        </>
+    );
+
+    return editable ? (
+        <button className="focus-ring flex min-h-18 w-full items-center gap-3 rounded-2xl border border-border-subtle bg-app p-3 text-left hover:border-border-strong" onClick={onClick} type="button">
+            {content}
+        </button>
+    ) : (
+        <div className="flex min-h-18 items-center gap-3 rounded-2xl border border-border-subtle bg-app p-3">{content}</div>
+    );
+}
+
+function MenuAction({ children, destructive = false, onClick }: {
+    children: ReactNode;
+    destructive?: boolean;
+    onClick: () => void;
+}) {
+    return (
+        <button className={classNames('focus-ring min-h-10 w-full rounded-xl px-3 text-left text-sm font-semibold hover:bg-surface-hover', destructive ? 'text-danger' : 'text-secondary')} onClick={onClick} type="button">
+            {children}
+        </button>
     );
 }

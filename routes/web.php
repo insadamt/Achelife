@@ -23,6 +23,7 @@ use App\Http\Controllers\ObjectiveController;
 use App\Http\Controllers\PersonController;
 use App\Http\Controllers\SeasonController;
 use App\Http\Controllers\SeasonIntroductionController;
+use App\Http\Controllers\SeasonRankGuideController;
 use App\Http\Controllers\StopTaskSeriesController;
 use App\Http\Controllers\SubtaskCompletionController;
 use App\Http\Controllers\TaskCompletionController;
@@ -49,6 +50,7 @@ Route::middleware('auth')->group(function (): void {
     Route::middleware(SynchronizeSeasonState::class)->group(function (): void {
         Route::get('/home', TodayController::class)->name('home');
         Route::get('/seasons', SeasonController::class)->name('seasons.index');
+        Route::get('/seasons/ranks', SeasonRankGuideController::class)->name('seasons.ranks');
         Route::get('/tasks', [TaskController::class, 'index'])->name('tasks.index');
         Route::get('/habits', [HabitController::class, 'index'])->name('habits.index');
         Route::get('/habits/archived', [HabitController::class, 'archived'])->name('habits.archived');

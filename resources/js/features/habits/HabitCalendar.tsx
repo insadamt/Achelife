@@ -1,14 +1,16 @@
 import { router } from '@inertiajs/react';
+import { Check, ChevronDown, Circle, Minus, MoreHorizontal, Plus, X } from 'lucide-react';
 import { useRef, useState } from 'react';
 
-import { Button } from '../../components/ui';
 import { weekdayLabels } from './habitPresentation';
 import type { HabitCalendarLabels, HabitDayData, HabitViewData } from './types';
 
 interface HabitCalendarProps {
     habit: HabitViewData;
     calendarLabels: HabitCalendarLabels;
+    expanded: boolean;
     weekStart: string;
+    onExpansionChange: (expanded: boolean) => void;
     onSelectNumeric: (day: HabitDayData) => void;
     onRequestSkip: (day: HabitDayData) => void;
 }
@@ -27,6 +29,13 @@ const pastStateBorders = {
     pending: 'border-[#a87318]',
 };
 
+const stateIcons = {
+    completed: Check,
+    skipped: Minus,
+    missed: X,
+    pending: Circle,
+};
+
 function addDays(date: string, days: number): string {
     const value = new Date(`${date}T12:00:00`);
     value.setDate(value.getDate() + days);
@@ -41,11 +50,13 @@ function dayLabel(day: HabitDayData, labels: HabitCalendarLabels): number {
 function DaySquare({
     day,
     labels,
+    weekdayLabel,
     onActivate,
     onRequestSkip,
 }: {
     day: HabitDayData;
     labels: HabitCalendarLabels;
+    weekdayLabel?: string;
     onActivate: () => void;
     onRequestSkip: () => void;
 }) {
@@ -55,9 +66,12 @@ function DaySquare({
     const semanticClass = day.state ? stateClasses[day.state] : null;
     const availableClass = day.available
         ? 'border-border-strong bg-transparent text-secondary hover:border-[var(--module-accent)] hover:text-foreground'
-        : 'border-transparent bg-white/[0.025] text-muted/45';
+        : weekdayLabel
+          ? 'border-transparent bg-white/[0.035] text-muted/60'
+          : 'border-transparent bg-transparent text-muted/45';
     const pastBorderClass = day.past && day.state ? pastStateBorders[day.state] : '';
-    const showMonth = labels === 'calendar_dates' && (day.calendarDay === 1 || day.seasonDay === 1);
+    const showMonth = !weekdayLabel && labels === 'calendar_dates' && (day.calendarDay === 1 || day.seasonDay === 1);
+    const StateIcon = day.state ? stateIcons[day.state] : null;
 
     function startHold() {
         if (!day.required || !day.clickable) {
@@ -81,10 +95,10 @@ function DaySquare({
     }
 
     return (
-        <div className="relative min-w-0">
+        <div className="group relative min-w-0">
             <button
                 aria-label={`${day.date}: ${day.state ?? (day.flexibleExtra ? 'optional flexible day' : 'unavailable')}`}
-                className={`focus-ring relative grid aspect-square w-full min-w-0 place-items-center rounded-xl border text-sm font-bold transition-[transform,border-color,background-color,color] duration-160 ${semanticClass ?? availableClass} ${pastBorderClass} ${holding ? 'scale-95' : ''}`}
+                className={`focus-ring relative grid aspect-square w-full min-w-0 place-items-center rounded-lg border text-sm font-bold transition-[transform,border-color,background-color,color] duration-160 sm:rounded-xl ${semanticClass ?? availableClass} ${pastBorderClass} ${day.today ? 'ring-1 ring-[var(--module-accent)] ring-offset-1 ring-offset-elevated' : ''} ${holding ? 'scale-95' : ''}`}
                 disabled={!day.clickable}
                 onClick={() => {
                     if (holdTriggered.current) {
@@ -105,29 +119,29 @@ function DaySquare({
                 onPointerUp={cancelHold}
                 type="button"
             >
+                {weekdayLabel && <span className="absolute top-1.5 text-[0.5rem] font-bold tracking-[0.08em] uppercase opacity-75">{weekdayLabel}</span>}
                 {showMonth && <span className="absolute top-1 text-[0.45rem] font-bold tracking-wide uppercase opacity-70">{day.month}</span>}
-                <span className={showMonth ? 'pt-2' : ''}>{dayLabel(day, labels)}</span>
-                {day.numericValue !== null && day.state !== 'completed' && (
-                    <span aria-hidden="true" className="absolute bottom-1 size-1 rounded-full bg-current opacity-75" />
-                )}
+                <span className={weekdayLabel || showMonth ? 'pt-2.5' : ''}>{dayLabel(day, labels)}</span>
+                {StateIcon && <StateIcon aria-hidden="true" className="absolute right-1 bottom-1 opacity-80" fill={day.state === 'pending' ? 'currentColor' : 'none'} size={9} strokeWidth={3} />}
+                {!day.state && day.flexibleExtra && <Plus aria-hidden="true" className="absolute right-1 bottom-1 opacity-70" size={9} strokeWidth={3} />}
+                {day.numericValue !== null && day.state !== 'completed' && <span aria-hidden="true" className="absolute bottom-1 left-1 size-1 rounded-full bg-current opacity-75" />}
             </button>
             {day.required && day.clickable && (
                 <button
                     aria-label={`More actions for ${day.date}`}
-                    className="focus-ring absolute -top-1 -right-1 grid size-5 place-items-center rounded-full border border-border-strong bg-elevated text-[0.65rem] font-bold text-secondary hover:text-foreground"
+                    className="focus-ring absolute -top-1 -right-1 grid size-5 place-items-center rounded-full border border-border-strong bg-elevated text-[0.65rem] font-bold text-secondary transition-opacity hover:text-foreground sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100"
                     onClick={onRequestSkip}
                     title="Skip this required day"
                     type="button"
                 >
-                    ···
+                    <MoreHorizontal aria-hidden="true" size={11} />
                 </button>
             )}
         </div>
     );
 }
 
-export function HabitCalendar({ habit, calendarLabels, weekStart, onSelectNumeric, onRequestSkip }: HabitCalendarProps) {
-    const [expanded, setExpanded] = useState(false);
+export function HabitCalendar({ habit, calendarLabels, expanded, weekStart, onExpansionChange, onSelectNumeric, onRequestSkip }: HabitCalendarProps) {
     const daysByDate = new Map(habit.days.map((day) => [day.date, day]));
     const weekDays = Array.from({ length: 7 }, (_, index) => daysByDate.get(addDays(weekStart, index)) ?? null);
     const leadingPlaceholders = habit.days[0] ? habit.days[0].weekday - 1 : 0;
@@ -149,7 +163,7 @@ export function HabitCalendar({ habit, calendarLabels, weekStart, onSelectNumeri
         router.post(`/habits/${habit.id}/occurrences/${day.date}/toggle`, {}, { preserveScroll: true });
     }
 
-    function renderDay(day: HabitDayData | null, index: number) {
+    function renderDay(day: HabitDayData | null, index: number, weekdayLabel?: string) {
         return day ? (
             <DaySquare
                 day={day}
@@ -157,25 +171,43 @@ export function HabitCalendar({ habit, calendarLabels, weekStart, onSelectNumeri
                 labels={calendarLabels}
                 onActivate={() => activate(day)}
                 onRequestSkip={() => onRequestSkip(day)}
+                weekdayLabel={weekdayLabel}
             />
         ) : (
-            <div aria-hidden="true" className="aspect-square min-w-0" key={`placeholder-${index}`} />
+            <div aria-hidden="true" className={`relative aspect-square min-w-0 rounded-lg sm:rounded-xl ${weekdayLabel ? 'bg-white/[0.035]' : 'bg-transparent'}`} key={`placeholder-${index}`}>
+                {weekdayLabel && <span className="absolute inset-x-0 top-1.5 text-center text-[0.5rem] font-bold tracking-[0.08em] text-muted/65 uppercase">{weekdayLabel}</span>}
+            </div>
         );
     }
 
     return (
-        <div>
-            <div className="grid grid-cols-7 gap-1.5 sm:gap-2">
-                {weekdayLabels.map((label) => (
-                    <span className="text-center text-[0.6rem] font-bold tracking-[0.1em] text-muted uppercase" key={label}>
-                        {label}
-                    </span>
-                ))}
-                {(expanded ? expandedCells : weekDays).map(renderDay)}
-            </div>
-            <Button className="mx-auto mt-4 flex" onClick={() => setExpanded((value) => !value)} size="small" variant="ghost">
-                {expanded ? 'Collapse calendar' : 'Expand calendar'}
-            </Button>
+        <div className="mx-auto w-full max-w-[27rem]">
+            {expanded ? (
+                <div className="rounded-2xl border border-border-subtle bg-app/45 p-3 sm:p-4">
+                    <div className="grid grid-cols-7 gap-1.5 sm:gap-2">
+                        {weekdayLabels.map((label) => (
+                            <span className="pb-1 text-center text-[0.6rem] font-bold tracking-[0.08em] text-muted uppercase" key={label}>
+                                {label}
+                            </span>
+                        ))}
+                        {expandedCells.map((day, index) => renderDay(day, index))}
+                    </div>
+                </div>
+            ) : (
+                <div className="grid grid-cols-7 gap-1.5 sm:gap-2">
+                    {weekDays.map((day, index) => renderDay(day, index, weekdayLabels[index]))}
+                </div>
+            )}
+            <button
+                aria-expanded={expanded}
+                aria-label={expanded ? 'Collapse calendar' : 'Expand calendar'}
+                className="focus-ring ml-auto mt-1.5 grid size-8 place-items-center rounded-full text-muted hover:bg-surface-hover hover:text-foreground"
+                onClick={() => onExpansionChange(!expanded)}
+                title={expanded ? 'Collapse calendar' : 'Expand calendar'}
+                type="button"
+            >
+                <ChevronDown aria-hidden="true" className={`transition-transform ${expanded ? 'rotate-180' : ''}`} size={18} />
+            </button>
         </div>
     );
 }

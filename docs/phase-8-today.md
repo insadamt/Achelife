@@ -18,7 +18,7 @@ Daily Progress includes only Tasks scheduled today, required Habit occurrences t
 
 ## Tasks and Habits
 
-Today shows a bounded Overdue list followed by Tasks scheduled for the current date. They can be completed or reversed from the focused checklist, while creation, editing, subtasks, upcoming planning, and history remain on Tasks. Completed Tasks move into a collapsed group.
+Today shows a bounded Overdue list followed by Tasks scheduled for the current date. They can be completed or reversed from the focused checklist, and Tasks with subtasks expand inline so existing checklist items can be toggled without leaving Today. Creation, Task editing, subtask definition changes, upcoming planning, and history remain on Tasks. Completed Tasks move into a collapsed group.
 
 Required Habits use compact progress cards and expose Boolean completion, Numeric value entry, and a guarded Skip action. Flexible extras use the same valid occurrence actions but stay in a collapsed secondary section and never affect Daily Progress. Turning off the Flexible preference prevents that section from being returned to Today.
 

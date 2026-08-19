@@ -42,10 +42,10 @@ function NavigationItem({
               active ? 'bg-[var(--module-accent)] text-accent-foreground' : 'text-muted hover:bg-surface-hover hover:text-foreground'
           }`
         : mobile
-          ? `focus-ring relative flex min-h-14 flex-1 flex-col items-center justify-center gap-1 rounded-xl px-1 text-[0.625rem] font-bold tracking-[0.06em] uppercase transition-colors duration-200 ${
+          ? `focus-ring icon-text relative flex min-h-14 flex-1 flex-col items-center justify-center gap-1 rounded-xl px-1 text-[0.625rem] font-bold tracking-[0.06em] uppercase transition-colors duration-200 ${
                 active ? 'text-[var(--module-accent)]' : 'text-muted'
             }`
-          : `focus-ring group flex min-h-11 w-full items-center gap-3 rounded-xl px-3 text-sm font-semibold transition-[background-color,color] duration-200 ${
+          : `focus-ring icon-text group flex min-h-11 w-full items-center gap-3 rounded-xl px-3 text-sm font-semibold transition-[background-color,color] duration-200 ${
                 active ? 'bg-[color-mix(in_srgb,var(--module-accent)_10%,transparent)] text-foreground' : 'text-secondary'
             }`;
 
@@ -135,8 +135,8 @@ export default function AppLayout({ children }: PropsWithChildren) {
                 {user && <span className="grid size-9 place-items-center rounded-xl bg-elevated text-sm font-bold">{user.name.charAt(0).toUpperCase()}</span>}
             </header>
 
-            <main className="mx-auto min-h-screen max-w-[92rem] px-4 pt-7 pb-28 sm:px-6 md:ml-28 md:px-8 md:pt-10 md:pb-12 lg:px-12">
-                {children}
+            <main className="min-h-screen px-4 pt-7 pb-28 sm:px-6 md:ml-28 md:px-8 md:pt-10 md:pb-12 lg:px-12">
+                <div className="mx-auto max-w-[92rem]">{children}</div>
             </main>
 
             <nav
@@ -148,7 +148,7 @@ export default function AppLayout({ children }: PropsWithChildren) {
                 ))}
                 <button
                     aria-expanded={mobileNavigationOpen}
-                    className="focus-ring flex min-h-14 flex-1 flex-col items-center justify-center gap-1 rounded-xl px-1 text-[0.625rem] font-bold tracking-[0.06em] text-muted uppercase transition-colors duration-200 hover:text-foreground"
+                    className="focus-ring icon-text flex min-h-14 flex-1 flex-col items-center justify-center gap-1 rounded-xl px-1 text-[0.625rem] font-bold tracking-[0.06em] text-muted uppercase transition-colors duration-200 hover:text-foreground"
                     onClick={() => setMobileNavigationOpen(true)}
                     type="button"
                 >

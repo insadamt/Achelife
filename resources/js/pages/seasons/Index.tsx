@@ -1,4 +1,5 @@
-import { Head } from '@inertiajs/react';
+import { Head, Link } from '@inertiajs/react';
+import { BookOpen } from 'lucide-react';
 import { useState } from 'react';
 
 import { SeasonCarousel } from '../../features/seasons/SeasonCarousel';
@@ -31,6 +32,13 @@ export default function SeasonsIndex({ seasons, currentSeasonNumber }: SeasonsPa
                 <p className="mt-5 text-xs font-bold tracking-[0.14em] text-muted uppercase">
                     Current · Season {String(currentSeason.number).padStart(2, '0')} · Day {currentSeason.day} of 30
                 </p>
+                <Link
+                    className="focus-ring icon-text mt-5 inline-flex min-h-10 items-center gap-2 rounded-full border border-border-strong bg-elevated px-4 text-xs font-bold tracking-[0.1em] uppercase transition-colors hover:border-[color-mix(in_srgb,var(--module-accent)_45%,var(--border-strong))] hover:bg-surface-hover"
+                    href="/seasons/ranks"
+                >
+                    <BookOpen aria-hidden="true" size={16} />
+                    Rank guide
+                </Link>
             </header>
 
             <div className="mt-3 sm:mt-5">

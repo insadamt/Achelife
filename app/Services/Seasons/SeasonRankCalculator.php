@@ -77,6 +77,18 @@ class SeasonRankCalculator
         );
     }
 
+    /** @return list<SeasonRank> */
+    public function progression(): array
+    {
+        return array_map(
+            fn (array $definition): SeasonRank => $this->makeRank(
+                $definition,
+                topRank: $definition['key'] === 'legend',
+            ),
+            self::RANKS,
+        );
+    }
+
     public function fromSnapshot(string $rankKey): SeasonRank
     {
         if ($rankKey === 'unranked') {

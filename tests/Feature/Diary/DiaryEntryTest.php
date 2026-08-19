@@ -100,6 +100,16 @@ class DiaryEntryTest extends TestCase
         $this->actingAs($user)->get('/diary')->assertInertia(fn (Assert $page) => $page->where('selectedDay.direction', 'rtl'));
     }
 
+    public function test_diary_keeps_at_least_one_completion_language_available(): void
+    {
+        $user = $this->diaryUserCreatedOn('2026-08-01');
+
+        $this->actingAs($user)->put('/diary/settings/languages', ['languages' => []])
+            ->assertSessionHasErrors('languages');
+
+        $this->assertSame(['en', 'ar', 'fr'], DiarySetting::query()->where('user_id', $user->id)->value('languages'));
+    }
+
     public function test_mood_is_required_for_completion_and_clearing_it_reverses_reward(): void
     {
         $user = $this->diaryUserCreatedOn('2026-08-01');

@@ -89,7 +89,7 @@ function ProgressPanel({ data, onClose }: { data: ProgressPanelData; onClose: ()
                             <span className="flex items-center gap-2 text-sm font-bold"><CalendarDays aria-hidden="true" size={17} />Season {String(season.number).padStart(2, '0')}</span>
                             <span className="text-sm text-secondary">Day {season.day} / 30</span>
                         </div>
-                        <RankBadge compact rank={season.rank} />
+                        <RankBadge rank={season.rank} size="medium" />
                         <RankProgress className="mt-4" compact rank={season.rank} />
                     </section>
                 )}

@@ -18,6 +18,11 @@ class SeasonPageTest extends TestCase
         $this->get('/seasons')->assertRedirect('/login');
     }
 
+    public function test_guests_cannot_view_the_rank_guide(): void
+    {
+        $this->get('/seasons/ranks')->assertRedirect('/login');
+    }
+
     public function test_page_renders_history_current_season_and_two_locked_placeholders(): void
     {
         CarbonImmutable::setTestNow('2026-01-31 12:00:00');
@@ -42,5 +47,24 @@ class SeasonPageTest extends TestCase
                 ->where('seasons.3.state', 'locked'));
 
         $this->assertDatabaseCount('seasons', 2);
+    }
+
+    public function test_rank_guide_uses_the_complete_authoritative_progression(): void
+    {
+        $user = User::factory()->create();
+        $currentSeason = app(SynchronizeUserSeasons::class)->execute($user);
+        $currentSeason->update(['introduced_at' => now()]);
+
+        $this->actingAs($user)
+            ->get('/seasons/ranks')
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('seasons/RankGuide')
+                ->has('ranks', 22)
+                ->where('ranks.0.key', 'bronze_i')
+                ->where('ranks.0.minimumSp', 0)
+                ->where('ranks.21.key', 'legend')
+                ->where('ranks.21.minimumSp', 2100)
+                ->where('ranks.21.topRank', true));
     }
 }

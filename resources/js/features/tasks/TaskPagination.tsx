@@ -11,6 +11,7 @@ export function TaskPagination({ links, label }: { links: PaginationLink[]; labe
                     href={link.url}
                     key={`${link.label}-${index}`}
                     preserveScroll
+                    preserveState
                 >
                     {link.label.replace('&laquo;', '').replace('&raquo;', '')}
                 </Link>

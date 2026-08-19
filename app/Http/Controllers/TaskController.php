@@ -44,12 +44,11 @@ class TaskController extends Controller
 
         $todayTasks = (clone $tasks)->with($relations)
             ->whereDate('scheduled_date', $today)
+            ->whereNull('completed_at')
             ->where(function ($query) use ($visibleRecurringTaskIds): void {
-                $query->whereNotNull('completed_at')
-                    ->orWhereNull('task_series_id')
+                $query->whereNull('task_series_id')
                     ->orWhereIn('id', $visibleRecurringTaskIds);
             })
-            ->orderBy('completed_at')
             ->orderBy('created_at')
             ->get()
             ->map(fn (Task $task) => $viewDataFactory->make($task, $today, $currentSeason->id));
@@ -76,7 +75,6 @@ class TaskController extends Controller
 
         $completedTasks = (clone $tasks)->with($relations)
             ->whereNotNull('completed_at')
-            ->whereDate('scheduled_date', '!=', $today)
             ->orderByDesc('completed_at')
             ->paginate(20)
             ->withQueryString()
@@ -88,10 +86,6 @@ class TaskController extends Controller
             'upcomingTasks' => $upcomingTasks,
             'overdueTasks' => $overdueTasks,
             'completedTasks' => $completedTasks,
-            'currentSeason' => [
-                'number' => $currentSeason->season_number,
-                'seasonPoints' => $currentSeason->season_points,
-            ],
         ]);
     }
 

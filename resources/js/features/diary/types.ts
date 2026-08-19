@@ -11,6 +11,7 @@ export interface MentionNode {
 
 export type DiaryContentNode = TextNode | MentionNode;
 export type DiaryDayState = 'completed' | 'missed' | 'pending' | 'unavailable';
+export type DiarySaveState = 'idle' | 'saving' | 'saved' | 'error';
 
 export interface DiaryDay {
     date: string;

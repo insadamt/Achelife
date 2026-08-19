@@ -1,4 +1,5 @@
 import { Head, Link } from '@inertiajs/react';
+import { Archive, ArrowLeft, CalendarDays, Flame, Gauge, Target } from 'lucide-react';
 import type { CSSProperties } from 'react';
 
 import { Surface } from '../../components/ui';
@@ -9,42 +10,57 @@ export default function ArchivedHabits({ habits }: { habits: ArchivedHabitData[]
     return (
         <div style={{ '--module-accent': 'var(--habit-accent)' } as CSSProperties}>
             <Head title="Archived Habits" />
-            <header className="mb-8">
-                <Link className="focus-ring text-sm font-bold text-[var(--module-accent)] hover:underline" href="/habits">← Active Habits</Link>
-                <p className="mt-6 text-xs font-bold tracking-[0.2em] text-[var(--module-accent)] uppercase">Read-only history</p>
-                <h1 className="mt-2 text-4xl font-bold tracking-[-0.05em] sm:text-6xl">Archived Habits</h1>
-                <p className="mt-2 max-w-xl text-sm leading-6 text-secondary">Permanently inactive Habits remain accessible here. They cannot be reactivated or logged.</p>
-            </header>
+            <div className="mx-auto max-w-5xl">
+                <header className="mb-6 flex items-center gap-3">
+                    <Link aria-label="Active habits" className="focus-ring grid size-11 place-items-center rounded-full text-secondary hover:bg-surface-hover hover:text-foreground" href="/habits" title="Active habits">
+                        <ArrowLeft aria-hidden="true" size={20} />
+                    </Link>
+                    <h1 className="text-4xl font-bold tracking-[-0.05em] sm:text-5xl">Archived</h1>
+                </header>
 
-            {habits.length === 0 ? (
-                <Surface className="p-8 text-center" elevated>
-                    <p className="text-xl font-bold">No archived Habits</p>
-                    <p className="mt-2 text-sm text-secondary">Habits you archive will remain available here.</p>
-                </Surface>
-            ) : (
-                <div className="grid gap-4 lg:grid-cols-2">
-                    {habits.map((habit) => (
-                        <Surface className="p-5" elevated key={habit.id}>
-                            <div className="flex items-start justify-between gap-4">
-                                <div>
+                {habits.length === 0 ? (
+                    <Surface className="p-8 text-center" elevated>
+                        <p className="text-xl font-bold">No archived habits</p>
+                    </Surface>
+                ) : (
+                    <div className="grid gap-4">
+                        {habits.map((habit) => (
+                            <Surface className="p-5" elevated key={habit.id}>
+                                <div className="flex items-start justify-between gap-4">
                                     <h2 className="text-2xl font-bold">{habit.name}</h2>
-                                    <p className="mt-1 text-sm text-secondary">
-                                        {habit.type === 'numeric' ? `${formatNumber(habit.numericTarget)} ${habit.unit}` : 'Boolean'}
-                                    </p>
+                                    <span aria-label="Archived" className="grid size-9 shrink-0 place-items-center rounded-full border border-border-strong text-muted" title="Archived">
+                                        <Archive aria-hidden="true" size={16} />
+                                    </span>
                                 </div>
-                                <span className="rounded-full border border-border-strong px-3 py-1 text-[0.6rem] font-bold tracking-wider text-muted uppercase">Archived</span>
-                            </div>
-                            <dl className="mt-5 grid grid-cols-2 gap-4 border-t border-border-subtle pt-4 text-sm">
-                                <div><dt className="text-muted">Difficulty</dt><dd className="mt-1 font-bold">{difficultyLabels[habit.difficulty]} · {habit.baseReward} SP</dd></div>
-                                <div><dt className="text-muted">Schedule</dt><dd className="mt-1 font-bold">{scheduleSummary(habit)}{habit.flexible ? ' · Flexible' : ''}</dd></div>
-                                <div><dt className="text-muted">Started</dt><dd className="mt-1 font-bold">{formatHabitDate(habit.startsOn)}</dd></div>
-                                <div><dt className="text-muted">Archived</dt><dd className="mt-1 font-bold">{formatHabitDate(habit.inactiveOn)}</dd></div>
-                            </dl>
-                            <p className="mt-4 text-xs text-muted">Activity is read-only. Detailed Habit statistics are reserved for a later phase.</p>
-                        </Surface>
-                    ))}
-                </div>
-            )}
+                                <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm font-bold text-secondary">
+                                    {habit.type === 'numeric' && (
+                                        <span className="inline-flex items-center gap-1.5" title="Target">
+                                            <Target aria-hidden="true" size={15} />
+                                            {formatNumber(habit.numericTarget)} {habit.unit}
+                                        </span>
+                                    )}
+                                    <span className="inline-flex items-center gap-1.5" title="Difficulty and base reward">
+                                        <Gauge aria-hidden="true" size={15} />
+                                        {difficultyLabels[habit.difficulty]} · {habit.baseReward} SP
+                                    </span>
+                                    <span className="inline-flex items-center gap-1.5" title="Final streak">
+                                        <Flame aria-hidden="true" size={15} />
+                                        {habit.currentStreak}
+                                    </span>
+                                    <span className="inline-flex items-center gap-1.5" title="Schedule">
+                                        <CalendarDays aria-hidden="true" size={15} />
+                                        {scheduleSummary(habit)}{habit.flexible ? ' · Flexible' : ''}
+                                    </span>
+                                </div>
+                                <div className="mt-4 flex flex-wrap gap-x-5 gap-y-1 border-t border-border-subtle pt-4 text-xs font-semibold text-muted">
+                                    <span>Started {formatHabitDate(habit.startsOn)}</span>
+                                    <span>Archived {formatHabitDate(habit.inactiveOn)}</span>
+                                </div>
+                            </Surface>
+                        ))}
+                    </div>
+                )}
+            </div>
         </div>
     );
 }

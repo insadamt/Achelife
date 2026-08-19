@@ -11,6 +11,7 @@ Phase 0.5 establishes Achelife's global visual language, reusable UI primitives,
 - Lime is the application-wide primary accent. The legacy module accent tokens resolve to the same lime value so navigation, controls, progress, focus, and active surfaces remain harmonized across every destination.
 - Surfaces use restrained borders, rounded geometry, controlled elevation, and accent glow only for meaningful active states.
 - Interaction transitions use a 160–220ms motion range and collapse when reduced motion is requested.
+- Controls that combine icons and text use a shared optical baseline adjustment so navigation, actions, and compact metadata remain visually aligned.
 
 ## Component primitives
 

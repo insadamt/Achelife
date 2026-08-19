@@ -4,9 +4,10 @@ import type { EditableSubtask } from './types';
 interface SubtaskEditorProps {
     subtasks: EditableSubtask[];
     onChange: (subtasks: EditableSubtask[]) => void;
+    onToggleCompletion?: (subtask: EditableSubtask, index: number) => void;
 }
 
-export function SubtaskEditor({ subtasks, onChange }: SubtaskEditorProps) {
+export function SubtaskEditor({ subtasks, onChange, onToggleCompletion }: SubtaskEditorProps) {
     function updateTitle(index: number, title: string) {
         onChange(subtasks.map((subtask, subtaskIndex) => (subtaskIndex === index ? { ...subtask, title } : subtask)));
     }
@@ -27,7 +28,15 @@ export function SubtaskEditor({ subtasks, onChange }: SubtaskEditorProps) {
         <div className="space-y-2">
             {subtasks.map((subtask, index) => (
                 <div className="flex items-center gap-2" key={subtask.id ?? `new-${index}`}>
-                    <span className="w-5 text-center text-xs font-bold text-muted">{index + 1}</span>
+                    {onToggleCompletion && subtask.id ? (
+                        <input
+                            aria-label={`Mark ${subtask.title || `subtask ${index + 1}`} ${subtask.completed ? 'incomplete' : 'complete'}`}
+                            checked={Boolean(subtask.completed)}
+                            className="size-5 shrink-0 accent-[var(--module-accent)]"
+                            onChange={() => onToggleCompletion(subtask, index)}
+                            type="checkbox"
+                        />
+                    ) : <span className="w-5 text-center text-xs font-bold text-muted">{index + 1}</span>}
                     <input
                         aria-label={`Subtask ${index + 1} title`}
                         className="focus-ring min-h-10 min-w-0 flex-1 rounded-xl border border-border-strong bg-app px-3 text-sm text-foreground placeholder:text-muted"

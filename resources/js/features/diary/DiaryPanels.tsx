@@ -1,5 +1,7 @@
 import { router } from '@inertiajs/react';
-import { useState } from 'react';
+import { Search, X } from 'lucide-react';
+import { useMemo, useState } from 'react';
+import type { FormEvent } from 'react';
 
 import { Button, Dialog } from '../../components/ui';
 import { formatDiaryDate, titleCase } from './diaryPresentation';
@@ -17,6 +19,7 @@ interface DiaryPanelsProps {
     selectedPersonId: number | null;
     onClose: () => void;
     onOpenPerson: (personId: number) => void;
+    onSelectDate: (date: string) => void;
 }
 
 export function DiaryPanels(props: DiaryPanelsProps) {
@@ -29,21 +32,40 @@ export function DiaryPanels(props: DiaryPanelsProps) {
     );
 }
 
-function SearchPanel({ open, onClose, search, languages, people, moodCatalog }: DiaryPanelsProps & { open: boolean }) {
+function SearchPanel({ open, onClose, onSelectDate, search, languages, people, moodCatalog }: DiaryPanelsProps & { open: boolean }) {
     const [query, setQuery] = useState(search.query);
     const [mood, setMood] = useState(search.mood ?? '');
     const [language, setLanguage] = useState(search.language ?? '');
     const [person, setPerson] = useState(search.person?.toString() ?? '');
+    const hasDraftFilters = Boolean(query || mood || language || person);
+    const hasAppliedFilters = Boolean(search.query || search.mood || search.language || search.person);
 
-    function runSearch() {
+    function runSearch(event?: FormEvent) {
+        event?.preventDefault();
         router.get('/diary', { q: query || undefined, mood: mood || undefined, language: language || undefined, person: person || undefined }, { preserveState: true, preserveScroll: true, only: ['search'] });
     }
 
+    function resetSearch() {
+        setQuery('');
+        setMood('');
+        setLanguage('');
+        setPerson('');
+        router.get('/diary', {}, { preserveState: true, preserveScroll: true, only: ['search'] });
+    }
+
+    function openResult(date: string) {
+        onClose();
+        onSelectDate(date);
+    }
+
     return (
-        <Dialog description="Search persisted autosaves by text, mood, language, or Person." onClose={onClose} open={open} placement="right" title="Search Diary">
-            <div className="space-y-3">
-                <input aria-label="Search text" className="focus-ring w-full rounded-xl border border-border-strong bg-surface px-4 py-3" onChange={(event) => setQuery(event.target.value)} placeholder="Words in your Diary" value={query} />
-                <div className="grid grid-cols-2 gap-2">
+        <Dialog description="Find persisted entries by words, mood, language, or Person." onClose={onClose} open={open} placement="right" title="Search Diary">
+            <form onSubmit={runSearch}>
+                <div className="relative">
+                    <Search aria-hidden="true" className="pointer-events-none absolute top-1/2 left-4 -translate-y-1/2 text-muted" size={18} />
+                    <input aria-label="Search text" autoFocus className="focus-ring w-full rounded-xl border border-border-strong bg-surface py-3 pr-4 pl-11" onChange={(event) => setQuery(event.target.value)} placeholder="Words in your Diary" value={query} />
+                </div>
+                <div className="mt-3 grid grid-cols-2 gap-2">
                     <select aria-label="Mood filter" className="focus-ring rounded-xl border border-border-strong bg-surface px-3 py-3" onChange={(event) => setMood(event.target.value)} value={mood}>
                         <option value="">Any mood</option>{Object.values(moodCatalog).flat().map((item) => <option key={item} value={item}>{titleCase(item)}</option>)}
                     </select>
@@ -51,48 +73,81 @@ function SearchPanel({ open, onClose, search, languages, people, moodCatalog }: 
                         <option value="">Any language</option>{languages.map((item) => <option key={item.code} value={item.code}>{item.name}</option>)}
                     </select>
                 </div>
-                <select aria-label="Person filter" className="focus-ring w-full rounded-xl border border-border-strong bg-surface px-3 py-3" onChange={(event) => setPerson(event.target.value)} value={person}>
+                <select aria-label="Person filter" className="focus-ring mt-2 w-full rounded-xl border border-border-strong bg-surface px-3 py-3" onChange={(event) => setPerson(event.target.value)} value={person}>
                     <option value="">Any Person</option>{people.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
                 </select>
-                <Button fullWidth onClick={runSearch}>Search</Button>
-            </div>
-            <div className="mt-7 space-y-2">
-                {search.results.map((result) => (
-                    <button className="focus-ring w-full rounded-2xl border border-border-subtle bg-surface p-4 text-left hover:bg-surface-hover" key={result.date} onClick={() => router.get('/diary', { date: result.date })} type="button">
-                        <span className="font-bold">{formatDiaryDate(result.date, { dateStyle: 'medium' })}</span>
-                        <span className="ml-2 text-xs text-muted">{result.mood ? titleCase(result.mood) : 'No mood'} · {result.languageName ?? 'No language'}</span>
-                        <span className="mt-2 block text-sm leading-5 text-secondary">“{result.excerpt}”</span>
-                    </button>
-                ))}
-                {search.results.length === 0 && (search.query || search.mood || search.language || search.person) && <p className="py-8 text-center text-sm text-muted">No persisted entries match.</p>}
+                <div className="mt-3 flex gap-2">
+                    <Button disabled={!hasDraftFilters} fullWidth type="submit">Search</Button>
+                    {hasAppliedFilters && <Button aria-label="Clear filters" className="shrink-0 px-4" onClick={resetSearch} variant="secondary"><X aria-hidden="true" size={18} /></Button>}
+                </div>
+            </form>
+
+            <div className="mt-7">
+                {hasAppliedFilters && <p className="mb-3 text-xs font-bold tracking-[0.12em] text-muted uppercase">{search.results.length} {search.results.length === 1 ? 'result' : 'results'}</p>}
+                <div className="space-y-2">
+                    {search.results.map((result) => (
+                        <button className="focus-ring w-full rounded-2xl border border-border-subtle bg-surface p-4 text-left hover:border-border-strong hover:bg-surface-hover" key={result.date} onClick={() => openResult(result.date)} type="button">
+                            <span className="flex items-center justify-between gap-3">
+                                <span className="font-bold">{formatDiaryDate(result.date, { dateStyle: 'medium' })}</span>
+                                <span className={`text-[0.625rem] font-bold tracking-wider uppercase ${result.completed ? 'text-success' : 'text-warning'}`}>{result.completed ? 'Complete' : 'Draft'}</span>
+                            </span>
+                            <span className="mt-1 block text-xs text-muted">{result.mood ? titleCase(result.mood) : 'No mood'} · {result.languageName ?? 'No language'}</span>
+                            <span className="mt-2 block text-sm leading-5 text-secondary">“{result.excerpt}”</span>
+                        </button>
+                    ))}
+                </div>
+                {!hasAppliedFilters && <p className="py-10 text-center text-sm leading-6 text-muted">Search your saved writing, or combine filters to rediscover a day.</p>}
+                {hasAppliedFilters && search.results.length === 0 && <div className="py-10 text-center"><p className="text-sm text-muted">No persisted entries match these filters.</p><Button className="mt-3" onClick={resetSearch} size="small" variant="ghost">Reset filters</Button></div>}
             </div>
         </Dialog>
     );
 }
 
-function PeoplePanel({ open, onClose, people, selectedPersonId, onOpenPerson }: DiaryPanelsProps & { open: boolean }) {
+function PeoplePanel({ open, onClose, people, selectedPersonId, onOpenPerson, onSelectDate }: DiaryPanelsProps & { open: boolean }) {
+    const [query, setQuery] = useState('');
     const selectedPerson = people.find((person) => person.id === selectedPersonId) ?? null;
+    const matchingPeople = useMemo(() => people.filter((person) => person.name.toLocaleLowerCase().includes(query.trim().toLocaleLowerCase())), [people, query]);
+    const activePeople = matchingPeople.filter((person) => !person.archived);
+    const archivedPeople = matchingPeople.filter((person) => person.archived);
 
     function remove(person: DiaryPerson) {
+        const action = person.mentionCount > 0 ? 'archive' : 'delete';
+        if (!window.confirm(`${titleCase(action)} ${person.name}? ${person.mentionCount > 0 ? 'Historical mentions will remain readable.' : 'This cannot be undone.'}`)) return;
         if (person.mentionCount > 0) router.post(`/diary/people/${person.id}/archive`, {}, { preserveScroll: true });
         else router.delete(`/diary/people/${person.id}`, { preserveScroll: true });
     }
 
     return (
-        <Dialog description="People live inside Diary and keep historical mention links intact." onClose={onClose} open={open} placement="right" title={selectedPerson ? selectedPerson.name : 'People'}>
+        <Dialog description="People connect names in your writing to a lasting private profile." onClose={onClose} open={open} placement="right" title={selectedPerson ? selectedPerson.name : 'People'}>
             {selectedPerson ? (
-                <PersonProfile onBack={() => onOpenPerson(0)} onRemove={() => remove(selectedPerson)} person={selectedPerson} />
+                <PersonProfile onBack={() => onOpenPerson(0)} onOpenEntry={(date) => { onClose(); onSelectDate(date); }} onRemove={() => remove(selectedPerson)} person={selectedPerson} />
             ) : (
-                <div className="space-y-2">
-                    {people.map((person) => <button className="focus-ring flex w-full items-center justify-between rounded-xl border border-border-subtle p-3 text-left hover:bg-surface-hover" key={person.id} onClick={() => onOpenPerson(person.id)} type="button"><span><span className="font-bold">{person.name}</span>{person.nickname && <span className="ml-2 text-sm text-muted">{person.nickname}</span>}</span><span className="text-xs text-muted">{person.archived ? 'Archived' : `${person.mentionCount} entries`}</span></button>)}
+                <>
+                    {people.length > 6 && <input aria-label="Find a Person" className="focus-ring mb-4 w-full rounded-xl border border-border-strong bg-surface px-4 py-3" onChange={(event) => setQuery(event.target.value)} placeholder="Find a Person" value={query} />}
+                    <PeopleGroup label="Active" onOpenPerson={onOpenPerson} people={activePeople} />
+                    {archivedPeople.length > 0 && <PeopleGroup label="Archived" onOpenPerson={onOpenPerson} people={archivedPeople} />}
                     {people.length === 0 && <p className="py-10 text-center text-sm text-muted">Type @ in an entry to create your first Person.</p>}
-                </div>
+                    {people.length > 0 && matchingPeople.length === 0 && <p className="py-10 text-center text-sm text-muted">No People match this name.</p>}
+                </>
             )}
         </Dialog>
     );
 }
 
-function PersonProfile({ person, onBack, onRemove }: { person: DiaryPerson; onBack: () => void; onRemove: () => void }) {
+function PeopleGroup({ label, people, onOpenPerson }: { label: string; people: DiaryPerson[]; onOpenPerson: (personId: number) => void }) {
+    if (people.length === 0) return null;
+
+    return (
+        <section className="mb-6">
+            <h3 className="mb-2 text-xs font-bold tracking-[0.14em] text-muted uppercase">{label}</h3>
+            <div className="space-y-2">
+                {people.map((person) => <button className="focus-ring flex w-full items-center justify-between rounded-xl border border-border-subtle p-3 text-left hover:border-border-strong hover:bg-surface-hover" key={person.id} onClick={() => onOpenPerson(person.id)} type="button"><span><span className="font-bold">{person.name}</span>{person.nickname && <span className="ml-2 text-sm text-muted">{person.nickname}</span>}</span><span className="text-xs text-muted">{person.mentionCount} {person.mentionCount === 1 ? 'entry' : 'entries'}</span></button>)}
+            </div>
+        </section>
+    );
+}
+
+function PersonProfile({ person, onBack, onRemove, onOpenEntry }: { person: DiaryPerson; onBack: () => void; onRemove: () => void; onOpenEntry: (date: string) => void }) {
     const [editing, setEditing] = useState(false);
     const [name, setName] = useState(person.name);
     const [nickname, setNickname] = useState(person.nickname ?? '');
@@ -123,7 +178,7 @@ function PersonProfile({ person, onBack, onRemove }: { person: DiaryPerson; onBa
             )}
             <p className="mt-6 font-bold">Mentioned in {person.mentionCount} {person.mentionCount === 1 ? 'entry' : 'entries'}</p>
             <div className="mt-3 space-y-2">
-                {person.recentEntries.map((entry) => <button className="focus-ring w-full rounded-xl border border-border-subtle p-3 text-left hover:bg-surface-hover" key={entry.date} onClick={() => router.get('/diary', { date: entry.date })} type="button"><span className="font-bold">{formatDiaryDate(entry.date)}</span><span className="mt-1 block text-xs text-muted">{entry.excerpt}</span></button>)}
+                {person.recentEntries.map((entry) => <button className="focus-ring w-full rounded-xl border border-border-subtle p-3 text-left hover:border-border-strong hover:bg-surface-hover" key={entry.date} onClick={() => onOpenEntry(entry.date)} type="button"><span className="font-bold">{formatDiaryDate(entry.date)}</span><span className="mt-1 block text-xs text-muted">{entry.excerpt}</span></button>)}
             </div>
             {!person.archived && <Button className="mt-6" onClick={onRemove} variant="secondary">{person.mentionCount > 0 ? 'Archive Person' : 'Delete Person'}</Button>}
             {person.archived && <p className="mt-6 text-sm font-semibold text-muted">Archived · historical profile remains readable.</p>}
@@ -139,11 +194,12 @@ function SettingsPanel({ open, onClose, configuredLanguageCodes, languages }: Di
     }
 
     return (
-        <Dialog description="Removing a language only changes the selector. Existing entries retain their stored language." onClose={onClose} open={open} placement="right" title="Diary languages">
+        <Dialog description="Choose the languages available on new entries. Existing entries keep their saved language." onClose={onClose} open={open} placement="right" title="Diary languages">
             <div className="space-y-2">
                 {languages.map((language) => <label className="flex cursor-pointer items-center justify-between rounded-xl border border-border-subtle p-3 hover:bg-surface-hover" key={language.code}><span><span className="font-semibold">{language.name}</span><span className="ml-2 text-xs text-muted">{language.code.toUpperCase()} · {language.direction.toUpperCase()}</span></span><input checked={selected.includes(language.code)} onChange={() => toggle(language.code)} type="checkbox" /></label>)}
             </div>
-            <Button className="mt-6" fullWidth onClick={() => router.put('/diary/settings/languages', { languages: selected }, { preserveScroll: true, onSuccess: onClose })}>Update selector</Button>
+            {selected.length === 0 && <p className="mt-4 text-sm font-semibold text-warning">Keep at least one language so new entries can be completed.</p>}
+            <Button className="mt-6" disabled={selected.length === 0} fullWidth onClick={() => router.put('/diary/settings/languages', { languages: selected }, { preserveScroll: true, onSuccess: onClose })}>Update selector</Button>
         </Dialog>
     );
 }

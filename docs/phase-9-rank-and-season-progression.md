@@ -23,7 +23,9 @@ This access-driven step also backfills completed development Seasons created bef
 
 ## Interface
 
-The shared `RankBadge`, `RankProgress`, and `SeasonRankSummary` components render backend-provided Rank state. The authenticated application shell exposes live Rank and Season progress through its screen-attached progress notch on every page. Season details place live progression or final Rank/SP ahead of Overview and Objectives. Carousel cards show compact current or final Rank text, while locked future cards expose no Rank.
+The shared `RankEmblem`, `RankBadge`, `RankProgress`, and `SeasonRankSummary` components render backend-provided Rank state. The lozenge emblem keeps one silhouette across the progression, adds tier-specific frame details, and develops its core from a pip through a ring and inner lozenge for divisions I through III. Legend uses a radiant core and double lozenge. Badge presentation uses explicit small, medium, large, and hero size presets so every placement can preserve the emblem's game-badge presence without hardcoded local dimensions.
+
+The authenticated application shell exposes live Rank and Season progress through its screen-attached progress notch on every page. Season details place live progression or final Rank/SP ahead of Overview and Objectives. Carousel cards show compact current or final Rank text, while locked future cards expose no Rank. The Season Rank guide presents every division in a vertical progression with its authoritative minimum SP threshold and highlights the user's current Rank.
 
 Rank identity always includes text and exact SP progress rather than relying on tier accent color. Long labels use responsive sizing, and all progress remains textual as well as visual.
 

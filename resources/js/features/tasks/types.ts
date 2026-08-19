@@ -48,6 +48,7 @@ export interface TaskViewData {
 export interface EditableSubtask {
     id?: number;
     title: string;
+    completed?: boolean;
 }
 
 export interface TaskFormData {

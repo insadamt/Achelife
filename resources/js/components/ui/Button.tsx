@@ -1,3 +1,4 @@
+import { Children } from 'react';
 import type { ButtonHTMLAttributes, PropsWithChildren } from 'react';
 
 import { classNames } from './classNames';
@@ -34,10 +35,13 @@ export function Button({
     type = 'button',
     ...props
 }: PropsWithChildren<ButtonProps>) {
+    const hasTextChild = Children.toArray(children).some((child) => ['string', 'number'].includes(typeof child));
+
     return (
         <button
             className={classNames(
                 'focus-ring inline-flex cursor-pointer items-center justify-center gap-2 rounded-full border font-bold tracking-[0.08em] uppercase transition-[transform,background-color,border-color,color,filter,box-shadow] duration-200 disabled:pointer-events-none disabled:opacity-45',
+                hasTextChild && 'icon-text',
                 variantClasses[variant],
                 sizeClasses[size],
                 fullWidth && 'w-full',

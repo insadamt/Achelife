@@ -14,7 +14,7 @@ class DiarySettingController extends Controller
     {
         $allowedCodes = collect($catalog->all())->pluck('code')->all();
         $validated = $request->validate([
-            'languages' => ['present', 'array', 'max:12'],
+            'languages' => ['present', 'array', 'min:1', 'max:12'],
             'languages.*' => ['string', 'distinct', Rule::in($allowedCodes)],
         ]);
 

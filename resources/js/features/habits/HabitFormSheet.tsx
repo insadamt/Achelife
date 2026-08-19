@@ -1,8 +1,9 @@
 import { useForm } from '@inertiajs/react';
+import { CalendarCheck, CalendarDays, CheckCircle2, Gauge, Shuffle, Target, TriangleAlert } from 'lucide-react';
 import type { FormEvent, ReactNode } from 'react';
 
 import { Button, Drawer, Field } from '../../components/ui';
-import { difficultyLabels, formatNumber, scheduleSummary, weekdayShortLabels } from './habitPresentation';
+import { difficultyLabels, formatNumber, weekdayShortLabels } from './habitPresentation';
 import type { HabitDifficulty, HabitScheduleType, HabitType, HabitViewData } from './types';
 
 interface HabitFormPayload {
@@ -67,18 +68,9 @@ export function HabitFormSheet({ open, habit = null, onClose }: HabitFormSheetPr
         }
     }
 
-    const previewDefinition = {
-        difficulty: form.data.difficulty,
-        baseReward: difficultyRewards[form.data.difficulty],
-        scheduleType: form.data.schedule_type,
-        weekdays: form.data.weekdays,
-        flexible: form.data.schedule_type === 'selected_weekdays' && form.data.flexible,
-        numericTarget: form.data.type === 'numeric' ? form.data.numeric_target : null,
-    };
-
     return (
         <Drawer
-            description={editing ? 'Identity updates now. Rule changes begin tomorrow.' : 'A concise definition for a daily practice.'}
+            description={editing ? 'Rule changes start tomorrow.' : undefined}
             onClose={onClose}
             open={open}
             title={editing ? 'Edit Habit' : 'Create Habit'}
@@ -96,11 +88,15 @@ export function HabitFormSheet({ open, habit = null, onClose }: HabitFormSheetPr
                 />
 
                 <fieldset>
-                    <legend className="text-sm font-semibold text-secondary">Type</legend>
+                    <legend className="text-sm font-semibold text-secondary">
+                        <span className="inline-flex items-center gap-2"><CheckCircle2 aria-hidden="true" size={16} />Type</span>
+                    </legend>
                     <div className="mt-2 grid grid-cols-2 gap-2">
                         {(['boolean', 'numeric'] as const).map((type) => (
                             <ChoiceButton key={type} onClick={() => !editing && form.setData('type', type)} selected={form.data.type === type}>
-                                {type === 'boolean' ? 'Boolean' : 'Numeric'}
+                                {type === 'boolean'
+                                    ? <><CheckCircle2 aria-hidden="true" className="mx-auto mb-1" size={17} />Check-off</>
+                                    : <><Target aria-hidden="true" className="mx-auto mb-1" size={17} />Target</>}
                             </ChoiceButton>
                         ))}
                     </div>
@@ -129,12 +125,14 @@ export function HabitFormSheet({ open, habit = null, onClose }: HabitFormSheetPr
                             required
                             value={form.data.unit}
                         />
-                        {editing && <p className="col-span-2 text-xs leading-5 text-muted">Unit changes update its label throughout this Habit's history.</p>}
+                        {editing && <p className="col-span-2 text-xs leading-5 text-muted">Unit renames update history.</p>}
                     </div>
                 )}
 
                 <fieldset>
-                    <legend className="text-sm font-semibold text-secondary">Difficulty</legend>
+                    <legend className="text-sm font-semibold text-secondary">
+                        <span className="inline-flex items-center gap-2"><Gauge aria-hidden="true" size={16} />Difficulty</span>
+                    </legend>
                     <div className="mt-2 grid grid-cols-3 gap-2">
                         {(['easy', 'normal', 'hard'] as const).map((difficulty) => (
                             <ChoiceButton key={difficulty} onClick={() => form.setData('difficulty', difficulty)} selected={form.data.difficulty === difficulty}>
@@ -146,12 +144,16 @@ export function HabitFormSheet({ open, habit = null, onClose }: HabitFormSheetPr
                 </fieldset>
 
                 <fieldset>
-                    <legend className="text-sm font-semibold text-secondary">Schedule</legend>
+                    <legend className="text-sm font-semibold text-secondary">
+                        <span className="inline-flex items-center gap-2"><CalendarDays aria-hidden="true" size={16} />Schedule</span>
+                    </legend>
                     <div className="mt-2 grid grid-cols-2 gap-2">
                         <ChoiceButton onClick={() => form.setData('schedule_type', 'every_day')} selected={form.data.schedule_type === 'every_day'}>
+                            <CalendarCheck aria-hidden="true" className="mx-auto mb-1" size={17} />
                             Every day
                         </ChoiceButton>
                         <ChoiceButton onClick={() => form.setData('schedule_type', 'selected_weekdays')} selected={form.data.schedule_type === 'selected_weekdays'}>
+                            <CalendarDays aria-hidden="true" className="mx-auto mb-1" size={17} />
                             Selected days
                         </ChoiceButton>
                     </div>
@@ -183,25 +185,20 @@ export function HabitFormSheet({ open, habit = null, onClose }: HabitFormSheetPr
                                     type="checkbox"
                                 />
                                 <span>
-                                    <span className="block text-sm font-bold">Flexible</span>
-                                    <span className="mt-0.5 block text-xs leading-5 text-muted">Allow optional completions on non-selected days.</span>
+                                    <span className="flex items-center gap-2 text-sm font-bold"><Shuffle aria-hidden="true" size={15} />Flexible</span>
+                                    <span className="mt-0.5 block text-xs leading-5 text-muted">Optional on other days.</span>
                                 </span>
                             </label>
                         </>
                     )}
                 </fieldset>
 
-                <div className="rounded-2xl border border-[color-mix(in_srgb,var(--module-accent)_35%,var(--border-subtle))] bg-app p-4">
-                    <p className="text-[0.625rem] font-bold tracking-[0.16em] text-[var(--module-accent)] uppercase">Preview</p>
-                    <p className="mt-2 text-xl font-bold">{form.data.name.trim() || 'Untitled Habit'}</p>
-                    <p className="mt-1 text-sm text-secondary">
-                        {form.data.type === 'numeric' ? `${formatNumber(form.data.numeric_target)} ${form.data.unit || 'units'}` : 'Boolean'} · {difficultyLabels[form.data.difficulty]} · {difficultyRewards[form.data.difficulty]} SP
+                {editing && (
+                    <p className="flex items-center gap-2 rounded-xl border border-warning/35 bg-warning/10 px-3 py-2 text-xs font-semibold text-warning">
+                        <TriangleAlert aria-hidden="true" className="shrink-0" size={15} />
+                        Today's occurrence stays unchanged.
                     </p>
-                    <p className="mt-2 text-sm text-muted">
-                        {scheduleSummary(previewDefinition)} {previewDefinition.flexible ? '· Flexible' : ''}
-                    </p>
-                    {editing && <p className="mt-3 text-xs font-semibold text-warning">Rule changes begin tomorrow. Today's occurrence stays unchanged.</p>}
-                </div>
+                )}
 
                 <Button disabled={form.processing} fullWidth type="submit">
                     {editing ? 'Save Habit' : 'Create Habit'}

@@ -1,5 +1,6 @@
 import { Head, Link } from '@inertiajs/react';
-import { useState } from 'react';
+import { Archive, Plus } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import type { CSSProperties } from 'react';
 
 import { Button, Surface } from '../../components/ui';
@@ -8,7 +9,7 @@ import { HabitCard } from '../../features/habits/HabitCard';
 import { HabitFormSheet } from '../../features/habits/HabitFormSheet';
 import { NumericValueDialog } from '../../features/habits/NumericValueDialog';
 import { SkipConfirmationDialog } from '../../features/habits/SkipConfirmationDialog';
-import type { CurrentSeasonData, HabitCalendarLabels, HabitDayData, HabitViewData } from '../../features/habits/types';
+import type { HabitCalendarLabels, HabitDayData, HabitViewData } from '../../features/habits/types';
 
 interface HabitsPageProps {
     today: string;
@@ -17,7 +18,6 @@ interface HabitsPageProps {
         endDate: string;
     };
     calendarLabels: HabitCalendarLabels;
-    currentSeason: CurrentSeasonData;
     habits: HabitViewData[];
 }
 
@@ -26,62 +26,96 @@ interface SelectedDay {
     day: HabitDayData;
 }
 
+function usePhoneViewport(): boolean {
+    const [phoneViewport, setPhoneViewport] = useState(false);
+
+    useEffect(() => {
+        const mediaQuery = window.matchMedia('(max-width: 639px)');
+        const updateViewport = () => setPhoneViewport(mediaQuery.matches);
+
+        updateViewport();
+        mediaQuery.addEventListener('change', updateViewport);
+
+        return () => mediaQuery.removeEventListener('change', updateViewport);
+    }, []);
+
+    return phoneViewport;
+}
+
 export default function HabitsIndex(props: HabitsPageProps) {
+    const phoneViewport = usePhoneViewport();
     const [creating, setCreating] = useState(false);
     const [editingHabitId, setEditingHabitId] = useState<number | null>(null);
     const [numericSelection, setNumericSelection] = useState<SelectedDay | null>(null);
     const [skipSelection, setSkipSelection] = useState<SelectedDay | null>(null);
+    const [expandedHabitIds, setExpandedHabitIds] = useState<Set<number>>(() => new Set());
     const editingHabit = props.habits.find((habit) => habit.id === editingHabitId) ?? null;
+
+    function setHabitCalendarExpanded(habitId: number, expanded: boolean) {
+        setExpandedHabitIds((currentIds) => {
+            if (phoneViewport) {
+                return expanded ? new Set([habitId]) : new Set();
+            }
+
+            const nextIds = new Set(currentIds);
+            if (expanded) nextIds.add(habitId);
+            else nextIds.delete(habitId);
+
+            return nextIds;
+        });
+    }
 
     return (
         <div style={{ '--module-accent': 'var(--habit-accent)' } as CSSProperties}>
             <Head title="Habits" />
 
-            <header className="mb-7 flex flex-col justify-between gap-5 lg:flex-row lg:items-end">
-                <div>
-                    <p className="text-xs font-bold tracking-[0.2em] text-[var(--module-accent)] uppercase">Practice, recorded</p>
-                    <h1 className="mt-2 text-4xl font-bold tracking-[-0.05em] sm:text-6xl">Habits</h1>
-                    <p className="mt-2 max-w-xl text-sm leading-6 text-secondary sm:text-base">Every active Habit stays visible. Its calendar carries the daily story across Seasons.</p>
-                </div>
-                <div className="flex flex-wrap items-stretch gap-2">
-                    <CalendarLabelSetting value={props.calendarLabels} />
-                    <div className="rounded-2xl border border-border-subtle bg-surface px-4 py-3 text-right">
-                        <p className="text-[0.625rem] font-bold tracking-[0.14em] text-muted uppercase">Season {String(props.currentSeason.number).padStart(2, '0')}</p>
-                        <p className="mt-1 text-xl font-bold">{props.currentSeason.seasonPoints.toLocaleString()} SP</p>
+            <div className="mx-auto max-w-5xl">
+                <header className="mb-6 flex items-center justify-between gap-4">
+                    <h1 className="text-4xl font-bold tracking-[-0.05em] sm:text-5xl">Habits</h1>
+                    <div className="flex items-center gap-2">
+                        <CalendarLabelSetting value={props.calendarLabels} />
+                        <Link
+                            aria-label="Archived habits"
+                            className="focus-ring grid size-11 place-items-center rounded-full border border-border-strong bg-elevated text-secondary hover:bg-surface-hover hover:text-foreground"
+                            href="/habits/archived"
+                            title="Archived habits"
+                        >
+                            <Archive aria-hidden="true" size={19} />
+                        </Link>
+                        <Button aria-label="Create habit" className="size-11 px-0" onClick={() => setCreating(true)} title="Create habit">
+                            <Plus aria-hidden="true" size={21} strokeWidth={2.5} />
+                        </Button>
                     </div>
-                </div>
-            </header>
+                </header>
 
-            <div className="mb-7 flex flex-wrap gap-2">
-                <Button onClick={() => setCreating(true)}>+ New Habit</Button>
-                <Link className="focus-ring inline-flex min-h-11 items-center justify-center rounded-full border border-border-strong bg-elevated px-5 py-2.5 text-sm font-bold tracking-[0.08em] text-foreground uppercase hover:bg-surface-hover" href="/habits/archived">
-                    Archived
-                </Link>
+                {props.habits.length === 0 ? (
+                    <Surface className="grid min-h-64 place-items-center p-8 text-center" elevated>
+                        <div>
+                            <p className="text-2xl font-bold">No active habits</p>
+                            <Button className="mt-5" onClick={() => setCreating(true)}>
+                                <Plus aria-hidden="true" size={18} />
+                                Create habit
+                            </Button>
+                        </div>
+                    </Surface>
+                ) : (
+                    <div className="grid items-start gap-3">
+                        {props.habits.map((habit) => (
+                            <HabitCard
+                                calendarLabels={props.calendarLabels}
+                                calendarExpanded={expandedHabitIds.has(habit.id)}
+                                habit={habit}
+                                key={habit.id}
+                                onEdit={() => setEditingHabitId(habit.id)}
+                                onExpansionChange={(expanded) => setHabitCalendarExpanded(habit.id, expanded)}
+                                onRequestSkip={(day) => setSkipSelection({ habit, day })}
+                                onSelectNumeric={(day) => setNumericSelection({ habit, day })}
+                                weekStart={props.currentWeek.startDate}
+                            />
+                        ))}
+                    </div>
+                )}
             </div>
-
-            {props.habits.length === 0 ? (
-                <Surface className="grid min-h-64 place-items-center p-8 text-center" elevated>
-                    <div>
-                        <p className="text-2xl font-bold">No active Habits</p>
-                        <p className="mt-2 max-w-md text-sm leading-6 text-secondary">Create one global practice. Required occurrences begin today and continue across Season boundaries.</p>
-                        <Button className="mt-5" onClick={() => setCreating(true)}>Create your first Habit</Button>
-                    </div>
-                </Surface>
-            ) : (
-                <div className="grid items-start gap-5 xl:grid-cols-2">
-                    {props.habits.map((habit) => (
-                        <HabitCard
-                            calendarLabels={props.calendarLabels}
-                            habit={habit}
-                            key={habit.id}
-                            onEdit={() => setEditingHabitId(habit.id)}
-                            onRequestSkip={(day) => setSkipSelection({ habit, day })}
-                            onSelectNumeric={(day) => setNumericSelection({ habit, day })}
-                            weekStart={props.currentWeek.startDate}
-                        />
-                    ))}
-                </div>
-            )}
 
             {creating && <HabitFormSheet key="create-habit" onClose={() => setCreating(false)} open />}
             {editingHabit && (

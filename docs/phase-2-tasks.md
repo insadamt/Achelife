@@ -45,11 +45,11 @@ During the same active reward Season, `MarkTaskIncomplete` subtracts exactly the
 
 ## Interface
 
-`/tasks` uses a sticky quick composer rather than an add-button workflow. Title and Enter/Create are sufficient; compact controls expose date, Important, daily or selected-weekday recurrence, and an ordered subtask editor. The projected reward updates immediately.
+`/tasks` uses a sticky conversational composer rather than an add-button workflow. It begins as one input and expands on focus to expose icon-led date, Important, recurrence, and subtask controls. Title and Enter/Create are sufficient. Projected SP appears only after a non-empty title and updates immediately.
 
-The timeline is organized into Today, Upcoming, Overdue, and Completed sections. Overdue and Completed history use bounded pagination. Upcoming shows every one-time future Task and only the next pending occurrence from each recurring series. Task rows expose completion as the primary action, compact checklist progress, and earned or projected SP.
+Four focused tabs organize the timeline into Today, Overdue, Upcoming, and Completed. Today owns only incomplete Tasks scheduled for the current date; every completed Task belongs to Completed so records never appear in two tabs. Overdue uses bounded pagination, while Completed appends bounded chunks with a Load more action. Upcoming shows every one-time future Task and only the next pending occurrence from each recurring series. Rows keep completion, title, date, importance, projected or earned SP, and conditional recurrence or checklist indicators visible. A Task with subtasks exposes an inline expandable checklist so its existing items can be completed without opening the details sheet.
 
-Selecting a Task opens a full-height responsive sheet. Incomplete Tasks expose only supported fields and recurrence-safe removal choices. Completed Tasks are read-only, show exact reward attribution, and allow reversal only while their reward Season remains active.
+Selecting a Task opens a read-first full-height responsive sheet. Incomplete title, schedule, and checklist sections each open a focused editor and save independently. Recurring edits keep their forward-only behavior. Removal lives behind a compact action menu and confirmation. Completed Tasks are read-only, show exact reward attribution, and allow reversal only while their reward Season remains active.
 
 ## Verification
 

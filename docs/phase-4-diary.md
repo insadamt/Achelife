@@ -12,13 +12,13 @@ People are user-owned and intentionally lightweight: name, optional nickname and
 
 ## Autosave and validity
 
-The editor debounces changes for 700 ms, aborts superseded browser requests, and sends a monotonically increasing client revision. The backend locks the daily row and ignores revisions that are not newer, preventing a delayed response or request from overwriting newer content. Saving, saved, and unobtrusive error states remain visible near the editor controls. Short and language-less drafts are persisted normally.
+The editor debounces changes for 700 ms, aborts superseded browser requests, and sends a monotonically increasing client revision. The backend locks the daily row and ignores revisions that are not newer, preventing a delayed response or request from overwriting newer content. Date navigation flushes an outstanding draft before leaving and stops when that save fails. Saving, saved, and error states remain visible near the selected date, errors expose an explicit retry action, and a browser-exit guard appears only while local changes remain unsaved. Short and language-less drafts are persisted normally.
 
 The active writing surface keeps a native textarea for reliable selection and input while a measurement-matched overlay renders structured mentions as clickable inline profile links with a concise hover label. Mention insertion preserves surrounding text, adds a word-boundary space only when needed, and positions autocomplete from the actual textarea caret rather than a fixed page coordinate. Autocomplete stays closed while the caret is inside an existing name token. Diary autosave requests bypass global string trimming so text-node boundary spaces survive persistence; affected development entries are safely repaired at alphanumeric mention boundaries when reopened.
 
 The backend derives visible plain text from validated nodes and counts `mb_strlen(trim($plainText))`. Leading and trailing whitespace therefore cannot satisfy the threshold; ordinary internal spaces and visible mention labels count; JSON keys and Person IDs do not. Completion requires at least 20 visible characters, an explicitly selected configured language, and a specific mood from the mood wheel.
 
-Once the text threshold is reached without either required selection, the editor highlights the missing mood or language control and explains which choice unlocks completion and SP. Successful autosaves immediately refresh the day state, date rail, calendar state, exact reward, writing streak, multiplier, and shared Season SP without a page reload.
+The editor presents writing length, mood, and language as a compact completion checklist. Missing controls become visually prominent when the text threshold is reached, while writing remains available before either metadata choice is made. Successful autosaves immediately refresh the day state, date rail, calendar state, exact reward, writing streak, multiplier, and shared Season SP without a page reload.
 
 ## Progression and Season locking
 
@@ -34,9 +34,9 @@ Mood uses stable group and specific identifiers and is required for a completed,
 
 ## Navigation and search
 
-Desktop Diary uses a compact 14-day state rail beside a dominant notebook-like writing surface. Mobile prioritizes the editor and opens the calendar as a dialog. The expanded Monday–Sunday calendar supports month and year traversal and serializes Completed, Pending, Missed, and Unavailable states from account creation through today. Completed Seasons remain navigable and permanently read-only.
+Desktop Diary uses a compact 14-day state rail beside a dominant notebook-like writing surface. An older selected date is pinned above the recent rail so search and calendar navigation retain context. Previous, next, Today, and calendar controls provide direct calendar movement. Mobile prioritizes the editor and opens the calendar from the date header rather than a floating action. The expanded Monday–Sunday calendar supports bounded month and year traversal and serializes Completed, Pending, Missed, and Unavailable domain states from account creation through today. The interface presents calmer Complete, Draft, Ready to write, Unwritten, No entry, and Unavailable labels without changing progression semantics. Completed Seasons remain navigable and permanently read-only.
 
-Search operates only on persisted autosaves and supports portable plain-text `LIKE` matching plus mood, language, and Person filters. Results open their exact dates; locked history remains read-only.
+Search operates only on persisted autosaves and supports portable plain-text `LIKE` matching plus mood, language, and Person filters. It supports keyboard submission, result counts, filter reset, and explicit Draft or Complete result states. Results open their exact dates through the same guarded navigation path; locked history remains read-only. Search, People, and language settings are secondary tool drawers rather than competing entry tabs. At least one configured language is required so a new entry can always be completed.
 
 ## Verification
 

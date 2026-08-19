@@ -2,11 +2,13 @@
 
 namespace Tests\Feature\Tasks;
 
+use App\Actions\Seasons\SynchronizeUserSeasons;
 use App\Actions\Tasks\CompleteTask;
 use App\Models\Task;
 use App\Models\User;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Inertia\Testing\AssertableInertia as Assert;
 use Tests\TestCase;
 
 class BasicTaskTest extends TestCase
@@ -102,5 +104,51 @@ class BasicTaskTest extends TestCase
 
         $this->assertSame('Original title', $task->refresh()->title);
         $this->assertSame('2026-08-18', $task->scheduled_date->toDateString());
+    }
+
+    public function test_today_and_completed_tabs_have_distinct_task_ownership(): void
+    {
+        CarbonImmutable::setTestNow('2026-08-18 12:00:00');
+        $user = User::factory()->create(['created_at' => CarbonImmutable::parse('2026-08-01')]);
+        app(SynchronizeUserSeasons::class)->execute($user)->update(['introduced_at' => now()]);
+        $pendingTask = $user->tasks()->create([
+            'title' => 'Pending today',
+            'scheduled_date' => '2026-08-18',
+            'important' => false,
+        ]);
+        $completedTask = $user->tasks()->create([
+            'title' => 'Completed today',
+            'scheduled_date' => '2026-08-18',
+            'important' => false,
+        ]);
+        app(CompleteTask::class)->execute($user, $completedTask);
+
+        $this->actingAs($user)->get('/tasks')->assertInertia(fn (Assert $page) => $page
+            ->has('todayTasks', 1)
+            ->where('todayTasks.0.id', $pendingTask->id)
+            ->has('completedTasks.data', 1)
+            ->where('completedTasks.data.0.id', $completedTask->id));
+    }
+
+    public function test_completed_tasks_are_returned_in_bounded_chunks(): void
+    {
+        CarbonImmutable::setTestNow('2026-08-18 12:00:00');
+        $user = User::factory()->create(['created_at' => CarbonImmutable::parse('2026-08-01')]);
+        app(SynchronizeUserSeasons::class)->execute($user)->update(['introduced_at' => now()]);
+
+        foreach (range(1, 21) as $index) {
+            $task = $user->tasks()->create([
+                'title' => "Completed task {$index}",
+                'scheduled_date' => '2026-08-18',
+                'important' => false,
+            ]);
+            app(CompleteTask::class)->execute($user, $task);
+        }
+
+        $this->actingAs($user)->get('/tasks')->assertInertia(fn (Assert $page) => $page
+            ->has('completedTasks.data', 20)
+            ->where('completedTasks.total', 21)
+            ->where('completedTasks.current_page', 1)
+            ->where('completedTasks.last_page', 2));
     }
 }

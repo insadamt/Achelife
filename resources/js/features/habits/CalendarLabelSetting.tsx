@@ -1,4 +1,5 @@
 import { router } from '@inertiajs/react';
+import { CalendarDays, Hash } from 'lucide-react';
 
 import type { HabitCalendarLabels } from './types';
 
@@ -8,26 +9,27 @@ export function CalendarLabelSetting({ value }: { value: HabitCalendarLabels }) 
     }
 
     return (
-        <div className="rounded-2xl border border-border-subtle bg-surface p-1.5">
-            <p className="px-2 pt-1 text-[0.58rem] font-bold tracking-[0.12em] text-muted uppercase">Calendar dates</p>
-            <div className="mt-1 grid grid-cols-2 gap-1">
-                <button
-                    aria-pressed={value === 'calendar_dates'}
-                    className={`focus-ring rounded-xl px-3 py-2 text-xs font-bold ${value === 'calendar_dates' ? 'bg-[var(--module-accent)] text-accent-foreground' : 'text-secondary hover:bg-surface-hover'}`}
-                    onClick={() => update('calendar_dates')}
-                    type="button"
-                >
-                    Dates
-                </button>
-                <button
-                    aria-pressed={value === 'season_days'}
-                    className={`focus-ring rounded-xl px-3 py-2 text-xs font-bold ${value === 'season_days' ? 'bg-[var(--module-accent)] text-accent-foreground' : 'text-secondary hover:bg-surface-hover'}`}
-                    onClick={() => update('season_days')}
-                    type="button"
-                >
-                    Season days
-                </button>
-            </div>
+        <div aria-label="Calendar labels" className="flex rounded-full border border-border-subtle bg-surface p-1" role="group">
+            <button
+                aria-label="Show calendar dates"
+                aria-pressed={value === 'calendar_dates'}
+                className={`focus-ring grid size-9 place-items-center rounded-full ${value === 'calendar_dates' ? 'bg-[var(--module-accent)] text-accent-foreground' : 'text-secondary hover:bg-surface-hover hover:text-foreground'}`}
+                onClick={() => update('calendar_dates')}
+                title="Calendar dates"
+                type="button"
+            >
+                <CalendarDays aria-hidden="true" size={17} />
+            </button>
+            <button
+                aria-label="Show Season days"
+                aria-pressed={value === 'season_days'}
+                className={`focus-ring grid size-9 place-items-center rounded-full ${value === 'season_days' ? 'bg-[var(--module-accent)] text-accent-foreground' : 'text-secondary hover:bg-surface-hover hover:text-foreground'}`}
+                onClick={() => update('season_days')}
+                title="Season days"
+                type="button"
+            >
+                <Hash aria-hidden="true" size={17} />
+            </button>
         </div>
     );
 }
