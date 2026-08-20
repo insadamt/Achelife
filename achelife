@@ -1,0 +1,218 @@
+#!/bin/sh
+set -eu
+
+STATE_DIR=".achelife"
+PORT_FILE="$STATE_DIR/port"
+
+mkdir -p "$STATE_DIR"
+
+get_running_port() {
+    docker compose port web 80 2>/dev/null \
+        | sed -n 's/.*:\([0-9][0-9]*\)$/\1/p' \
+        | head -n 1
+}
+
+get_saved_port() {
+    if [ -f "$PORT_FILE" ]; then
+        PORT="$(cat "$PORT_FILE")"
+
+        case "$PORT" in
+            ''|*[!0-9]*)
+                return 1
+                ;;
+            *)
+                printf '%s\n' "$PORT"
+                ;;
+        esac
+    else
+        return 1
+    fi
+}
+
+save_port() {
+    PORT="$1"
+    printf '%s\n' "$PORT" > "$PORT_FILE"
+}
+
+wait_until_ready() {
+    ATTEMPT=0
+
+    while [ "$ATTEMPT" -lt 30 ]; do
+        PORT="$(get_running_port || true)"
+
+        if [ -n "$PORT" ] && \
+           wget -q --spider "http://127.0.0.1:${PORT}/up" 2>/dev/null
+        then
+            return 0
+        fi
+
+        ATTEMPT=$((ATTEMPT + 1))
+        sleep 1
+    done
+
+    return 1
+}
+
+show_url() {
+    PORT="$(get_running_port || true)"
+
+    if [ -z "$PORT" ]; then
+        PORT="$(get_saved_port || true)"
+    fi
+
+    if [ -n "$PORT" ]; then
+        echo
+        echo "Achelife:"
+        echo "http://localhost:${PORT}"
+    fi
+}
+
+start_dynamic() {
+    echo "Searching for an available port..."
+
+    docker compose up -d
+
+    PORT="$(get_running_port || true)"
+
+    if [ -z "$PORT" ]; then
+        echo "ERROR: Docker did not assign a port." >&2
+        exit 1
+    fi
+
+    save_port "$PORT"
+
+    # Re-apply the selected port explicitly so future starts,
+    # rebuilds and APP_URL all use the same address.
+    ACHELIFE_PORT="$PORT" \
+    ACHELIFE_URL="http://localhost:${PORT}" \
+        docker compose up -d
+}
+
+start_with_saved_port() {
+    PORT="$1"
+
+    ACHELIFE_PORT="$PORT" \
+    ACHELIFE_URL="http://localhost:${PORT}" \
+        docker compose up -d
+}
+
+start_achelife() {
+    SAVED_PORT="$(get_saved_port || true)"
+
+    if [ -n "$SAVED_PORT" ]; then
+        echo "Using saved port ${SAVED_PORT}..."
+
+        if ! start_with_saved_port "$SAVED_PORT"; then
+            echo
+            echo "Port ${SAVED_PORT} is no longer available."
+            echo "Selecting a new port..."
+
+            rm -f "$PORT_FILE"
+
+            docker compose rm -sf web >/dev/null 2>&1 || true
+
+            start_dynamic
+        fi
+    else
+        start_dynamic
+    fi
+
+    echo "Waiting for Achelife..."
+
+    if wait_until_ready; then
+        PORT="$(get_running_port)"
+        save_port "$PORT"
+
+        echo
+        echo "Achelife is ready."
+        echo "http://localhost:${PORT}"
+    else
+        echo
+        echo "Achelife started, but the health check is not ready."
+        show_url
+        exit 1
+    fi
+}
+
+rebuild_achelife() {
+    SAVED_PORT="$(get_saved_port || true)"
+
+    if [ -n "$SAVED_PORT" ]; then
+        echo "Rebuilding Achelife on port ${SAVED_PORT}..."
+
+        if ! ACHELIFE_PORT="$SAVED_PORT" \
+             ACHELIFE_URL="http://localhost:${SAVED_PORT}" \
+             docker compose up -d --build
+        then
+            echo
+            echo "Rebuild or port binding failed."
+            exit 1
+        fi
+    else
+        echo "Building Achelife..."
+        docker compose build
+
+        start_dynamic
+    fi
+
+    echo "Waiting for Achelife..."
+
+    if wait_until_ready; then
+        PORT="$(get_running_port)"
+        save_port "$PORT"
+
+        echo
+        echo "Achelife is ready."
+        echo "http://localhost:${PORT}"
+    else
+        echo
+        echo "Achelife rebuilt, but the health check is not ready."
+        show_url
+        exit 1
+    fi
+}
+
+case "${1:-}" in
+    start)
+        echo "Starting Achelife..."
+        start_achelife
+        ;;
+
+    stop)
+        echo "Stopping Achelife..."
+        docker compose down
+        echo "Achelife stopped."
+        ;;
+
+    restart)
+        echo "Restarting Achelife..."
+        docker compose down
+        start_achelife
+        ;;
+
+    rebuild)
+        rebuild_achelife
+        ;;
+
+    status)
+        docker compose ps
+        show_url
+        ;;
+
+    logs)
+        docker compose logs -f
+        ;;
+
+    *)
+        echo "Achelife self-hosted"
+        echo
+        echo "Usage:"
+        echo "  ./achelife start"
+        echo "  ./achelife stop"
+        echo "  ./achelife restart"
+        echo "  ./achelife rebuild"
+        echo "  ./achelife status"
+        echo "  ./achelife logs"
+        exit 1
+        ;;
+esac

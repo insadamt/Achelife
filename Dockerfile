@@ -21,16 +21,46 @@ FROM php:8.4-fpm-alpine AS vendor
 
 WORKDIR /var/www/html
 
+# git allows Composer to fall back to source downloads if
+# GitHub dist/ZIP downloads temporarily fail.
+RUN apk add --no-cache git unzip
+
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
+# Dependency installation is cached as long as these two files
+# do not change.
+COPY composer.json composer.lock ./
+
+RUN set -eux; \
+    attempt=1; \
+    while [ "$attempt" -le 3 ]; do \
+        if composer install \
+            --no-dev \
+            --prefer-dist \
+            --no-interaction \
+            --no-progress \
+            --no-scripts \
+            --no-autoloader; then \
+            break; \
+        fi; \
+        if [ "$attempt" -eq 3 ]; then \
+            echo "Composer install failed after 3 attempts." >&2; \
+            exit 1; \
+        fi; \
+        echo "Composer download failed. Retrying in 5 seconds..."; \
+        attempt=$((attempt + 1)); \
+        sleep 5; \
+    done
+
+# Now copy the actual application.
 COPY . .
 
-RUN composer install \
-    --no-dev \
-    --prefer-dist \
-    --optimize-autoloader \
-    --no-interaction \
-    --no-progress
+# Build the optimized autoloader after the Laravel application
+# exists. This also runs the normal post-autoload-dump hooks.
+RUN composer dump-autoload \
+    --optimize \
+    --classmap-authoritative \
+    --no-interaction
 
 
 # ------------------------------------------------------------
