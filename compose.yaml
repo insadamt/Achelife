@@ -1,0 +1,64 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: app
+
+    restart: unless-stopped
+
+    environment:
+      APP_NAME: Achelife
+      APP_ENV: production
+      APP_DEBUG: "false"
+      APP_URL: "${ACHELIFE_URL:-http://localhost}"
+
+      LOG_CHANNEL: stderr
+      LOG_LEVEL: warning
+
+      DB_CONNECTION: sqlite
+      DB_DATABASE: /data/achelife.sqlite
+
+      SESSION_DRIVER: database
+      CACHE_STORE: database
+      QUEUE_CONNECTION: sync
+
+      FILESYSTEM_DISK: local
+
+    volumes:
+      - achelife-data:/data
+      - achelife-storage:/var/www/html/storage
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: web
+
+    restart: unless-stopped
+
+    depends_on:
+      - app
+
+    ports:
+      - target: 80
+        host_ip: 127.0.0.1
+        published: "${ACHELIFE_PORT:-8080-8999}"
+        protocol: tcp
+        app_protocol: http
+
+    healthcheck:
+      test:
+        - CMD
+        - wget
+        - -q
+        - --spider
+        - http://127.0.0.1/up
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+
+volumes:
+  achelife-data:
+  achelife-storage:
