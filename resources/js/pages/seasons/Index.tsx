@@ -1,9 +1,9 @@
 import { Head, Link } from '@inertiajs/react';
-import { BookOpen } from 'lucide-react';
+import { BookOpen, Orbit } from 'lucide-react';
 import { useState } from 'react';
 
-import { SeasonCarousel } from '../../features/seasons/SeasonCarousel';
-import { SeasonDetails } from '../../features/seasons/SeasonDetails';
+import { SeasonCommandCenter } from '../../features/seasons/SeasonCommandCenter';
+import { SeasonSwitcher } from '../../features/seasons/SeasonSwitcher';
 import type { SeasonViewData } from '../../features/seasons/types';
 
 interface SeasonsPageProps {
@@ -23,37 +23,47 @@ export default function SeasonsIndex({ seasons, currentSeasonNumber }: SeasonsPa
         <div style={{ '--module-accent': 'var(--season-accent)' } as React.CSSProperties}>
             <Head title="Seasons" />
 
-            <header className="mx-auto max-w-3xl text-center">
-                <p className="text-xs font-bold tracking-[0.22em] text-[var(--module-accent)] uppercase">Your 30-day path</p>
-                <h1 className="mt-3 text-4xl font-bold tracking-[-0.05em] sm:text-6xl">Seasons</h1>
-                <p className="mx-auto mt-3 max-w-xl text-sm leading-6 text-secondary sm:text-base">
-                    Every chapter is exactly 30 calendar days. Your history stays behind you; the next chapter unlocks on its own.
-                </p>
-                <p className="mt-5 text-xs font-bold tracking-[0.14em] text-muted uppercase">
-                    Current · Season {String(currentSeason.number).padStart(2, '0')} · Day {currentSeason.day} of 30
-                </p>
-                <Link
-                    className="focus-ring icon-text mt-5 inline-flex min-h-10 items-center gap-2 rounded-full border border-border-strong bg-elevated px-4 text-xs font-bold tracking-[0.1em] uppercase transition-colors hover:border-[color-mix(in_srgb,var(--module-accent)_45%,var(--border-strong))] hover:bg-surface-hover"
-                    href="/seasons/ranks"
-                >
-                    <BookOpen aria-hidden="true" size={16} />
-                    Rank guide
-                </Link>
-            </header>
+            <div className="mx-auto max-w-6xl">
+                <header className="flex items-center justify-between gap-4">
+                    <div className="flex min-w-0 items-center gap-3">
+                        <span className="grid size-11 shrink-0 place-items-center rounded-2xl border border-[color-mix(in_srgb,var(--module-accent)_38%,var(--border-subtle))] bg-[color-mix(in_srgb,var(--module-accent)_8%,transparent)] text-[var(--module-accent)]">
+                            <Orbit aria-hidden="true" size={21} />
+                        </span>
+                        <div>
+                            <h1 className="text-3xl font-bold tracking-[-0.045em] sm:text-4xl">Seasons</h1>
+                            <p className="mt-0.5 text-xs font-bold tracking-[0.13em] text-muted uppercase">
+                                {currentSeason.day} / 30 · Season {String(currentSeason.number).padStart(2, '0')}
+                            </p>
+                        </div>
+                    </div>
+                    <Link
+                        aria-label="Open Rank guide"
+                        className="focus-ring icon-text inline-flex min-h-10 shrink-0 items-center gap-2 rounded-full border border-border-strong bg-elevated px-3 text-xs font-bold tracking-[0.1em] uppercase transition-colors hover:border-[var(--module-accent)] hover:bg-surface-hover sm:px-4"
+                        href="/seasons/ranks"
+                    >
+                        <BookOpen aria-hidden="true" size={16} />
+                        <span className="hidden sm:inline">Ranks</span>
+                    </Link>
+                </header>
 
-            <div className="mt-3 sm:mt-5">
-                <SeasonCarousel
-                    onSelect={(season) => {
-                        if (season.state !== 'locked') setSelectedSeasonNumber(season.number);
-                    }}
-                    seasons={seasons}
-                    selectedSeasonNumber={selectedSeasonNumber}
-                />
+                <div className="mt-5 rounded-[1.5rem] border border-border-subtle bg-surface/55 px-2 sm:px-4">
+                    <SeasonSwitcher
+                        onSelect={(season) => {
+                            if (season.state !== 'locked') setSelectedSeasonNumber(season.number);
+                        }}
+                        seasons={seasons}
+                        selectedSeasonNumber={selectedSeasonNumber}
+                    />
+                </div>
+
+                <section aria-label="Selected Season" className="mt-5">
+                    <SeasonCommandCenter
+                        key={selectedSeason.number}
+                        onReturnToCurrent={() => setSelectedSeasonNumber(currentSeason.number)}
+                        season={selectedSeason}
+                    />
+                </section>
             </div>
-
-            <section aria-label="Selected Season details" className="mx-auto mt-8 max-w-6xl sm:mt-12">
-                <SeasonDetails season={selectedSeason} />
-            </section>
         </div>
     );
 }

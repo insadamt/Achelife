@@ -1,44 +1,21 @@
 import { router } from '@inertiajs/react';
+import { Clock3, LockKeyhole, Plus, Sparkles, Target } from 'lucide-react';
 import { useState } from 'react';
 
-import { Button, Dialog } from '../../components/ui';
+import { Button, Dialog, Surface } from '../../components/ui';
 import { ObjectiveCard } from './ObjectiveCard';
 import { ObjectiveFormDialog } from './ObjectiveFormDialog';
 import type { ObjectiveViewData, SeasonViewData } from './types';
 
-function SetupWindow({ season }: { season: SeasonViewData }) {
-    if (season.state === 'completed') {
-        return (
-            <div className="rounded-2xl border border-border-subtle bg-app px-4 py-3">
-                <p className="text-[0.625rem] font-bold tracking-[0.16em] text-muted uppercase">Historical record</p>
-                <p className="mt-1 text-sm font-semibold text-secondary">Completed Season · Objectives permanently locked</p>
-            </div>
-        );
-    }
-
-    if (!season.objectiveSetupOpen) {
-        return (
-            <div className="rounded-2xl border border-warning/30 bg-warning/6 px-4 py-3">
-                <p className="text-[0.625rem] font-bold tracking-[0.16em] text-warning uppercase">Objective set locked</p>
-                <p className="mt-1 text-sm font-semibold text-secondary">Completion remains available through Day 30.</p>
-            </div>
-        );
-    }
-
-    return (
-        <div className="rounded-2xl border border-[color-mix(in_srgb,var(--module-accent)_35%,var(--border-subtle))] bg-[color-mix(in_srgb,var(--module-accent)_7%,transparent)] px-4 py-3">
-            <p className="text-[0.625rem] font-bold tracking-[0.16em] text-[var(--module-accent)] uppercase">Setup window</p>
-            <p className="mt-1 text-sm font-semibold text-secondary">
-                {season.objectiveSetupDaysRemaining === 0
-                    ? 'Final setup day · Objectives lock after today'
-                    : `${season.objectiveSetupDaysRemaining} ${season.objectiveSetupDaysRemaining === 1 ? 'day' : 'days'} remaining`}
-            </p>
-        </div>
-    );
-}
-
-export function ObjectiveBoard({ season }: { season: SeasonViewData }) {
-    const [creating, setCreating] = useState(false);
+export function ObjectiveBoard({
+    season,
+    creating,
+    onCreatingChange,
+}: {
+    season: SeasonViewData;
+    creating: boolean;
+    onCreatingChange: (creating: boolean) => void;
+}) {
     const [editingObjectiveId, setEditingObjectiveId] = useState<number | null>(null);
     const [deletingObjectiveId, setDeletingObjectiveId] = useState<number | null>(null);
     const editingObjective = season.objectives.find((objective) => objective.id === editingObjectiveId) ?? null;
@@ -53,49 +30,65 @@ export function ObjectiveBoard({ season }: { season: SeasonViewData }) {
     }
 
     return (
-        <div>
-            <div className="grid gap-4 lg:grid-cols-[1fr_auto] lg:items-end">
-                <div>
-                    <p className="text-xs font-bold tracking-[0.2em] text-[var(--module-accent)] uppercase">Season mission board</p>
-                    <h3 className="mt-2 text-3xl font-bold tracking-[-0.04em] sm:text-4xl">Objectives</h3>
-                    <p className="mt-2 max-w-xl text-sm leading-6 text-secondary">
-                        Up to three defining outcomes. Every Objective is either incomplete or completed.
-                    </p>
+        <Surface className="mt-5 p-5 sm:p-7" elevated>
+            <div className="flex items-center justify-between gap-4">
+                <div className="flex min-w-0 items-center gap-3">
+                    <span className="grid size-11 shrink-0 place-items-center rounded-2xl bg-[color-mix(in_srgb,var(--module-accent)_10%,transparent)] text-[var(--module-accent)]">
+                        <Target aria-hidden="true" size={21} />
+                    </span>
+                    <div>
+                        <h2 className="text-2xl font-bold tracking-[-0.035em]">Objectives</h2>
+                        <p className="mt-0.5 text-xs font-bold tracking-[0.12em] text-muted uppercase">
+                            {season.objectiveCompletedCount} / {season.objectiveCount} complete
+                        </p>
+                    </div>
                 </div>
-                <SetupWindow season={season} />
+                {mayAdd && (
+                    <Button aria-label="Add Objective" className="size-11 px-0 sm:w-auto sm:px-4" onClick={() => onCreatingChange(true)}>
+                        <Plus aria-hidden="true" size={16} />
+                        <span className="hidden sm:inline">Add</span>
+                    </Button>
+                )}
             </div>
 
-            <div className="mt-6 grid gap-3 rounded-2xl border border-border-subtle bg-app p-4 sm:grid-cols-3 sm:p-5">
-                <div>
-                    <p className="text-[0.625rem] font-bold tracking-[0.16em] text-muted uppercase">Objective set</p>
-                    <p className="mt-1 text-2xl font-bold">{season.objectiveCount} / 3</p>
-                </div>
-                <div>
-                    <p className="text-[0.625rem] font-bold tracking-[0.16em] text-muted uppercase">Each Objective</p>
-                    <p className="mt-1 text-2xl font-bold text-[var(--module-accent)]">
-                        {season.objectiveRewardPerObjective.toLocaleString()} SP
-                    </p>
-                </div>
-                <div>
-                    <p className="text-[0.625rem] font-bold tracking-[0.16em] text-muted uppercase">Earned</p>
-                    <p className="mt-1 text-2xl font-bold text-success">
-                        {season.objectiveEarnedSp.toLocaleString()} / {season.objectiveRewardMaximum.toLocaleString()} SP
-                    </p>
-                </div>
+            <div className="mt-5 flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                <span className="inline-flex min-h-9 shrink-0 items-center gap-2 rounded-full border border-border-subtle bg-app px-3 text-xs font-bold text-secondary">
+                    <Target aria-hidden="true" size={14} />
+                    {season.objectiveCount} / 3 slots
+                </span>
+                <span className="inline-flex min-h-9 shrink-0 items-center gap-2 rounded-full border border-border-subtle bg-app px-3 text-xs font-bold text-secondary">
+                    <Sparkles aria-hidden="true" className="text-[var(--module-accent)]" size={14} />
+                    {season.objectiveCount > 0 ? `${season.objectiveRewardPerObjective.toLocaleString()} SP each` : '300 SP pool'}
+                </span>
+                <span className="inline-flex min-h-9 shrink-0 items-center gap-2 rounded-full border border-border-subtle bg-app px-3 text-xs font-bold text-secondary">
+                    <Sparkles aria-hidden="true" className="text-success" size={14} />
+                    {season.objectiveEarnedSp.toLocaleString()} SP earned
+                </span>
+                <span className="inline-flex min-h-9 shrink-0 items-center gap-2 rounded-full border border-border-subtle bg-app px-3 text-xs font-bold text-secondary">
+                    {season.objectiveSetupOpen ? <Clock3 aria-hidden="true" className="text-warning" size={14} /> : <LockKeyhole aria-hidden="true" size={14} />}
+                    {season.state === 'completed'
+                        ? 'History'
+                        : season.objectiveSetupOpen
+                          ? season.objectiveSetupDaysRemaining === 0
+                              ? 'Locks tonight'
+                              : `${season.objectiveSetupDaysRemaining}d to edit`
+                          : 'Set locked'}
+                </span>
             </div>
 
             {season.objectives.length === 0 ? (
-                <div className="mt-6 grid min-h-72 place-items-center rounded-[1.5rem] border border-dashed border-border-strong bg-app p-8 text-center">
+                <div className="mt-5 grid min-h-44 place-items-center rounded-[1.5rem] border border-dashed border-border-strong bg-app p-6 text-center">
                     <div>
-                        <p className="text-3xl font-bold tracking-[-0.04em]">No Objectives this Season</p>
-                        <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-secondary">
-                            {season.objectiveSetupOpen
-                                ? 'Set the first major outcome. One Objective carries the full 300 SP reward.'
-                                : 'This Season has no Objective history.'}
+                        <span className="mx-auto grid size-12 place-items-center rounded-full border border-border-strong bg-elevated text-muted">
+                            <Plus aria-hidden="true" size={21} />
+                        </span>
+                        <p className="mt-4 text-xl font-bold tracking-[-0.03em]">
+                            {season.objectiveSetupOpen ? 'Choose your first outcome' : 'No Objectives recorded'}
                         </p>
                         {mayAdd && (
-                            <Button className="mt-6" onClick={() => setCreating(true)}>
-                                + Add Objective
+                            <Button className="mt-4" onClick={() => onCreatingChange(true)} size="small">
+                                <Plus aria-hidden="true" size={17} />
+                                Create Objective
                             </Button>
                         )}
                     </div>
@@ -114,22 +107,16 @@ export function ObjectiveBoard({ season }: { season: SeasonViewData }) {
                 </div>
             )}
 
-            {mayAdd && season.objectives.length > 0 && (
-                <Button className="mt-6" onClick={() => setCreating(true)}>
-                    + Add Objective
-                </Button>
+            {creating && season.id !== null && (
+                <ObjectiveFormDialog objectiveCount={season.objectiveCount} onClose={() => onCreatingChange(false)} seasonId={season.id} />
             )}
-
-            {season.state === 'completed' && season.objectiveCount > 0 && (
-                <p className="mt-6 text-sm font-semibold text-secondary">
-                    {season.objectiveCompletedCount} / {season.objectiveCount} completed · {season.objectiveEarnedSp.toLocaleString()} /{' '}
-                    {season.objectiveRewardMaximum.toLocaleString()} SP earned
-                </p>
-            )}
-
-            {creating && season.id !== null && <ObjectiveFormDialog onClose={() => setCreating(false)} seasonId={season.id} />}
             {editingObjective && season.id !== null && (
-                <ObjectiveFormDialog objective={editingObjective} onClose={() => setEditingObjectiveId(null)} seasonId={season.id} />
+                <ObjectiveFormDialog
+                    objective={editingObjective}
+                    objectiveCount={season.objectiveCount}
+                    onClose={() => setEditingObjectiveId(null)}
+                    seasonId={season.id}
+                />
             )}
             {deletingObjective && (
                 <Dialog
@@ -149,6 +136,6 @@ export function ObjectiveBoard({ season }: { season: SeasonViewData }) {
                     </div>
                 </Dialog>
             )}
-        </div>
+        </Surface>
     );
 }

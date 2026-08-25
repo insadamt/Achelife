@@ -33,9 +33,9 @@ Completion stores the current exact reward and timestamp; reversal clears both. 
 
 ## Season interface
 
-The selected Season details panel now has internal Overview and Objectives tabs. The Objectives tab is a responsive Season mission board with setup-window status, Objective count, current per-Objective reward, earned Objective SP, numbered mission cards, Boolean completion controls, and compact create, rename, and confirmed-delete dialogs.
+Objectives remain visible directly below the selected Season command center and are never hidden behind a tab. The compact mission board uses icon-led status chips for slots, current per-Objective reward, earned Objective SP, and setup locking. Numbered mission cards provide Boolean completion controls plus compact create, rename, and confirmed-delete dialogs. The create dialog previews the resulting per-Objective reward before submission.
 
-After Day 7, definition controls disappear while completion remains interactive. Completed Seasons show the same Objectives as a read-only historical summary with completion count and exact earned SP. The current Season carousel carries only a small Objective completion summary; the full experience remains in Season details.
+After Day 7, definition controls disappear while completion remains interactive. Completed Seasons show the same Objectives as a read-only historical summary with completion count and exact earned SP. The current Season timeline carries only a small Objective completion summary; the full experience remains in Season details.
 
 Existing historical Seasons have zero Objectives unless records were explicitly created. An existing current Season already beyond Day 7 cannot add them retroactively. Synchronizing a new Season creates no Objective records and never copies prior ones.
 

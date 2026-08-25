@@ -34,9 +34,9 @@ Each Season stores its own `season_points`, defaulting to zero, and a nullable `
 
 ## Interface
 
-`/seasons` uses a native horizontal, scroll-snapping chapter selector. Historical and current Season cards are selectable by pointer, touch, or keyboard. The current selection is centered and emphasized; future cards communicate their locked state and expose no details.
+`/seasons` uses a compact horizontal collection of geometric Season tokens. Historical and current tokens are selectable by pointer, touch, or keyboard and use completion, crown, and lock icons instead of miniature information cards. Selected and current states remain visually distinct while a direct return-to-current action keeps historical browsing oriented. Future tokens communicate their locked state without exposing Rank or progress.
 
-The selected real Season updates a focused details panel with its date range, day or completion state, SP, neutral rank placeholder, and a 30-segment progress visualization. Motion uses the global reduced-motion behavior from Phase 0.5.
+The selected real Season updates a unified command center rather than separate overview screens. Rank, SP, calendar position, Objective completion, and Objective setup status stay visible together. A compact 30-tick Season pulse uses taller milestone ticks and a distinct current-day marker. Motion, including programmatic token centering, uses the global reduced-motion behavior from Phase 0.5.
 
 ## Verification
 

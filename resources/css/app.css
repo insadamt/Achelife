@@ -38,15 +38,26 @@
     --motion-standard: 220ms;
 }
 
-.season-carousel-track {
-    padding-inline: max(1rem, calc(50% - 9rem));
-    scroll-padding-inline: max(1rem, calc(50% - 9rem));
+.season-switcher-track {
+    scroll-padding-inline: 0.5rem;
 }
 
-.season-current-card {
+.season-command-hero {
     background:
-        radial-gradient(circle at 50% 0%, color-mix(in srgb, var(--module-accent) 18%, transparent), transparent 48%),
+        radial-gradient(circle at 88% 10%, color-mix(in srgb, var(--module-accent) 14%, transparent), transparent 32%),
+        radial-gradient(circle at 14% 92%, color-mix(in srgb, var(--rank-accent) 10%, transparent), transparent 38%),
+        linear-gradient(145deg, color-mix(in srgb, var(--surface-elevated) 96%, var(--module-accent)), var(--surface-primary));
+}
+
+.rank-explorer-shell {
+    background:
+        radial-gradient(circle at 50% 18%, color-mix(in srgb, var(--module-accent) 8%, transparent), transparent 36%),
         var(--surface-elevated);
+}
+
+.rank-carousel-track {
+    padding-inline: max(1.25rem, calc(50% - min(34vw, 10rem)));
+    scroll-padding-inline: max(1.25rem, calc(50% - min(34vw, 10rem)));
 }
 
 .money-balance-hero {

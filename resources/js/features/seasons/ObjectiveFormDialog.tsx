@@ -10,10 +10,12 @@ interface ObjectiveFormPayload {
 
 export function ObjectiveFormDialog({
     seasonId,
+    objectiveCount,
     objective = null,
     onClose,
 }: {
     seasonId: number;
+    objectiveCount: number;
     objective?: ObjectiveViewData | null;
     onClose: () => void;
 }) {
@@ -22,6 +24,8 @@ export function ObjectiveFormDialog({
     });
     const editing = objective !== null;
     const objectiveError = (form.errors as Record<string, string | undefined>).objective;
+    const nextObjectiveCount = Math.min(3, objectiveCount + 1);
+    const nextReward = nextObjectiveCount === 1 ? 300 : nextObjectiveCount === 2 ? 150 : 100;
 
     function submit(event: FormEvent) {
         event.preventDefault();
@@ -57,6 +61,14 @@ export function ObjectiveFormDialog({
                     <p className="text-sm font-semibold text-danger" role="alert">
                         {objectiveError}
                     </p>
+                )}
+                {!editing && (
+                    <div className="rounded-2xl border border-border-subtle bg-app px-4 py-3">
+                        <p className="text-[0.625rem] font-bold tracking-[0.15em] text-muted uppercase">Reward after adding</p>
+                        <p className="mt-1 text-sm font-semibold text-secondary">
+                            {nextObjectiveCount} {nextObjectiveCount === 1 ? 'Objective' : 'Objectives'} · {nextReward} SP each · 300 SP possible
+                        </p>
+                    </div>
                 )}
                 <Button disabled={form.processing} fullWidth type="submit">
                     {editing ? 'Save Objective' : 'Create Objective'}
