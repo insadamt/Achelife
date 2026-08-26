@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-#[Fillable(['user_id', 'category_id', 'name', 'archived_at'])]
+#[Fillable(['user_id', 'category_id', 'name', 'preset_key', 'archived_at'])]
 class MoneySubcategory extends Model
 {
     /** @return BelongsTo<User, $this> */

@@ -30,16 +30,17 @@ class HabitController extends Controller
     ): Response {
         $today = $calendar->today($request->user());
         $currentSeason = $synchronizeOccurrences->execute($request->user(), $today);
+        $displaySeason = $currentSeason ?? $request->user()->seasons()->latest('season_number')->firstOrFail();
         $settings = HabitSetting::query()->firstOrCreate(
             ['user_id' => $request->user()->id],
             ['calendar_labels' => HabitCalendarLabels::CalendarDates],
         );
         $habits = $request->user()->habits()
             ->whereNull('archived_at')
-            ->with(['definitionVersions', 'occurrences' => fn ($query) => $query->where('season_id', $currentSeason->id)])
+            ->with(['definitionVersions', 'occurrences' => fn ($query) => $query->where('season_id', $displaySeason->id)])
             ->orderBy('created_at')
             ->get()
-            ->map(fn (Habit $habit) => $viewDataFactory->make($habit, $currentSeason, $today));
+            ->map(fn (Habit $habit) => $viewDataFactory->make($habit, $displaySeason, $today));
 
         return Inertia::render('habits/Index', [
             'today' => $today->toDateString(),
@@ -49,13 +50,14 @@ class HabitController extends Controller
             ],
             'calendarLabels' => $settings->calendar_labels->value,
             'currentSeason' => [
-                'id' => $currentSeason->id,
-                'number' => $currentSeason->season_number,
-                'startDate' => $currentSeason->start_date->toDateString(),
-                'endDate' => $currentSeason->end_date->toDateString(),
-                'seasonPoints' => $currentSeason->season_points,
+                'id' => $displaySeason->id,
+                'number' => $displaySeason->season_number,
+                'startDate' => $displaySeason->start_date->toDateString(),
+                'endDate' => $displaySeason->end_date->toDateString(),
+                'seasonPoints' => $displaySeason->season_points,
             ],
             'habits' => $habits,
+            'intermission' => $currentSeason === null,
         ]);
     }
 

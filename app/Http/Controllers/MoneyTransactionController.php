@@ -51,6 +51,7 @@ class MoneyTransactionController extends Controller
             subcategoryId: isset($validated['subcategory_id']) ? (int) $validated['subcategory_id'] : null,
             date: CarbonImmutable::parse($validated['date']),
             note: $validated['note'] ?? null,
+            feeMinor: $amount->toMinorUnits($validated['fee'] ?? '0'),
         );
     }
 }

@@ -8,10 +8,12 @@ export function LawCard({
     law,
     onDetails,
     onRecord,
+    canRecord = true,
 }: {
     law: LawViewData;
     onDetails: () => void;
     onRecord: () => void;
+    canRecord?: boolean;
 }) {
     const styles = severityStyles[law.severity];
     const seasonPenalty = Math.abs(calculateLawSeasonPenalty(law.violations));
@@ -46,7 +48,7 @@ export function LawCard({
                     <span className={`text-sm font-bold ${styles.text}`}>×{law.nextMultiplier}</span>
                 </div>
 
-                <Button onClick={onRecord} variant="destructive">
+                <Button disabled={!canRecord} onClick={onRecord} variant="destructive">
                     <CircleAlert aria-hidden="true" size={17} />
                     Record
                 </Button>

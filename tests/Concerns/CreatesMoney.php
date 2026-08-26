@@ -51,6 +51,7 @@ trait CreatesMoney
         ?MoneySubcategory $subcategory = null,
         string $date = '2026-08-18',
         ?string $note = null,
+        int $feeMinor = 0,
     ): MoneyTransaction {
         return app(SaveMoneyTransaction::class)->create($user, new MoneyTransactionData(
             $type,
@@ -61,6 +62,7 @@ trait CreatesMoney
             $subcategory?->id,
             CarbonImmutable::parse($date),
             $note,
+            $feeMinor,
         ));
     }
 }

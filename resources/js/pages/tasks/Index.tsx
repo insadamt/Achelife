@@ -18,6 +18,7 @@ interface TasksPageProps {
     upcomingTasks: TaskViewData[];
     overdueTasks: PaginatedTasks;
     completedTasks: PaginatedTasks;
+    intermission: boolean;
 }
 
 const emptyMessages: Record<TaskTab, string> = {
@@ -91,6 +92,11 @@ export default function TasksIndex(props: TasksPageProps) {
 
             <div className="mx-auto max-w-5xl">
                 <h1 className="mb-6 text-4xl font-bold tracking-[-0.05em] sm:text-5xl">Tasks</h1>
+                {props.intermission && (
+                    <p className="mb-5 rounded-2xl border border-warning/35 bg-warning/10 px-4 py-3 text-sm leading-6 text-warning">
+                        Intermission: keep planning and rescheduling Tasks. Completion and SP resume when your next Season starts.
+                    </p>
+                )}
                 <TaskComposer today={props.today} />
 
                 <div className="mt-7">

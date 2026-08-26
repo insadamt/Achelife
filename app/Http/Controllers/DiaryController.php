@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Actions\Diary\AutosaveDiaryEntry;
-use App\Actions\Seasons\SynchronizeUserSeasons;
+use App\Actions\Seasons\ResolveUserSeasonCycle;
 use App\Http\Requests\AutosaveDiaryEntryRequest;
 use App\Models\DiarySetting;
 use App\Services\Calendar\UserCalendar;
@@ -21,7 +21,7 @@ class DiaryController extends Controller
 {
     public function index(
         Request $request,
-        SynchronizeUserSeasons $synchronizeSeasons,
+        ResolveUserSeasonCycle $resolveUserSeasonCycle,
         DiaryViewDataFactory $viewDataFactory,
         DiaryLanguageCatalog $languageCatalog,
         DiaryMoodCatalog $moodCatalog,
@@ -29,16 +29,18 @@ class DiaryController extends Controller
     ): Response {
         $user = $request->user();
         $today = $calendar->today($user);
-        $currentSeason = $synchronizeSeasons->execute($user, $today);
+        $cycle = $resolveUserSeasonCycle->execute($user, $today);
+        $displaySeason = $cycle->activeSeason ?? $cycle->latestSeason;
         $selectedDate = $this->dateFromQuery($request->query('date'), $today, 'date');
         $calendarMonth = $this->dateFromQuery($request->query('month'), $selectedDate, 'month')->startOfMonth();
         $settings = DiarySetting::query()->firstOrCreate(['user_id' => $user->id], ['languages' => ['en', 'ar', 'fr']]);
 
         return Inertia::render('diary/Index', [
-            ...$viewDataFactory->make($user, $currentSeason, $today, $selectedDate, $calendarMonth, $request),
+            ...$viewDataFactory->make($user, $displaySeason, $today, $selectedDate, $calendarMonth, $request),
             'settings' => ['languages' => $settings->languages],
             'languageCatalog' => $languageCatalog->all(),
             'moodCatalog' => $moodCatalog->all(),
+            'intermission' => $cycle->activeSeason === null,
         ]);
     }
 

@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-#[Fillable(['user_id', 'type', 'amount_minor', 'account_id', 'destination_account_id', 'category_id', 'subcategory_id', 'transaction_date', 'note'])]
+#[Fillable(['user_id', 'type', 'amount_minor', 'fee_minor', 'account_id', 'destination_account_id', 'category_id', 'subcategory_id', 'transaction_date', 'note'])]
 class MoneyTransaction extends Model
 {
     /** @return BelongsTo<User, $this> */
@@ -45,6 +45,7 @@ class MoneyTransaction extends Model
         return [
             'type' => MoneyTransactionType::class,
             'amount_minor' => 'integer',
+            'fee_minor' => 'integer',
             'transaction_date' => 'immutable_date',
         ];
     }

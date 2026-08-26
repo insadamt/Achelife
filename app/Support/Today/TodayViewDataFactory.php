@@ -20,6 +20,7 @@ use App\Support\Tasks\TaskViewDataFactory;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
+use LogicException;
 
 class TodayViewDataFactory
 {
@@ -38,6 +39,10 @@ class TodayViewDataFactory
     {
         $this->synchronizeTasks->execute($user, $today);
         $currentSeason = $this->synchronizeHabits->execute($user, $today);
+
+        if ($currentSeason === null) {
+            throw new LogicException('Today data requires an active Season.');
+        }
         $settings = TodaySetting::query()->firstOrCreate(
             ['user_id' => $user->id],
             ['show_flexible_habits' => true, 'show_upcoming_tasks' => true],

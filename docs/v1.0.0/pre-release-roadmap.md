@@ -54,41 +54,41 @@ Replace the assumption that every date after registration belongs to a Season wi
 
 ### Domain model
 
-- [ ] Add a user-owned rollover preference: `automatic` or `manual`.
-- [ ] Add a one-time `hold_next_season` state independent of the long-term preference.
-- [ ] Represent an open or completed intermission explicitly, including its reason: manual rollover, one-time hold, or restore.
-- [ ] Keep `calendar_started_on` as the immutable beginning of the user's Achelife history, not as an arithmetic source for every later Season.
-- [ ] Derive each new Season number from the latest persisted Season.
-- [ ] Prevent overlapping Seasons while allowing calendar gaps between them.
-- [ ] Add a central Season-cycle result that returns either an active Season or an intermission.
-- [ ] Add a transactional `StartNextSeason` action that creates exactly one Season for the current local date.
-- [ ] Make concurrent or repeated start requests idempotent or reject the second request safely.
-- [ ] Finalize Rank and closeout data when an active Season reaches its original Day 30.
+- [x] Add a user-owned rollover preference: `automatic` or `manual`.
+- [x] Add a one-time `hold_next_season` state independent of the long-term preference.
+- [x] Represent an open or completed intermission explicitly, including its reason: manual rollover, one-time hold, or restore.
+- [x] Keep `calendar_started_on` as the immutable beginning of the user's Achelife history, not as an arithmetic source for every later Season.
+- [x] Derive each new Season number from the latest persisted Season.
+- [x] Prevent overlapping Seasons while allowing calendar gaps between them.
+- [x] Add a central Season-cycle result that returns either an active Season or an intermission.
+- [x] Add a transactional `StartNextSeason` action that creates exactly one Season for the current local date.
+- [x] Make concurrent or repeated start requests idempotent or reject the second request safely.
+- [x] Finalize Rank and closeout data when an active Season reaches its original Day 30.
 
 ### Automatic and manual behavior
 
-- [ ] Preserve existing continuous backfill for automatic users who return after a long absence.
-- [ ] Stop after the completed Season for manual users and create no later Seasons.
-- [ ] Let automatic users select “Pause after this Season” as a one-time hold.
-- [ ] Clear the one-time hold after the user starts the next Season.
+- [x] Preserve existing continuous backfill for automatic users who return after a long absence.
+- [x] Stop after the completed Season for manual users and create no later Seasons.
+- [x] Let automatic users select “Pause after this Season” as a one-time hold.
+- [x] Clear the one-time hold after the user starts the next Season.
 - [ ] Restore the user's long-term automatic/manual preference after an import-created hold is resolved.
-- [ ] When automatic mode is enabled during an intermission, start the next Season today rather than backdating it.
-- [ ] Do not allow a new Season to start before the active Season ends.
-- [ ] Do not support ending an active Season early in v1.
+- [x] When automatic mode is enabled during an intermission, start the next Season today rather than backdating it.
+- [x] Do not allow a new Season to start before the active Season ends.
+- [x] Do not support ending an active Season early in v1.
 
 ### Intermission behavior
 
-- [ ] Show an intermission dashboard with the last closeout, pause reason, elapsed rest days, and “Start Season N” action.
+- [x] Show an intermission dashboard with the last closeout, pause reason, elapsed rest days, and “Start Season N” action.
 - [ ] Keep Money, subscriptions, Settings, export/import, and historical browsing available.
-- [ ] Allow Task planning and rescheduling without awarding SP.
-- [ ] Block rewarded Task completion until a Season is active and explain why.
-- [ ] Pause recurring Task materialization across intermission dates.
-- [ ] Resume each Task series on the first eligible date on or after the new Season start.
-- [ ] Do not materialize Habit occurrences for intermission dates.
-- [ ] Preserve the last Habit streak across the intermission without incrementing it.
-- [ ] Do not create Diary misses during intermission and use the previous Season's final eligible day as the next streak baseline.
-- [ ] Keep new Diary writing, Objective mutation, and Violation recording unavailable until a Season starts.
-- [ ] Keep Law and historical Diary views readable.
+- [x] Allow Task planning and rescheduling without awarding SP.
+- [x] Block rewarded Task completion until a Season is active and explain why.
+- [x] Pause recurring Task materialization across intermission dates.
+- [x] Resume each Task series on the first eligible date on or after the new Season start.
+- [x] Do not materialize Habit occurrences for intermission dates.
+- [x] Preserve the last Habit streak across the intermission without incrementing it.
+- [x] Do not create Diary misses during intermission and use the previous Season's final eligible day as the next streak baseline.
+- [x] Keep new Diary writing, Objective mutation, and Violation recording unavailable until a Season starts.
+- [x] Keep Law and historical Diary views readable.
 
 ### Restore-specific lifecycle
 
@@ -102,26 +102,26 @@ Replace the assumption that every date after registration belongs to a Season wi
 
 ### Interface and settings
 
-- [ ] Add Automatic and Manual rollover controls to General Settings.
-- [ ] Add a one-time hold control to the active Season command center.
-- [ ] Show the next Season's expected date only when automatic rollover is active and no hold is scheduled.
-- [ ] Show “Waiting for you” instead of invented dates for a held Season.
-- [ ] Confirm the exact start and end dates before manually starting a Season.
-- [ ] Make active, completed, future, and held states accessible without relying on color.
+- [x] Add Automatic and Manual rollover controls to General Settings.
+- [x] Add a one-time hold control to the active Season command center.
+- [x] Show the next Season's expected date only when automatic rollover is active and no hold is scheduled.
+- [x] Show “Waiting for you” instead of invented dates for a held Season.
+- [x] Confirm the exact start and end dates before manually starting a Season.
+- [x] Make active, completed, future, and held states accessible without relying on color.
 
 ### Verification
 
-- [ ] Test automatic Day 30-to-Day 1 rollover.
-- [ ] Test manual Day 30-to-intermission transition.
-- [ ] Test one-time hold and preference restoration.
-- [ ] Test long automatic and manual absences.
-- [ ] Test starting after a multi-month gap.
-- [ ] Test user-local timezone boundaries.
-- [ ] Test no overlaps, duplicate numbers, or double starts.
+- [x] Test automatic Day 30-to-Day 1 rollover.
+- [x] Test manual Day 30-to-intermission transition.
+- [x] Test one-time hold and preference restoration.
+- [x] Test long automatic and manual absences.
+- [x] Test starting after a multi-month gap.
+- [x] Test user-local timezone boundaries.
+- [x] Test no overlaps, duplicate numbers, or double starts.
 - [ ] Test every module's intermission restrictions.
-- [ ] Test Habit and Diary streak preservation across a gap.
-- [ ] Test recurring Task resumption without gap backfill.
-- [ ] Update the Seasons, Tasks, Habits, Diary, Constitution, Today, Rank, and timezone documentation.
+- [x] Test Habit and Diary streak preservation across a gap.
+- [x] Test recurring Task resumption without gap backfill.
+- [x] Update the Seasons, Tasks, Habits, Diary, Constitution, Today, Rank, and timezone documentation.
 
 ---
 
@@ -133,72 +133,72 @@ Make Money useful immediately with an idempotent two-level category pack and mod
 
 ### Preset architecture
 
-- [ ] Add stable, locale-independent preset keys to Categories and Subcategories.
-- [ ] Track the installed category-pack version per user.
-- [ ] Install the complete pack in one transaction.
-- [ ] Make repeated installation repair missing presets without creating duplicates.
-- [ ] Keep preset names renameable and preset records archiveable or deletable under normal lifecycle rules.
-- [ ] Provide category search and parent-scoped Subcategory selection.
-- [ ] Add “Install missing presets” and a pack preview to Money settings.
+- [x] Add stable, locale-independent preset keys to Categories and Subcategories.
+- [x] Track the installed category-pack version per user.
+- [x] Install the complete pack in one transaction.
+- [x] Make repeated installation repair missing presets without creating duplicates.
+- [x] Keep preset names renameable and preset records archiveable or deletable under normal lifecycle rules.
+- [x] Provide category search and parent-scoped Subcategory selection.
+- [x] Add “Install missing presets” and a pack preview to Money settings.
 - [ ] Install the pack during first-run Money onboarding when selected.
 
 ### Expense preset taxonomy
 
-- [ ] Housing: Rent, Mortgage, Home Maintenance, Furniture, Household Supplies
-- [ ] Food: Groceries, Restaurants, Fast Food, Café, Delivery
-- [ ] Transport: Fuel, Public Transport, Taxi / Ride Sharing, Parking, Tolls, Vehicle Maintenance
-- [ ] Shopping: Clothing, Electronics, Personal Items, Online Shopping, Other Shopping
-- [ ] Bills & Utilities: Electricity, Water, Internet, Mobile, Gas
-- [ ] Health: Doctor, Pharmacy, Dental, Vision, Medical Tests
-- [ ] Entertainment: Games, Movies, Events, Hobbies, Music
-- [ ] Education: Courses, Books, Tuition, Software, Certifications
-- [ ] Personal Care: Barber / Hairdresser, Cosmetics, Hygiene, Spa
-- [ ] Family: Parents, Children, Family Support, Household Contribution
-- [ ] Gifts & Donations: Gifts, Charity, Donations
-- [ ] Travel: Flights, Hotels, Local Transport, Food, Activities
-- [ ] Financial: Bank Fees, Interest, Taxes, Insurance
-- [ ] Other: Miscellaneous, Uncategorized
+- [x] Housing: Rent, Mortgage, Home Maintenance, Furniture, Household Supplies
+- [x] Food: Groceries, Restaurants, Fast Food, Café, Delivery
+- [x] Transport: Fuel, Public Transport, Taxi / Ride Sharing, Parking, Tolls, Vehicle Maintenance
+- [x] Shopping: Clothing, Electronics, Personal Items, Online Shopping, Other Shopping
+- [x] Bills & Utilities: Electricity, Water, Internet, Mobile, Gas
+- [x] Health: Doctor, Pharmacy, Dental, Vision, Medical Tests
+- [x] Entertainment: Games, Movies, Events, Hobbies, Music
+- [x] Education: Courses, Books, Tuition, Software, Certifications
+- [x] Personal Care: Barber / Hairdresser, Cosmetics, Hygiene, Spa
+- [x] Family: Parents, Children, Family Support, Household Contribution
+- [x] Gifts & Donations: Gifts, Charity, Donations
+- [x] Travel: Flights, Hotels, Local Transport, Food, Activities
+- [x] Financial: Bank Fees, Interest, Taxes, Insurance
+- [x] Other: Miscellaneous, Uncategorized
 
 ### Income preset taxonomy
 
-- [ ] Work: Salary, Bonus, Overtime
-- [ ] Freelance: Freelance Work, Contract Work
-- [ ] Business: Sales, Services, Other Business Income
-- [ ] Investments: Dividends, Interest, Capital Gains
-- [ ] Gifts: Family, Friends, Other
-- [ ] Other Income: Prize, Sale of Belongings, Miscellaneous
+- [x] Work: Salary, Bonus, Overtime
+- [x] Freelance: Freelance Work, Contract Work
+- [x] Business: Sales, Services, Other Business Income
+- [x] Investments: Dividends, Interest, Capital Gains
+- [x] Gifts: Family, Friends, Other
+- [x] Other Income: Prize, Sale of Belongings, Miscellaneous
 
 ### Charity migration
 
-- [ ] Replace the protected top-level Charity Category with Gifts & Donations → Charity.
-- [ ] Move existing Charity transactions to the new parent and Subcategory without changing amounts or dates.
-- [ ] Preserve and reconcile any user-created Subcategories previously attached to Charity.
-- [ ] Remove the obsolete built-in repair rule after the migration is proven safe.
-- [ ] Document that Charity is an ordinary preset and has no scoring behavior.
+- [x] Replace the protected top-level Charity Category with Gifts & Donations → Charity.
+- [x] Move existing Charity transactions to the new parent and Subcategory without changing amounts or dates.
+- [x] Preserve and reconcile any user-created Subcategories previously attached to Charity.
+- [x] Remove the obsolete built-in repair rule after the migration is proven safe.
+- [x] Document that Charity is an ordinary preset and has no scoring behavior.
 
 ### Transfer fees
 
-- [ ] Add `fee_minor`, defaulting to zero, to Money Transfers.
-- [ ] Define `amount_minor` as the amount received by the destination Account.
-- [ ] Subtract `amount_minor + fee_minor` from the source Account.
-- [ ] Add only `amount_minor` to the destination Account.
-- [ ] Require a non-negative fee and restrict it to Transfers.
-- [ ] Use the source Account currency for the fee.
-- [ ] Show Transfer amount, fee, source debit, and destination credit before saving.
-- [ ] Keep one authoritative Transfer row; do not create a hidden Expense transaction.
-- [ ] Present fees under Financial → Bank Fees in future reporting without duplicating balance effects.
-- [ ] Make Transfer edit and deletion reverse principal and fee atomically.
+- [x] Add `fee_minor`, defaulting to zero, to Money Transfers.
+- [x] Define `amount_minor` as the amount received by the destination Account.
+- [x] Subtract `amount_minor + fee_minor` from the source Account.
+- [x] Add only `amount_minor` to the destination Account.
+- [x] Require a non-negative fee and restrict it to Transfers.
+- [x] Use the source Account currency for the fee.
+- [x] Show Transfer amount, fee, source debit, and destination credit before saving.
+- [x] Keep one authoritative Transfer row; do not create a hidden Expense transaction.
+- [x] Present fees under Financial → Bank Fees in future reporting without duplicating balance effects.
+- [x] Make Transfer edit and deletion reverse principal and fee atomically.
 - [ ] Include exact fees in transaction details, history, filters, and portable exports.
 
 ### Verification
 
-- [ ] Test complete preset installation, repair, rename, archive, and deletion behavior.
+- [x] Test complete preset installation, repair, rename, archive, and deletion behavior.
 - [ ] Test stable preset keys across export/import.
-- [ ] Test Charity migration with and without existing history.
-- [ ] Test zero and positive fees.
-- [ ] Test source and destination balance effects.
-- [ ] Test Transfer edits, deletion, authorization, archived Accounts, and matching currencies.
-- [ ] Update the Money documentation.
+- [x] Test Charity migration with and without existing history.
+- [x] Test zero and positive fees.
+- [x] Test source and destination balance effects.
+- [x] Test Transfer edits, deletion, authorization, archived Accounts, and matching currencies.
+- [x] Update the Money documentation.
 
 ---
 

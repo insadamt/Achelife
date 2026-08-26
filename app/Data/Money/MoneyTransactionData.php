@@ -16,5 +16,6 @@ readonly class MoneyTransactionData
         public ?int $subcategoryId,
         public CarbonImmutable $date,
         public ?string $note,
+        public int $feeMinor = 0,
     ) {}
 }

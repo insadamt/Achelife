@@ -2,6 +2,7 @@
 
 namespace App\Actions\Tasks;
 
+use App\Actions\Seasons\ResolveUserSeasonCycle;
 use App\Enums\TaskRecurrenceType;
 use App\Models\Task;
 use App\Models\TaskSeries;
@@ -11,24 +12,41 @@ use Illuminate\Support\Facades\DB;
 
 class SynchronizeRecurringTaskOccurrences
 {
+    public function __construct(private readonly ResolveUserSeasonCycle $resolveUserSeasonCycle) {}
+
     public function execute(User $user, CarbonImmutable $today): void
     {
+        $cycle = $this->resolveUserSeasonCycle->execute($user, $today);
+
+        if ($cycle->activeSeason === null) {
+            $this->removeOpenIntermissionOccurrences($user, $cycle->intermission?->started_on);
+
+            return;
+        }
+
+        $resumeOn = $user->seasonIntermissions()
+            ->whereDate('ended_before', $cycle->activeSeason->start_date)
+            ->latest('id')
+            ->value('ended_before');
+        $eligibleOnOrAfter = $resumeOn === null ? null : CarbonImmutable::parse($resumeOn);
+
         $user->taskSeries()->pluck('id')->each(
             fn (int $seriesId) => $this->synchronizeSeries(
                 TaskSeries::query()->findOrFail($seriesId),
                 $today->startOfDay(),
+                $eligibleOnOrAfter,
             ),
         );
     }
 
-    public function synchronizeSeries(TaskSeries $series, CarbonImmutable $today): void
+    public function synchronizeSeries(TaskSeries $series, CarbonImmutable $today, ?CarbonImmutable $eligibleOnOrAfter = null): void
     {
-        DB::transaction(function () use ($series, $today): void {
+        DB::transaction(function () use ($series, $today, $eligibleOnOrAfter): void {
             $lockedSeries = TaskSeries::query()->lockForUpdate()->findOrFail($series->id);
             $calendarDate = $today->startOfDay();
 
             while (! $this->hasPendingOccurrence($lockedSeries, $calendarDate)) {
-                $nextOccurrenceDate = $this->nextOccurrenceDate($lockedSeries);
+                $nextOccurrenceDate = $this->nextOccurrenceDate($lockedSeries, $eligibleOnOrAfter);
 
                 if ($nextOccurrenceDate === null) {
                     return;
@@ -58,7 +76,7 @@ class SynchronizeRecurringTaskOccurrences
             ->exists();
     }
 
-    private function nextOccurrenceDate(TaskSeries $series): ?CarbonImmutable
+    private function nextOccurrenceDate(TaskSeries $series, ?CarbonImmutable $eligibleOnOrAfter): ?CarbonImmutable
     {
         if ($series->recurrence_type === TaskRecurrenceType::Weekdays && $series->weekdays === []) {
             return null;
@@ -76,6 +94,10 @@ class SynchronizeRecurringTaskOccurrences
             ? $lastKnownDate->addDay()
             : $series->starts_on;
 
+        if ($eligibleOnOrAfter !== null && $candidateDate->isBefore($eligibleOnOrAfter)) {
+            $candidateDate = $eligibleOnOrAfter;
+        }
+
         while (! $this->isEligibleDate($series, $candidateDate)) {
             $candidateDate = $candidateDate->addDay();
         }
@@ -85,6 +107,19 @@ class SynchronizeRecurringTaskOccurrences
         }
 
         return $candidateDate;
+    }
+
+    private function removeOpenIntermissionOccurrences(User $user, ?CarbonImmutable $startedOn): void
+    {
+        if ($startedOn === null) {
+            return;
+        }
+
+        $user->tasks()
+            ->whereNotNull('task_series_id')
+            ->whereNull('completed_at')
+            ->whereDate('occurrence_date', '>=', $startedOn)
+            ->delete();
     }
 
     private function isEligibleDate(TaskSeries $series, CarbonImmutable $date): bool

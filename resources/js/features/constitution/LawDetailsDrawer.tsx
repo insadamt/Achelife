@@ -58,6 +58,7 @@ export function LawDetailsDrawer({
     onClose,
     onEdit,
     onRecord,
+    canRecord = true,
 }: {
     law: LawViewData;
     season: ConstitutionSeasonData;
@@ -65,6 +66,7 @@ export function LawDetailsDrawer({
     onClose: () => void;
     onEdit: () => void;
     onRecord: () => void;
+    canRecord?: boolean;
 }) {
     const [editingViolation, setEditingViolation] = useState<ViolationViewData | null>(null);
     const [deletingViolation, setDeletingViolation] = useState<ViolationViewData | null>(null);
@@ -114,7 +116,7 @@ export function LawDetailsDrawer({
                 <DrawerMetric className="col-span-2" icon={<Scale size={17} />} label="Next violation" value={`${formatPenalty(law.nextPenalty)} · ×${law.nextMultiplier}`} />
             </div>
 
-            <Button className="mt-4" fullWidth onClick={onRecord} variant="destructive">
+            <Button className="mt-4" disabled={!canRecord} fullWidth onClick={onRecord} variant="destructive">
                 <CircleAlert aria-hidden="true" size={18} />
                 Record {formatPenalty(law.nextPenalty)}
             </Button>

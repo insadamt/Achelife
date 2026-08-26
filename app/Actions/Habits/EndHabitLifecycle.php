@@ -40,6 +40,10 @@ class EndHabitLifecycle
         $calendarDate = ($today ?? $this->userCalendar->today($user))->startOfDay();
         $currentSeason = $this->synchronizeOccurrences->execute($user, $calendarDate);
 
+        if ($currentSeason === null) {
+            throw ValidationException::withMessages(['habit' => 'Habit lifecycle changes are paused until your next Season starts.']);
+        }
+
         DB::transaction(function () use ($habit, $delete, $calendarDate, $currentSeason): void {
             $lockedHabit = Habit::query()->lockForUpdate()->findOrFail($habit->id);
 

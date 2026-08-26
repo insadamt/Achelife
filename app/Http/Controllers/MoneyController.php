@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Actions\Money\EnsureDefaultMoneyCategories;
 use App\Models\MoneyAccount;
 use App\Models\MoneyCategory;
 use App\Models\MoneyTransaction;
@@ -20,13 +19,11 @@ class MoneyController extends Controller
 {
     public function index(
         Request $request,
-        EnsureDefaultMoneyCategories $ensureDefaults,
         AccountBalanceCalculator $balanceCalculator,
         MoneyViewDataFactory $viewDataFactory,
         UserCalendar $calendar,
     ): Response {
         $user = $request->user();
-        $ensureDefaults->execute($user);
         $accounts = $user->moneyAccounts()
             ->whereNull('archived_at')
             ->withCount(['transactions', 'incomingTransfers'])

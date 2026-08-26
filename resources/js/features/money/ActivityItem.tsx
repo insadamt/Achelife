@@ -18,6 +18,7 @@ export function ActivityItem({ transaction, contextAccountId, onClick }: { trans
                 <span className="block truncate font-bold text-foreground">{transactionTitle(transaction, contextAccountId)}</span>
                 <span className="mt-0.5 block truncate text-sm text-muted">
                     {transaction.type === 'transfer' ? `${transaction.account.name} → ${transaction.destinationAccount?.name}` : transaction.account.name}
+                    {transaction.type === 'transfer' && transaction.feeMinor > 0 ? ` · Fee ${formatMinorUnits(transaction.feeMinor, currency)}` : ''}
                     {transaction.note ? ` · ${transaction.note}` : ''}
                 </span>
             </span>

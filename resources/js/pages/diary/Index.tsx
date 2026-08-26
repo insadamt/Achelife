@@ -24,6 +24,7 @@ interface DiaryPageProps {
     settings: { languages: string[] };
     languageCatalog: DiaryLanguage[];
     moodCatalog: MoodCatalog;
+    intermission: boolean;
 }
 
 type PanelName = 'search' | 'people' | 'settings' | null;
@@ -98,6 +99,12 @@ function DiaryWorkspace(props: DiaryPageProps) {
                     <DiaryTool active={activePanel === 'settings'} label="Settings" onClick={() => setActivePanel('settings')}><Settings2 size={18} /></DiaryTool>
                 </div>
             </header>
+
+            {props.intermission && (
+                <p className="mb-5 rounded-2xl border border-warning/35 bg-warning/10 px-4 py-3 text-sm leading-6 text-warning">
+                    Intermission: historical entries remain readable. New writing and Diary progression resume with your next Season.
+                </p>
+            )}
 
             <div className="overflow-hidden rounded-[2rem] border border-border-subtle bg-surface shadow-[0_28px_80px_rgba(0,0,0,0.3)] lg:grid lg:grid-cols-[14rem_minmax(0,1fr)]">
                 <aside className="hidden border-r border-border-subtle bg-elevated/45 p-4 lg:flex lg:min-h-[72vh] lg:flex-col">

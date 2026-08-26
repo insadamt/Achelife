@@ -73,6 +73,6 @@ export function transactionSignedAmount(transaction: MoneyTransactionData, conte
     if (transaction.type === 'income') return transaction.amountMinor;
     if (transaction.type === 'expense') return -transaction.amountMinor;
     if (contextAccountId === transaction.destinationAccount?.id) return transaction.amountMinor;
-    if (contextAccountId === transaction.account.id) return -transaction.amountMinor;
+    if (contextAccountId === transaction.account.id) return -(transaction.amountMinor + transaction.feeMinor);
     return transaction.amountMinor;
 }

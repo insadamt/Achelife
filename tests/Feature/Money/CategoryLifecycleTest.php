@@ -4,13 +4,10 @@ namespace Tests\Feature\Money;
 
 use App\Actions\Money\ArchiveMoneyCategory;
 use App\Actions\Money\ArchiveMoneySubcategory;
-use App\Actions\Money\DeleteMoneyTransaction;
 use App\Actions\Money\DeleteUnusedMoneyCategory;
 use App\Actions\Money\DeleteUnusedMoneySubcategory;
-use App\Actions\Money\EnsureDefaultMoneyCategories;
 use App\Actions\Money\ReactivateMoneyCategory;
 use App\Actions\Money\ReactivateMoneySubcategory;
-use App\Actions\Money\UpdateMoneyCategory;
 use App\Enums\MoneyCategoryType;
 use App\Enums\MoneyTransactionType;
 use Carbon\CarbonImmutable;
@@ -112,40 +109,7 @@ class CategoryLifecycleTest extends TestCase
         $this->moneyTransaction($user, MoneyTransactionType::Expense, $account, 100, category: $category, subcategory: $subcategory);
     }
 
-    public function test_charity_is_automatic_expense_only_protected_and_accepts_custom_subcategories(): void
-    {
-        $user = $this->moneyUser();
-        $charity = app(EnsureDefaultMoneyCategories::class)->execute($user);
-        $sameCharity = app(EnsureDefaultMoneyCategories::class)->execute($user);
-        $subcategory = $this->moneySubcategory($charity, 'Mosque');
-        $account = $this->moneyAccount($user);
-        $transaction = $this->moneyTransaction($user, MoneyTransactionType::Expense, $account, 2500, category: $charity, subcategory: $subcategory);
-
-        $this->assertTrue($charity->is($sameCharity));
-        $this->assertSame(MoneyCategoryType::Expense, $charity->type);
-        $this->assertSame('Mosque', $subcategory->name);
-        $this->assertSame(2500, $transaction->amount_minor);
-
-        foreach (
-            [
-                fn () => app(UpdateMoneyCategory::class)->execute($charity, 'Giving'),
-                fn () => app(ArchiveMoneyCategory::class)->execute($charity),
-                fn () => app(DeleteUnusedMoneyCategory::class)->execute($charity),
-            ] as $protectedMutation
-        ) {
-            try {
-                $protectedMutation();
-                $this->fail('Charity must be protected.');
-            } catch (ValidationException) {
-                $this->addToAssertionCount(1);
-            }
-        }
-
-        app(DeleteMoneyTransaction::class)->execute($transaction);
-        $this->assertDatabaseMissing('money_transactions', ['id' => $transaction->id]);
-    }
-
-    public function test_registration_creates_charity_automatically(): void
+    public function test_registration_leaves_money_presets_for_first_run_selection(): void
     {
         $this->post('/register', [
             'name' => 'Money User',
@@ -154,10 +118,7 @@ class CategoryLifecycleTest extends TestCase
             'password_confirmation' => 'password123',
         ])->assertRedirect('/season-introduction');
 
-        $this->assertDatabaseHas('money_categories', [
-            'name' => 'Charity',
-            'type' => 'expense',
-            'builtin_key' => 'charity',
-        ]);
+        $this->assertDatabaseCount('money_categories', 0);
+        $this->assertSame(0, auth()->user()->money_preset_pack_version);
     }
 }

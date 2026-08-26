@@ -21,6 +21,7 @@ interface ConstitutionPageProps {
     flash: {
         constitutionViolation: RecordedViolationFlashData | null;
     };
+    intermission: boolean;
 }
 
 export default function ConstitutionIndex(props: ConstitutionPageProps) {
@@ -66,6 +67,12 @@ export default function ConstitutionIndex(props: ConstitutionPageProps) {
                     </Button>
                 </header>
 
+                {props.intermission && (
+                    <p className="mb-5 rounded-2xl border border-warning/35 bg-warning/10 px-4 py-3 text-sm leading-6 text-warning">
+                        Intermission: Laws remain readable, but violations cannot be recorded until the next Season starts.
+                    </p>
+                )}
+
                 <Surface className="mb-6 grid grid-cols-2 gap-3 p-3 sm:grid-cols-3" elevated>
                     <SummaryMetric icon={<CircleAlert size={18} />} label="Violations" value={props.summary.violationCount.toLocaleString()} />
                     <SummaryMetric danger icon={<TrendingDown size={18} />} label="SP lost" value={props.summary.spLost === 0 ? '0 SP' : `-${props.summary.spLost.toLocaleString()} SP`} />
@@ -101,6 +108,7 @@ export default function ConstitutionIndex(props: ConstitutionPageProps) {
                     <div className="space-y-2">
                         {props.laws.map((law) => (
                             <LawCard
+                                canRecord={!props.intermission}
                                 key={law.id}
                                 law={law}
                                 onDetails={() => setDetailsLawId(law.id)}
@@ -116,6 +124,7 @@ export default function ConstitutionIndex(props: ConstitutionPageProps) {
             {recordingLaw && <RecordViolationDialog law={recordingLaw} onClose={() => setRecordingLawId(null)} season={props.currentSeason} today={props.today} />}
             {detailsLaw && (
                 <LawDetailsDrawer
+                    canRecord={!props.intermission}
                     law={detailsLaw}
                     onClose={() => setDetailsLawId(null)}
                     onEdit={() => {

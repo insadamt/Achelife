@@ -19,6 +19,7 @@ interface HabitsPageProps {
     };
     calendarLabels: HabitCalendarLabels;
     habits: HabitViewData[];
+    intermission: boolean;
 }
 
 interface SelectedDay {
@@ -87,6 +88,12 @@ export default function HabitsIndex(props: HabitsPageProps) {
                         </Button>
                     </div>
                 </header>
+
+                {props.intermission && (
+                    <p className="mb-5 rounded-2xl border border-warning/35 bg-warning/10 px-4 py-3 text-sm leading-6 text-warning">
+                        Intermission: your streak is preserved and no Habit occurrences are created until the next Season starts.
+                    </p>
+                )}
 
                 {props.habits.length === 0 ? (
                     <Surface className="grid min-h-64 place-items-center p-8 text-center" elevated>

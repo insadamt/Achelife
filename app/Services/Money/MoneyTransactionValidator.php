@@ -24,6 +24,10 @@ class MoneyTransactionValidator
             $this->fail('amount', 'The amount must be greater than zero.');
         }
 
+        if ($data->feeMinor < 0) {
+            $this->fail('fee', 'The transfer fee cannot be negative.');
+        }
+
         if ($data->date->startOfDay()->isAfter($this->userCalendar->today($user))) {
             $this->fail('date', 'Future Money transactions are not available in Phase 6.');
         }
@@ -66,6 +70,10 @@ class MoneyTransactionValidator
     /** @return array{account: MoneyAccount, destination: null, category: MoneyCategory, subcategory: ?MoneySubcategory} */
     private function validateIncomeOrExpense(User $user, MoneyTransactionData $data, MoneyAccount $account, ?MoneyTransaction $existing): array
     {
+        if ($data->feeMinor !== 0) {
+            $this->fail('fee', 'Only Transfers can have a fee.');
+        }
+
         if ($data->destinationAccountId !== null) {
             $this->fail('destination_account_id', 'Only Transfers use a destination Account.');
         }

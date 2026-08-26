@@ -120,6 +120,10 @@ class UpdateHabitOccurrence
         $calendarDate = ($today ?? $this->userCalendar->today($user))->startOfDay();
         $currentSeason = $this->synchronizeOccurrences->execute($user, $calendarDate);
 
+        if ($currentSeason === null) {
+            throw ValidationException::withMessages(['occurrence' => 'Habit progress is paused until your next Season starts.']);
+        }
+
         DB::transaction(function () use ($habit, $date, $calendarDate, $currentSeason, $change, $requiredType): void {
             $lockedHabit = Habit::query()->lockForUpdate()->findOrFail($habit->id);
             $this->assertEditableDate($lockedHabit, $date, $calendarDate, $currentSeason);

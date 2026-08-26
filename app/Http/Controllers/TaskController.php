@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Actions\Seasons\SynchronizeUserSeasons;
+use App\Actions\Seasons\ResolveUserSeasonCycle;
 use App\Actions\Tasks\CreateTask;
 use App\Actions\Tasks\DeleteTaskOccurrence;
 use App\Actions\Tasks\SynchronizeRecurringTaskOccurrences;
@@ -24,13 +24,14 @@ class TaskController extends Controller
     public function index(
         Request $request,
         SynchronizeRecurringTaskOccurrences $synchronizeOccurrences,
-        SynchronizeUserSeasons $synchronizeUserSeasons,
+        ResolveUserSeasonCycle $resolveUserSeasonCycle,
         TaskViewDataFactory $viewDataFactory,
         UserCalendar $calendar,
     ): Response {
         $today = $calendar->today($request->user());
         $synchronizeOccurrences->execute($request->user(), $today);
-        $currentSeason = $synchronizeUserSeasons->execute($request->user(), $today);
+        $cycle = $resolveUserSeasonCycle->execute($request->user(), $today);
+        $currentSeasonId = $cycle->activeSeason?->id;
         $relations = ['series', 'subtasks', 'reschedules', 'rewardSeason'];
         $tasks = $request->user()->tasks();
         $visibleRecurringTaskIds = (clone $tasks)
@@ -52,7 +53,7 @@ class TaskController extends Controller
             })
             ->orderBy('created_at')
             ->get()
-            ->map(fn (Task $task) => $viewDataFactory->make($task, $today, $currentSeason->id));
+            ->map(fn (Task $task) => $viewDataFactory->make($task, $today, $currentSeasonId));
 
         $upcomingTasks = (clone $tasks)->with($relations)
             ->whereNull('completed_at')
@@ -64,7 +65,7 @@ class TaskController extends Controller
             ->orderBy('scheduled_date')
             ->orderByDesc('important')
             ->get()
-            ->map(fn (Task $task) => $viewDataFactory->make($task, $today, $currentSeason->id));
+            ->map(fn (Task $task) => $viewDataFactory->make($task, $today, $currentSeasonId));
 
         $overdueTasks = (clone $tasks)->with($relations)
             ->whereNull('completed_at')
@@ -72,14 +73,14 @@ class TaskController extends Controller
             ->orderBy('scheduled_date')
             ->paginate(50, ['*'], 'overdue_page')
             ->withQueryString()
-            ->through(fn (Task $task) => $viewDataFactory->make($task, $today, $currentSeason->id));
+            ->through(fn (Task $task) => $viewDataFactory->make($task, $today, $currentSeasonId));
 
         $completedTasks = (clone $tasks)->with($relations)
             ->whereNotNull('completed_at')
             ->orderByDesc('completed_at')
             ->paginate(20)
             ->withQueryString()
-            ->through(fn (Task $task) => $viewDataFactory->make($task, $today, $currentSeason->id));
+            ->through(fn (Task $task) => $viewDataFactory->make($task, $today, $currentSeasonId));
 
         return Inertia::render('tasks/Index', [
             'today' => $today->toDateString(),
@@ -87,6 +88,7 @@ class TaskController extends Controller
             'upcomingTasks' => $upcomingTasks,
             'overdueTasks' => $overdueTasks,
             'completedTasks' => $completedTasks,
+            'intermission' => $cycle->activeSeason === null,
         ]);
     }
 

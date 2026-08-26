@@ -1,5 +1,5 @@
 import { Head, useForm } from '@inertiajs/react';
-import { Clock3, LocateFixed } from 'lucide-react';
+import { Clock3, LocateFixed, RefreshCw } from 'lucide-react';
 import type { FormEvent } from 'react';
 import { useMemo } from 'react';
 
@@ -14,6 +14,7 @@ interface GeneralSettingsProps {
     settings: {
         timezone: string;
         today: string;
+        seasonRolloverPreference: 'automatic' | 'manual';
     };
     timezones: TimezoneOption[];
 }
@@ -44,7 +45,10 @@ function localTimePreview(timezone: string): string {
 
 export default function General({ settings, timezones }: GeneralSettingsProps) {
     const browserTimezone = detectedTimezone();
-    const form = useForm({ timezone: settings.timezone });
+    const form = useForm({
+        timezone: settings.timezone,
+        season_rollover_preference: settings.seasonRolloverPreference,
+    });
     const preview = useMemo(() => localTimePreview(form.data.timezone), [form.data.timezone]);
     const changesCalendarDay = localDateKey(form.data.timezone) !== settings.today;
     const detectedTimezoneAvailable = browserTimezone !== null && timezones.some((timezone) => timezone.value === browserTimezone);
@@ -111,6 +115,37 @@ export default function General({ settings, timezones }: GeneralSettingsProps) {
                     </Button>
                 </div>
             </form>
+
+            <section className="mt-6 rounded-[2rem] border border-border-subtle bg-surface p-5 shadow-[0_20px_55px_rgba(0,0,0,0.2)] sm:p-7">
+                <div className="flex items-start gap-4">
+                    <span className="grid size-11 shrink-0 place-items-center rounded-2xl bg-[color-mix(in_srgb,var(--season-accent)_12%,transparent)] text-[var(--season-accent)]">
+                        <RefreshCw aria-hidden="true" size={21} />
+                    </span>
+                    <div className="min-w-0 flex-1">
+                        <h2 className="text-xl font-bold">Season rollover</h2>
+                        <p className="mt-1 text-sm leading-6 text-muted">Choose whether the next 30-day Season starts automatically or waits for you.</p>
+                    </div>
+                </div>
+
+                <div className="mt-6">
+                    <SelectField
+                        error={form.errors.season_rollover_preference}
+                        label="After Day 30"
+                        onChange={(event) => form.setData('season_rollover_preference', event.target.value as 'automatic' | 'manual')}
+                        options={[
+                            { value: 'automatic', label: 'Automatic — continue the next day' },
+                            { value: 'manual', label: 'Manual — wait until I start' },
+                        ]}
+                        value={form.data.season_rollover_preference}
+                    />
+                </div>
+
+                <div className="mt-6 flex justify-end">
+                    <Button disabled={form.processing || !form.isDirty} onClick={() => form.put('/settings/general', { preserveScroll: true })}>
+                        {form.processing ? 'Saving…' : 'Save settings'}
+                    </Button>
+                </div>
+            </section>
         </div>
     );
 }

@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers\Auth;
 
-use App\Actions\Money\EnsureDefaultMoneyCategories;
 use App\Actions\Seasons\SynchronizeUserSeasons;
 use App\Http\Controllers\Controller;
 use App\Models\User;
@@ -24,7 +23,7 @@ class RegisteredUserController extends Controller
         return Inertia::render('auth/Register');
     }
 
-    public function store(Request $request, SynchronizeUserSeasons $synchronizeUserSeasons, EnsureDefaultMoneyCategories $ensureMoneyCategories): RedirectResponse
+    public function store(Request $request, SynchronizeUserSeasons $synchronizeUserSeasons): RedirectResponse
     {
         $attributes = $request->validate([
             'name' => ['required', 'string', 'max:255'],
@@ -38,10 +37,9 @@ class RegisteredUserController extends Controller
             ->setTimezone($attributes['timezone'])
             ->toDateString();
 
-        $user = DB::transaction(function () use ($attributes, $synchronizeUserSeasons, $ensureMoneyCategories): User {
+        $user = DB::transaction(function () use ($attributes, $synchronizeUserSeasons): User {
             $user = User::create($attributes);
             $synchronizeUserSeasons->execute($user);
-            $ensureMoneyCategories->execute($user);
 
             return $user;
         });

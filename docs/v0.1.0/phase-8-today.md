@@ -44,6 +44,10 @@ The header settings control opens a compact dialog that persists this value thro
 
 Desktop presents Tasks and Habits inside two distinct side-by-side containers. Mobile uses a two-state switcher to preserve working space. Tasks use a restrained checklist; Habits use compact progress cards with checkbox controls. Settings remain in the page header. The global application-shell notch is a tall, narrow arrow attached to the viewport edge; it opens a custom attached panel containing only Today SP, Season total and Rank brief, Diary status, and Objectives. Today uses Lucide icons for consistent action and status symbols. All direct state controls have accessible labels and keyboard behavior.
 
+## v1 intermission extension
+
+Phase 11 replaces the ordinary Today aggregate with an intermission dashboard when no Season is active. The dashboard shows the last closeout, pause reason, elapsed rest days, and the exact dates of the next manually started Season.
+
 ## Verification
 
 Run:

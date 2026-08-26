@@ -21,14 +21,18 @@ function SeasonStateIcon({ season }: { season: SeasonViewData }) {
 
 function seasonAccessibleLabel(season: SeasonViewData, selected: boolean) {
     const state = season.state === 'current' ? `current, day ${season.day} of 30` : season.state;
-    const date = season.state === 'locked' ? `starts ${formatShortDate(season.startDate)}` : formatSeasonRange(season.startDate, season.endDate);
+    const date = season.state === 'held'
+        ? 'waiting for you'
+        : season.state === 'locked'
+          ? season.startDate ? `starts ${formatShortDate(season.startDate)}` : 'date not scheduled'
+          : formatSeasonRange(season.startDate, season.endDate);
 
     return `Season ${season.number}, ${state}, ${date}${selected ? ', selected' : ''}`;
 }
 
 export function SeasonSwitcher({ seasons, selectedSeasonNumber, onSelect }: SeasonSwitcherProps) {
     const seasonElements = useRef(new Map<number, HTMLLIElement>());
-    const selectableSeasons = seasons.filter((season) => season.state !== 'locked');
+    const selectableSeasons = seasons.filter((season) => season.state !== 'locked' && season.state !== 'held');
     const selectedIndex = selectableSeasons.findIndex((season) => season.number === selectedSeasonNumber);
 
     useEffect(() => {
@@ -76,7 +80,7 @@ export function SeasonSwitcher({ seasons, selectedSeasonNumber, onSelect }: Seas
             <ol className="season-switcher-track flex min-w-0 flex-1 snap-x snap-mandatory gap-2 overflow-x-auto py-3 [scrollbar-width:none] sm:gap-3 [&::-webkit-scrollbar]:hidden">
                 {seasons.map((season) => {
                     const selected = season.number === selectedSeasonNumber;
-                    const locked = season.state === 'locked';
+                    const locked = season.state === 'locked' || season.state === 'held';
 
                     return (
                         <li
@@ -99,7 +103,7 @@ export function SeasonSwitcher({ seasons, selectedSeasonNumber, onSelect }: Seas
                                 disabled={locked}
                                 onClick={() => onSelect(season)}
                                 onKeyDown={handleKeyboard}
-                                title={locked ? `Starts ${formatShortDate(season.startDate)}` : formatSeasonRange(season.startDate, season.endDate)}
+                                title={season.state === 'held' ? 'Waiting for you' : locked ? (season.startDate ? `Starts ${formatShortDate(season.startDate)}` : 'Date not scheduled') : formatSeasonRange(season.startDate, season.endDate)}
                                 type="button"
                             >
                                 <span

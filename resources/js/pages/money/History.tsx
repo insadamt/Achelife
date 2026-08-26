@@ -22,8 +22,8 @@ interface PaginatedTransactions {
 }
 
 interface RawAccount { id: number; name: string; currency: string; archived_at: string | null }
-interface HistoryFilters { type?: MoneyTransactionType; account?: string | number; category?: string | number; from?: string; to?: string; search?: string }
-interface EditableHistoryFilters { type: string; account: string; category: string; from: string; to: string; search: string }
+interface HistoryFilters { type?: MoneyTransactionType; account?: string | number; category?: string | number; subcategory?: string | number; from?: string; to?: string; search?: string }
+interface EditableHistoryFilters { type: string; account: string; category: string; subcategory: string; from: string; to: string; search: string }
 interface HistoryProps { today: string; transactions: PaginatedTransactions; accounts: RawAccount[]; categories: MoneyCategoryData[]; filters: HistoryFilters }
 
 function FilterFields({
@@ -39,11 +39,15 @@ function FilterFields({
     onChange: (filters: EditableHistoryFilters) => void;
     today: string;
 }) {
+    const selectedCategory = categories.find((category) => category.id === Number(filters.category));
+    const subcategories = selectedCategory?.subcategories ?? [];
+
     return (
         <>
             <SelectField label="Type" onChange={(event) => onChange({ ...filters, type: event.target.value })} options={[{ label: 'All types', value: '' }, { label: 'Income', value: 'income' }, { label: 'Expense', value: 'expense' }, { label: 'Transfer', value: 'transfer' }]} value={filters.type} />
             <SelectField label="Account" onChange={(event) => onChange({ ...filters, account: event.target.value })} options={[{ label: 'All Accounts', value: '' }, ...accounts.map((account) => ({ label: `${account.name}${account.archived_at ? ' · Archived' : ''}`, value: String(account.id) }))]} value={filters.account} />
-            <SelectField label="Category" onChange={(event) => onChange({ ...filters, category: event.target.value })} options={[{ label: 'All Categories', value: '' }, ...categories.map((category) => ({ label: `${category.name}${category.archivedAt ? ' · Archived' : ''}`, value: String(category.id) }))]} value={filters.category} />
+            <SelectField label="Category" onChange={(event) => onChange({ ...filters, category: event.target.value, subcategory: '' })} options={[{ label: 'All Categories', value: '' }, ...categories.map((category) => ({ label: `${category.name}${category.archivedAt ? ' · Archived' : ''}`, value: String(category.id) }))]} value={filters.category} />
+            <SelectField disabled={!selectedCategory} label="Subcategory" onChange={(event) => onChange({ ...filters, subcategory: event.target.value })} options={[{ label: selectedCategory ? 'All Subcategories' : 'Choose a Category first', value: '' }, ...subcategories.map((subcategory) => ({ label: subcategory.name, value: String(subcategory.id) }))]} value={filters.subcategory} />
             <Field label="From" max={today} onChange={(event) => onChange({ ...filters, from: event.target.value })} type="date" value={filters.from} />
             <Field label="To" max={today} onChange={(event) => onChange({ ...filters, to: event.target.value })} type="date" value={filters.to} />
         </>
@@ -54,10 +58,12 @@ function appliedFilterLabels(props: HistoryProps): string[] {
     const labels: string[] = [];
     const account = props.accounts.find((item) => item.id === Number(props.filters.account));
     const category = props.categories.find((item) => item.id === Number(props.filters.category));
+    const subcategory = category?.subcategories.find((item) => item.id === Number(props.filters.subcategory));
 
     if (props.filters.type) labels.push(props.filters.type);
     if (account) labels.push(account.name);
     if (category) labels.push(category.name);
+    if (subcategory) labels.push(subcategory.name);
     if (props.filters.from) labels.push(`From ${props.filters.from}`);
     if (props.filters.to) labels.push(`To ${props.filters.to}`);
 
@@ -69,6 +75,7 @@ export default function MoneyHistory(props: HistoryProps) {
         type: props.filters.type ?? '',
         account: String(props.filters.account ?? ''),
         category: String(props.filters.category ?? ''),
+        subcategory: String(props.filters.subcategory ?? ''),
         from: props.filters.from ?? '',
         to: props.filters.to ?? '',
         search: props.filters.search ?? '',
@@ -95,6 +102,7 @@ export default function MoneyHistory(props: HistoryProps) {
             type: filters.type,
             account: filters.account,
             category: filters.category,
+            subcategory: filters.subcategory,
             from: filters.from,
             to: filters.to,
             search: filters.search,
@@ -102,7 +110,7 @@ export default function MoneyHistory(props: HistoryProps) {
     }
 
     function clearFilters() {
-        const clearedFilters = { type: '', account: '', category: '', from: '', to: '', search: '' };
+        const clearedFilters = { type: '', account: '', category: '', subcategory: '', from: '', to: '', search: '' };
         setFilters(clearedFilters);
         router.get('/money/history', {}, { preserveState: true, replace: true, onSuccess: () => setFiltersOpen(false) });
     }
@@ -118,7 +126,7 @@ export default function MoneyHistory(props: HistoryProps) {
             </header>
 
             <Surface className="mb-5 p-4 sm:p-5" elevated>
-                <form className="flex flex-col gap-3 lg:grid lg:grid-cols-[minmax(16rem,2fr)_repeat(3,minmax(8rem,1fr))_auto] lg:items-end" onSubmit={applyFilters}>
+                <form className="flex flex-col gap-3 lg:grid lg:grid-cols-[minmax(14rem,2fr)_repeat(4,minmax(8rem,1fr))_auto] lg:items-end" onSubmit={applyFilters}>
                     <div className="relative">
                         <Search aria-hidden="true" className="pointer-events-none absolute top-[2.8rem] left-4 text-muted" size={18} />
                         <Field className="pl-11" label="Search" onChange={(event) => setFilters({ ...filters, search: event.target.value })} placeholder="Notes or categories" value={filters.search} />
@@ -126,7 +134,8 @@ export default function MoneyHistory(props: HistoryProps) {
                     <div className="hidden lg:contents">
                         <SelectField label="Type" onChange={(event) => setFilters({ ...filters, type: event.target.value })} options={[{ label: 'All types', value: '' }, { label: 'Income', value: 'income' }, { label: 'Expense', value: 'expense' }, { label: 'Transfer', value: 'transfer' }]} value={filters.type} />
                         <SelectField label="Account" onChange={(event) => setFilters({ ...filters, account: event.target.value })} options={[{ label: 'All Accounts', value: '' }, ...props.accounts.map((account) => ({ label: account.name, value: String(account.id) }))]} value={filters.account} />
-                        <SelectField label="Category" onChange={(event) => setFilters({ ...filters, category: event.target.value })} options={[{ label: 'All Categories', value: '' }, ...props.categories.map((category) => ({ label: category.name, value: String(category.id) }))]} value={filters.category} />
+                        <SelectField label="Category" onChange={(event) => setFilters({ ...filters, category: event.target.value, subcategory: '' })} options={[{ label: 'All Categories', value: '' }, ...props.categories.map((category) => ({ label: category.name, value: String(category.id) }))]} value={filters.category} />
+                        <SelectField disabled={!filters.category} label="Subcategory" onChange={(event) => setFilters({ ...filters, subcategory: event.target.value })} options={[{ label: filters.category ? 'All Subcategories' : 'Choose Category', value: '' }, ...(props.categories.find((category) => category.id === Number(filters.category))?.subcategories ?? []).map((subcategory) => ({ label: subcategory.name, value: String(subcategory.id) }))]} value={filters.subcategory} />
                     </div>
                     <div className="flex gap-2">
                         <Button className="flex-1 lg:flex-none" type="submit"><Search aria-hidden="true" size={16} />Search</Button>

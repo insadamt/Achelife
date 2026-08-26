@@ -10,10 +10,6 @@ class DeleteUnusedMoneyCategory
 {
     public function execute(MoneyCategory $category): void
     {
-        if ($category->isCharity()) {
-            throw ValidationException::withMessages(['category' => 'The built-in Charity Category cannot be deleted.']);
-        }
-
         DB::transaction(function () use ($category): void {
             $lockedCategory = MoneyCategory::query()->lockForUpdate()->findOrFail($category->id);
             if ($lockedCategory->transactions()->exists()) {

@@ -40,6 +40,10 @@ Desktop Diary uses a compact 14-day state rail beside a dominant notebook-like w
 
 Search operates only on persisted autosaves and supports portable plain-text `LIKE` matching plus mood, language, and Person filters. It supports keyboard submission, result counts, filter reset, and explicit Draft or Complete result states. Results open their exact dates through the same guarded navigation path; locked history remains read-only. Search, People, and language settings are secondary tool drawers rather than competing entry tabs. At least one configured language is required so a new entry can always be completed.
 
+## v1 intermission extension
+
+Phase 11 treats dates outside persisted Seasons as unavailable rather than Missed. Historical entries and search remain readable, while new writing and progression require an active Season. A later Season resumes from the previous Season's final stored streak baseline without manufacturing gap days.
+
 ## Verification
 
 Run:

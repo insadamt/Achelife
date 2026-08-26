@@ -38,6 +38,10 @@ Each Season stores its own `season_points`, defaulting to zero, and a nullable `
 
 The selected real Season updates a unified command center rather than separate overview screens. Rank, SP, calendar position, Objective completion, and Objective setup status stay visible together. A compact 30-tick Season pulse uses taller milestone ticks and a distinct current-day marker. Motion, including programmatic token centering, uses the global reduced-motion behavior from Phase 0.5.
 
+## v1 lifecycle extension
+
+Phase 11 no longer derives every later Season from `calendar_started_on`. The date remains the immutable start of Achelife history, while new Season numbers and dates derive from the latest persisted Season. Automatic users keep continuous backfill; manual rollover and one-time holds create explicit intermissions in which no active Season exists. See `docs/v1.0.0/phase-11-season-lifecycle.md`.
+
 ## Verification
 
 Run:

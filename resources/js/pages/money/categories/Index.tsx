@@ -1,24 +1,32 @@
 import { Head } from '@inertiajs/react';
-import { Archive, ArrowDownLeft, ArrowUpRight, Plus } from 'lucide-react';
+import { Archive, ArrowDownLeft, ArrowUpRight, PackageOpen, Plus, Search } from 'lucide-react';
 import { useState } from 'react';
 import type { CSSProperties } from 'react';
 
-import { Button, Surface } from '../../../components/ui';
+import { Button, Field, Surface } from '../../../components/ui';
 import { CategoryCard } from '../../../features/money/CategoryCard';
 import { CategoryCreateDrawer, SubcategoryCreateDrawer } from '../../../features/money/CategoryEditorDrawers';
 import { MoneySectionNav } from '../../../features/money/MoneySectionNav';
+import { MoneyPresetPackDrawer } from '../../../features/money/MoneyPresetPackDrawer';
+import type { MoneyPresetPackData } from '../../../features/money/MoneyPresetPackDrawer';
 import type { MoneyCategoryData, MoneyCategoryType } from '../../../features/money/types';
 
 type CategoryTab = MoneyCategoryType | 'archived';
 
-export default function MoneyCategories({ categories }: { categories: MoneyCategoryData[] }) {
+export default function MoneyCategories({ categories, presetPack }: { categories: MoneyCategoryData[]; presetPack: MoneyPresetPackData }) {
     const [activeTab, setActiveTab] = useState<CategoryTab>('expense');
     const [creatingCategory, setCreatingCategory] = useState(false);
     const [subcategoryParentId, setSubcategoryParentId] = useState<number | null>(null);
+    const [presetPreviewOpen, setPresetPreviewOpen] = useState(false);
+    const [search, setSearch] = useState('');
     const activeCategories = categories.filter((category) => category.archivedAt === null);
-    const visibleCategories = activeTab === 'archived'
+    const tabCategories = activeTab === 'archived'
         ? categories.filter((category) => category.archivedAt !== null)
         : activeCategories.filter((category) => category.type === activeTab);
+    const normalizedSearch = search.trim().toLocaleLowerCase();
+    const visibleCategories = tabCategories.filter((category) => normalizedSearch === ''
+        || category.name.toLocaleLowerCase().includes(normalizedSearch)
+        || category.subcategories.some((subcategory) => subcategory.name.toLocaleLowerCase().includes(normalizedSearch)));
     const tabs: Array<{ icon: typeof ArrowUpRight; label: string; value: CategoryTab; count: number }> = [
         { icon: ArrowUpRight, label: 'Expenses', value: 'expense', count: activeCategories.filter((category) => category.type === 'expense').length },
         { icon: ArrowDownLeft, label: 'Income', value: 'income', count: activeCategories.filter((category) => category.type === 'income').length },
@@ -57,9 +65,15 @@ export default function MoneyCategories({ categories }: { categories: MoneyCateg
                         );
                     })}
                 </div>
-                <Button onClick={() => setCreatingCategory(true)}>
-                    <Plus aria-hidden="true" size={17} /> Category
-                </Button>
+                <div className="flex flex-wrap gap-2">
+                    <Button onClick={() => setPresetPreviewOpen(true)} variant="secondary"><PackageOpen aria-hidden="true" size={17} />Presets</Button>
+                    <Button onClick={() => setCreatingCategory(true)}><Plus aria-hidden="true" size={17} /> Category</Button>
+                </div>
+            </div>
+
+            <div className="relative mb-5 max-w-xl">
+                <Search aria-hidden="true" className="pointer-events-none absolute top-[2.8rem] left-4 text-muted" size={18} />
+                <Field className="pl-11" label="Search Categories and Subcategories" onChange={(event) => setSearch(event.target.value)} placeholder="Try Bank Fees or Transport" value={search} />
             </div>
 
             {visibleCategories.length > 0 ? (
@@ -71,13 +85,14 @@ export default function MoneyCategories({ categories }: { categories: MoneyCateg
             ) : (
                 <Surface className="grid min-h-56 place-items-center p-7 text-center" elevated>
                     <div>
-                        <p className="text-2xl font-bold">No {activeTab === 'archived' ? 'Archived' : activeTab === 'expense' ? 'Expense' : 'Income'} Categories</p>
+                        <p className="text-2xl font-bold">{search ? 'No matching Categories' : `No ${activeTab === 'archived' ? 'Archived' : activeTab === 'expense' ? 'Expense' : 'Income'} Categories`}</p>
                         {activeTab !== 'archived' && <Button className="mt-5" onClick={() => setCreatingCategory(true)}><Plus aria-hidden="true" size={17} />Create Category</Button>}
                     </div>
                 </Surface>
             )}
 
             {creatingCategory && <CategoryCreateDrawer onClose={() => setCreatingCategory(false)} />}
+            {presetPreviewOpen && <MoneyPresetPackDrawer onClose={() => setPresetPreviewOpen(false)} pack={presetPack} />}
             {subcategoryParentId !== null && (
                 <SubcategoryCreateDrawer categories={activeCategories} initialCategoryId={subcategoryParentId} onClose={() => setSubcategoryParentId(null)} />
             )}

@@ -1,4 +1,4 @@
-export type SeasonState = 'completed' | 'current' | 'locked';
+export type SeasonState = 'completed' | 'current' | 'held' | 'locked';
 
 export type RankTier = 'unranked' | 'bronze' | 'silver' | 'gold' | 'platinum' | 'diamond' | 'master' | 'grandmaster' | 'legend';
 

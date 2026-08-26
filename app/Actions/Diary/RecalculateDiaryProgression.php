@@ -64,8 +64,16 @@ class RecalculateDiaryProgression
 
     private function baselineStreak(User $user, Season $season): int
     {
-        $previousDate = $season->start_date->subDay();
-        $entry = $user->diaryEntries()->whereDate('entry_date', $previousDate)->lockForUpdate()->first();
+        $previousSeasonEnd = $user->seasons()
+            ->where('season_number', '<', $season->season_number)
+            ->latest('season_number')
+            ->value('end_date');
+
+        if ($previousSeasonEnd === null) {
+            return 0;
+        }
+
+        $entry = $user->diaryEntries()->whereDate('entry_date', $previousSeasonEnd)->lockForUpdate()->first();
 
         return $entry?->is_completed ? $entry->streak_after : 0;
     }

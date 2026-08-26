@@ -19,13 +19,14 @@ export interface MoneySubcategoryData {
     name: string;
     archivedAt: string | null;
     hasHistory: boolean;
+    presetKey: string | null;
 }
 
 export interface MoneyCategoryData {
     id: number;
     name: string;
     type: MoneyCategoryType;
-    builtIn: boolean;
+    presetKey: string | null;
     archivedAt: string | null;
     hasHistory: boolean;
     subcategories: MoneySubcategoryData[];
@@ -42,6 +43,10 @@ export interface MoneyTransactionData {
     id: number;
     type: MoneyTransactionType;
     amountMinor: number;
+    feeMinor: number;
+    sourceDebitMinor: number | null;
+    destinationCreditMinor: number | null;
+    feeCategory: { category: string; subcategory: string } | null;
     date: string;
     note: string | null;
     account: MoneyTransactionAccountData;

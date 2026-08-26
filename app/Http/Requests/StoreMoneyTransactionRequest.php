@@ -19,6 +19,7 @@ class StoreMoneyTransactionRequest extends FormRequest
         return [
             'type' => ['required', Rule::enum(MoneyTransactionType::class)],
             'amount' => ['required', 'string', 'regex:/^\d{1,12}(?:\.\d{1,2})?$/', 'not_in:0,0.0,0.00'],
+            'fee' => ['nullable', 'string', 'regex:/^\d{1,12}(?:\.\d{1,2})?$/'],
             'account_id' => ['required', 'integer'],
             'destination_account_id' => ['nullable', 'integer'],
             'category_id' => ['nullable', 'integer'],

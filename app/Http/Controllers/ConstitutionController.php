@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Actions\Seasons\SynchronizeUserSeasons;
+use App\Actions\Seasons\ResolveUserSeasonCycle;
 use App\Models\Law;
 use App\Services\Calendar\UserCalendar;
 use App\Support\Constitution\ConstitutionViewDataFactory;
@@ -14,12 +14,13 @@ class ConstitutionController extends Controller
 {
     public function index(
         Request $request,
-        SynchronizeUserSeasons $synchronizeUserSeasons,
+        ResolveUserSeasonCycle $resolveUserSeasonCycle,
         ConstitutionViewDataFactory $viewDataFactory,
         UserCalendar $calendar,
     ): Response {
         $today = $calendar->today($request->user());
-        $currentSeason = $synchronizeUserSeasons->execute($request->user(), $today);
+        $cycle = $resolveUserSeasonCycle->execute($request->user(), $today);
+        $currentSeason = $cycle->activeSeason ?? $cycle->latestSeason;
         $laws = $request->user()->laws()
             ->whereNull('archived_at')
             ->withCount('violations')
@@ -50,6 +51,7 @@ class ConstitutionController extends Controller
                 'spLost' => abs($currentSeasonViolations->sum('penalty_sp')),
             ],
             'laws' => $laws,
+            'intermission' => $cycle->activeSeason === null,
         ]);
     }
 

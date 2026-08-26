@@ -3,6 +3,7 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Enums\SeasonRolloverPreference;
 use Carbon\CarbonImmutable;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -13,7 +14,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
-#[Fillable(['name', 'email', 'password', 'timezone', 'calendar_started_on'])]
+#[Fillable(['name', 'email', 'password', 'timezone', 'calendar_started_on', 'season_rollover_preference', 'hold_next_season', 'money_preset_pack_version'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
@@ -24,6 +25,9 @@ class User extends Authenticatable
     {
         static::creating(function (User $user): void {
             $user->timezone ??= 'UTC';
+            $user->season_rollover_preference ??= SeasonRolloverPreference::Automatic;
+            $user->hold_next_season ??= false;
+            $user->money_preset_pack_version ??= 0;
 
             if ($user->calendar_started_on === null) {
                 $createdAt = $user->created_at === null
@@ -38,6 +42,12 @@ class User extends Authenticatable
     public function seasons(): HasMany
     {
         return $this->hasMany(Season::class);
+    }
+
+    /** @return HasMany<SeasonIntermission, $this> */
+    public function seasonIntermissions(): HasMany
+    {
+        return $this->hasMany(SeasonIntermission::class);
     }
 
     /** @return HasMany<Task, $this> */
@@ -133,6 +143,9 @@ class User extends Authenticatable
     {
         return [
             'calendar_started_on' => 'immutable_date',
+            'season_rollover_preference' => SeasonRolloverPreference::class,
+            'hold_next_season' => 'boolean',
+            'money_preset_pack_version' => 'integer',
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];

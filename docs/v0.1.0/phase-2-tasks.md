@@ -53,6 +53,10 @@ Four focused tabs organize the timeline into Today, Overdue, Upcoming, and Compl
 
 Selecting a Task opens a read-first full-height responsive sheet. Incomplete title, schedule, and checklist sections each open a focused editor and save independently. Recurring edits keep their forward-only behavior. Removal lives behind a compact action menu and confirmation. Completed Tasks are read-only, show exact reward attribution, and allow reversal only while their reward Season remains active.
 
+## v1 intermission extension
+
+Phase 11 keeps Task creation and rescheduling available during intermission but blocks rewarded completion. Recurring series do not materialize gap occurrences and resume from the first eligible date on or after the next Season start.
+
 ## Verification
 
 Run:

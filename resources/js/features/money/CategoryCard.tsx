@@ -71,15 +71,13 @@ export function CategoryCard({ category, onAddSubcategory }: { category: MoneyCa
                     <div>
                         <div className="flex flex-wrap items-center gap-2">
                             <h3 className="text-xl font-bold">{category.name}</h3>
-                            {category.builtIn && <StatusChip status="completed">Built in</StatusChip>}
+                            {category.presetKey && <StatusChip status="completed">Preset</StatusChip>}
                             {archived && <StatusChip>Archived</StatusChip>}
                         </div>
                     </div>
-                    {!category.builtIn && (
-                        <Button aria-label={`Manage ${category.name}`} className="size-10 px-0" onClick={() => setActionTarget({ kind: 'category', item: category })} size="small" variant="ghost">
-                            <MoreHorizontal aria-hidden="true" size={19} />
-                        </Button>
-                    )}
+                    <Button aria-label={`Manage ${category.name}`} className="size-10 px-0" onClick={() => setActionTarget({ kind: 'category', item: category })} size="small" variant="ghost">
+                        <MoreHorizontal aria-hidden="true" size={19} />
+                    </Button>
                 </div>
 
                 <div className="mt-5 divide-y divide-border-subtle border-y border-border-subtle">

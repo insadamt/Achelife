@@ -17,6 +17,7 @@ class DiaryViewDataFactory
     /** @return array<string, mixed> */
     public function make(User $user, Season $currentSeason, CarbonImmutable $today, CarbonImmutable $selectedDate, CarbonImmutable $calendarMonth, Request $request): array
     {
+        $user->loadMissing('seasons');
         $entries = $user->diaryEntries()->with('mentions.person')->get()->keyBy(
             fn (DiaryEntry $entry): string => $entry->entry_date->toDateString(),
         );
@@ -49,8 +50,14 @@ class DiaryViewDataFactory
     /** @return array<string, mixed> */
     private function day(CarbonImmutable $date, CarbonImmutable $today, User $user, Season $currentSeason, ?DiaryEntry $entry): array
     {
-        $unavailable = $date->isAfter($today) || $date->isBefore($user->calendar_started_on);
-        $editable = ! $unavailable && $date->betweenIncluded($currentSeason->start_date, $currentSeason->end_date);
+        $belongsToSeason = $user->seasons->contains(
+            fn (Season $season) => $date->betweenIncluded($season->start_date, $season->end_date),
+        );
+        $unavailable = $date->isAfter($today)
+            || $date->isBefore($user->calendar_started_on)
+            || ! $belongsToSeason;
+        $seasonIsActive = $today->betweenIncluded($currentSeason->start_date, $currentSeason->end_date);
+        $editable = $seasonIsActive && ! $unavailable && $date->betweenIncluded($currentSeason->start_date, $currentSeason->end_date);
         $state = $unavailable ? 'unavailable' : ($entry?->is_completed ? 'completed' : ($date->isSameDay($today) ? 'pending' : 'missed'));
         $language = $entry?->language_code ? $this->languageCatalog->get($entry->language_code) : null;
 

@@ -17,12 +17,14 @@ use App\Http\Controllers\MoneyArchiveController;
 use App\Http\Controllers\MoneyCategoryController;
 use App\Http\Controllers\MoneyController;
 use App\Http\Controllers\MoneyHistoryController;
+use App\Http\Controllers\MoneyPresetController;
 use App\Http\Controllers\MoneySubcategoryController;
 use App\Http\Controllers\MoneyTransactionController;
 use App\Http\Controllers\ObjectiveCompletionController;
 use App\Http\Controllers\ObjectiveController;
 use App\Http\Controllers\PersonController;
 use App\Http\Controllers\SeasonController;
+use App\Http\Controllers\SeasonCycleController;
 use App\Http\Controllers\SeasonIntroductionController;
 use App\Http\Controllers\SeasonRankGuideController;
 use App\Http\Controllers\StopTaskSeriesController;
@@ -70,6 +72,8 @@ Route::middleware('auth')->group(function (): void {
         ->name('seasons.introduction');
     Route::post('/seasons/{season}/introduction', [SeasonIntroductionController::class, 'acknowledge'])
         ->name('seasons.introduction.acknowledge');
+    Route::post('/seasons/start', [SeasonCycleController::class, 'start'])->name('seasons.start');
+    Route::put('/seasons/hold', [SeasonCycleController::class, 'hold'])->name('seasons.hold');
     Route::post('/tasks', [TaskController::class, 'store'])->name('tasks.store');
     Route::put('/tasks/{task}', [TaskController::class, 'update'])->name('tasks.update');
     Route::delete('/tasks/{task}', [TaskController::class, 'destroy'])->name('tasks.destroy');
@@ -121,6 +125,7 @@ Route::middleware('auth')->group(function (): void {
     Route::post('/money/categories/{category}/reactivate', [MoneyCategoryController::class, 'reactivate'])->name('money.categories.reactivate');
     Route::delete('/money/categories/{category}', [MoneyCategoryController::class, 'destroy'])->name('money.categories.destroy');
     Route::post('/money/subcategories', [MoneySubcategoryController::class, 'store'])->name('money.subcategories.store');
+    Route::post('/money/presets/install', [MoneyPresetController::class, 'store'])->name('money.presets.install');
     Route::put('/money/subcategories/{subcategory}', [MoneySubcategoryController::class, 'update'])->name('money.subcategories.update');
     Route::post('/money/subcategories/{subcategory}/archive', [MoneySubcategoryController::class, 'archive'])->name('money.subcategories.archive');
     Route::post('/money/subcategories/{subcategory}/reactivate', [MoneySubcategoryController::class, 'reactivate'])->name('money.subcategories.reactivate');

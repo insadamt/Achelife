@@ -66,16 +66,14 @@ class SeasonViewDataFactory
     }
 
     /** @return array<string, mixed> */
-    public function lockedPlaceholder(Season $currentSeason, int $offset): array
+    public function placeholder(int $seasonNumber, string $state, ?CarbonImmutable $startDate): array
     {
-        $startDate = $currentSeason->start_date->addDays($offset * SynchronizeUserSeasons::DAYS_PER_SEASON);
-
         return [
             'id' => null,
-            'number' => $currentSeason->season_number + $offset,
-            'state' => 'locked',
-            'startDate' => $startDate->toDateString(),
-            'endDate' => $startDate->addDays(SynchronizeUserSeasons::DAYS_PER_SEASON - 1)->toDateString(),
+            'number' => $seasonNumber,
+            'state' => $state,
+            'startDate' => $startDate?->toDateString() ?? '',
+            'endDate' => $startDate?->addDays(SynchronizeUserSeasons::DAYS_PER_SEASON - 1)->toDateString() ?? '',
             'day' => null,
             'progressPercentage' => 0,
             'seasonPoints' => 0,
@@ -90,5 +88,13 @@ class SeasonViewDataFactory
             'objectiveSetupDaysRemaining' => 0,
             'objectiveCompletionMutable' => false,
         ];
+    }
+
+    /** @return array<string, mixed> */
+    public function lockedPlaceholder(Season $currentSeason, int $offset): array
+    {
+        $startDate = $currentSeason->start_date->addDays($offset * SynchronizeUserSeasons::DAYS_PER_SEASON);
+
+        return $this->placeholder($currentSeason->season_number + $offset, 'locked', $startDate);
     }
 }

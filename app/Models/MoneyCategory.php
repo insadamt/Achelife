@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-#[Fillable(['user_id', 'type', 'name', 'builtin_key', 'archived_at'])]
+#[Fillable(['user_id', 'type', 'name', 'preset_key', 'archived_at'])]
 class MoneyCategory extends Model
 {
     /** @return BelongsTo<User, $this> */
@@ -27,11 +27,6 @@ class MoneyCategory extends Model
     public function transactions(): HasMany
     {
         return $this->hasMany(MoneyTransaction::class, 'category_id');
-    }
-
-    public function isCharity(): bool
-    {
-        return $this->builtin_key === 'charity';
     }
 
     protected function casts(): array

@@ -35,12 +35,13 @@ class MoneyViewDataFactory
             'id' => $category->id,
             'name' => $category->name,
             'type' => $category->type->value,
-            'builtIn' => $category->isCharity(),
+            'presetKey' => $category->preset_key,
             'archivedAt' => $category->archived_at?->toIso8601String(),
             'hasHistory' => ($category->transactions_count ?? $category->transactions()->count()) > 0,
             'subcategories' => $category->subcategories->map(fn ($subcategory): array => [
                 'id' => $subcategory->id,
                 'name' => $subcategory->name,
+                'presetKey' => $subcategory->preset_key,
                 'archivedAt' => $subcategory->archived_at?->toIso8601String(),
                 'hasHistory' => ($subcategory->transactions_count ?? $subcategory->transactions()->count()) > 0,
             ])->values(),
@@ -54,6 +55,16 @@ class MoneyViewDataFactory
             'id' => $transaction->id,
             'type' => $transaction->type->value,
             'amountMinor' => $transaction->amount_minor,
+            'feeMinor' => $transaction->fee_minor,
+            'sourceDebitMinor' => $transaction->type->value === 'transfer'
+                ? $transaction->amount_minor + $transaction->fee_minor
+                : null,
+            'destinationCreditMinor' => $transaction->type->value === 'transfer'
+                ? $transaction->amount_minor
+                : null,
+            'feeCategory' => $transaction->type->value === 'transfer' && $transaction->fee_minor > 0
+                ? ['category' => 'Financial', 'subcategory' => 'Bank Fees']
+                : null,
             'date' => $transaction->transaction_date->toDateString(),
             'note' => $transaction->note,
             'account' => $this->transactionAccount($transaction->account),

@@ -13,6 +13,7 @@ import type { MoneyAccountData, MoneyCategoryData, MoneyTransactionData, MoneyTr
 interface TransactionPayload {
     type: MoneyTransactionType;
     amount: string;
+    fee: string;
     account_id: number | '';
     destination_account_id: number | '';
     category_id: number | '';
@@ -94,6 +95,7 @@ export function TransactionDrawer({
     const form = useForm<TransactionPayload>({
         type: transaction?.type ?? initialType ?? 'expense',
         amount: transaction ? minorUnitsInput(transaction.amountMinor) : '',
+        fee: transaction ? minorUnitsInput(transaction.feeMinor) : '0.00',
         account_id: transaction?.account.id ?? initialAccountId ?? accounts[0]?.id ?? '',
         destination_account_id: transaction?.destinationAccount?.id ?? '',
         category_id: transaction?.category?.id ?? '',
@@ -127,6 +129,7 @@ export function TransactionDrawer({
         form.transform((data) => ({
             ...data,
             destination_account_id: type === 'transfer' ? data.destination_account_id : null,
+            fee: type === 'transfer' ? data.fee : '0.00',
             category_id: type === 'transfer' ? null : data.category_id,
             subcategory_id: type === 'transfer' || data.subcategory_id === '' ? null : data.subcategory_id,
         }));
@@ -161,6 +164,13 @@ export function TransactionDrawer({
                         <p className="mt-2 font-bold text-secondary">{transactionTitle(transaction)}</p>
                         <dl className="mt-6 divide-y divide-border-subtle text-sm">
                             <div className="py-3"><dt className="text-muted">Account{transaction.type === 'transfer' ? 's' : ''}</dt><dd className="mt-1 font-semibold">{transaction.type === 'transfer' ? `${transaction.account.name} → ${transaction.destinationAccount?.name}` : transaction.account.name}</dd></div>
+                            {transaction.type === 'transfer' && (
+                                <>
+                                    <div className="py-3"><dt className="text-muted">Destination receives</dt><dd className="mt-1 font-semibold tabular-nums">{formatMinorUnits(transaction.destinationCreditMinor ?? transaction.amountMinor, transaction.account.currency)}</dd></div>
+                                    <div className="py-3"><dt className="text-muted">Transfer fee · Financial → Bank Fees</dt><dd className="mt-1 font-semibold tabular-nums">{formatMinorUnits(transaction.feeMinor, transaction.account.currency)}</dd></div>
+                                    <div className="py-3"><dt className="text-muted">Source debit</dt><dd className="mt-1 font-semibold tabular-nums">{formatMinorUnits(transaction.sourceDebitMinor ?? transaction.amountMinor, transaction.account.currency)}</dd></div>
+                                </>
+                            )}
                             {transaction.note && <div className="py-3"><dt className="text-muted">Note</dt><dd className="mt-1 whitespace-pre-wrap font-semibold">{transaction.note}</dd></div>}
                         </dl>
                     </div>
@@ -188,7 +198,7 @@ export function TransactionDrawer({
                 {!transaction && <TransactionTypeControl onChange={chooseType} value={type} />}
 
                 <div>
-                    <label className="text-sm font-semibold text-secondary" htmlFor="money-amount">Amount</label>
+                    <label className="text-sm font-semibold text-secondary" htmlFor="money-amount">{type === 'transfer' ? 'Destination receives' : 'Amount'}</label>
                     <div className={classNames('mt-2 flex items-center rounded-2xl border bg-app transition-colors focus-within:border-[var(--money-accent)]', form.errors.amount ? 'border-danger' : 'border-border-strong')}>
                         <input
                             aria-invalid={Boolean(form.errors.amount)}
@@ -225,6 +235,27 @@ export function TransactionDrawer({
                             required
                             value={form.data.destination_account_id}
                         />
+                        <div>
+                            <label className="text-sm font-semibold text-secondary" htmlFor="money-fee">Transfer fee</label>
+                            <div className={classNames('mt-2 flex items-center rounded-2xl border bg-app transition-colors focus-within:border-[var(--money-accent)]', form.errors.fee ? 'border-danger' : 'border-border-strong')}>
+                                <input
+                                    aria-invalid={Boolean(form.errors.fee)}
+                                    className="focus-ring min-w-0 flex-1 bg-transparent px-4 py-3 text-lg font-bold text-foreground tabular-nums"
+                                    id="money-fee"
+                                    inputMode="decimal"
+                                    onChange={(event) => form.setData('fee', event.target.value)}
+                                    placeholder="0.00"
+                                    value={form.data.fee}
+                                />
+                                <span className="pr-4 text-sm font-bold tracking-[0.12em] text-[var(--money-accent)]">{selectedAccount?.currency ?? '—'}</span>
+                            </div>
+                            {form.errors.fee && <p className="mt-2 text-sm font-medium text-danger">{form.errors.fee}</p>}
+                            <p className="mt-2 text-xs text-muted">The fee uses the source Account currency and is reported under Financial → Bank Fees.</p>
+                        </div>
+                        <div className="grid grid-cols-2 gap-3 rounded-2xl border border-border-subtle bg-surface p-4 text-sm">
+                            <div><span className="block text-muted">Source debit</span><strong className="mt-1 block tabular-nums">{formatMinorUnits(inputMinorUnits(form.data.amount) + inputMinorUnits(form.data.fee), selectedAccount?.currency ?? '—')}</strong></div>
+                            <div><span className="block text-muted">Destination credit</span><strong className="mt-1 block tabular-nums">{formatMinorUnits(inputMinorUnits(form.data.amount), selectedAccount?.currency ?? '—')}</strong></div>
+                        </div>
                         {selectedAccount && matchingDestinations.length === 0 && (
                             <p className="rounded-2xl border border-warning/25 bg-warning/8 px-4 py-3 text-sm text-secondary">
                                 No other active {selectedAccount.currency} Account is available. Transfers do not perform currency conversion.
@@ -277,4 +308,11 @@ export function TransactionDrawer({
             </form>
         </MoneyDrawer>
     );
+}
+
+function inputMinorUnits(value: string): number {
+    if (!/^\d{1,12}(?:\.\d{0,2})?$/.test(value)) return 0;
+
+    const [whole, fraction = ''] = value.split('.');
+    return Number(whole) * 100 + Number(fraction.padEnd(2, '0'));
 }

@@ -69,6 +69,7 @@ class SaveMoneyTransaction
         return [
             'type' => $data->type,
             'amount_minor' => $data->amountMinor,
+            'fee_minor' => $data->feeMinor,
             'account_id' => $data->accountId,
             'destination_account_id' => $data->destinationAccountId,
             'category_id' => $data->categoryId,

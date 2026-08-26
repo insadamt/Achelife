@@ -87,7 +87,8 @@ class HabitViewDataFactory
         $definition = $beforeHabit ? null : $this->definitionResolver->fromLoadedVersions($habit->definitionVersions, $date);
         $required = $definition !== null && $this->schedule->isRequired($definition, $date);
         $flexibleAvailable = $definition !== null && $this->schedule->isFlexibleExtraAvailable($definition, $date);
-        $available = ! $beforeHabit && ! $future && ($required || $flexibleAvailable);
+        $seasonIsActive = $today->betweenIncluded($season->start_date, $season->end_date);
+        $available = $seasonIsActive && ! $beforeHabit && ! $future && ($required || $flexibleAvailable);
 
         return [
             'date' => $date->toDateString(),

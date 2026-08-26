@@ -13,7 +13,7 @@ class TaskViewDataFactory
     public function __construct(private readonly TaskRewardCalculator $rewardCalculator) {}
 
     /** @return array<string, mixed> */
-    public function make(Task $task, CarbonImmutable $today, int $currentSeasonId): array
+    public function make(Task $task, CarbonImmutable $today, ?int $currentSeasonId): array
     {
         $completed = $task->completed_at !== null;
         $overdue = ! $completed && $task->scheduled_date->isBefore($today);
@@ -21,7 +21,7 @@ class TaskViewDataFactory
             ? null
             : $this->rewardCalculator->calculate($task->important, $task->scheduled_date, $today);
         $completedSubtasks = $task->subtasks->whereNotNull('completed_at')->count();
-        $completionLocked = $completed && $task->reward_season_id !== $currentSeasonId;
+        $completionLocked = $completed && ($currentSeasonId === null || $task->reward_season_id !== $currentSeasonId);
 
         return [
             'id' => $task->id,
@@ -33,10 +33,10 @@ class TaskViewDataFactory
             'completedAt' => $task->completed_at?->toIso8601String(),
             'completionTiming' => $task->completion_timing?->value,
             'earnedSp' => $task->earned_sp,
-            'projectedSp' => $reward?->points,
+            'projectedSp' => $currentSeasonId === null ? null : $reward?->points,
             'rewardContext' => $completed
                 ? $this->completionContext($task)
-                : $this->projectionContext($reward->timing, $task->important),
+                : ($currentSeasonId === null ? 'Available when your next Season starts' : $this->projectionContext($reward->timing, $task->important)),
             'lateRewardReduced' => ($completed ? $task->completion_timing : $reward?->timing) === TaskCompletionTiming::Late,
             'rewardSeasonNumber' => $task->rewardSeason?->season_number,
             'completionLocked' => $completionLocked,
@@ -51,7 +51,7 @@ class TaskViewDataFactory
             ])->values(),
             'completedSubtasks' => $completedSubtasks,
             'totalSubtasks' => $task->subtasks->count(),
-            'canComplete' => ! $completed && $completedSubtasks === $task->subtasks->count(),
+            'canComplete' => $currentSeasonId !== null && ! $completed && $completedSubtasks === $task->subtasks->count(),
             'rescheduleHistory' => $task->reschedules->map(fn ($reschedule) => [
                 'fromDate' => $reschedule->from_date->toDateString(),
                 'toDate' => $reschedule->to_date->toDateString(),

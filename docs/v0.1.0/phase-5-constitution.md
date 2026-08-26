@@ -49,6 +49,10 @@ Active Laws may be renamed or assigned a new severity. A Law may be hard-deleted
 
 Recording remains a deliberate review action. Its dialog previews the new record penalty and the full Season SP adjustment, including chronological replay caused by backdating. Successful records use a short-lived undo toast. Selecting a Law opens its current-Season drawer with summary metrics, recording and editing actions, a newest-first violation ledger, exact snapshot penalties, and projected SP adjustments before date correction or deletion. `/constitution/archived` shows compact permanent read-only Laws. Long-term Season browsing, charts, and analytics are reserved for Constitution Statistics.
 
+## v1 intermission extension
+
+Phase 11 keeps Laws and historical violations readable during intermission. New violation recording, correction, and deletion remain guarded by the requirement that their date belongs to the active Season.
+
 ## Verification
 
 Run:

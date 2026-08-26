@@ -4,92 +4,18 @@ namespace App\Actions\Seasons;
 
 use App\Models\Season;
 use App\Models\User;
-use App\Services\Calendar\UserCalendar;
-use App\Services\Seasons\SeasonRankCalculator;
 use Carbon\CarbonImmutable;
-use Illuminate\Support\Facades\DB;
-use RuntimeException;
 
 class SynchronizeUserSeasons
 {
     public const DAYS_PER_SEASON = 30;
 
     public function __construct(
-        private readonly SeasonRankCalculator $seasonRankCalculator,
-        private readonly UserCalendar $userCalendar,
+        private readonly ResolveUserSeasonCycle $resolveUserSeasonCycle,
     ) {}
 
     public function execute(User $user, ?CarbonImmutable $today = null): Season
     {
-        $calendarDate = ($today ?? $this->userCalendar->today($user))->startOfDay();
-
-        return DB::transaction(function () use ($user, $calendarDate): Season {
-            $lockedUser = User::query()->lockForUpdate()->findOrFail($user->getKey());
-            $firstSeasonStart = $lockedUser->calendar_started_on;
-
-            if ($firstSeasonStart === null) {
-                throw new RuntimeException('The user calendar start date is missing.');
-            }
-
-            if ($calendarDate->isBefore($firstSeasonStart)) {
-                throw new RuntimeException('A Season cannot be synchronized before the account creation date.');
-            }
-
-            $currentSeasonNumber = intdiv((int) $firstSeasonStart->diffInDays($calendarDate), self::DAYS_PER_SEASON) + 1;
-
-            $existingSeasons = $lockedUser->seasons()
-                ->where('season_number', '<=', $currentSeasonNumber)
-                ->get()
-                ->keyBy('season_number');
-
-            for ($seasonNumber = 1; $seasonNumber <= $currentSeasonNumber; $seasonNumber++) {
-                $expectedStart = $firstSeasonStart->addDays(($seasonNumber - 1) * self::DAYS_PER_SEASON);
-                $expectedEnd = $expectedStart->addDays(self::DAYS_PER_SEASON - 1);
-                $season = $existingSeasons->get($seasonNumber);
-
-                if ($season === null) {
-                    $season = $lockedUser->seasons()->create([
-                        'season_number' => $seasonNumber,
-                        'start_date' => $expectedStart,
-                        'end_date' => $expectedEnd,
-                        'season_points' => 0,
-                        'introduced_at' => $seasonNumber < $currentSeasonNumber ? now() : null,
-                    ]);
-                    $existingSeasons->put($seasonNumber, $season);
-                }
-
-                $this->assertExpectedDates($season, $expectedStart, $expectedEnd);
-
-                if ($seasonNumber < $currentSeasonNumber) {
-                    $this->finalizeEndedSeason($season);
-                }
-            }
-
-            return $existingSeasons->get($currentSeasonNumber)->refresh();
-        }, 3);
-    }
-
-    private function finalizeEndedSeason(Season $season): void
-    {
-        $updates = [];
-
-        if ($season->rank === null || ! $this->seasonRankCalculator->supportsSnapshot($season->rank)) {
-            $updates['rank'] = $this->seasonRankCalculator->calculate($season->season_points)->key;
-        }
-
-        if ($season->introduced_at === null) {
-            $updates['introduced_at'] = now();
-        }
-
-        if ($updates !== []) {
-            $season->update($updates);
-        }
-    }
-
-    private function assertExpectedDates(Season $season, CarbonImmutable $expectedStart, CarbonImmutable $expectedEnd): void
-    {
-        if (! $season->start_date->isSameDay($expectedStart) || ! $season->end_date->isSameDay($expectedEnd)) {
-            throw new RuntimeException("Season {$season->season_number} has dates inconsistent with the account timeline.");
-        }
+        return $this->resolveUserSeasonCycle->execute($user, $today)->requireActiveSeason();
     }
 }

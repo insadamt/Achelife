@@ -28,13 +28,15 @@ class AccountBalanceCalculator
                 $query->whereIn('account_id', $accountIds)
                     ->orWhereIn('destination_account_id', $accountIds);
             })
-            ->get(['type', 'amount_minor', 'account_id', 'destination_account_id']);
+            ->get(['type', 'amount_minor', 'fee_minor', 'account_id', 'destination_account_id']);
 
         foreach ($transactions as $transaction) {
             if (array_key_exists($transaction->account_id, $balances)) {
-                $balances[$transaction->account_id] += $transaction->type === MoneyTransactionType::Income
-                    ? $transaction->amount_minor
-                    : -$transaction->amount_minor;
+                $balances[$transaction->account_id] += match ($transaction->type) {
+                    MoneyTransactionType::Income => $transaction->amount_minor,
+                    MoneyTransactionType::Expense => -$transaction->amount_minor,
+                    MoneyTransactionType::Transfer => -($transaction->amount_minor + $transaction->fee_minor),
+                };
             }
 
             if ($transaction->type === MoneyTransactionType::Transfer

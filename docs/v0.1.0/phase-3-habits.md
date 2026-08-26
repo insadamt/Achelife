@@ -47,6 +47,10 @@ Calendar states pair controlled semantic colors with icons so meaning does not d
 
 The page has no week navigation. Calendar Dates mode displays calendar day numbers with month context at boundaries, while Season Days displays 1–30 without changing occurrence dates. Creation and editing use one concise responsive full-height sheet with icon-led choices and only the lifecycle text needed to explain permanent or effective-dated behavior. Numeric interaction uses a focused value dialog with explicit save and clear/reset actions.
 
+## v1 intermission extension
+
+Phase 11 pauses Habit materialization during intermission. Gap dates create no occurrences, so the last stored streak is preserved without incrementing or resetting; historical Season calendars remain read-only until the next Season starts.
+
 ## Verification
 
 Run:

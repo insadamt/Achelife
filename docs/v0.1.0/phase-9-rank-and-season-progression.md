@@ -31,6 +31,10 @@ Selecting the Rank HUD opens a horizontal 3D Rank explorer centered on the user'
 
 Rank identity always includes text and exact SP progress rather than relying on tier accent color. Long labels use responsive sizing, and all progress remains textual as well as visual.
 
+## v1 intermission extension
+
+Phase 11 adds `finalized_at` to the completed-Season closeout and snapshots Rank before entering an intermission. Rank does not progress during a gap, and the next manually started Season begins at zero SP and Bronze I.
+
 ## Verification
 
 Run:

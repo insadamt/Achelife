@@ -36,6 +36,10 @@ Registration submits the browser's timezone from `Intl.DateTimeFormat` when avai
 
 General Settings is available from the authenticated account controls on desktop and mobile. The Today settings control remains scoped to Today presentation preferences.
 
+## v1 lifecycle settings extension
+
+Phase 11 adds Automatic and Manual Season rollover to General Settings. Switching to Automatic during an intermission starts the next Season on the current user-local date. Timezone changes still leave every persisted Season and intermission boundary unchanged.
+
 ## Verification
 
 Run:

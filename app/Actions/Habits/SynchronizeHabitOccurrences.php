@@ -2,7 +2,7 @@
 
 namespace App\Actions\Habits;
 
-use App\Actions\Seasons\SynchronizeUserSeasons;
+use App\Actions\Seasons\ResolveUserSeasonCycle;
 use App\Enums\HabitOccurrenceKind;
 use App\Enums\HabitOccurrenceState;
 use App\Models\Habit;
@@ -15,22 +15,25 @@ use App\Services\Habits\HabitSchedule;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
-use RuntimeException;
 
 class SynchronizeHabitOccurrences
 {
     public function __construct(
-        private readonly SynchronizeUserSeasons $synchronizeUserSeasons,
+        private readonly ResolveUserSeasonCycle $resolveUserSeasonCycle,
         private readonly HabitDefinitionResolver $definitionResolver,
         private readonly HabitSchedule $schedule,
         private readonly RecalculateHabitProgression $recalculateProgression,
         private readonly UserCalendar $userCalendar,
     ) {}
 
-    public function execute(User $user, ?CarbonImmutable $today = null): Season
+    public function execute(User $user, ?CarbonImmutable $today = null): ?Season
     {
         $calendarDate = ($today ?? $this->userCalendar->today($user))->startOfDay();
-        $currentSeason = $this->synchronizeUserSeasons->execute($user, $calendarDate);
+        $currentSeason = $this->resolveUserSeasonCycle->execute($user, $calendarDate)->activeSeason;
+
+        if ($currentSeason === null) {
+            return null;
+        }
         $seasons = $user->seasons()->orderBy('start_date')->get();
         $habits = $user->habits()->whereNull('archived_at')->with('definitionVersions')->get();
 
@@ -72,7 +75,9 @@ class SynchronizeHabitOccurrences
                     );
 
                     if ($season === null) {
-                        throw new RuntimeException("No Season contains Habit occurrence date {$nextDate->toDateString()}.");
+                        $nextDate = $nextDate->addDay();
+
+                        continue;
                     }
 
                     $this->materializeRequiredOccurrence($lockedHabit, $definition, $season, $nextDate, $today);
