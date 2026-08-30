@@ -113,7 +113,9 @@ jobs:
         env:
           BUILT_IMAGE: ${{ matrix.image }}@${{ steps.build.outputs.digest }}
           TRIVY_CACHE_DIR: ${{ runner.temp }}/trivy-cache
-        run: sh scripts/release/scan-image.sh "$BUILT_IMAGE"
+        run: |
+          docker pull "$BUILT_IMAGE"
+          sh scripts/release/scan-image.sh "$BUILT_IMAGE"
       - name: Record verified digest
         env:
           BUILT_DIGEST: ${{ steps.build.outputs.digest }}
