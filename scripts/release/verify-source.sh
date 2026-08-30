@@ -92,7 +92,7 @@ verify_immutable_supply_chain_references()
     done
 
     grep -Eq "scanner_image='[^']+@sha256:[a-f0-9]{64}'" scripts/release/scan-image.sh
-    grep -Fq 'docker pull "$BUILT_IMAGE"' .github/workflows/release-rc.yml
+    grep -Fq 'docker pull --platform "$BUILT_PLATFORM" "$BUILT_IMAGE"' .github/workflows/release-rc.yml
     grep -Eq "registry_image='[^']+@sha256:[a-f0-9]{64}'" tests/Release/docker_acceptance.sh
     grep -Eq "rollback_image='[^']+@sha256:[a-f0-9]{64}'" tests/Release/docker_acceptance.sh
 }
