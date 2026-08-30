@@ -3,6 +3,10 @@ import { CalendarDays, Coffee, History, Play } from 'lucide-react';
 
 import { Button, Surface } from '../components/ui';
 import type { SeasonViewData } from '../features/seasons/types';
+import { MoneySubscriptionSummary } from '../features/money/MoneySubscriptionSummary';
+import type { MoneySubscriptionOccurrenceData } from '../features/money/types';
+import { SeasonCloseoutPanel } from '../features/seasons/SeasonCloseoutPanel';
+import type { SeasonCloseoutData } from '../features/seasons/closeoutTypes';
 
 interface IntermissionCycle {
     nextSeasonNumber: number;
@@ -15,7 +19,7 @@ interface IntermissionCycle {
     };
 }
 
-export default function Intermission({ cycle, lastSeason }: { cycle: IntermissionCycle; lastSeason: SeasonViewData }) {
+export default function Intermission({ cycle, lastSeason, closeout, manualSubscriptionPayments }: { cycle: IntermissionCycle; lastSeason: SeasonViewData; closeout: SeasonCloseoutData; manualSubscriptionPayments: MoneySubscriptionOccurrenceData[] }) {
     function startSeason() {
         const confirmed = window.confirm(
             `Start Season ${cycle.nextSeasonNumber} on ${cycle.intermission.proposedStartDate}? It will end on ${cycle.intermission.proposedEndDate}.`,
@@ -57,6 +61,12 @@ export default function Intermission({ cycle, lastSeason }: { cycle: Intermissio
                     </div>
                 </div>
             </Surface>
+
+            <MoneySubscriptionSummary due={manualSubscriptionPayments} title="Manual payments due" />
+
+            <section className="mt-8">
+                <SeasonCloseoutPanel closeout={closeout} intermission />
+            </section>
 
             <section className="mt-6 grid gap-4 sm:grid-cols-2">
                 <Link className="focus-ring rounded-3xl border border-border-subtle bg-surface p-5 hover:bg-surface-hover" href="/seasons">

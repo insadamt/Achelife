@@ -9,7 +9,7 @@ Phase 3 adds global Boolean and Numeric Habit definitions, effective-dated rules
 - `habits` stores user ownership, current name, immutable type, globally displayed unit, effective start date, synchronization watermark, current streak, and archive/delete lifecycle timestamps. Delete uses soft deletion so occurrence and reward history remains intact.
 - `habit_definition_versions` stores difficulty, schedule, selected weekdays, Flexible mode, and Numeric target from an inclusive effective date. Creation starts a version today. Edits create or update tomorrow's version, so today's materialized occurrence and all prior snapshots remain unchanged.
 - `habit_occurrences` stores one row per Habit/date, its Season, required or Flexible-extra context, state, Numeric value, target/difficulty/schedule snapshots, automatic base reward, streak after the outcome, multiplier, exact earned SP, and audit timestamps. Unit is intentionally read from the Habit so a unit rename changes historical display without copying stale labels.
-- `habit_settings` stores the authenticated user's small `calendar_dates` or `season_days` display preference.
+- `habit_settings` stores the sole profile's small `calendar_dates` or `season_days` display preference.
 
 ## Synchronization and materialization
 
@@ -50,6 +50,14 @@ The page has no week navigation. Calendar Dates mode displays calendar day numbe
 ## v1 intermission extension
 
 Phase 11 pauses Habit materialization during intermission. Gap dates create no occurrences, so the last stored streak is preserved without incrementing or resetting; historical Season calendars remain read-only until the next Season starts.
+
+## v1 onboarding and closeout extension
+
+Phase 14 can create one simple daily Boolean Habit through `CreateHabit`; the full Habit interface remains available after setup and the step may be skipped. Closeout derives Habit SP, completed and skipped outcomes, required occurrences, and adherence from stored Season occurrences without copying them into recap state.
+
+## v1 portability extension
+
+Phase 15 exports definitions, effective-dated versions, lifecycle dates, synchronization watermarks, occurrences, snapshots, streak state, and settings. Preview counts required elapsed outcomes that become Missed. Restore replays through original Day 30, resolves the final eligible day when the imported Season ended, and leaves all later intermission dates occurrence-free.
 
 ## Verification
 

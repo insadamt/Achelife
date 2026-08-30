@@ -1,11 +1,19 @@
 :80 {
-    root * /srv/public
+	root * /srv/public
 
-    encode zstd gzip
+	encode zstd gzip
 
-    php_fastcgi app:9000 {
-        root /var/www/html/public
-    }
+	header {
+		-Server
+		Content-Security-Policy "default-src 'self'; base-uri 'self'; connect-src 'self'; font-src 'self'; form-action 'self'; frame-ancestors 'none'; img-src 'self' data:; object-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'"
+		Referrer-Policy "no-referrer"
+		X-Content-Type-Options "nosniff"
+		X-Frame-Options "DENY"
+	}
 
-    file_server
+	php_fastcgi app:9000 {
+		root /var/www/html/public
+	}
+
+	file_server
 }

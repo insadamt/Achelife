@@ -28,6 +28,18 @@ class MoneyAccount extends Model
         return $this->hasMany(MoneyTransaction::class, 'destination_account_id');
     }
 
+    /** @return HasMany<MoneySubscription, $this> */
+    public function subscriptions(): HasMany
+    {
+        return $this->hasMany(MoneySubscription::class, 'account_id');
+    }
+
+    /** @return HasMany<MoneySubscriptionOccurrence, $this> */
+    public function subscriptionOccurrences(): HasMany
+    {
+        return $this->hasMany(MoneySubscriptionOccurrence::class, 'account_id');
+    }
+
     protected function casts(): array
     {
         return [

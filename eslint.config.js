@@ -17,6 +17,16 @@ export default typescript.config(
     ...typescript.configs.recommended,
     reactHooks.configs.flat.recommended,
     {
+        files: ['tests/Release/**/*.mjs'],
+        languageOptions: {
+            globals: {
+                ...globals.node,
+                fetch: 'readonly',
+                WebSocket: 'readonly',
+            },
+        },
+    },
+    {
         files: ['resources/js/**/*.{ts,tsx}'],
         languageOptions: {
             globals: globals.browser,

@@ -14,7 +14,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
-#[Fillable(['name', 'email', 'password', 'timezone', 'calendar_started_on', 'season_rollover_preference', 'hold_next_season', 'money_preset_pack_version'])]
+#[Fillable(['name', 'email', 'password', 'timezone', 'calendar_started_on', 'season_rollover_preference', 'hold_next_season', 'money_preset_pack_version', 'onboarding_step', 'onboarding_completed_at'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
@@ -128,6 +128,18 @@ class User extends Authenticatable
         return $this->hasMany(MoneyTransaction::class);
     }
 
+    /** @return HasMany<MoneySubscription, $this> */
+    public function moneySubscriptions(): HasMany
+    {
+        return $this->hasMany(MoneySubscription::class);
+    }
+
+    /** @return HasMany<MoneySubscriptionOccurrence, $this> */
+    public function moneySubscriptionOccurrences(): HasMany
+    {
+        return $this->hasMany(MoneySubscriptionOccurrence::class);
+    }
+
     /** @return HasOne<TodaySetting, $this> */
     public function todaySetting(): HasOne
     {
@@ -146,6 +158,7 @@ class User extends Authenticatable
             'season_rollover_preference' => SeasonRolloverPreference::class,
             'hold_next_season' => 'boolean',
             'money_preset_pack_version' => 'integer',
+            'onboarding_completed_at' => 'immutable_datetime',
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];

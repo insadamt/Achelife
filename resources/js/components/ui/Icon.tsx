@@ -10,8 +10,7 @@ export type IconName =
     | 'constitution'
     | 'money'
     | 'menu'
-    | 'settings'
-    | 'logout';
+    | 'settings';
 
 interface IconProps extends SVGProps<SVGSVGElement> {
     name: IconName;
@@ -38,7 +37,6 @@ export function Icon({ name, ...props }: IconProps) {
             {name === 'money' && <path d="M4 6h16v12H4zM8 14c1.8 0 1.8-4 0-4m8 0c-1.8 0-1.8 4 0 4M12 15.5v-7M10.5 10h2.3a1.2 1.2 0 0 1 0 2.4h-1.6a1.2 1.2 0 0 0 0 2.4h2.3" />}
             {name === 'menu' && <path d="M4 7h16M4 12h16M4 17h16" />}
             {name === 'settings' && <path d="M12 8.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7ZM19 12l2-1-2-3.5-2.2.4a7.8 7.8 0 0 0-1.8-1L14.2 5h-4.4L9 6.9a7.8 7.8 0 0 0-1.8 1L5 7.5 3 11l2 1a7.8 7.8 0 0 0 0 2l-2 1 2 3.5 2.2-.4a7.8 7.8 0 0 0 1.8 1l.8 1.9h4.4l.8-1.9a7.8 7.8 0 0 0 1.8-1l2.2.4 2-3.5-2-1a7.8 7.8 0 0 0 0-2Z" />}
-            {name === 'logout' && <path d="M10 4H5v16h5M14 8l4 4-4 4M8 12h10" />}
         </svg>
     );
 }

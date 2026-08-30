@@ -1,0 +1,8 @@
+#!/bin/sh
+
+if [ "${FAKE_LOW_DISK:-0}" = 1 ]; then
+    printf '%s\n' 'Filesystem 1024-blocks Used Available Capacity Mounted on'
+    printf '%s\n' 'fake 1000 999 1 100% /'
+else
+    /bin/df "$@"
+fi

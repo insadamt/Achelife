@@ -30,7 +30,17 @@ fi
 # ------------------------------------------------------------
 # Persistent Laravel APP_KEY
 # ------------------------------------------------------------
-if [ -z "${APP_KEY:-}" ]; then
+if [ -n "${APP_KEY:-}" ]; then
+    if [ -f "$APP_KEY_FILE" ] && [ "$(cat "$APP_KEY_FILE")" != "$APP_KEY" ]; then
+        echo "The configured application key conflicts with the persisted key." >&2
+        exit 1
+    fi
+
+    if [ ! -f "$APP_KEY_FILE" ]; then
+        printf '%s' "$APP_KEY" > "$APP_KEY_FILE"
+        chmod 600 "$APP_KEY_FILE"
+    fi
+else
     if [ -f "$APP_KEY_FILE" ]; then
         APP_KEY="$(cat "$APP_KEY_FILE")"
         echo "Using existing Achelife application key."
@@ -67,8 +77,10 @@ chown -R www-data:www-data \
 # ------------------------------------------------------------
 # Prepare Laravel
 # ------------------------------------------------------------
-echo "Running database migrations..."
-php artisan migrate --force
+if [ "${RUN_MIGRATIONS:-true}" = "true" ]; then
+    echo "Running database migrations..."
+    php artisan migrate --force
+fi
 
 echo "Refreshing Laravel caches..."
 php artisan optimize:clear

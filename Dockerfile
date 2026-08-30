@@ -3,7 +3,7 @@
 # ------------------------------------------------------------
 # Stage 1: Build React / Vite assets
 # ------------------------------------------------------------
-FROM node:22-alpine AS frontend
+FROM --platform=$BUILDPLATFORM node:22-alpine@sha256:c610fcdfb1d5b4740dd70c284ed3cb16bb857e0f7166196e36a5501df7a3aa32 AS frontend
 
 WORKDIR /app
 
@@ -17,7 +17,9 @@ RUN npm run build
 # ------------------------------------------------------------
 # Stage 2: Install production Composer dependencies
 # ------------------------------------------------------------
-FROM php:8.4-fpm-alpine AS vendor
+FROM --platform=$BUILDPLATFORM composer:2@sha256:4d71c3c2109c61d5415544264b59ad4087e4c5b7244481723664138fd36d5040 AS composer-bin
+
+FROM --platform=$BUILDPLATFORM php:8.4-fpm-alpine@sha256:6cb5e4ffa03a7c1b01bb5b120ab3684ef76b75aa5ca417e343936db3f71f419f AS vendor
 
 WORKDIR /var/www/html
 
@@ -25,7 +27,7 @@ WORKDIR /var/www/html
 # GitHub dist/ZIP downloads temporarily fail.
 RUN apk add --no-cache git unzip
 
-COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+COPY --from=composer-bin /usr/bin/composer /usr/bin/composer
 
 # Dependency installation is cached as long as these two files
 # do not change.
@@ -66,9 +68,15 @@ RUN composer dump-autoload \
 # ------------------------------------------------------------
 # Stage 3: Achelife application
 # ------------------------------------------------------------
-FROM php:8.4-fpm-alpine AS app
+FROM php:8.4-fpm-alpine@sha256:6cb5e4ffa03a7c1b01bb5b120ab3684ef76b75aa5ca417e343936db3f71f419f AS app
 
 WORKDIR /var/www/html
+
+ARG ACHELIFE_VERSION=1.0.0-rc.1-dev
+ENV ACHELIFE_VERSION=$ACHELIFE_VERSION
+LABEL org.opencontainers.image.title="Achelife" \
+      org.opencontainers.image.version=$ACHELIFE_VERSION \
+      org.opencontainers.image.licenses="MIT"
 
 COPY --from=vendor --chown=www-data:www-data /var/www/html /var/www/html
 COPY --from=frontend --chown=www-data:www-data /app/public/build /var/www/html/public/build
@@ -97,9 +105,14 @@ CMD ["php-fpm"]
 # ------------------------------------------------------------
 # Stage 4: Caddy web server
 # ------------------------------------------------------------
-FROM caddy:2-alpine AS web
+FROM caddy:2-alpine@sha256:5f5c8640aae01df9654968d946d8f1a56c497f1dd5c5cda4cf95ab7c14d58648 AS web
 
 WORKDIR /srv
+
+ARG ACHELIFE_VERSION=1.0.0-rc.1-dev
+LABEL org.opencontainers.image.title="Achelife Web" \
+      org.opencontainers.image.version=$ACHELIFE_VERSION \
+      org.opencontainers.image.licenses="MIT"
 
 COPY --from=vendor /var/www/html/public /srv/public
 COPY --from=frontend /app/public/build /srv/public/build

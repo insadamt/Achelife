@@ -57,6 +57,14 @@ Selecting a Task opens a read-first full-height responsive sheet. Incomplete tit
 
 Phase 11 keeps Task creation and rescheduling available during intermission but blocks rewarded completion. Recurring series do not materialize gap occurrences and resume from the first eligible date on or after the next Season start.
 
+## v1 onboarding and closeout extension
+
+Phase 14 optionally creates one Task for the user's first local Season day through the authoritative Task creation action. Closeout derives Task SP from Season-attributed rewards and resolution from Tasks scheduled within the Season; it stores no Task statistics.
+
+## v1 portability extension
+
+Phase 15 exports Task series, exclusions, occurrence snapshots, subtasks, reschedule history, completion attribution, and exact earned SP. Restore maps series, Season, Task, and child IDs explicitly. Recurring catch-up materializes only the missing eligible occurrences through the imported Season's original Day 30 and creates no occurrences for the later restore intermission.
+
 ## Verification
 
 Run:

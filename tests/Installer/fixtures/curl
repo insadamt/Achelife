@@ -1,0 +1,28 @@
+#!/bin/sh
+
+download_destination=""
+download_url=""
+while [ "$#" -gt 0 ]; do
+    case "$1" in
+        -o)
+            download_destination="$2"
+            shift 2
+            ;;
+        -*) shift ;;
+        *) download_url="$1"; shift ;;
+    esac
+done
+
+if [ -n "$download_destination" ] && [ -n "${FAKE_DOWNLOAD_DIR:-}" ]; then
+    cp "${FAKE_DOWNLOAD_DIR}/$(basename "$download_url")" "$download_destination"
+    exit
+fi
+
+case "$download_url" in
+    *example.test/releases*)
+        printf '%s\n' '[{"tag_name":"v1.0.1"},{"tag_name":"v1.0.0-rc.2"},{"tag_name":"v1.0.0-rc.1"}]'
+        ;;
+    *)
+        [ "${FAKE_HEALTH_FAILURE:-0}" != 1 ]
+        ;;
+esac

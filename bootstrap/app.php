@@ -1,6 +1,10 @@
 <?php
 
 use App\Http\Middleware\HandleInertiaRequests;
+use App\Http\Middleware\RejectWritesDuringAccountRestore;
+use App\Http\Middleware\ResolveSingleUser;
+use App\Http\Middleware\SynchronizeMoneySubscriptionState;
+use Illuminate\Contracts\Auth\Middleware\AuthenticatesRequests;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -13,11 +17,20 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        $middleware->prependToPriorityList(
+            AuthenticatesRequests::class,
+            ResolveSingleUser::class,
+        );
+        $middleware->redirectGuestsTo('/setup');
+        $middleware->redirectUsersTo('/home');
         $middleware->trimStrings(except: [
             fn (Request $request): bool => $request->is('diary/entries/*'),
         ]);
         $middleware->web(append: [
+            ResolveSingleUser::class,
             HandleInertiaRequests::class,
+            RejectWritesDuringAccountRestore::class,
+            SynchronizeMoneySubscriptionState::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

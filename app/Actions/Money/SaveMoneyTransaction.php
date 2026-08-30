@@ -2,6 +2,7 @@
 
 namespace App\Actions\Money;
 
+use App\Data\Money\MoneySelectionSnapshot;
 use App\Data\Money\MoneyTransactionData;
 use App\Models\MoneyAccount;
 use App\Models\MoneyTransaction;
@@ -24,6 +25,19 @@ class SaveMoneyTransaction
         }, 3);
     }
 
+    public function createRetainingSelections(
+        User $user,
+        MoneyTransactionData $data,
+        MoneySelectionSnapshot $retained,
+    ): MoneyTransaction {
+        return DB::transaction(function () use ($user, $data, $retained): MoneyTransaction {
+            $this->lockAccounts($user, $data);
+            $this->validator->validate($user, $data, retained: $retained);
+
+            return $user->moneyTransactions()->create($this->attributes($data));
+        }, 3);
+    }
+
     public function update(User $user, MoneyTransaction $transaction, MoneyTransactionData $data): MoneyTransaction
     {
         if ($transaction->user_id !== $user->id) {
@@ -36,6 +50,11 @@ class SaveMoneyTransaction
 
         return DB::transaction(function () use ($user, $transaction, $data): MoneyTransaction {
             $lockedTransaction = MoneyTransaction::query()->lockForUpdate()->findOrFail($transaction->id);
+            if ($lockedTransaction->subscriptionOccurrence()->exists()) {
+                throw ValidationException::withMessages([
+                    'transaction' => 'Subscription payments are edited from their occurrence so the snapshot and transaction stay consistent.',
+                ]);
+            }
             $this->lockAccounts($user, $data, $lockedTransaction);
             $this->validator->validate($user, $data, $lockedTransaction);
             $lockedTransaction->update($this->attributes($data));

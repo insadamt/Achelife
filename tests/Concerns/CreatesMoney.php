@@ -5,13 +5,18 @@ namespace Tests\Concerns;
 use App\Actions\Money\CreateMoneyAccount;
 use App\Actions\Money\CreateMoneyCategory;
 use App\Actions\Money\CreateMoneySubcategory;
+use App\Actions\Money\SaveMoneySubscription;
 use App\Actions\Money\SaveMoneyTransaction;
+use App\Data\Money\MoneySubscriptionData;
 use App\Data\Money\MoneyTransactionData;
 use App\Enums\MoneyCategoryType;
+use App\Enums\MoneySubscriptionPaymentMode;
+use App\Enums\MoneySubscriptionRecurrence;
 use App\Enums\MoneyTransactionType;
 use App\Models\MoneyAccount;
 use App\Models\MoneyCategory;
 use App\Models\MoneySubcategory;
+use App\Models\MoneySubscription;
 use App\Models\MoneyTransaction;
 use App\Models\User;
 use Carbon\CarbonImmutable;
@@ -63,6 +68,32 @@ trait CreatesMoney
             CarbonImmutable::parse($date),
             $note,
             $feeMinor,
+        ));
+    }
+
+    protected function moneySubscription(
+        User $user,
+        MoneyAccount $account,
+        MoneyCategory $category,
+        ?MoneySubcategory $subcategory = null,
+        int $amountMinor = 1000,
+        string $startsOn = '2026-08-18',
+        MoneySubscriptionRecurrence $recurrence = MoneySubscriptionRecurrence::Monthly,
+        MoneySubscriptionPaymentMode $paymentMode = MoneySubscriptionPaymentMode::Manual,
+        ?string $endsOn = null,
+        string $name = 'Internet',
+    ): MoneySubscription {
+        return app(SaveMoneySubscription::class)->create($user, new MoneySubscriptionData(
+            name: $name,
+            amountMinor: $amountMinor,
+            accountId: $account->id,
+            categoryId: $category->id,
+            subcategoryId: $subcategory?->id,
+            note: null,
+            startsOn: CarbonImmutable::parse($startsOn),
+            endsOn: $endsOn === null ? null : CarbonImmutable::parse($endsOn),
+            recurrence: $recurrence,
+            paymentMode: $paymentMode,
         ));
     }
 }

@@ -1,9 +1,13 @@
-import { Head, useForm } from '@inertiajs/react';
+import { Head, useForm, usePage } from '@inertiajs/react';
 import { Clock3, LocateFixed, RefreshCw } from 'lucide-react';
 import type { FormEvent } from 'react';
 import { useMemo } from 'react';
 
 import { Button, SelectField } from '../../components/ui';
+import { AccountSettingsPanel } from '../../features/settings/AccountSettingsPanel';
+import { PortabilitySettingsPanel } from '../../features/portability/PortabilitySettingsPanel';
+import type { RestorePreview } from '../../features/portability/types';
+import type { SharedPageProps } from '../../types';
 
 interface TimezoneOption {
     value: string;
@@ -11,6 +15,7 @@ interface TimezoneOption {
 }
 
 interface GeneralSettingsProps {
+    restorePreview: RestorePreview | null;
     settings: {
         timezone: string;
         today: string;
@@ -43,7 +48,8 @@ function localTimePreview(timezone: string): string {
     }).format(new Date());
 }
 
-export default function General({ settings, timezones }: GeneralSettingsProps) {
+export default function General({ settings, timezones, restorePreview }: GeneralSettingsProps) {
+    const { auth } = usePage<SharedPageProps>().props;
     const browserTimezone = detectedTimezone();
     const form = useForm({
         timezone: settings.timezone,
@@ -146,6 +152,9 @@ export default function General({ settings, timezones }: GeneralSettingsProps) {
                     </Button>
                 </div>
             </section>
+
+            {auth.user && <AccountSettingsPanel name={auth.user.name} />}
+            <PortabilitySettingsPanel restorePreview={restorePreview} />
         </div>
     );
 }

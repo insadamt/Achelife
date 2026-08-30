@@ -21,6 +21,7 @@ The implementation order is dependency-driven. Season lifecycle and Money schema
 - Money remains global and fully operational during intermission.
 - Subscription automation remains active during intermission because Money is not gamified.
 - Portable account archives and full-instance recovery backups are different products with different restore paths.
+- Achelife is a single-user application with no login boundary and must remain on localhost, a trusted private network, or a private VPN.
 - A restore replaces scoped data after preview and confirmation; it never attempts an automatic merge.
 - Stable releases affecting installation, upgrades, migrations, backups, security, or networking must pass through a release candidate first.
 
@@ -50,7 +51,7 @@ The implementation order is dependency-driven. Season lifecycle and Money schema
 
 ### Goal
 
-Replace the assumption that every date after registration belongs to a Season with an explicit lifecycle that supports continuous automatic Seasons, manual starts, one-time holds, and restore-created intermissions.
+Replace the assumption that every date after initial setup belongs to a Season with an explicit lifecycle that supports continuous automatic Seasons, manual starts, one-time holds, and restore-created intermissions.
 
 ### Domain model
 
@@ -71,7 +72,7 @@ Replace the assumption that every date after registration belongs to a Season wi
 - [x] Stop after the completed Season for manual users and create no later Seasons.
 - [x] Let automatic users select “Pause after this Season” as a one-time hold.
 - [x] Clear the one-time hold after the user starts the next Season.
-- [ ] Restore the user's long-term automatic/manual preference after an import-created hold is resolved.
+- [x] Restore the user's long-term automatic/manual preference after an import-created hold is resolved.
 - [x] When automatic mode is enabled during an intermission, start the next Season today rather than backdating it.
 - [x] Do not allow a new Season to start before the active Season ends.
 - [x] Do not support ending an active Season early in v1.
@@ -79,7 +80,7 @@ Replace the assumption that every date after registration belongs to a Season wi
 ### Intermission behavior
 
 - [x] Show an intermission dashboard with the last closeout, pause reason, elapsed rest days, and “Start Season N” action.
-- [ ] Keep Money, subscriptions, Settings, export/import, and historical browsing available.
+- [x] Keep Money, subscriptions, Settings, export/import, and historical browsing available.
 - [x] Allow Task planning and rescheduling without awarding SP.
 - [x] Block rewarded Task completion until a Season is active and explain why.
 - [x] Pause recurring Task materialization across intermission dates.
@@ -92,13 +93,13 @@ Replace the assumption that every date after registration belongs to a Season wi
 
 ### Restore-specific lifecycle
 
-- [ ] If the imported Season has not ended, continue it through its original Day 30.
-- [ ] If the imported Season has ended, finalize it on its original end date.
-- [ ] Synchronize scheduled behavior only from the backup date through that Season's original end date.
-- [ ] Treat every later date as an import-created intermission.
-- [ ] Create no empty intervening Seasons even when months or years elapsed.
-- [ ] Hold the next Season until the user starts it manually.
-- [ ] Example: S3 ends 2026-03-15; an import on 2026-05-17 holds the timeline until S4 starts on 2026-05-17 and ends on 2026-06-15.
+- [x] If the imported Season has not ended, continue it through its original Day 30.
+- [x] If the imported Season has ended, finalize it on its original end date.
+- [x] Synchronize scheduled behavior only from the backup date through that Season's original end date.
+- [x] Treat every later date as an import-created intermission.
+- [x] Create no empty intervening Seasons even when months or years elapsed.
+- [x] Hold the next Season until the user starts it manually.
+- [x] Example: S3 ends 2026-03-15; an import on 2026-05-17 holds the timeline until S4 starts on 2026-05-17 and ends on 2026-06-15.
 
 ### Interface and settings
 
@@ -118,7 +119,7 @@ Replace the assumption that every date after registration belongs to a Season wi
 - [x] Test starting after a multi-month gap.
 - [x] Test user-local timezone boundaries.
 - [x] Test no overlaps, duplicate numbers, or double starts.
-- [ ] Test every module's intermission restrictions.
+- [x] Test every module's intermission restrictions.
 - [x] Test Habit and Diary streak preservation across a gap.
 - [x] Test recurring Task resumption without gap backfill.
 - [x] Update the Seasons, Tasks, Habits, Diary, Constitution, Today, Rank, and timezone documentation.
@@ -140,7 +141,7 @@ Make Money useful immediately with an idempotent two-level category pack and mod
 - [x] Keep preset names renameable and preset records archiveable or deletable under normal lifecycle rules.
 - [x] Provide category search and parent-scoped Subcategory selection.
 - [x] Add “Install missing presets” and a pack preview to Money settings.
-- [ ] Install the pack during first-run Money onboarding when selected.
+- [x] Install the pack during first-run Money onboarding when selected.
 
 ### Expense preset taxonomy
 
@@ -188,12 +189,12 @@ Make Money useful immediately with an idempotent two-level category pack and mod
 - [x] Keep one authoritative Transfer row; do not create a hidden Expense transaction.
 - [x] Present fees under Financial → Bank Fees in future reporting without duplicating balance effects.
 - [x] Make Transfer edit and deletion reverse principal and fee atomically.
-- [ ] Include exact fees in transaction details, history, filters, and portable exports.
+- [x] Include exact fees in transaction details, history, filters, and portable exports.
 
 ### Verification
 
 - [x] Test complete preset installation, repair, rename, archive, and deletion behavior.
-- [ ] Test stable preset keys across export/import.
+- [x] Test stable preset keys across export/import.
 - [x] Test Charity migration with and without existing history.
 - [x] Test zero and positive fees.
 - [x] Test source and destination balance effects.
@@ -210,60 +211,60 @@ Add recurring expense definitions with automatic bookkeeping or deliberate manua
 
 ### Subscription definitions
 
-- [ ] Create user-owned Subscription definitions with name, positive amount, Account, Expense Category, optional Subcategory, note, start date, optional end date, and payment mode.
-- [ ] Support weekly, monthly, every-three-months, and yearly recurrence.
-- [ ] Preserve the original monthly anchor so a 31st-of-month Subscription does not drift after February.
-- [ ] Support active, paused, ended, and deletable-unused lifecycle states.
-- [ ] Restrict new selections to active Accounts and Categories while preserving historical snapshots.
-- [ ] Make edits forward-only for future occurrences.
+- [x] Create user-owned Subscription definitions with name, positive amount, Account, Expense Category, optional Subcategory, note, start date, optional end date, and payment mode.
+- [x] Support weekly, monthly, every-three-months, and yearly recurrence.
+- [x] Preserve the original monthly anchor so a 31st-of-month Subscription does not drift after February.
+- [x] Support active, paused, ended, and deletable-unused lifecycle states.
+- [x] Restrict new selections to active Accounts and Categories while preserving historical snapshots.
+- [x] Make edits forward-only for future occurrences.
 
 ### Subscription occurrences
 
-- [ ] Materialize one occurrence per Subscription and due date with a unique constraint.
-- [ ] Snapshot amount, Account, Category, Subcategory, and due date on every occurrence.
-- [ ] Support due, paid, and skipped states.
-- [ ] Link a paid occurrence to exactly one ordinary Expense transaction.
-- [ ] Prevent duplicate processing under concurrent scheduler or page requests.
-- [ ] Return an occurrence to Due if its linked transaction is deleted.
-- [ ] Allow a one-payment override without silently changing the future definition.
-- [ ] Offer an explicit “apply to future payments” action.
+- [x] Materialize one occurrence per Subscription and due date with a unique constraint.
+- [x] Snapshot amount, Account, Category, Subcategory, and due date on every occurrence.
+- [x] Support due, paid, and skipped states.
+- [x] Link a paid occurrence to exactly one ordinary Expense transaction.
+- [x] Prevent duplicate processing under concurrent scheduler or page requests.
+- [x] Return an occurrence to Due if its linked transaction is deleted.
+- [x] Allow a one-payment override without silently changing the future definition.
+- [x] Offer an explicit “apply to future payments” action.
 
 ### Automatic and manual payment
 
-- [ ] Define automatic mode as automatic Expense recording, not external bank payment.
-- [ ] Process due automatic occurrences with a daily scheduler.
-- [ ] Run the same idempotent synchronization on Money access as a correctness fallback.
-- [ ] Let automatic mode catch up every elapsed due date after downtime.
-- [ ] Show manual occurrences as Due or Overdue until paid or skipped.
-- [ ] Add a Pay action with prefilled amount, Account, Category, and Subcategory.
-- [ ] Require confirmation before skipping a due occurrence.
-- [ ] Preview the number and value of catch-up occurrences when a historical start date is selected.
+- [x] Define automatic mode as automatic Expense recording, not external bank payment.
+- [x] Process due automatic occurrences with a daily scheduler.
+- [x] Run the same idempotent synchronization on Money access as a correctness fallback.
+- [x] Let automatic mode catch up every elapsed due date after downtime.
+- [x] Show manual occurrences as Due or Overdue until paid or skipped.
+- [x] Add a Pay action with prefilled amount, Account, Category, and Subcategory.
+- [x] Require confirmation before skipping a due occurrence.
+- [x] Preview the number and value of catch-up occurrences when a historical start date is selected.
 
 ### Interface
 
-- [ ] Add Active, Due, Paused, and Ended views under `/money/subscriptions`.
-- [ ] Add compact Due and Upcoming sections to the Money overview.
-- [ ] Surface due manual payments in Today without adding them to Daily Progress or SP.
-- [ ] Show a readable schedule sentence and next payment in the composer.
-- [ ] Show paid occurrence history and its linked transaction.
+- [x] Add Active, Due, Paused, and Ended views under `/money/subscriptions`.
+- [x] Add compact Due and Upcoming sections to the Money overview.
+- [x] Surface due manual payments in Today without adding them to Daily Progress or SP.
+- [x] Show a readable schedule sentence and next payment in the composer.
+- [x] Show paid occurrence history and its linked transaction.
 
 ### Cross-feature behavior
 
-- [ ] Keep Subscription processing active during Season intermissions.
-- [ ] Keep all Subscription activity isolated from SP and Rank.
-- [ ] Include definitions, occurrences, and linked transactions in data portability.
-- [ ] Include pending automatic catch-up counts and values in import preview.
-- [ ] Preserve skipped and paid history across edits, archive, and restore.
+- [x] Keep Subscription processing active during Season intermissions.
+- [x] Keep all Subscription activity isolated from SP and Rank.
+- [x] Include definitions, occurrences, and linked transactions in data portability.
+- [x] Include pending automatic catch-up counts and values in import preview.
+- [x] Preserve skipped and paid history across edits, archive, and restore.
 
 ### Verification
 
-- [ ] Test recurrence boundaries, leap years, month ends, and user-local dates.
-- [ ] Test scheduler/access idempotency and concurrent processing.
-- [ ] Test automatic catch-up after downtime.
-- [ ] Test manual Pay, Skip, edit, deletion, pause, and end behavior.
-- [ ] Test Category, Subcategory, Account, and cross-user validation.
-- [ ] Test exact balance effects and linked-transaction rollback.
-- [ ] Update the Money and Today documentation.
+- [x] Test recurrence boundaries, leap years, month ends, and user-local dates.
+- [x] Test scheduler/access idempotency and concurrent processing.
+- [x] Test automatic catch-up after downtime.
+- [x] Test manual Pay, Skip, edit, deletion, pause, and end behavior.
+- [x] Test Category, Subcategory, Account, and cross-user validation.
+- [x] Test exact balance effects and linked-transaction rollback.
+- [x] Update the Money and Today documentation.
 
 ---
 
@@ -275,43 +276,46 @@ Give new and returning users a clear path into Achelife and complete the 30-day 
 
 ### First-run onboarding
 
-- [ ] Offer “Start fresh” and “Restore backup” before creating domain data.
-- [ ] For a fresh start, confirm profile and timezone before Season creation.
-- [ ] Explain the 30-day Season, SP, Rank, and rollover preference.
-- [ ] Let the user create up to three initial Objectives.
-- [ ] Let the user create the first Habit and optional Task.
-- [ ] Offer the Money category pack and first Account setup.
-- [ ] Keep optional module steps skippable.
-- [ ] Use existing domain actions rather than a separate onboarding data model.
-- [ ] Persist completion state and allow onboarding to resume after interruption.
-- [ ] After import, replace creation steps with a restore and catch-up summary.
+- [x] Offer “Start fresh” and “Restore backup” before creating domain data.
+- [x] For a fresh start, confirm profile and timezone before Season creation.
+- [x] Explain the 30-day Season, SP, Rank, and rollover preference.
+- [x] Let the user create up to three initial Objectives.
+- [x] Let the user create the first Habit and optional Task.
+- [x] Offer the Money category pack and first Account setup.
+- [x] Keep optional module steps skippable.
+- [x] Use existing domain actions rather than a separate onboarding data model.
+- [x] Persist completion state and allow onboarding to resume after interruption.
+- [x] After import, replace creation steps with a restore and catch-up summary.
 
 ### Account and instance basics
 
-- [ ] Allow authenticated users to change name, email, and password.
-- [ ] Support open, closed, or first-user-only registration policy.
-- [ ] Default new self-hosted installations to closing registration after the first account.
-- [ ] Require password confirmation for destructive account or restore actions.
-- [ ] Provide an administrator CLI password-reset path that does not require email delivery.
+- [x] Create exactly one internal profile through passwordless first-run setup.
+- [x] Resolve the sole profile automatically without login or logout.
+- [x] Remove registration, email, password, and password-recovery surfaces.
+- [x] Keep internal user ownership for policies, foreign keys, exports, and restore mapping.
+- [x] Fail safely instead of silently choosing among multiple existing profiles.
+- [x] Document that anyone with network access can use the instance.
+- [x] Keep production bound to localhost by default and require trusted LAN or private VPN access for remote use.
+- [x] Require literal `RESTORE` and a verified safety export for destructive account replacement.
 
 ### Season closeout
 
-- [ ] Show final Rank, Season SP, and SP grouped by Tasks, Habits, Diary, Objectives, and Constitution.
-- [ ] Show Objective completion, Task resolution, Habit adherence, Diary days, and Constitution impact.
-- [ ] Compare with the previous completed Season when available.
-- [ ] Store an optional reflection and `recap_seen_at` without duplicating derived statistics.
-- [ ] In automatic mode, show closeout before the next Season introduction.
-- [ ] In manual mode, keep closeout on the intermission dashboard until the user starts the next Season.
-- [ ] After a restored absence, summarize the finalized imported Season and the intermission rather than showing fabricated empty Seasons.
+- [x] Show final Rank, Season SP, and SP grouped by Tasks, Habits, Diary, Objectives, and Constitution.
+- [x] Show Objective completion, Task resolution, Habit adherence, Diary days, and Constitution impact.
+- [x] Compare with the previous completed Season when available.
+- [x] Store an optional reflection and `recap_seen_at` without duplicating derived statistics.
+- [x] In automatic mode, show closeout before the next Season introduction.
+- [x] In manual mode, keep closeout on the intermission dashboard until the user starts the next Season.
+- [x] After a restored absence, summarize the finalized imported Season and the intermission rather than showing fabricated empty Seasons.
 
 ### Verification
 
-- [ ] Test fresh, interrupted, skipped, and restored onboarding.
-- [ ] Test onboarding authorization and duplicate submission protection.
-- [ ] Test closeout totals against authoritative source records.
-- [ ] Test negative SP, Unranked, Legend, and Seasons with no activity.
-- [ ] Test automatic, manual, held, and restored closeout sequences.
-- [ ] Update the foundation, Seasons, Rank, and onboarding documentation.
+- [x] Test fresh, interrupted, skipped, and restored onboarding.
+- [x] Test onboarding authorization and duplicate submission protection.
+- [x] Test closeout totals against authoritative source records.
+- [x] Test negative SP, Unranked, Legend, and Seasons with no activity.
+- [x] Test automatic, manual, held, and restored closeout sequences.
+- [x] Update the foundation, Seasons, Rank, and onboarding documentation.
 
 ---
 
@@ -323,58 +327,58 @@ Create a safe, versioned, per-user archive that can migrate Achelife progress be
 
 ### Archive format
 
-- [ ] Use an `.achelife.zip` archive with `manifest.json`, `checksums.json`, and dependency-ordered NDJSON table files.
-- [ ] Separate backup format version from application version.
-- [ ] Record creation time, saved timezone, calendar start, rollover preference, latest Season state, table counts, and SHA-256 checksums.
-- [ ] Export every user-owned Season, Task, Habit, Diary, Person, Law, Objective, Money, Subscription, and settings record.
-- [ ] Export Transfer fees, preset keys, Subscription occurrence snapshots, closeout reflection, and intermission state.
-- [ ] Exclude passwords, password-reset tokens, remember tokens, sessions, and server secrets.
-- [ ] Produce a transactionally consistent export while writes are occurring.
-- [ ] Warn that the archive contains sensitive Diary and financial data.
+- [x] Use an `.achelife.zip` archive with `manifest.json`, `checksums.json`, and dependency-ordered NDJSON table files.
+- [x] Separate backup format version from application version.
+- [x] Record creation time, saved timezone, calendar start, rollover preference, latest Season state, table counts, and SHA-256 checksums.
+- [x] Export every user-owned Season, Task, Habit, Diary, Person, Law, Objective, Money, Subscription, and settings record.
+- [x] Export Transfer fees, preset keys, Subscription occurrence snapshots, closeout reflection, and intermission state.
+- [x] Exclude passwords, password-reset tokens, remember tokens, sessions, and server secrets.
+- [x] Produce a transactionally consistent export while writes are occurring.
+- [x] Warn that the archive contains sensitive Diary and financial data.
 
 ### Validation and preview
 
-- [ ] Reject unsafe ZIP paths, duplicate entries, undeclared files, malformed rows, invalid checksums, oversized archives, and excessive uncompressed sizes.
-- [ ] Reject backups created materially in the future or with impossible Season timelines.
-- [ ] Reject newer unsupported formats with an “update Achelife first” message.
-- [ ] Support older formats only through explicit version adapters.
-- [ ] Preview backup age, source version, timezone, latest Season, Rank, SP, and counts by module.
-- [ ] Calculate the imported Season's remaining catch-up window through its original Day 30.
-- [ ] Preview Habit misses, Diary streak effects, recurring Task occurrences, Subscription catch-up, and the resulting held Season number.
-- [ ] Warn that changes made after the backup date are absent.
+- [x] Reject unsafe ZIP paths, duplicate entries, undeclared files, malformed rows, invalid checksums, oversized archives, and excessive uncompressed sizes.
+- [x] Reject backups created materially in the future or with impossible Season timelines.
+- [x] Reject newer unsupported formats with an “update Achelife first” message.
+- [x] Support older formats only through explicit version adapters.
+- [x] Preview backup age, source version, timezone, latest Season, Rank, SP, and counts by module.
+- [x] Calculate the imported Season's remaining catch-up window through its original Day 30.
+- [x] Preview Habit misses, Diary streak effects, recurring Task occurrences, Subscription catch-up, and the resulting held Season number.
+- [x] Warn that changes made after the backup date are absent.
 
 ### Restore
 
-- [ ] Support fresh-install import before normal onboarding.
-- [ ] Support authenticated destructive replacement after creating a safety export.
-- [ ] Preserve or create the target login while importing domain identity and timezone according to the chosen flow.
-- [ ] Lock the user against concurrent writes during restore.
-- [ ] Restore in dependency order with old-to-new ID maps.
-- [ ] Reconcile preset Categories by stable keys without duplication.
-- [ ] Validate Season boundaries, foreign keys, row counts, SP totals, and Subscription links before commit.
-- [ ] Roll back the database completely on failure.
-- [ ] Require current password and literal `RESTORE` confirmation for replacement.
-- [ ] Run the bounded Season catch-up, finalize the imported Season when required, and open the restore intermission.
-- [ ] Redirect to a Welcome Back summary and Season closeout after success.
+- [x] Support fresh-install import before normal onboarding.
+- [x] Support existing-instance destructive replacement after creating a safety export.
+- [x] Preserve the target's internal schema identity while importing domain identity and timezone.
+- [x] Lock the user against concurrent writes during restore.
+- [x] Restore in dependency order with old-to-new ID maps.
+- [x] Reconcile preset Categories by stable keys without duplication.
+- [x] Validate Season boundaries, foreign keys, row counts, SP totals, and Subscription links before commit.
+- [x] Roll back the database completely on failure.
+- [x] Require literal `RESTORE` confirmation for replacement.
+- [x] Run the bounded Season catch-up, finalize the imported Season when required, and open the restore intermission.
+- [x] Redirect to a Welcome Back summary and Season closeout after success.
 
 ### Portability semantics
 
-- [ ] Document that export/import migrates or copies a snapshot; it is not continuous synchronization.
-- [ ] Document that multiple devices should use the same server for live shared progress.
-- [ ] Never merge two divergent Achelife histories automatically.
-- [ ] Make repeated restore safe without duplicate relationships.
-- [ ] Preserve the backup timezone initially and use the existing warning before later timezone changes.
+- [x] Document that export/import migrates or copies a snapshot; it is not continuous synchronization.
+- [x] Document that multiple devices should use the same server for live shared progress.
+- [x] Never merge two divergent Achelife histories automatically.
+- [x] Make repeated restore safe without duplicate relationships.
+- [x] Preserve the backup timezone initially and use the existing warning before later timezone changes.
 
 ### Verification
 
-- [ ] Round-trip a complete user graph and compare semantic equality.
-- [ ] Test fresh import, existing-account replacement, and multi-user isolation.
-- [ ] Test import before and after the latest Season's end.
-- [ ] Test month- and year-long stale backups without fabricated Seasons.
-- [ ] Test corrupted, malicious, future, older, and newer archives.
-- [ ] Test restore rollback, duplicate import, ID collision prevention, and post-restore record creation.
-- [ ] Test Subscription and Transfer-fee restoration and catch-up.
-- [ ] Add portable backup and restore documentation.
+- [x] Round-trip a complete user graph and compare semantic equality.
+- [x] Test fresh import, existing-account replacement, and multi-user isolation.
+- [x] Test import before and after the latest Season's end.
+- [x] Test month- and year-long stale backups without fabricated Seasons.
+- [x] Test corrupted, malicious, future, older, and newer archives.
+- [x] Test restore rollback, duplicate import, ID collision prevention, and post-restore record creation.
+- [x] Test Subscription and Transfer-fee restoration and catch-up.
+- [x] Add portable backup and restore documentation.
 
 ---
 
@@ -387,52 +391,51 @@ Install and operate Achelife through a discoverable host command without requiri
 ### Installer
 
 - [ ] Publish versioned multi-architecture container images through verified release workflows.
-- [ ] Install a thin `achelife` command into the user's executable path.
-- [ ] Support configurable installation directory, port, bind address, exact version, release channel, and non-interactive mode.
-- [ ] Default to localhost binding and warn before trusted-LAN exposure.
-- [ ] Generate and preserve secrets, Compose project identity, configuration, and persistent volumes.
-- [ ] Make installation idempotent and independent of the current working directory.
-- [ ] Wait for health and print useful recovery information on failure.
+- [x] Prepare a guarded RC-only multi-architecture image and manager-bundle workflow without publishing it.
+- [x] Install a thin `achelife` command into the user's executable path.
+- [x] Support configurable installation directory, port, bind address, exact version, release channel, and non-interactive mode.
+- [x] Default to localhost binding and warn before trusted-LAN exposure.
+- [x] Generate and preserve secrets, Compose project identity, configuration, and persistent volumes.
+- [x] Make installation idempotent and independent of the current working directory.
+- [x] Wait for health and print useful recovery information on failure.
 
 ### Commands
 
-- [ ] `achelife install`
-- [ ] `achelife start`, `stop`, and `restart`
-- [ ] `achelife status` with version, URL, health, containers, database size, last backup, auto-start, and update state
-- [ ] `achelife update`, `update --check`, `update --to VERSION`, and explicit `update --channel rc`
-- [ ] `achelife enable`, `disable`, `enable --now`, and `disable --now` for boot startup
-- [ ] `achelife logs` and `logs --follow`
-- [ ] `achelife doctor`
-- [ ] `achelife backup` and destructive `restore FILE` for full-instance recovery
-- [ ] `achelife open`, `version`, and `help`
-- [ ] `achelife registration status|open|close`
-- [ ] `achelife user reset-password EMAIL`
-- [ ] `achelife uninstall`, preserving data unless an explicit purge is confirmed
-- [ ] Add machine-readable `--json` output to status, doctor, and version.
+- [x] `achelife install`
+- [x] `achelife start`, `stop`, and `restart`
+- [x] `achelife status` with version, URL, health, containers, database size, last backup, auto-start, and update state
+- [x] `achelife update`, `update --check`, `update --to VERSION`, and explicit `update --channel rc`
+- [x] `achelife enable`, `disable`, `enable --now`, and `disable --now` for boot startup
+- [x] `achelife logs` and `logs --follow`
+- [x] `achelife doctor`
+- [x] `achelife backup` and destructive `restore FILE` for full-instance recovery
+- [x] `achelife open`, `version`, and `help`
+- [x] `achelife uninstall`, preserving data unless an explicit purge is confirmed
+- [x] Add machine-readable `--json` output to status, doctor, and version.
 
 ### Safe updates and recovery
 
-- [ ] Lock management operations so updates, restores, and lifecycle commands cannot race.
-- [ ] Abort an update when preflight checks or backup verification fail.
-- [ ] Create a consistent full-instance backup containing the database, application key, configuration, and persistent storage.
-- [ ] Pull an exact image tag and record its immutable digest.
-- [ ] Preserve the prior running/stopped and enabled/disabled state.
-- [ ] Enter maintenance mode for an active update.
-- [ ] Run migrations and verify health, migration state, and a basic authenticated-ready response.
-- [ ] Retain the prior image and backup until the upgraded installation is verified.
-- [ ] Never run old code against a migrated incompatible database; use declared rollback support or restore the verified snapshot.
-- [ ] Default updates to stable and require explicit RC opt-in.
-- [ ] Redact secrets from terminal output and logs.
+- [x] Lock management operations so updates, restores, and lifecycle commands cannot race.
+- [x] Abort an update when preflight checks or backup verification fail.
+- [x] Create a consistent full-instance backup containing the database, application key, configuration, and persistent storage.
+- [x] Pull an exact image tag and record its immutable digest.
+- [x] Preserve the prior running/stopped and enabled/disabled state.
+- [x] Enter maintenance mode for an active update.
+- [x] Run migrations and verify health, migration state, and a basic single-user-ready response.
+- [x] Retain the prior image and backup until the upgraded installation is verified.
+- [x] Never run old code against a migrated incompatible database; use declared rollback support or restore the verified snapshot.
+- [x] Default updates to stable and require explicit RC opt-in.
+- [x] Redact secrets from terminal output and logs.
 
 ### Verification
 
-- [ ] Test fresh and repeated installation.
-- [ ] Test custom paths, ports, bind addresses, and multiple Compose project identities.
-- [ ] Test stopped, running, enabled, and disabled update states.
-- [ ] Test unavailable Docker, port conflicts, low disk space, failed pulls, failed migrations, and failed health checks.
-- [ ] Test full-instance backup and restore on a clean host.
-- [ ] Test uninstall with retained data and explicit purge.
-- [ ] Add install, command reference, upgrade, backup/restore, networking, and uninstall documentation.
+- [x] Test fresh and repeated installation.
+- [x] Test custom paths, ports, bind addresses, and multiple Compose project identities.
+- [x] Test stopped, running, enabled, and disabled update states.
+- [x] Test unavailable Docker, port conflicts, low disk space, failed pulls, failed migrations, and failed health checks.
+- [x] Test full-instance backup and restore on a clean host.
+- [x] Test uninstall with retained data and explicit purge.
+- [x] Add install, command reference, upgrade, backup/restore, networking, and uninstall documentation.
 
 ---
 
@@ -444,18 +447,18 @@ Prove fresh installation, upgrades, portability, scheduling, and recovery before
 
 ### Automated release gates
 
-- [ ] Run Pint, PHPUnit, TypeScript checks, ESLint, production build, and `git diff --check`.
-- [ ] Add installer and CLI shell tests.
-- [ ] Build and scan production images for supported architectures.
-- [ ] Test fresh database migration and upgrade migration from the latest supported pre-v1 state.
-- [ ] Test backup creation before every migration path.
-- [ ] Run full portable and full-instance restore suites.
-- [ ] Verify scheduler and access-driven Subscription idempotency.
-- [ ] Verify progression totals and Season closeouts after restore.
+- [x] Run Pint, PHPUnit, TypeScript checks, ESLint, production build, and `git diff --check`.
+- [x] Add installer and CLI shell tests.
+- [x] Build and scan production images for supported architectures.
+- [x] Test fresh database migration and upgrade migration from the latest supported pre-v1 state.
+- [x] Test backup creation before every migration path.
+- [x] Run full portable and full-instance restore suites.
+- [x] Verify scheduler and access-driven Subscription idempotency.
+- [x] Verify progression totals and Season closeouts after restore.
 
 ### Manual acceptance matrix
 
-- [ ] Fresh local installation and first-user onboarding.
+- [ ] Fresh local installation and passwordless single-user onboarding.
 - [ ] Trusted-LAN installation with security warning.
 - [ ] Automatic Season rollover and long absence.
 - [ ] Manual rollover, one-time hold, and multi-month intermission.

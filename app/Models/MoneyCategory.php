@@ -29,6 +29,18 @@ class MoneyCategory extends Model
         return $this->hasMany(MoneyTransaction::class, 'category_id');
     }
 
+    /** @return HasMany<MoneySubscription, $this> */
+    public function subscriptions(): HasMany
+    {
+        return $this->hasMany(MoneySubscription::class, 'category_id');
+    }
+
+    /** @return HasMany<MoneySubscriptionOccurrence, $this> */
+    public function subscriptionOccurrences(): HasMany
+    {
+        return $this->hasMany(MoneySubscriptionOccurrence::class, 'category_id');
+    }
+
     protected function casts(): array
     {
         return [

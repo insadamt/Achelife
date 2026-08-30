@@ -31,7 +31,7 @@ class MoneyAccountController extends Controller
         $balances = $calculator->forAccounts($request->user(), collect([$account]));
         $transactions = $request->user()->moneyTransactions()
             ->where(fn ($query) => $query->where('account_id', $account->id)->orWhere('destination_account_id', $account->id))
-            ->with(['account', 'destinationAccount', 'category', 'subcategory'])
+            ->with(['account', 'destinationAccount', 'category', 'subcategory', 'subscriptionOccurrence.subscription'])
             ->orderByDesc('transaction_date')->orderByDesc('created_at')->orderByDesc('id')->limit(30)->get();
         $categories = $request->user()->moneyCategories()
             ->with(['subcategories' => fn ($query) => $query->orderBy('name')])

@@ -53,6 +53,14 @@ Recording remains a deliberate review action. Its dialog previews the new record
 
 Phase 11 keeps Laws and historical violations readable during intermission. New violation recording, correction, and deletion remain guarded by the requirement that their date belongs to the active Season.
 
+## v1 closeout extension
+
+Phase 14 presents Constitution impact as the signed sum and count of the finalized Season's authoritative Violations. This preserves negative SP and Unranked outcomes and never duplicates penalty statistics.
+
+## v1 portability extension
+
+Phase 15 exports Laws, stable creation dates, archive state, Violations, severity/base snapshots, sequence, and exact signed penalties. Restore maps both Law and Season ownership before insertion and validates each Violation date and the resulting signed Season SP total before commit.
+
 ## Verification
 
 Run:

@@ -31,6 +31,8 @@ class UserFactory extends Factory
             'password' => static::$password ??= Hash::make('password'),
             'timezone' => 'UTC',
             'remember_token' => Str::random(10),
+            'onboarding_step' => 'complete',
+            'onboarding_completed_at' => now(),
         ];
     }
 

@@ -26,7 +26,7 @@ class SynchronizeHabitOccurrences
         private readonly UserCalendar $userCalendar,
     ) {}
 
-    public function execute(User $user, ?CarbonImmutable $today = null): ?Season
+    public function execute(User $user, ?CarbonImmutable $today = null, ?CarbonImmutable $notBefore = null): ?Season
     {
         $calendarDate = ($today ?? $this->userCalendar->today($user))->startOfDay();
         $currentSeason = $this->resolveUserSeasonCycle->execute($user, $calendarDate)->activeSeason;
@@ -38,7 +38,7 @@ class SynchronizeHabitOccurrences
         $habits = $user->habits()->whereNull('archived_at')->with('definitionVersions')->get();
 
         foreach ($habits as $habit) {
-            $this->synchronizeHabit($habit, $calendarDate, $currentSeason, $seasons);
+            $this->synchronizeHabit($habit, $calendarDate, $currentSeason, $seasons, $notBefore);
         }
 
         return $currentSeason->refresh();
@@ -50,21 +50,31 @@ class SynchronizeHabitOccurrences
         CarbonImmutable $today,
         Season $currentSeason,
         Collection $seasons,
+        ?CarbonImmutable $notBefore = null,
     ): void {
-        DB::transaction(function () use ($habit, $today, $seasons): void {
+        DB::transaction(function () use ($habit, $today, $seasons, $notBefore): void {
             $lockedHabit = Habit::query()->lockForUpdate()->findOrFail($habit->id);
             $lockedHabit->load('definitionVersions');
-            $lockedHabit->occurrences()
+            $pendingOccurrences = $lockedHabit->occurrences()
                 ->where('state', HabitOccurrenceState::Pending)
-                ->whereDate('occurrence_date', '<', $today)
-                ->update([
-                    'state' => HabitOccurrenceState::Missed,
-                    'streak_after' => 0,
-                    'reward_multiplier' => 0,
-                    'earned_sp' => 0,
-                    'resolved_at' => now(),
-                ]);
+                ->whereDate('occurrence_date', '<', $today);
+
+            if ($notBefore !== null) {
+                $pendingOccurrences->whereDate('occurrence_date', '>=', $notBefore);
+            }
+
+            $pendingOccurrences->update([
+                'state' => HabitOccurrenceState::Missed,
+                'streak_after' => 0,
+                'reward_multiplier' => 0,
+                'earned_sp' => 0,
+                'resolved_at' => now(),
+            ]);
             $nextDate = $lockedHabit->synchronized_through?->addDay() ?? $lockedHabit->starts_on;
+
+            if ($notBefore !== null && $nextDate->isBefore($notBefore)) {
+                $nextDate = $notBefore;
+            }
 
             while ($nextDate->lessThanOrEqualTo($today)) {
                 $definition = $this->definitionResolver->fromLoadedVersions($lockedHabit->definitionVersions, $nextDate);

@@ -1,0 +1,197 @@
+name: Verify and publish Achelife release candidate
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Exact RC version without the v prefix
+        required: true
+        type: string
+      confirmation:
+        description: Type PUBLISH RC to authorize external publication
+        required: true
+        type: string
+
+concurrency:
+  group: achelife-rc-${{ inputs.version }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  authorize:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Validate explicit RC request
+        env:
+          REQUESTED_VERSION: ${{ inputs.version }}
+          PUBLISH_CONFIRMATION: ${{ inputs.confirmation }}
+        shell: bash
+        run: |
+          [[ "$REQUESTED_VERSION" =~ ^(0|[1-9][0-9]{0,8})\.(0|[1-9][0-9]{0,8})\.(0|[1-9][0-9]{0,8})-rc\.(0|[1-9][0-9]{0,8})$ ]]
+          [[ "$PUBLISH_CONFIRMATION" == "PUBLISH RC" ]]
+
+  verify:
+    needs: authorize
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - uses: shivammathur/setup-php@b604ade2a87db23f8871b7182e69ec5e75effb45 # v2
+        with:
+          php-version: "8.4"
+          extensions: bcmath, intl, mbstring, pdo_sqlite, zip
+          coverage: none
+      - run: composer install --no-interaction --no-progress --prefer-dist
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: "22"
+          cache: npm
+      - run: npm ci
+      - run: sh scripts/release/verify-source.sh
+
+  docker-acceptance:
+    needs: verify
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - run: sh tests/Release/docker_acceptance.sh
+
+  build-and-scan:
+    needs: [verify, docker-acceptance]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    permissions:
+      contents: read
+      packages: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target: app
+            platform: linux/amd64
+            platform-key: amd64
+            image: ghcr.io/insadamt/achelife
+          - target: app
+            platform: linux/arm64
+            platform-key: arm64
+            image: ghcr.io/insadamt/achelife
+          - target: web
+            platform: linux/amd64
+            platform-key: amd64
+            image: ghcr.io/insadamt/achelife-web
+          - target: web
+            platform: linux/arm64
+            platform-key: arm64
+            image: ghcr.io/insadamt/achelife-web
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - uses: docker/setup-qemu-action@96fe6ef7f33517b61c61be40b68a1882f3264fb8 # v4
+      - uses: docker/setup-buildx-action@37fe631027851001ddb9b187196cc803df7f5f0e # v4
+      - uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build immutable platform image
+        id: build
+        uses: docker/build-push-action@53b7df96c91f9c12dcc8a07bcb9ccacbed38856a # v7
+        with:
+          context: .
+          target: ${{ matrix.target }}
+          platforms: ${{ matrix.platform }}
+          build-args: ACHELIFE_VERSION=${{ inputs.version }}
+          outputs: type=image,name=${{ matrix.image }},push-by-digest=true,name-canonical=true,push=true
+          provenance: mode=max
+          sbom: true
+          cache-from: type=gha,scope=${{ matrix.target }}-${{ matrix.platform-key }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.target }}-${{ matrix.platform-key }}
+      - name: Scan the exact built digest
+        env:
+          BUILT_IMAGE: ${{ matrix.image }}@${{ steps.build.outputs.digest }}
+          TRIVY_CACHE_DIR: ${{ runner.temp }}/trivy-cache
+        run: sh scripts/release/scan-image.sh "$BUILT_IMAGE"
+      - name: Record verified digest
+        env:
+          BUILT_DIGEST: ${{ steps.build.outputs.digest }}
+        run: |
+          mkdir -p "${RUNNER_TEMP}/digests"
+          touch "${RUNNER_TEMP}/digests/${{ matrix.target }}-${BUILT_DIGEST#sha256:}"
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: digest-${{ matrix.target }}-${{ matrix.platform-key }}
+          path: ${{ runner.temp }}/digests/${{ matrix.target }}-*
+          if-no-files-found: error
+          retention-days: 7
+
+  publish-rc:
+    needs: build-and-scan
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    permissions:
+      contents: write
+      packages: write
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          pattern: digest-*
+          path: ${{ runner.temp }}/digests
+          merge-multiple: true
+      - uses: docker/setup-buildx-action@37fe631027851001ddb9b187196cc803df7f5f0e # v4
+      - uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Publish scanned multi-architecture manifests
+        shell: bash
+        run: |
+          mkdir -p dist
+          for target in app web; do
+            if [[ "$target" == app ]]; then
+              repository=ghcr.io/insadamt/achelife
+            else
+              repository=ghcr.io/insadamt/achelife-web
+            fi
+            mapfile -t digest_files < <(find "${RUNNER_TEMP}/digests" -type f -name "${target}-*" | sort)
+            [[ "${#digest_files[@]}" -eq 2 ]]
+            sources=()
+            for digest_file in "${digest_files[@]}"; do
+              digest_name="$(basename "$digest_file")"
+              sources+=("${repository}@sha256:${digest_name#"$target"-}")
+            done
+            docker buildx imagetools create --tag "${repository}:${{ inputs.version }}" "${sources[@]}"
+            platforms="$(docker buildx imagetools inspect "${repository}:${{ inputs.version }}" --format '{{range .Manifest.Manifests}}{{if eq .Platform.OS "linux"}}{{println .Platform.Architecture}}{{end}}{{end}}' | sort -u)"
+            [[ "$platforms" == $'amd64\narm64' ]]
+            digest="$(docker buildx imagetools inspect "${repository}:${{ inputs.version }}" --format '{{.Manifest.Digest}}')"
+            printf '%s=%s:%s@%s\n' "${target^^}_IMAGE" "$repository" "${{ inputs.version }}" "$digest" >>dist/image-digests.txt
+          done
+      - name: Build checksum-protected manager bundle
+        shell: bash
+        run: |
+          mkdir -p dist/achelife-manager
+          cp achelife dist/achelife-manager/achelife
+          cp -R manager dist/achelife-manager/manager
+          sed -i 's/^MANAGER_VERSION=.*/MANAGER_VERSION="${{ inputs.version }}"/' dist/achelife-manager/manager/lib/common.sh
+          tar -czf "dist/achelife-manager-${{ inputs.version }}.tar.gz" -C dist achelife-manager
+          cd dist
+          sha256sum "achelife-manager-${{ inputs.version }}.tar.gz" >"achelife-manager-${{ inputs.version }}.tar.gz.sha256"
+      - name: Write operational release notes
+        run: sh scripts/release/write-rc-notes.sh "${{ inputs.version }}" dist/image-digests.txt dist/release-notes.md
+      - name: Create explicit pre-release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          gh release create "v${{ inputs.version }}" \
+            "dist/achelife-manager-${{ inputs.version }}.tar.gz" \
+            "dist/achelife-manager-${{ inputs.version }}.tar.gz.sha256" \
+            "dist/image-digests.txt" \
+            --prerelease \
+            --target "$GITHUB_SHA" \
+            --title "Achelife ${{ inputs.version }}" \
+            --notes-file dist/release-notes.md

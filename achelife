@@ -1,218 +1,148 @@
 #!/bin/sh
 set -eu
 
-STATE_DIR=".achelife"
-PORT_FILE="$STATE_DIR/port"
+resolve_manager_root()
+{
+    manager_entrypoint="$0"
 
-mkdir -p "$STATE_DIR"
-
-get_running_port() {
-    docker compose port web 80 2>/dev/null \
-        | sed -n 's/.*:\([0-9][0-9]*\)$/\1/p' \
-        | head -n 1
-}
-
-get_saved_port() {
-    if [ -f "$PORT_FILE" ]; then
-        PORT="$(cat "$PORT_FILE")"
-
-        case "$PORT" in
-            ''|*[!0-9]*)
-                return 1
-                ;;
-            *)
-                printf '%s\n' "$PORT"
-                ;;
-        esac
-    else
-        return 1
-    fi
-}
-
-save_port() {
-    PORT="$1"
-    printf '%s\n' "$PORT" > "$PORT_FILE"
-}
-
-wait_until_ready() {
-    ATTEMPT=0
-
-    while [ "$ATTEMPT" -lt 30 ]; do
-        PORT="$(get_running_port || true)"
-
-        if [ -n "$PORT" ] && \
-           wget -q --spider "http://127.0.0.1:${PORT}/up" 2>/dev/null
-        then
-            return 0
+    if command -v readlink >/dev/null 2>&1; then
+        linked_entrypoint="$(readlink "$manager_entrypoint" 2>/dev/null || true)"
+        if [ -n "$linked_entrypoint" ]; then
+            case "$linked_entrypoint" in
+                /*) manager_entrypoint="$linked_entrypoint" ;;
+                *) manager_entrypoint="$(dirname "$manager_entrypoint")/$linked_entrypoint" ;;
+            esac
         fi
+    fi
 
-        ATTEMPT=$((ATTEMPT + 1))
-        sleep 1
+    CDPATH= cd -- "$(dirname "$manager_entrypoint")" && pwd
+}
+
+MANAGER_ROOT="$(resolve_manager_root)"
+LIBRARY_DIR="${MANAGER_ROOT}/manager/lib"
+
+for library in common configuration docker installation lifecycle backup update diagnostics uninstall; do
+    library_path="${LIBRARY_DIR}/${library}.sh"
+    if [ ! -r "$library_path" ]; then
+        printf 'Achelife Manager is incomplete: missing %s\n' "$library_path" >&2
+        exit 1
+    fi
+    . "$library_path"
+done
+
+print_help()
+{
+    cat <<'EOF'
+Achelife Manager
+
+Usage:
+  achelife [--dir PATH] COMMAND [options]
+
+Commands:
+  install                 Install or reconcile an exact Achelife version
+  start | stop | restart  Manage the application lifecycle
+  status [--json]         Show health, version, storage, and update state
+  update [options]        Safely update with backup and rollback protection
+  enable | disable        Configure Docker boot restart behavior
+  logs [--follow]         Show application service logs
+  doctor [--json]         Diagnose the host and installation
+  backup                  Create and verify a full-instance backup
+  restore FILE            Restore a full-instance operational backup
+  open                    Open Achelife in the default browser
+  version [--json]        Show manager and installed image versions
+  uninstall               Remove the manager while retaining data by default
+  help                    Show this command reference
+
+Install options:
+  --dir PATH              Installation directory
+  --bin-dir PATH          Executable directory (default: $HOME/.local/bin)
+  --port PORT             Host port (default: 8080)
+  --bind ADDRESS          Bind address (default: 127.0.0.1)
+  --project NAME          Compose project identity
+  --version VERSION       Exact MAJOR.MINOR.PATCH[-rc.N] version
+  --channel stable|rc     Release channel (default: stable)
+  --yes                   Non-interactive confirmation
+  --acknowledge-network-risk
+                           Required for non-localhost binding
+  --no-start              Install without starting the stack
+
+Update options:
+  --check                 Check without changing the installation
+  --to VERSION            Update to an exact version
+  --channel stable|rc     Select stable or explicitly opt in to RC
+
+Enable/disable options:
+  --now                   Also start or stop the stack now
+
+Uninstall options:
+  --purge                 Delete volumes only after literal PURGE confirmation
+  --confirm-purge PURGE   Non-interactive destructive confirmation
+
+Restore options:
+  --bin-dir PATH          Command directory on this recovery host
+  --confirm RESTORE       Non-interactive destructive confirmation
+
+Security:
+  Achelife has no login boundary. Keep the default localhost binding, or use
+  only a trusted private network or private VPN. Anyone with network access
+  can read and change the instance.
+EOF
+}
+
+parse_global_arguments()
+{
+    REQUESTED_INSTALL_DIR=""
+
+    while [ "$#" -gt 0 ]; do
+        case "$1" in
+            --dir)
+                require_option_value "$1" "${2:-}"
+                REQUESTED_INSTALL_DIR="$2"
+                shift 2
+                ;;
+            --help|-h)
+                print_help
+                exit 0
+                ;;
+            --)
+                shift
+                break
+                ;;
+            -*) break ;;
+            *) break ;;
+        esac
     done
 
-    return 1
+    COMMAND="${1:-help}"
+    [ "$#" -eq 0 ] || shift
+    set_installation_paths "$REQUESTED_INSTALL_DIR"
+    dispatch_command "$COMMAND" "$@"
 }
 
-show_url() {
-    PORT="$(get_running_port || true)"
+dispatch_command()
+{
+    command_name="$1"
+    shift
 
-    if [ -z "$PORT" ]; then
-        PORT="$(get_saved_port || true)"
-    fi
-
-    if [ -n "$PORT" ]; then
-        echo
-        echo "Achelife:"
-        echo "http://localhost:${PORT}"
-    fi
+    case "$command_name" in
+        install) command_install "$@" ;;
+        start) command_start "$@" ;;
+        stop) command_stop "$@" ;;
+        restart) command_restart "$@" ;;
+        status) command_status "$@" ;;
+        update) command_update "$@" ;;
+        enable) command_enable "$@" ;;
+        disable) command_disable "$@" ;;
+        logs) command_logs "$@" ;;
+        doctor) command_doctor "$@" ;;
+        backup) command_backup "$@" ;;
+        restore) command_restore "$@" ;;
+        open) command_open "$@" ;;
+        version) command_version "$@" ;;
+        uninstall) command_uninstall "$@" ;;
+        help) print_help ;;
+        *) fail "Unknown command: $command_name. Run 'achelife help'." ;;
+    esac
 }
 
-start_dynamic() {
-    echo "Searching for an available port..."
-
-    docker compose up -d
-
-    PORT="$(get_running_port || true)"
-
-    if [ -z "$PORT" ]; then
-        echo "ERROR: Docker did not assign a port." >&2
-        exit 1
-    fi
-
-    save_port "$PORT"
-
-    # Re-apply the selected port explicitly so future starts,
-    # rebuilds and APP_URL all use the same address.
-    ACHELIFE_PORT="$PORT" \
-    ACHELIFE_URL="http://localhost:${PORT}" \
-        docker compose up -d
-}
-
-start_with_saved_port() {
-    PORT="$1"
-
-    ACHELIFE_PORT="$PORT" \
-    ACHELIFE_URL="http://localhost:${PORT}" \
-        docker compose up -d
-}
-
-start_achelife() {
-    SAVED_PORT="$(get_saved_port || true)"
-
-    if [ -n "$SAVED_PORT" ]; then
-        echo "Using saved port ${SAVED_PORT}..."
-
-        if ! start_with_saved_port "$SAVED_PORT"; then
-            echo
-            echo "Port ${SAVED_PORT} is no longer available."
-            echo "Selecting a new port..."
-
-            rm -f "$PORT_FILE"
-
-            docker compose rm -sf web >/dev/null 2>&1 || true
-
-            start_dynamic
-        fi
-    else
-        start_dynamic
-    fi
-
-    echo "Waiting for Achelife..."
-
-    if wait_until_ready; then
-        PORT="$(get_running_port)"
-        save_port "$PORT"
-
-        echo
-        echo "Achelife is ready."
-        echo "http://localhost:${PORT}"
-    else
-        echo
-        echo "Achelife started, but the health check is not ready."
-        show_url
-        exit 1
-    fi
-}
-
-rebuild_achelife() {
-    SAVED_PORT="$(get_saved_port || true)"
-
-    if [ -n "$SAVED_PORT" ]; then
-        echo "Rebuilding Achelife on port ${SAVED_PORT}..."
-
-        if ! ACHELIFE_PORT="$SAVED_PORT" \
-             ACHELIFE_URL="http://localhost:${SAVED_PORT}" \
-             docker compose up -d --build
-        then
-            echo
-            echo "Rebuild or port binding failed."
-            exit 1
-        fi
-    else
-        echo "Building Achelife..."
-        docker compose build
-
-        start_dynamic
-    fi
-
-    echo "Waiting for Achelife..."
-
-    if wait_until_ready; then
-        PORT="$(get_running_port)"
-        save_port "$PORT"
-
-        echo
-        echo "Achelife is ready."
-        echo "http://localhost:${PORT}"
-    else
-        echo
-        echo "Achelife rebuilt, but the health check is not ready."
-        show_url
-        exit 1
-    fi
-}
-
-case "${1:-}" in
-    start)
-        echo "Starting Achelife..."
-        start_achelife
-        ;;
-
-    stop)
-        echo "Stopping Achelife..."
-        docker compose down
-        echo "Achelife stopped."
-        ;;
-
-    restart)
-        echo "Restarting Achelife..."
-        docker compose down
-        start_achelife
-        ;;
-
-    rebuild)
-        rebuild_achelife
-        ;;
-
-    status)
-        docker compose ps
-        show_url
-        ;;
-
-    logs)
-        docker compose logs -f
-        ;;
-
-    *)
-        echo "Achelife self-hosted"
-        echo
-        echo "Usage:"
-        echo "  ./achelife start"
-        echo "  ./achelife stop"
-        echo "  ./achelife restart"
-        echo "  ./achelife rebuild"
-        echo "  ./achelife status"
-        echo "  ./achelife logs"
-        exit 1
-        ;;
-esac
+parse_global_arguments "$@"

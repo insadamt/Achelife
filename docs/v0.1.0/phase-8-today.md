@@ -6,9 +6,9 @@ Phase 8 replaces the temporary home-page showcase with Today, Achelife's daily o
 
 ## Aggregation architecture
 
-`TodayViewDataFactory` is the dedicated authenticated read layer. It synchronizes recurring Tasks and Habit occurrences through the authenticated user's local current date, then queries only the compact current-day data needed by Today. Existing module view-data factories serialize Tasks and Seasons so their established presentation rules remain consistent.
+`TodayViewDataFactory` is the dedicated profile-scoped read layer. It synchronizes recurring Tasks and Habit occurrences through the sole profile's local current date, then queries only the compact current-day data needed by Today. Existing module view-data factories serialize Tasks and Seasons so their established presentation rules remain consistent.
 
-`ProgressPanelViewDataFactory` supplies the authenticated application shell independently of Today, so the same current Season, Today SP, Diary, and Objective summary remains available on every application page. `SeasonPointsAttributedOnDate` is the shared authority for the date-attributed SP total.
+`ProgressPanelViewDataFactory` supplies the single-user application shell independently of Today, so the same current Season, Today SP, Diary, and Objective summary remains available on every application page. `SeasonPointsAttributedOnDate` is the shared authority for the date-attributed SP total.
 
 Today reuses the existing Task completion, Habit occurrence, and Objective toggle endpoints. Each action redirects back to Today, where Inertia refreshes the aggregate from authoritative backend state and current Season SP.
 
@@ -30,7 +30,7 @@ Current-Season Objectives expose completion toggles only. Definition setup, rena
 
 ## Today SP
 
-Today SP sums Task completions, Habit occurrences, Diary rewards, Objective completions, and Constitution penalties attributed to the current calendar date and current Season. Money remains excluded. The value is informational, never mutates progression independently, and is exposed through the global progress notch on every authenticated application page.
+Today SP sums Task completions, Habit occurrences, Diary rewards, Objective completions, and Constitution penalties attributed to the current calendar date and current Season. Money remains excluded. The value is informational, never mutates progression independently, and is exposed through the global progress notch on every application page.
 
 ## Today settings
 
@@ -38,15 +38,25 @@ Today SP sums Task completions, Habit occurrences, Diary rewards, Objective comp
 
 - show Flexible Habits;
 
-The header settings control opens a compact dialog that persists this value through the authenticated Today settings route. The preference affects Today presentation only.
+The header settings control opens a compact dialog that persists this value through the profile-scoped Today settings route. The preference affects Today presentation only.
 
 ## Interface
 
 Desktop presents Tasks and Habits inside two distinct side-by-side containers. Mobile uses a two-state switcher to preserve working space. Tasks use a restrained checklist; Habits use compact progress cards with checkbox controls. Settings remain in the page header. The global application-shell notch is a tall, narrow arrow attached to the viewport edge; it opens a custom attached panel containing only Today SP, Season total and Rank brief, Diary status, and Objectives. Today uses Lucide icons for consistent action and status symbols. All direct state controls have accessible labels and keyboard behavior.
 
+## v1 Money subscription extension
+
+Phase 13 synchronizes Money Subscriptions before Today is assembled and shows due or overdue manual payments in a separate compact section. Subscription payments remain global financial activity: they are excluded from Daily Progress, Today SP, shared Season SP, Rank, and every seasonal breakdown. Automatic occurrences are recorded before the page is returned and therefore do not appear as manual obligations.
+
+The Phase 16 production scheduler runs the same overlap-protected Subscription synchronization in a dedicated container. Today access remains the correctness fallback after downtime; infrastructure scheduling does not change Daily Progress or SP semantics.
+
 ## v1 intermission extension
 
-Phase 11 replaces the ordinary Today aggregate with an intermission dashboard when no Season is active. The dashboard shows the last closeout, pause reason, elapsed rest days, and the exact dates of the next manually started Season.
+Phase 11 replaces the ordinary Today aggregate with an intermission dashboard when no Season is active. The dashboard shows the last closeout, pause reason, elapsed rest days, and the exact dates of the next manually started Season. Phase 13 keeps the manual Subscription payment section on that dashboard because Money continues during intermission.
+
+Phase 14 expands that last closeout into the complete derived recap, comparison, and optional reflection. Manual and held users continue seeing it on Today throughout intermission. Automatic users see it before their next Season introduction.
+
+Phase 15 redirects successful import to Welcome Back before ordinary Today. An ended imported Season exposes its finalized closeout and restore intermission rather than fabricated Today pages for elapsed Seasons. Money Subscription catch-up remains visually and mathematically separate from Daily Progress and Today SP.
 
 ## Verification
 
@@ -61,4 +71,4 @@ npm run build
 git diff --check
 ```
 
-The Today tests cover aggregation, exact Daily Progress math, Skipped and Flexible Habit semantics, bounded Overdue presentation, settings defaults and isolation, globally shared date-attributed SP, Objective and Constitution SP behavior, Money isolation, cross-user isolation, and Season Day 30-to-Day 1 transition.
+The Today tests cover aggregation, exact Daily Progress math, Skipped and Flexible Habit semantics, bounded Overdue presentation, settings defaults and isolation, globally shared date-attributed SP, Objective and Constitution SP behavior, due manual Subscription visibility without progression effects, Money isolation, cross-user isolation, and Season Day 30-to-Day 1 transition.

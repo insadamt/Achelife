@@ -1,0 +1,162 @@
+#!/bin/sh
+set -eu
+
+state_directory="${FAKE_DOCKER_STATE:?}"
+mkdir -p "$state_directory/volume-source"
+touch "$state_directory/volume-source/achelife.sqlite"
+printf '%s\n' sample >"$state_directory/volume-source/persisted.txt"
+
+mode="${FAKE_DOCKER_MODE:-ok}"
+
+compose_command()
+{
+    if [ "${1:-}" = version ]; then
+        [ "$mode" != compose_unavailable ]
+        exit
+    fi
+
+    compose_configuration=""
+    while [ "$#" -gt 0 ]; do
+        case "$1" in
+            --env-file) compose_configuration="$2"; shift 2 ;;
+            --project-name|--file) shift 2 ;;
+            *) break ;;
+        esac
+    done
+    action="${1:-}"
+    [ "$#" -eq 0 ] || shift
+
+    case "$action" in
+        up)
+            configured_version="$(sed -n 's/^ACHELIFE_VERSION=//p' "$compose_configuration" 2>/dev/null || true)"
+            printf 'compose-up:%s\n' "$configured_version" >>"$state_directory/events.log"
+            [ "${FAKE_MIGRATION_FAILURE:-0}" != 1 ] || exit 1
+            [ "${FAKE_MIGRATION_FAIL_VERSION:-}" != "$configured_version" ] || exit 1
+            touch "$state_directory/created" "$state_directory/running"
+            if [ "${FAKE_HEALTH_FAIL_VERSION:-}" = "$configured_version" ]; then
+                touch "$state_directory/unhealthy"
+            else
+                rm -f "$state_directory/unhealthy"
+            fi
+            ;;
+        start|restart)
+            touch "$state_directory/created" "$state_directory/running"
+            ;;
+        stop|down)
+            rm -f "$state_directory/running"
+            ;;
+        ps)
+            if printf '%s\n' "$*" | grep -q -- '--quiet'; then
+                [ -f "$state_directory/created" ] || exit 0
+                requested_service=""
+                for compose_argument in "$@"; do
+                    requested_service="$compose_argument"
+                done
+                case "$requested_service" in
+                    app|web|scheduler) printf '%s-container\n' "$requested_service" ;;
+                    *) printf '%s\n' app-container scheduler-container web-container ;;
+                esac
+            else
+                printf '%s\n' 'Achelife fake stack'
+            fi
+            ;;
+        exec)
+            service_name="${1:-}"
+            shift || true
+            [ "${1:-}" != -T ] || shift
+            if printf '%s\n' "$*" | grep -q 'achelife:verify'; then
+                [ "${FAKE_HEALTH_FAILURE:-0}" != 1 ] || exit 1
+                printf '%s\n' '{"ready":true,"single_user_state":"ready"}'
+            elif printf '%s\n' "$*" | grep -q 'migrate:status'; then
+                [ "${FAKE_MIGRATION_STATUS_FAILURE:-0}" != 1 ] || printf '%s\n' 'Pending'
+                [ "${FAKE_MIGRATION_STATUS_FAILURE:-0}" = 1 ] || printf '%s\n' 'Ran'
+            elif printf '%s\n' "$*" | grep -q 'test -f'; then
+                [ -f "$state_directory/probe" ]
+            elif printf '%s\n' "$*" | grep -q 'rm -f'; then
+                rm -f "$state_directory/probe"
+            fi
+            ;;
+        config|logs|create) exit 0 ;;
+        *) exit 0 ;;
+    esac
+}
+
+volume_command()
+{
+    action="${1:-}"
+    case "$action" in
+        inspect) [ "${FAKE_VOLUME_FAILURE:-0}" != 1 ] ;;
+        create) printf '%s\n' "${2:-volume}" ;;
+        *) exit 0 ;;
+    esac
+}
+
+run_command()
+{
+    backup_mount=""
+    command_text=""
+    while [ "$#" -gt 0 ]; do
+        case "$1" in
+            --volume)
+                mount_value="$2"
+                case "$mount_value" in
+                    *:/backup|*:/backup:ro) backup_mount="${mount_value%%:/backup*}" ;;
+                esac
+                shift 2
+                ;;
+            -c)
+                command_text="$2"
+                shift 2
+                ;;
+            *) shift ;;
+        esac
+    done
+
+    [ "${FAKE_BACKUP_FAILURE:-0}" != 1 ] || exit 1
+    case "$command_text" in
+        *'tar -cf /backup/'*)
+            printf 'backup-snapshot\n' >>"$state_directory/events.log"
+            archive_name="$(printf '%s\n' "$command_text" | sed -n 's#.*tar -cf /backup/\([^ ]*\).*#\1#p')"
+            tar -cf "$backup_mount/$archive_name" -C "$state_directory/volume-source" .
+            ;;
+        *'.achelife-manager-probe'*) touch "$state_directory/probe" ;;
+        *'find /target'*) touch "$state_directory/restored" ;;
+        *'cat /data/app-key'*) printf '%s' "${FAKE_LEGACY_APP_KEY:-}" ;;
+    esac
+}
+
+main()
+{
+    command_name="${1:-}"
+    [ "$#" -eq 0 ] || shift
+    case "$command_name" in
+        info) [ "$mode" != daemon_unavailable ] ;;
+        compose) compose_command "$@" ;;
+        pull) [ "${FAKE_PULL_FAILURE:-0}" != 1 ] ;;
+        manifest) [ "${FAKE_MANIFEST_FAILURE:-0}" != 1 ] ;;
+        image)
+            image_tag=""
+            for image_argument in "$@"; do image_tag="$image_argument"; done
+            printf '%s@sha256:%064d\n' "$image_tag" 0
+            ;;
+        inspect)
+            format_value=""
+            if [ "${1:-}" = --format ]; then format_value="$2"; fi
+            case "$format_value" in
+                *State.Health*)
+                    if [ "${FAKE_HEALTH_FAILURE:-0}" = 1 ] || [ -f "$state_directory/unhealthy" ]; then printf unhealthy; else printf healthy; fi
+                    ;;
+                *State.Running*) [ -f "$state_directory/running" ] && printf true || printf false ;;
+                *) printf healthy ;;
+            esac
+            printf '\n'
+            ;;
+        volume) volume_command "$@" ;;
+        run) run_command "$@" ;;
+        exec) [ "${FAKE_HEALTH_FAILURE:-0}" != 1 ] ;;
+        update) exit 0 ;;
+        *) exit 0 ;;
+    esac
+}
+
+main "$@"

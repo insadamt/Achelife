@@ -54,6 +54,58 @@ export interface MoneyTransactionData {
     category: { id: number; name: string; archived: boolean } | null;
     subcategory: { id: number; name: string; archived: boolean } | null;
     createdAt: string;
+    subscriptionOccurrence: { id: number; subscriptionId: number; subscriptionName: string } | null;
+}
+
+export type MoneySubscriptionRecurrence = 'weekly' | 'monthly' | 'every_three_months' | 'yearly';
+export type MoneySubscriptionPaymentMode = 'automatic' | 'manual';
+export type MoneySubscriptionStatus = 'active' | 'paused' | 'ended';
+export type MoneySubscriptionOccurrenceStatus = 'due' | 'paid' | 'skipped';
+
+export interface MoneySubscriptionSelectionData {
+    id: number;
+    name: string;
+    archived: boolean;
+}
+
+export interface MoneySubscriptionOccurrenceData {
+    id: number;
+    subscriptionId: number;
+    subscriptionName: string;
+    paymentMode: MoneySubscriptionPaymentMode;
+    dueDate: string;
+    amountMinor: number;
+    currency: string;
+    account: MoneySubscriptionSelectionData;
+    category: MoneySubscriptionSelectionData;
+    subcategory: MoneySubscriptionSelectionData | null;
+    note: string | null;
+    status: MoneySubscriptionOccurrenceStatus;
+    overdue: boolean;
+    transactionId: number | null;
+    paidAt: string | null;
+    skippedAt: string | null;
+    automaticRetryBlockedAt: string | null;
+}
+
+export interface MoneySubscriptionData {
+    id: number;
+    name: string;
+    amountMinor: number;
+    currency: string;
+    account: MoneySubscriptionSelectionData;
+    category: MoneySubscriptionSelectionData;
+    subcategory: MoneySubscriptionSelectionData | null;
+    note: string | null;
+    startsOn: string;
+    endsOn: string | null;
+    recurrence: MoneySubscriptionRecurrence;
+    scheduleSentence: string;
+    paymentMode: MoneySubscriptionPaymentMode;
+    status: MoneySubscriptionStatus;
+    nextPayment: string | null;
+    canDelete: boolean;
+    occurrences: MoneySubscriptionOccurrenceData[];
 }
 
 export interface MoneyPageData {

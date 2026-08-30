@@ -4,7 +4,9 @@
 
 Money is a global, non-gamified financial tracker with Accounts, Income, Expenses, Transfers, Categories, Subcategories, transaction history, grouped balances, and reversible archives. Money remains available during Season intermissions, never reads or mutates Season SP, and does not contribute to Rank or Daily Progress. Objectives, budgets, exchange rates, and external bank execution remain outside Money.
 
-Phase 12 adds an optional versioned preset pack and Transfer fees. Subscriptions remain deferred to Phase 13, and portable account archives remain deferred to Phase 15.
+Phase 12 adds an optional versioned preset pack and Transfer fees. Phase 13 adds recurring Expense definitions, independent occurrence snapshots, manual payment, and automatic Expense bookkeeping. Portable account archives remain deferred to Phase 15.
+
+Phase 15 completes that boundary. Portable snapshots include Accounts, editable stable-key Categories and Subcategories, exact Transfer fees, all transactions, Subscription definitions, occurrence snapshots, paid/skipped/Due state, linked Expenses, automatic retry blocks, and Money-related user settings. Restore reconciles presets by key and never introduces Money into SP, Rank, closeout, or Daily Progress.
 
 ## Amount and balance architecture
 
@@ -20,6 +22,8 @@ Account balance is derived from its signed initial balance and authoritative `mo
 For Transfers, `amount_minor` always means the amount received by the destination Account. `fee_minor` defaults to zero, cannot be negative, uses the source Account currency, and is valid only on Transfers. Transfers require distinct Accounts with matching currencies; currency conversion is not available.
 
 There is no cached balance column, so edits and deletion reverse principal and fees from the same source of truth without accumulated adjustments or duplicate effects. Different currencies are never summed together.
+
+Subscription payments use that same source of truth. Paying an occurrence creates exactly one ordinary Expense row, so it subtracts the snapshotted positive amount from its Account once. Skipped and Due occurrences have no balance effect. Deleting the linked Expense reverses the subtraction and returns the occurrence to Due; no compensating transaction is created.
 
 ## Transaction integrity
 
@@ -47,9 +51,31 @@ The transaction drawer previews the amount received, source-currency fee, total 
 
 `/money/history` supports pagination, date-grouped results, visible applied-filter chips, and filters for type, Account, parent Category, parent-scoped Subcategory, and date range. Escaped text search covers notes and Category/Subcategory names. Positive Transfer fees are projected under `Financial → Bank Fees` for search and categorization filters without setting transaction Category foreign keys, creating another transaction, or applying another balance effect. This projection is the reporting contract for later Statistics work.
 
+## Subscriptions
+
+Subscriptions support weekly, monthly, every-three-months, and yearly Expense schedules. Calendar recurrence is anchored to the original start date, including month ends and leap years. Definitions use Active, Paused, and Ended lifecycle states; occurrences independently retain Due, Paid, and Skipped history with amount, Account, Category, Subcategory, note, and due-date snapshots.
+
+Automatic mode records ordinary Expenses and never sends an external payment. A daily overlap-protected scheduler processes elapsed dates, while every Money access and Today aggregation runs the same idempotent synchronization as a fallback. All due-date decisions use the user's local calendar date. Manual occurrences remain Due or Overdue until the user confirms Pay or Skip.
+
+Phase 16 runs that daily scheduler in its own production container. The scheduler shares the exact digest-pinned application image and persistent SQLite/storage volumes, waits for app health, and skips startup migrations so only the app service owns the migration boundary.
+
+Definition edits replace only future unresolved snapshots. A one-payment override changes the selected occurrence and its linked Expense only, while the explicit future-payment option also updates the definition and later Due snapshots. Pausing suppresses the paused interval, ending preserves history, and deleting a linked automatic Expense leaves its occurrence Due without silently recreating it.
+
+The full contract, migration, and Phase 15 portability boundary are documented in [Phase 13](../v1.0.0/phase-13-money-subscriptions.md).
+
+## v1 first-run extension
+
+Phase 14 offers the existing preset pack and first Account creation as an optional final onboarding step. The pack choice calls `InstallMoneyPresetPack`, retaining its idempotent repair behavior, while Account setup calls the authoritative Account action. Either choice can be skipped. Money and Subscription activity remain excluded from every Season closeout, SP, Rank, and Daily Progress calculation.
+
 ## Migration compatibility
 
 `2026_08_26_000000_add_money_presets_and_transfer_fees.php` adds the user pack version, stable Category and Subcategory preset keys, and `money_transactions.fee_minor` with a database default of zero. Existing Transfers therefore keep their previous balance semantics after upgrade.
+
+`2026_08_26_100000_create_money_subscriptions.php` adds Subscription definitions and occurrence snapshots plus the same-user transaction-link key. It does not rewrite existing Accounts, Categories, Subcategories, transactions, amounts, fees, dates, or notes. Fresh and Phase 12 upgrade paths are both covered.
+
+`2026_08_26_110000_add_subscription_occurrence_processing_fields.php` provides the forward upgrade for early Phase 13 databases. It adds occurrence payment-mode snapshots and the automatic retry block, backfilling existing occurrence modes from their parent definitions without recreating financial records.
+
+`2026_08_26_120000_repair_money_transaction_subscription_key.php` adds the missing parent composite unique index only when required, repairing early SQLite occurrence foreign keys without replacing either table or changing transaction data.
 
 The same migration performs the legacy Charity graph conversion before removing `builtin_key`. Existing custom Charity Subcategories remain attached to their historical transactions under Gifts & Donations. New and upgraded databases finish with the same schema.
 
@@ -66,4 +92,4 @@ npm run build
 git diff --check
 ```
 
-Coverage includes complete and repeated preset installation, missing-record repair, stable keys, ordinary rename/archive/delete behavior, the exact taxonomy, Charity migration with and without history, zero and positive Transfer fees, source and destination balance effects, edits, deletion, authorization, archived Accounts, currency matching, details, history, search, and projected Financial/Bank Fees filters.
+Coverage includes complete and repeated preset installation, missing-record repair, stable keys, ordinary rename/archive/delete behavior, the exact taxonomy, Charity migration with and without history, zero and positive Transfer fees, source and destination balance effects, edits, deletion, authorization, archived Accounts, currency matching, details, history, search, projected Financial/Bank Fees filters, anchored Subscription recurrence, idempotent catch-up, lifecycle behavior, occurrence overrides, exact linked-Expense balances, and transaction deletion rollback.

@@ -10,8 +10,8 @@ const applicationName = import.meta.env.VITE_APP_NAME || 'Achelife';
 createInertiaApp({
     title: (title) => (title ? `${title} - ${applicationName}` : applicationName),
     layout: (pageName) => {
-        if (pageName.startsWith('auth/')) return AuthLayout;
-        if (pageName === 'seasons/Introduction') return IntroductionLayout;
+        if (pageName.startsWith('setup/')) return AuthLayout;
+        if (pageName === 'seasons/Introduction' || pageName.startsWith('onboarding/')) return IntroductionLayout;
 
         return AppLayout;
     },

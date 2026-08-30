@@ -12,12 +12,12 @@ class HomeTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_guests_are_redirected_to_login(): void
+    public function test_an_empty_instance_is_redirected_to_setup(): void
     {
-        $this->get('/home')->assertRedirect('/login');
+        $this->get('/home')->assertRedirect('/setup');
     }
 
-    public function test_authenticated_users_can_view_the_home_page(): void
+    public function test_the_single_user_can_view_the_home_page(): void
     {
         $user = User::factory()->create();
         app(SynchronizeUserSeasons::class)->execute($user)->update(['introduced_at' => now()]);
@@ -27,7 +27,7 @@ class HomeTest extends TestCase
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Home')
-                ->where('auth.user.email', $user->email));
+                ->where('auth.user.name', $user->name));
     }
 
     public function test_entering_the_application_initializes_an_existing_account_without_seasons(): void

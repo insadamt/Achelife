@@ -4,9 +4,11 @@
 
 Phase 11 replaces arithmetic-only Season lookup with a persisted cycle. `ResolveUserSeasonCycle` is the central read-and-synchronize action and returns a `SeasonCycleResult` containing either an active Season or an open intermission plus the latest completed Season. `SynchronizeUserSeasons` remains as the compatibility boundary for operations that require an active Season and produces a validation error during intermission.
 
-Users own a long-term `automatic` or `manual` rollover preference and an independent one-time `hold_next_season` flag. Intermissions record the completed Season, reason, first intermission date, and the exclusive date on which the intermission ended. Reasons are manual rollover, one-time hold, and restore. Restore-created intermissions are modeled now; archive import will create them when Phase 15 adds the restore path.
+Users own a long-term `automatic` or `manual` rollover preference and an independent one-time `hold_next_season` flag. Intermissions record the completed Season, reason, first intermission date, and the exclusive date on which the intermission ended. Reasons are manual rollover, one-time hold, and restore. Phase 15 now creates the restore reason after importing the latest Season without changing its original boundaries.
 
 Every Season remains exactly 30 user-local calendar days. Season numbers come from the latest persisted Season, gaps are allowed, overlaps are rejected by the lifecycle resolver, and `calendar_started_on` remains immutable. An ended Season receives its final Rank and `finalized_at` snapshot before rollover or intermission.
+
+Phase 14 adds the presentation half of that boundary. Automatic rollover gates the next introduction on the immediately preceding recap, while manual and held rollover render the recap throughout the open intermission. Optional reflection and `recap_seen_at` are the only stored recap state; all outcome and SP groups remain derived.
 
 ## Rollover behavior
 
@@ -39,8 +41,10 @@ npm run build
 git diff --check
 ```
 
-Phase 11 coverage includes manual rollover, automatic backfill compatibility, one-time holds, preference restoration, starts after long gaps, repeated start idempotency, final Rank snapshots, blocked Task rewards, recurrence resumption without gap occurrences, intermission routing, and historical/non-seasonal page availability.
+Phase 11 coverage includes manual rollover, automatic backfill compatibility, one-time holds, preference restoration, starts after long gaps, repeated start idempotency, final Rank snapshots, recurrence resumption without gap occurrences, intermission routing, and historical/non-seasonal page availability. Explicit cross-module boundary tests reject Task completion, Habit occurrence mutation, Diary autosave, Constitution violations, and Objective completion during intermission while preserving Task planning, Money transactions, Law definitions, and Settings changes.
 
-## Deferred integration
+## Portability integration
 
-The Phase 15 archive importer must use the existing `restore` intermission reason and open a one-time hold after synchronizing only through the imported Season's original end date. Restore-specific preview and synchronization tests remain intentionally open until that import boundary exists.
+The Phase 15 importer validates the complete Season/intermission timeline, synchronizes scheduled behavior only through the imported latest Season's original end date, and creates or reconciles one open `restore` intermission after that Season. If Day 30 is still ahead, the Season continues and the intermission is reserved for its next day. If Day 30 passed, Rank and finalization are completed without creating intermediate Seasons. Starting the held Season closes the intermission, clears the one-time hold, and restores the already-imported long-term automatic/manual preference.
+
+Month- and year-long restore tests prove that no empty Seasons are fabricated. Fresh and replacement workflows both route through Welcome Back and the imported closeout before the held next Season starts.

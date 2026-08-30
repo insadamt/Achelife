@@ -35,7 +35,7 @@ class SeasonIntroductionTest extends TestCase
         $this->get('/season-introduction')->assertRedirect('/seasons');
     }
 
-    public function test_only_the_actual_current_season_is_introduced_after_multiple_seasons_pass(): void
+    public function test_latest_closeout_is_required_before_the_actual_current_season_is_introduced_after_multiple_seasons_pass(): void
     {
         CarbonImmutable::setTestNow('2026-04-11 10:00:00');
         $user = User::factory()->create([
@@ -43,8 +43,13 @@ class SeasonIntroductionTest extends TestCase
             'updated_at' => CarbonImmutable::parse('2026-01-01'),
         ]);
 
-        $this->actingAs($user)
-            ->get('/season-introduction')
+        $response = $this->actingAs($user)->get('/season-introduction');
+        $thirdSeason = $user->seasons()->where('season_number', 3)->firstOrFail();
+        $response->assertRedirect("/seasons/{$thirdSeason->id}/closeout");
+        $this->actingAs($user)->put("/seasons/{$thirdSeason->id}/closeout", ['reflection' => null])
+            ->assertRedirect('/season-introduction');
+
+        $this->get('/season-introduction')
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
                 ->component('seasons/Introduction')

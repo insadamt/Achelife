@@ -26,6 +26,22 @@ coverage
 .phpunit.cache
 .phpunit.result.cache
 
+# Development and release-only sources
+.agents
+.codex
+.github
+docs
+manager
+scripts
+tests
+achelife
+compose.yaml
+phpunit.xml
+pint.json
+eslint.config.js
+README.md
+SELF_HOSTING.md
+
 # Editors / OS
 .idea
 .vscode

@@ -12,7 +12,9 @@ class MoneyViewDataFactory
     public function account(MoneyAccount $account, int $balanceMinor): array
     {
         $hasHistory = ($account->transactions_count ?? $account->transactions()->count()) > 0
-            || ($account->incoming_transfers_count ?? $account->incomingTransfers()->count()) > 0;
+            || ($account->incoming_transfers_count ?? $account->incomingTransfers()->count()) > 0
+            || $account->subscriptions()->exists()
+            || $account->subscriptionOccurrences()->exists();
 
         return [
             'id' => $account->id,
@@ -37,13 +39,17 @@ class MoneyViewDataFactory
             'type' => $category->type->value,
             'presetKey' => $category->preset_key,
             'archivedAt' => $category->archived_at?->toIso8601String(),
-            'hasHistory' => ($category->transactions_count ?? $category->transactions()->count()) > 0,
+            'hasHistory' => ($category->transactions_count ?? $category->transactions()->count()) > 0
+                || $category->subscriptions()->exists()
+                || $category->subscriptionOccurrences()->exists(),
             'subcategories' => $category->subcategories->map(fn ($subcategory): array => [
                 'id' => $subcategory->id,
                 'name' => $subcategory->name,
                 'presetKey' => $subcategory->preset_key,
                 'archivedAt' => $subcategory->archived_at?->toIso8601String(),
-                'hasHistory' => ($subcategory->transactions_count ?? $subcategory->transactions()->count()) > 0,
+                'hasHistory' => ($subcategory->transactions_count ?? $subcategory->transactions()->count()) > 0
+                    || $subcategory->subscriptions()->exists()
+                    || $subcategory->subscriptionOccurrences()->exists(),
             ])->values(),
         ];
     }
@@ -82,6 +88,11 @@ class MoneyViewDataFactory
                 'archived' => $transaction->subcategory->archived_at !== null,
             ] : null,
             'createdAt' => $transaction->created_at->toIso8601String(),
+            'subscriptionOccurrence' => $transaction->subscriptionOccurrence ? [
+                'id' => $transaction->subscriptionOccurrence->id,
+                'subscriptionId' => $transaction->subscriptionOccurrence->subscription_id,
+                'subscriptionName' => $transaction->subscriptionOccurrence->subscription->name,
+            ] : null,
         ];
     }
 

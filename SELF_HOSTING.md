@@ -1,138 +1,36 @@
-# Achelife Self-Hosting
+# Achelife self-hosting
 
-Achelife can run locally using Docker.
+Achelife is installed and operated through the host-side `achelife` command. The manager uses exact versioned container images and does not require Git, PHP, Composer, Node.js, npm, or a source build on the host.
 
-Your application data is stored persistently in Docker volumes, so rebuilding or restarting Achelife does not delete your account or data.
+Achelife has no login boundary. The safe default is `127.0.0.1`; anyone who can reach a trusted-LAN or private-VPN binding can read and change the instance. Never expose Achelife directly to the public internet.
 
-## Requirements
-
-You only need:
-
-- Docker
-- Docker Compose
-
-You do not need to install PHP, Composer, Node.js, PostgreSQL, or SQLite manually.
-
-## Install
-
-Clone Achelife:
+`v1.0.0-rc.1` is the first v1 pre-release candidate. After downloading and verifying its manager bundle, install it with explicit RC opt-in:
 
 ```bash
-git clone https://github.com/insadamt/Achelife.git
-cd Achelife
+achelife install --version 1.0.0-rc.1 --channel rc
 ```
 
-Start Achelife:
+Common operations are:
 
 ```bash
-./achelife start
+achelife status
+achelife start
+achelife stop
+achelife update --check
+achelife backup
+achelife doctor
 ```
 
-Achelife automatically selects an available local port.
-
-Example:
-
-```text
-Achelife is ready.
-http://localhost:8081
-```
-
-Open the displayed URL in your browser.
-
-## Commands
-
-Start Achelife:
+Stable updates are always the default. Testing an exact RC requires the explicit channel on install and update:
 
 ```bash
-./achelife start
+achelife update --to 1.0.0-rc.1 --channel rc
 ```
 
-Check its status and URL:
+For clean-host disaster recovery, copy a verified `achelife-full-*.tar.gz` archive outside the Docker host, install the same or newer trusted manager bundle, and run:
 
 ```bash
-./achelife status
+achelife restore /off-host/achelife-full-TIMESTAMP.tar.gz --bin-dir "$HOME/.local/bin"
 ```
 
-Stop Achelife:
-
-```bash
-./achelife stop
-```
-
-Restart Achelife:
-
-```bash
-./achelife restart
-```
-
-View logs:
-
-```bash
-./achelife logs
-```
-
-## Updating Achelife
-
-Pull the latest version:
-
-```bash
-git pull
-```
-
-Then rebuild:
-
-```bash
-./achelife rebuild
-```
-
-Achelife keeps the existing database and application data during rebuilds.
-
-Database migrations are applied automatically when the new version starts.
-
-## Ports
-
-On the first start, Achelife automatically finds an available port between:
-
-```text
-8080-8999
-```
-
-The selected port is remembered locally.
-
-For example:
-
-```text
-http://localhost:8082
-```
-
-Future starts and rebuilds will continue using that port when possible.
-
-If the port becomes unavailable, Achelife can select another available port.
-
-## Data
-
-Achelife uses SQLite for the self-hosted installation.
-
-Persistent application data is stored in Docker volumes.
-
-Stopping or rebuilding the containers does not delete this data.
-
-Do not run:
-
-```bash
-docker compose down -v
-```
-
-unless you intentionally want to delete the persistent Docker volumes.
-
-## Local Access
-
-By default Achelife binds only to:
-
-```text
-127.0.0.1
-```
-
-This means Achelife is accessible only from the computer running it.
-
-Remote internet exposure is not enabled by default.
+See [Phase 16 self-hosted operations](docs/v1.0.0/phase-16-self-hosted-installer-and-manager.md) for installation options, the complete command reference, networking, updates, backup/restore, rollback, auto-start, and uninstall behavior. Release maintainers should also follow the [Phase 17 RC gates](docs/v1.0.0/phase-17-release-hardening-and-rc-promotion.md).

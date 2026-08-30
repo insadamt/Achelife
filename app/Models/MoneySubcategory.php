@@ -28,6 +28,18 @@ class MoneySubcategory extends Model
         return $this->hasMany(MoneyTransaction::class, 'subcategory_id');
     }
 
+    /** @return HasMany<MoneySubscription, $this> */
+    public function subscriptions(): HasMany
+    {
+        return $this->hasMany(MoneySubscription::class, 'subcategory_id');
+    }
+
+    /** @return HasMany<MoneySubscriptionOccurrence, $this> */
+    public function subscriptionOccurrences(): HasMany
+    {
+        return $this->hasMany(MoneySubscriptionOccurrence::class, 'subcategory_id');
+    }
+
     protected function casts(): array
     {
         return ['archived_at' => 'immutable_datetime'];

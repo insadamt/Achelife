@@ -9,7 +9,9 @@ class DeleteUnusedMoneySubcategory
 {
     public function execute(MoneySubcategory $subcategory): void
     {
-        if ($subcategory->transactions()->exists()) {
+        if ($subcategory->transactions()->exists()
+            || $subcategory->subscriptions()->exists()
+            || $subcategory->subscriptionOccurrences()->exists()) {
             throw ValidationException::withMessages(['subcategory' => 'Subcategories with transaction history cannot be deleted. Archive this Subcategory instead.']);
         }
 

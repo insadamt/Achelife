@@ -79,15 +79,15 @@ function HabitCards({ habits, onNumeric, onSkip }: {
     return <div className="grid gap-2">{habits.map((habit) => <HabitCard habit={habit} key={habit.id} onNumeric={onNumeric} onSkip={onSkip} />)}</div>;
 }
 
-export function TodayHabitSection({ required, flexible }: { required: HabitViewData[]; flexible: HabitViewData[] }) {
+export function TodayHabitSection({ required, flexible, headingId }: { required: HabitViewData[]; flexible: HabitViewData[]; headingId: string }) {
     const [numericSelection, setNumericSelection] = useState<SelectedHabitDay | null>(null);
     const [skipSelection, setSkipSelection] = useState<SelectedHabitDay | null>(null);
     const resolvedCount = required.filter((habit) => ['completed', 'skipped'].includes(habit.days[0]!.state ?? '')).length;
 
     return (
-        <section aria-labelledby="today-habit-list-title" className="min-w-0">
+        <section aria-labelledby={headingId} className="min-w-0">
             <div className="mb-4 flex items-center justify-between gap-4">
-                <h2 className="text-2xl font-bold" id="today-habit-list-title">Habits</h2>
+                <h2 className="text-2xl font-bold" id={headingId}>Habits</h2>
                 <span className="text-sm font-semibold text-muted">{resolvedCount} / {required.length}</span>
             </div>
 

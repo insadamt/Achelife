@@ -6,7 +6,7 @@ Phase 7 adds Boolean Objectives inside each Season. Objectives are not a global 
 
 ## Data model and history
 
-`objectives` stores authenticated user and Season ownership, title, stable creation order, completion timestamp, exact earned-SP snapshot, normal timestamps, and a soft-deletion timestamp. The composite foreign key requires every Objective to share its user with its Season. Soft deletion preserves setup-window removal history without exposing deleted Objectives in the current or completed Season view.
+`objectives` stores internal profile and Season ownership, title, stable creation order, completion timestamp, exact earned-SP snapshot, normal timestamps, and a soft-deletion timestamp. The composite foreign key requires every Objective to share its user with its Season. Soft deletion preserves setup-window removal history without exposing deleted Objectives in the current or completed Season view.
 
 Completion state is derived only from `completed_at`: a null timestamp and reward are Incomplete; a non-null timestamp and exact reward are Completed. Model invariants require the timestamp and reward to exist together and constrain stored rewards to the centralized 100, 150, or 300 SP distribution.
 
@@ -38,6 +38,10 @@ Objectives remain visible directly below the selected Season command center and 
 After Day 7, definition controls disappear while completion remains interactive. Completed Seasons show the same Objectives as a read-only historical summary with completion count and exact earned SP. The current Season timeline carries only a small Objective completion summary; the full experience remains in Season details.
 
 Existing historical Seasons have zero Objectives unless records were explicitly created. An existing current Season already beyond Day 7 cannot add them retroactively. Synchronizing a new Season creates no Objective records and never copies prior ones.
+
+Phase 14 may create zero to three initial Objectives during first-run setup by calling the same locked `CreateObjective` action on Season Day 1. Repeated onboarding requests cannot exceed or duplicate the submitted set. Closeout derives completion and exact Objective SP from the Season records.
+
+Phase 15 exports active and soft-deleted Objective history, creation order, completion, and exact reward snapshots. Restore maps every Objective to its imported Season and validates active Objective contributions as part of the Season SP total; it never carries an Objective into the held next Season.
 
 ## Verification
 

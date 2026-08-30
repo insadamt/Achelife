@@ -8,16 +8,17 @@ interface TodayTaskListProps {
     tasks: TaskViewData[];
     overdue: TaskViewData[];
     overdueCount: number;
+    headingId: string;
 }
 
-export function TodayTaskList({ tasks, overdue, overdueCount }: TodayTaskListProps) {
+export function TodayTaskList({ tasks, overdue, overdueCount, headingId }: TodayTaskListProps) {
     const pendingTasks = tasks.filter((task) => task.state !== 'completed');
     const completedTasks = tasks.filter((task) => task.state === 'completed');
 
     return (
-        <section aria-labelledby="today-task-list-title" className="min-w-0">
+        <section aria-labelledby={headingId} className="min-w-0">
             <div className="mb-4 flex items-center justify-between gap-4">
-                <h2 className="text-2xl font-bold" id="today-task-list-title">Tasks</h2>
+                <h2 className="text-2xl font-bold" id={headingId}>Tasks</h2>
                 <span className="text-sm font-semibold text-muted">{pendingTasks.length}</span>
             </div>
 

@@ -30,14 +30,13 @@ class HandleInertiaRequests extends Middleware
                 'user' => $user === null ? null : [
                     'id' => $user->id,
                     'name' => $user->name,
-                    'email' => $user->email,
                     'timezone' => $user->timezone,
                 ],
             ],
             'flash' => [
                 'constitutionViolation' => $request->session()->get('constitutionViolation'),
             ],
-            'progressPanel' => fn () => $user === null
+            'progressPanel' => fn () => $user === null || $user->onboarding_completed_at === null
                 ? null
                 : $this->progressPanelViewDataFactory->make($user, $this->calendar->today($user)),
         ];

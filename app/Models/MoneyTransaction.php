@@ -6,6 +6,7 @@ use App\Enums\MoneyTransactionType;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 #[Fillable(['user_id', 'type', 'amount_minor', 'fee_minor', 'account_id', 'destination_account_id', 'category_id', 'subcategory_id', 'transaction_date', 'note'])]
 class MoneyTransaction extends Model
@@ -38,6 +39,12 @@ class MoneyTransaction extends Model
     public function subcategory(): BelongsTo
     {
         return $this->belongsTo(MoneySubcategory::class, 'subcategory_id');
+    }
+
+    /** @return HasOne<MoneySubscriptionOccurrence, $this> */
+    public function subscriptionOccurrence(): HasOne
+    {
+        return $this->hasOne(MoneySubscriptionOccurrence::class, 'transaction_id');
     }
 
     protected function casts(): array

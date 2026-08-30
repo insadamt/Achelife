@@ -2,7 +2,7 @@
 
 ## Scope
 
-Phase 0.5 establishes Achelife's global visual language, reusable UI primitives, authenticated application shell, responsive navigation, and authentication presentation. It does not implement any life-management module or progression logic.
+Phase 0.5 establishes Achelife's global visual language, reusable UI primitives, single-user application shell, responsive navigation, and first-run presentation. It does not implement any life-management module or progression logic.
 
 ## Visual system
 
@@ -26,19 +26,23 @@ The primitives in `resources/js/components/ui` include:
 
 ## Application shell
 
-At medium and larger widths, authenticated pages use a fixed compact sidebar with all planned destinations. Today links to the temporary showcase; unavailable module destinations are visibly disabled and labeled `Soon`.
+At medium and larger widths, application pages use a fixed compact sidebar with all planned destinations. Today links to the temporary showcase; unavailable module destinations are visibly disabled and labeled `Soon`.
 
 On smaller widths, the shell uses a bottom bar for Today, Tasks, and Habits plus a More action. More opens a focus-managed drawer with every destination and account controls. This is intentionally separate from the desktop sidebar layout.
 
 Authenticated pages also expose a narrow pull notch attached to the right viewport edge. It opens a focus-managed, screen-attached progress panel shared by the application shell rather than a page-specific standard drawer.
 
-## Authentication
+## First-run setup
 
-Login and registration retain the Phase 0 endpoints, validation, throttling, and form behavior. Their presentation now uses the global dark foundation, typography, surface, button, input, spacing, and focus systems. No additional authentication capability was added.
+An empty instance presents one passwordless setup screen for the sole profile's display name and browser-detected timezone. Login, registration, logout, email, and password controls are intentionally absent.
+
+Phase 14 adds a navigation-free first-run layout using the same primitives. Its choices, forms, errors, Restore state, resume indicator, and responsive structure remain accessible without exposing the normal domain shell before setup is complete. Season closeout and profile settings likewise reuse the established Rank, Surface, Button, and form patterns.
+
+Phase 15 replaces the unavailable Restore state with an accessible file upload, validation errors, snapshot preview, catch-up metrics, explicit destructive confirmation, and Welcome Back summary. General Settings exposes the same preview and replacement language, including the archive-sensitivity warning and retained safety-export download.
 
 ## Temporary showcase
 
-The authenticated home page is a design-system preview, not the real Today page. Its values and controls are explicitly neutral component demonstrations and have no persistence or domain behavior.
+The original home page was a design-system preview rather than the real Today page. Its values and controls were explicitly neutral component demonstrations with no persistence or domain behavior.
 
 ## Verification
 
@@ -52,4 +56,4 @@ npm run lint
 npm run build
 ```
 
-Manually inspect login, registration, the authenticated shell, navigation, showcase controls, dialog, and drawer at desktop, laptop, tablet, and mobile widths.
+Manually inspect empty-instance setup, the single-user shell, navigation, dialog, and drawer at desktop, laptop, tablet, and mobile widths.

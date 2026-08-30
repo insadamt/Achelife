@@ -2,7 +2,7 @@
 
 ## Scope
 
-Phase 10 adds authenticated General Settings and makes every calendar-day decision use the user's saved IANA timezone. It does not change UTC timestamp storage, rewrite historical calendar records, request device location, or automatically follow the user while travelling.
+Phase 10 adds General Settings and makes every calendar-day decision use the sole profile's saved IANA timezone. It does not change UTC timestamp storage, rewrite historical calendar records, request device location, or automatically follow the user while travelling.
 
 ## Calendar model
 
@@ -16,15 +16,15 @@ Task completion keeps its UTC timestamp but derives completion timing, reward at
 
 ## Stable historical boundaries
 
-`users.calendar_started_on` permanently anchors the 30-day Season timeline. New registrations derive it from the creation instant in the browser-supplied timezone. Existing accounts are backfilled from Season 1 when available, falling back to the prior UTC creation date, so installing the migration cannot move an established timeline.
+`users.calendar_started_on` permanently anchors the 30-day Season timeline. New installations derive it from the setup instant in the browser-supplied timezone. Existing profiles are backfilled from Season 1 when available, falling back to the prior UTC creation date, so installing the migration cannot move an established timeline.
 
 Changing timezone affects the meaning of the current day immediately but never changes `calendar_started_on`, existing Season dates, Task schedules, Habit occurrences, Diary entries, transaction dates, or violation dates. A settings warning is shown when the selected timezone currently resolves to a different date.
 
 Laws store a stable `created_on` calendar date because violation eligibility cannot safely be derived from a UTC creation timestamp after the user changes timezone. Existing Laws retain their previous UTC-derived creation date during backfill; new Laws use the active user calendar.
 
-## Registration and interface
+## Setup and interface
 
-Registration submits the browser's timezone from `Intl.DateTimeFormat` when available and falls back to UTC. This does not request geolocation permission. Achelife does not silently change the saved timezone on later visits.
+Passwordless setup submits the browser's timezone from `Intl.DateTimeFormat` when available and falls back to UTC. This does not request geolocation permission. Achelife does not silently change the saved timezone on later visits.
 
 `/settings/general` provides:
 
@@ -34,11 +34,21 @@ Registration submits the browser's timezone from `Intl.DateTimeFormat` when avai
 - a current local date and time preview;
 - a warning when saving crosses the current calendar-day boundary.
 
-General Settings is available from the authenticated account controls on desktop and mobile. The Today settings control remains scoped to Today presentation preferences.
+General Settings is available from the profile controls on desktop and mobile. The Today settings control remains scoped to Today presentation preferences.
+
+Phase 14 adds the display-name control to General Settings. The internal compatibility email and generated password hash are never presented as user credentials.
 
 ## v1 lifecycle settings extension
 
 Phase 11 adds Automatic and Manual Season rollover to General Settings. Switching to Automatic during an intermission starts the next Season on the current user-local date. Timezone changes still leave every persisted Season and intermission boundary unchanged.
+
+First-run onboarding confirms the same timezone and rollover values before creating Season 1. The confirmed user-local date becomes the immutable first Season boundary.
+
+## v1 portability extension
+
+Phase 15 preserves the archive timezone before preview and catch-up calculations, along with the immutable calendar start and long-term rollover preference. Later timezone changes continue through this page and retain the existing calendar-day warning. General Settings also owns export, validated replacement preview, literal confirmation, archive-sensitivity copy, and the retained safety-export link shown after restore.
+
+Phase 16 keeps timezone and every profile setting inside the persistent database during image updates and full-instance recovery. Manager configuration controls only host networking, images, volumes, and lifecycle state; it never substitutes a host timezone for the saved profile timezone.
 
 ## Verification
 
@@ -53,4 +63,4 @@ npm run build
 git diff --check
 ```
 
-Calendar tests cover positive and negative UTC offsets, settings validation and persistence, stable Season history after timezone changes, user-local Today aggregation, local Task completion timing and Season attribution, UTC timestamp persistence, and registration across a UTC date boundary.
+Calendar tests cover positive and negative UTC offsets, settings validation and persistence, stable Season history after timezone changes, user-local Today aggregation, local Task completion timing and Season attribution, UTC timestamp persistence, and setup across a UTC date boundary.

@@ -12,7 +12,9 @@ class DeleteUnusedMoneyCategory
     {
         DB::transaction(function () use ($category): void {
             $lockedCategory = MoneyCategory::query()->lockForUpdate()->findOrFail($category->id);
-            if ($lockedCategory->transactions()->exists()) {
+            if ($lockedCategory->transactions()->exists()
+                || $lockedCategory->subscriptions()->exists()
+                || $lockedCategory->subscriptionOccurrences()->exists()) {
                 throw ValidationException::withMessages(['category' => 'Categories with transaction history cannot be deleted. Archive this Category instead.']);
             }
             $lockedCategory->delete();

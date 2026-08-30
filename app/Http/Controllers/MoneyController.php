@@ -2,12 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\MoneySubscriptionOccurrenceStatus;
 use App\Models\MoneyAccount;
 use App\Models\MoneyCategory;
+use App\Models\MoneySubscriptionOccurrence;
 use App\Models\MoneyTransaction;
 use App\Models\User;
 use App\Services\Calendar\UserCalendar;
 use App\Services\Money\AccountBalanceCalculator;
+use App\Support\Money\MoneySubscriptionViewDataFactory;
 use App\Support\Money\MoneyViewDataFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Http\Request;
@@ -22,6 +25,7 @@ class MoneyController extends Controller
         AccountBalanceCalculator $balanceCalculator,
         MoneyViewDataFactory $viewDataFactory,
         UserCalendar $calendar,
+        MoneySubscriptionViewDataFactory $subscriptionFactory,
     ): Response {
         $user = $request->user();
         $accounts = $user->moneyAccounts()
@@ -31,14 +35,27 @@ class MoneyController extends Controller
             ->get();
         $balances = $balanceCalculator->forAccounts($user, $accounts);
 
+        $today = $calendar->today($user);
+        $subscriptionOccurrences = $user->moneySubscriptionOccurrences()
+            ->where('status', MoneySubscriptionOccurrenceStatus::Due)
+            ->with(['subscription', 'account', 'category', 'subcategory'])
+            ->orderBy('due_date')
+            ->get();
+
         return Inertia::render('money/Index', [
-            'today' => $calendar->today($user)->toDateString(),
+            'today' => $today->toDateString(),
             'accounts' => $accounts->map(fn (MoneyAccount $account) => $viewDataFactory->account($account, $balances[$account->id])),
             'totalsByCurrency' => $balanceCalculator->totalsByCurrency($accounts, $balances),
             'categories' => $this->categories($user, $viewDataFactory),
             'recentTransactions' => $this->transactions($user)->limit(8)->get()->map(
                 fn (MoneyTransaction $transaction) => $viewDataFactory->transaction($transaction),
             ),
+            'dueSubscriptions' => $subscriptionOccurrences->filter(fn (MoneySubscriptionOccurrence $occurrence): bool => ! $occurrence->due_date->isAfter($today))->map(
+                fn (MoneySubscriptionOccurrence $occurrence) => $subscriptionFactory->occurrence($occurrence, $today),
+            )->values(),
+            'upcomingSubscriptions' => $subscriptionOccurrences->filter(fn (MoneySubscriptionOccurrence $occurrence): bool => $occurrence->due_date->isAfter($today))->take(5)->map(
+                fn (MoneySubscriptionOccurrence $occurrence) => $subscriptionFactory->occurrence($occurrence, $today),
+            )->values(),
         ]);
     }
 
@@ -58,7 +75,7 @@ class MoneyController extends Controller
     private function transactions(User $user): HasMany
     {
         return $user->moneyTransactions()
-            ->with(['account', 'destinationAccount', 'category', 'subcategory'])
+            ->with(['account', 'destinationAccount', 'category', 'subcategory', 'subscriptionOccurrence.subscription'])
             ->orderByDesc('transaction_date')
             ->orderByDesc('created_at')
             ->orderByDesc('id');

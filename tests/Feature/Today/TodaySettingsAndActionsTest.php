@@ -47,7 +47,7 @@ class TodaySettingsAndActionsTest extends TestCase
         auth()->logout();
         $this->put('/today/settings', [
             'show_flexible_habits' => false,
-        ])->assertRedirect('/login');
+        ])->assertConflict();
     }
 
     public function test_objective_and_constitution_actions_refresh_season_sp_without_changing_daily_progress(): void

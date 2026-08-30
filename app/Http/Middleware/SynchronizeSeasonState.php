@@ -14,7 +14,22 @@ class SynchronizeSeasonState
 
     public function handle(Request $request, Closure $next): Response
     {
-        $currentSeason = $this->resolveUserSeasonCycle->execute($request->user())->activeSeason;
+        $cycle = $this->resolveUserSeasonCycle->execute($request->user());
+        $currentSeason = $cycle->activeSeason;
+
+        if ($currentSeason !== null && $currentSeason->introduced_at === null) {
+            $completedSeason = $request->user()->seasons()
+                ->where('season_number', $currentSeason->season_number - 1)
+                ->whereNotNull('finalized_at')
+                ->whereNull('recap_seen_at')
+                ->first();
+
+            if ($completedSeason !== null) {
+                $request->session()->put('season_introduction_redirect', $request->fullUrl());
+
+                return new RedirectResponse(route('seasons.closeout', $completedSeason, false));
+            }
+        }
 
         if ($currentSeason !== null && $currentSeason->introduced_at === null) {
             $request->session()->put('season_introduction_redirect', $request->fullUrl());

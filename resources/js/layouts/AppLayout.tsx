@@ -1,9 +1,9 @@
-import { Link, router, usePage } from '@inertiajs/react';
+import { Link, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 import type { PropsWithChildren } from 'react';
 
 import { BrandMark } from '../components/BrandMark';
-import { Button, Drawer, Icon } from '../components/ui';
+import { Drawer, Icon } from '../components/ui';
 import type { IconName } from '../components/ui';
 import { ProgressNotch } from '../features/progress/ProgressNotch';
 import type { SharedPageProps } from '../types';
@@ -81,7 +81,7 @@ function NavigationItem({
     );
 }
 
-function UserIdentity({ name, email }: { name: string; email: string }) {
+function UserIdentity({ name }: { name: string }) {
     const initial = name.trim().charAt(0).toUpperCase() || 'A';
 
     return (
@@ -89,10 +89,7 @@ function UserIdentity({ name, email }: { name: string; email: string }) {
             <span className="grid size-9 shrink-0 place-items-center rounded-xl border border-border-strong bg-elevated text-sm font-bold text-foreground">
                 {initial}
             </span>
-            <span className="min-w-0">
-                <span className="block truncate text-sm font-semibold text-foreground">{name}</span>
-                <span className="block truncate text-xs text-muted">{email}</span>
-            </span>
+            <span className="block min-w-0 truncate text-sm font-semibold text-foreground">{name}</span>
         </div>
     );
 }
@@ -102,10 +99,6 @@ export default function AppLayout({ children }: PropsWithChildren) {
     const { auth } = page.props;
     const [mobileNavigationOpen, setMobileNavigationOpen] = useState(false);
     const user = auth.user;
-
-    function logOut() {
-        router.post('/logout');
-    }
 
     return (
         <div className="min-h-screen bg-app text-foreground">
@@ -121,13 +114,10 @@ export default function AppLayout({ children }: PropsWithChildren) {
                 </nav>
                 {user && (
                     <div className="flex flex-col items-center gap-2 border-t border-border-subtle py-4">
-                        <span className="grid size-10 place-items-center rounded-full bg-[linear-gradient(145deg,var(--preview-violet),var(--preview-orange))] text-sm font-bold text-white" title={`${user.name} — ${user.email}`}>
+                        <span className="grid size-10 place-items-center rounded-full bg-[linear-gradient(145deg,var(--preview-violet),var(--preview-orange))] text-sm font-bold text-white" title={user.name}>
                             {user.name.charAt(0).toUpperCase()}
                         </span>
                         <NavigationItem destination={settingsDestination} rail />
-                        <Button aria-label="Log out" className="size-10 px-0" onClick={logOut} size="small" title="Log out" variant="ghost">
-                            <Icon name="logout" />
-                        </Button>
                     </div>
                 )}
             </aside>
@@ -160,7 +150,7 @@ export default function AppLayout({ children }: PropsWithChildren) {
             </nav>
 
             <Drawer
-                description="Additional destinations and account controls."
+                description="Additional destinations and settings."
                 onClose={() => setMobileNavigationOpen(false)}
                 open={mobileNavigationOpen}
                 title="Navigate"
@@ -172,14 +162,10 @@ export default function AppLayout({ children }: PropsWithChildren) {
                 </nav>
                 {user && (
                     <div className="mt-8 border-t border-border-subtle pt-6">
-                        <UserIdentity email={user.email} name={user.name} />
+                        <UserIdentity name={user.name} />
                         <div className="mt-5">
                             <NavigationItem destination={settingsDestination} />
                         </div>
-                        <Button className="mt-5" fullWidth onClick={logOut} variant="secondary">
-                            <Icon name="logout" />
-                            Log out
-                        </Button>
                     </div>
                 )}
             </Drawer>

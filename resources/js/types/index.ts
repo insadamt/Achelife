@@ -4,7 +4,6 @@ import type { ProgressPanelData } from '../features/progress/types';
 export interface AuthenticatedUser {
     id: number;
     name: string;
-    email: string;
     timezone: string;
 }
 

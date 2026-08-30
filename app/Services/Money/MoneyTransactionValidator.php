@@ -2,6 +2,7 @@
 
 namespace App\Services\Money;
 
+use App\Data\Money\MoneySelectionSnapshot;
 use App\Data\Money\MoneyTransactionData;
 use App\Enums\MoneyCategoryType;
 use App\Enums\MoneyTransactionType;
@@ -18,8 +19,12 @@ class MoneyTransactionValidator
     public function __construct(private readonly UserCalendar $userCalendar) {}
 
     /** @return array{account: MoneyAccount, destination: ?MoneyAccount, category: ?MoneyCategory, subcategory: ?MoneySubcategory} */
-    public function validate(User $user, MoneyTransactionData $data, ?MoneyTransaction $existing = null): array
-    {
+    public function validate(
+        User $user,
+        MoneyTransactionData $data,
+        ?MoneyTransaction $existing = null,
+        ?MoneySelectionSnapshot $retained = null,
+    ): array {
         if ($data->amountMinor <= 0) {
             $this->fail('amount', 'The amount must be greater than zero.');
         }
@@ -33,18 +38,23 @@ class MoneyTransactionValidator
         }
 
         $account = $this->account($user, $data->accountId, 'account_id');
-        $this->requireActiveUnlessUnchanged($account, $existing?->account_id, 'account_id');
+        $this->requireActiveUnlessUnchanged($account, $existing?->account_id ?? $retained?->accountId, 'account_id');
 
         if ($data->type === MoneyTransactionType::Transfer) {
-            return $this->validateTransfer($user, $data, $account, $existing);
+            return $this->validateTransfer($user, $data, $account, $existing, $retained);
         }
 
-        return $this->validateIncomeOrExpense($user, $data, $account, $existing);
+        return $this->validateIncomeOrExpense($user, $data, $account, $existing, $retained);
     }
 
     /** @return array{account: MoneyAccount, destination: MoneyAccount, category: null, subcategory: null} */
-    private function validateTransfer(User $user, MoneyTransactionData $data, MoneyAccount $account, ?MoneyTransaction $existing): array
-    {
+    private function validateTransfer(
+        User $user,
+        MoneyTransactionData $data,
+        MoneyAccount $account,
+        ?MoneyTransaction $existing,
+        ?MoneySelectionSnapshot $retained,
+    ): array {
         if ($data->categoryId !== null || $data->subcategoryId !== null) {
             $this->fail('category_id', 'Transfers do not use Categories or Subcategories.');
         }
@@ -54,7 +64,7 @@ class MoneyTransactionValidator
         }
 
         $destination = $this->account($user, $data->destinationAccountId, 'destination_account_id');
-        $this->requireActiveUnlessUnchanged($destination, $existing?->destination_account_id, 'destination_account_id');
+        $this->requireActiveUnlessUnchanged($destination, $existing?->destination_account_id ?? $retained?->destinationAccountId, 'destination_account_id');
 
         if ($account->is($destination)) {
             $this->fail('destination_account_id', 'Source and destination Accounts must be different.');
@@ -68,8 +78,13 @@ class MoneyTransactionValidator
     }
 
     /** @return array{account: MoneyAccount, destination: null, category: MoneyCategory, subcategory: ?MoneySubcategory} */
-    private function validateIncomeOrExpense(User $user, MoneyTransactionData $data, MoneyAccount $account, ?MoneyTransaction $existing): array
-    {
+    private function validateIncomeOrExpense(
+        User $user,
+        MoneyTransactionData $data,
+        MoneyAccount $account,
+        ?MoneyTransaction $existing,
+        ?MoneySelectionSnapshot $retained,
+    ): array {
         if ($data->feeMinor !== 0) {
             $this->fail('fee', 'Only Transfers can have a fee.');
         }
@@ -94,7 +109,7 @@ class MoneyTransactionValidator
             $this->fail('category_id', "Choose an {$expectedType->value} Category for this transaction.");
         }
 
-        $this->requireActiveUnlessUnchanged($category, $existing?->category_id, 'category_id');
+        $this->requireActiveUnlessUnchanged($category, $existing?->category_id ?? $retained?->categoryId, 'category_id');
         $subcategory = null;
 
         if ($data->subcategoryId !== null) {
@@ -102,7 +117,7 @@ class MoneyTransactionValidator
             if (! $subcategory || $subcategory->category_id !== $category->id) {
                 $this->fail('subcategory_id', 'The selected Subcategory must belong to the chosen Category.');
             }
-            $this->requireActiveUnlessUnchanged($subcategory, $existing?->subcategory_id, 'subcategory_id');
+            $this->requireActiveUnlessUnchanged($subcategory, $existing?->subcategory_id ?? $retained?->subcategoryId, 'subcategory_id');
         }
 
         return ['account' => $account, 'destination' => null, 'category' => $category, 'subcategory' => $subcategory];

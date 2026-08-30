@@ -9,7 +9,10 @@ class DeleteUnusedMoneyAccount
 {
     public function execute(MoneyAccount $account): void
     {
-        if ($account->transactions()->exists() || $account->incomingTransfers()->exists()) {
+        if ($account->transactions()->exists()
+            || $account->incomingTransfers()->exists()
+            || $account->subscriptions()->exists()
+            || $account->subscriptionOccurrences()->exists()) {
             throw ValidationException::withMessages(['account' => 'Accounts with financial history cannot be deleted. Archive this Account instead.']);
         }
 

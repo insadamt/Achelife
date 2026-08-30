@@ -172,10 +172,11 @@ export function TransactionDrawer({
                                 </>
                             )}
                             {transaction.note && <div className="py-3"><dt className="text-muted">Note</dt><dd className="mt-1 whitespace-pre-wrap font-semibold">{transaction.note}</dd></div>}
+                            {transaction.subscriptionOccurrence && <div className="py-3"><dt className="text-muted">Subscription</dt><dd className="mt-1 font-semibold">{transaction.subscriptionOccurrence.subscriptionName} · occurrence #{transaction.subscriptionOccurrence.id}</dd></div>}
                         </dl>
                     </div>
                     <div className="mt-6 flex gap-2">
-                        <Button className="flex-1" onClick={() => setEditing(true)}><Pencil aria-hidden="true" size={16} />Edit</Button>
+                        {!transaction.subscriptionOccurrence && <Button className="flex-1" onClick={() => setEditing(true)}><Pencil aria-hidden="true" size={16} />Edit</Button>}
                         <Button onClick={() => setDeleteConfirmationOpen(true)} variant="destructive"><Trash2 aria-hidden="true" size={16} />Delete</Button>
                     </div>
                 </MoneyDrawer>

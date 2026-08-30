@@ -16,6 +16,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
     'rank',
     'introduced_at',
     'finalized_at',
+    'reflection',
+    'recap_seen_at',
 ])]
 class Season extends Model
 {
@@ -64,6 +66,7 @@ class Season extends Model
             'season_points' => 'integer',
             'introduced_at' => 'immutable_datetime',
             'finalized_at' => 'immutable_datetime',
+            'recap_seen_at' => 'immutable_datetime',
         ];
     }
 }

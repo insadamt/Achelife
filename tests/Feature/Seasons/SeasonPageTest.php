@@ -13,14 +13,14 @@ class SeasonPageTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_guests_cannot_view_seasons(): void
+    public function test_an_empty_instance_cannot_view_seasons(): void
     {
-        $this->get('/seasons')->assertRedirect('/login');
+        $this->get('/seasons')->assertRedirect('/setup');
     }
 
-    public function test_guests_cannot_view_the_rank_guide(): void
+    public function test_an_empty_instance_cannot_view_the_rank_guide(): void
     {
-        $this->get('/seasons/ranks')->assertRedirect('/login');
+        $this->get('/seasons/ranks')->assertRedirect('/setup');
     }
 
     public function test_page_renders_history_current_season_and_two_locked_placeholders(): void

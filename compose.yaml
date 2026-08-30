@@ -4,61 +4,87 @@ services:
       context: .
       dockerfile: Dockerfile
       target: app
-
     restart: unless-stopped
-
-    environment:
+    init: true
+    security_opt:
+      - no-new-privileges:true
+    environment: &app-environment
       APP_NAME: Achelife
       APP_ENV: production
       APP_DEBUG: "false"
-      APP_URL: "${ACHELIFE_URL:-http://localhost}"
-
+      APP_URL: "${ACHELIFE_URL:-http://localhost:8080}"
       LOG_CHANNEL: stderr
       LOG_LEVEL: warning
-
       DB_CONNECTION: sqlite
       DB_DATABASE: /data/achelife.sqlite
-
       SESSION_DRIVER: database
       CACHE_STORE: database
       QUEUE_CONNECTION: sync
-
       FILESYSTEM_DISK: local
-
+      RUN_MIGRATIONS: "true"
     volumes:
       - achelife-data:/data
       - achelife-storage:/var/www/html/storage
+    networks:
+      - achelife-internal
+    healthcheck:
+      test: ["CMD", "php", "artisan", "achelife:verify"]
+      interval: 15s
+      timeout: 10s
+      retries: 8
+      start_period: 30s
+
+  scheduler:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: app
+    restart: unless-stopped
+    init: true
+    security_opt:
+      - no-new-privileges:true
+    command: ["php", "artisan", "schedule:work"]
+    environment:
+      <<: *app-environment
+      RUN_MIGRATIONS: "false"
+    volumes:
+      - achelife-data:/data
+      - achelife-storage:/var/www/html/storage
+    networks:
+      - achelife-internal
+    depends_on:
+      app:
+        condition: service_healthy
 
   web:
     build:
       context: .
       dockerfile: Dockerfile
       target: web
-
     restart: unless-stopped
-
+    init: true
+    security_opt:
+      - no-new-privileges:true
     depends_on:
-      - app
-
+      app:
+        condition: service_healthy
     ports:
-      - target: 80
-        host_ip: 127.0.0.1
-        published: "${ACHELIFE_PORT:-8080-8999}"
-        protocol: tcp
-        app_protocol: http
-
+      - "${ACHELIFE_BIND_ADDRESS:-127.0.0.1}:${ACHELIFE_PORT:-8080}:80"
+    networks:
+      - achelife-internal
+      - achelife-edge
     healthcheck:
-      test:
-        - CMD
-        - wget
-        - -q
-        - --spider
-        - http://127.0.0.1/up
-      interval: 30s
+      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1/up"]
+      interval: 15s
       timeout: 5s
-      retries: 3
-      start_period: 20s
+      retries: 8
+      start_period: 30s
 
 volumes:
   achelife-data:
   achelife-storage:
+
+networks:
+  achelife-internal:
+    internal: true
+  achelife-edge:

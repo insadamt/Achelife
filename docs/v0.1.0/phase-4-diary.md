@@ -44,6 +44,14 @@ Search operates only on persisted autosaves and supports portable plain-text `LI
 
 Phase 11 treats dates outside persisted Seasons as unavailable rather than Missed. Historical entries and search remain readable, while new writing and progression require an active Season. A later Season resumes from the previous Season's final stored streak baseline without manufacturing gap days.
 
+## v1 closeout extension
+
+Phase 14 counts completed Diary days and exact Diary SP directly from entries attributed to the finalized Season. Drafts remain preserved but do not count as completed days. No Diary recap snapshot is stored.
+
+## v1 portability extension
+
+Phase 15 exports structured content, plain text, completion and reward snapshots, language and mood snapshots, People, mention rows, and Diary settings. Person IDs embedded in mention nodes and relational mention rows are rewritten through the same old-to-new map. Preview reports missing writing days and the resulting streak through original Day 30. Archives are explicitly labeled sensitive because they contain private writing and People notes.
+
 ## Verification
 
 Run:

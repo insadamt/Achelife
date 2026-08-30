@@ -6,7 +6,7 @@ Phase 1 introduces Achelife's first domain module: automatic 30-calendar-day Sea
 
 ## Calendar model
 
-- Calendar dates use the authenticated user's saved IANA timezone. UTC remains the timestamp storage timezone.
+- Calendar dates use the sole profile's saved IANA timezone. UTC remains the timestamp storage timezone.
 - A permanent user-owned calendar start date anchors Season 1, so later timezone changes never rewrite the Season timeline.
 - Season 1 starts on the account creation date and ends 29 days later.
 - Every following Season starts the day after the previous Season ends.
@@ -22,9 +22,9 @@ Authenticated application entry synchronizes the timeline, so advancing Seasons 
 
 Only elapsed and current Seasons are persisted. The next two locked Seasons on the Seasons page are response-only view data and never become database rows.
 
-## Registration and introductions
+## Setup and introductions
 
-Registration creates the user and Season 1 in the same database transaction. Authentication occurs only after that transaction succeeds, and the user is sent to the Season introduction.
+Phase 1 originally created the user and Season 1 together. Phase 14 supersedes that first-run boundary: passwordless instance setup creates only the internal profile, and resumable onboarding creates Season 1 through the same synchronization authority only after profile and timezone confirmation. Completed onboarding routes to the Season introduction.
 
 Each persisted Season has a nullable `introduced_at` timestamp. A newly current Season remains unacknowledged until its short full-screen introduction completes or the user selects the immediate continue action. If several Seasons passed during an absence, missing historical Seasons are acknowledged during synchronization and only the actual current Season is introduced.
 
@@ -42,6 +42,14 @@ The selected real Season updates a unified command center rather than separate o
 
 Phase 11 no longer derives every later Season from `calendar_started_on`. The date remains the immutable start of Achelife history, while new Season numbers and dates derive from the latest persisted Season. Automatic users keep continuous backfill; manual rollover and one-time holds create explicit intermissions in which no active Season exists. See `docs/v1.0.0/phase-11-season-lifecycle.md`.
 
+## v1 closeout extension
+
+Phase 14 adds a derived recap over each finalized Season. Automatic rollover requires the latest recap before the next introduction. Manual and held rollover keep the recap on the intermission dashboard until the user starts again. Only an optional reflection and seen timestamp are stored; module results are read from authoritative records. Restore-created closeout behavior remains assigned to Phase 15.
+
+## v1 portability extension
+
+Phase 15 restores persisted Season IDs through destination-local ID maps, validates every 30-day boundary and SP total, and never shifts or fabricates a Season. Catch-up stops at the latest imported Season's original Day 30. An ended import is finalized and enters a restore intermission; an active import continues and reserves that intermission after Day 30. The imported automatic/manual preference is preserved behind an independent one-time hold.
+
 ## Verification
 
 Run:
@@ -54,4 +62,4 @@ npm run lint
 npm run build
 ```
 
-The Season tests cover registration dates, Day 1/30/31 boundaries, numbering, long-absence backfill, idempotency, existing-account initialization, view-only future placeholders, introduction acknowledgement, skipped Seasons, and cross-user authorization.
+The Season tests cover setup dates, Day 1/30/31 boundaries, numbering, long-absence backfill, idempotency, existing-profile initialization, view-only future placeholders, introduction acknowledgement, skipped Seasons, and internal ownership authorization.

@@ -31,7 +31,7 @@ class MoneyHistoryController extends Controller
         ]);
         $query = MoneyTransaction::query()
             ->where('user_id', $user->id)
-            ->with(['account', 'destinationAccount', 'category', 'subcategory']);
+            ->with(['account', 'destinationAccount', 'category', 'subcategory', 'subscriptionOccurrence.subscription']);
         $this->applyFilters($query, $filters, $user);
         $transactions = $query->orderByDesc('transaction_date')->orderByDesc('created_at')->orderByDesc('id')
             ->paginate(30)->withQueryString()->through(fn (MoneyTransaction $transaction) => $factory->transaction($transaction));

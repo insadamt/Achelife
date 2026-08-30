@@ -16,11 +16,12 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Collection;
 use Inertia\Testing\AssertableInertia as Assert;
 use Tests\Concerns\CreatesHabits;
+use Tests\Concerns\CreatesMoney;
 use Tests\TestCase;
 
 class TodayAggregationTest extends TestCase
 {
-    use CreatesHabits, RefreshDatabase;
+    use CreatesHabits, CreatesMoney, RefreshDatabase;
 
     protected function setUp(): void
     {
@@ -149,6 +150,21 @@ class TodayAggregationTest extends TestCase
             ->where('tasks.today', fn (Collection $tasks): bool => $tasks->pluck('id')->all() === [$ownerTask->id]
                 && ! $tasks->pluck('id')->contains($otherTask->id))
             ->where('habits.required', fn (Collection $habits): bool => $habits->pluck('name')->all() === ['Owner Habit']));
+    }
+
+    public function test_due_manual_subscriptions_are_visible_without_changing_daily_progress_or_sp(): void
+    {
+        $user = $this->todayUser();
+        $account = $this->moneyAccount($user);
+        $category = $this->moneyCategory($user);
+        $this->moneySubscription($user, $account, $category, startsOn: '2026-08-17');
+
+        $this->actingAs($user)->get('/home')->assertInertia(fn (Assert $page) => $page
+            ->has('manualSubscriptionPayments', 1)
+            ->where('manualSubscriptionPayments.0.overdue', true)
+            ->where('dailyProgress.completed', 0)
+            ->where('dailyProgress.total', 1)
+            ->where('dailyProgress.todaySp', 0));
     }
 
     public function test_today_moves_to_the_new_current_season_without_carrying_objectives(): void

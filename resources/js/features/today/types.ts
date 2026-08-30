@@ -1,6 +1,7 @@
 import type { HabitViewData } from '../habits/types';
 import type { SeasonViewData } from '../seasons/types';
 import type { TaskViewData } from '../tasks/types';
+import type { MoneySubscriptionOccurrenceData } from '../money/types';
 
 export interface TodayProgressData {
     completed: number;
@@ -47,4 +48,5 @@ export interface TodayPageProps {
     };
     diary: TodayDiaryData;
     settings: TodaySettingsData;
+    manualSubscriptionPayments: MoneySubscriptionOccurrenceData[];
 }

@@ -22,6 +22,11 @@ class SeasonIntroductionController extends Controller
     ): Response|RedirectResponse {
         $today = $calendar->today($request->user());
         $currentSeason = $synchronizeUserSeasons->execute($request->user(), $today);
+        $pendingCloseout = $this->pendingCloseout($request, $currentSeason);
+
+        if ($pendingCloseout !== null) {
+            return redirect()->route('seasons.closeout', $pendingCloseout);
+        }
 
         if ($currentSeason->introduced_at !== null) {
             return redirect()->to($this->consumeRedirectDestination($request));
@@ -46,6 +51,11 @@ class SeasonIntroductionController extends Controller
 
         $currentSeason = $synchronizeUserSeasons->execute($request->user());
         abort_unless($season->is($currentSeason), 404);
+        $pendingCloseout = $this->pendingCloseout($request, $currentSeason);
+
+        if ($pendingCloseout !== null) {
+            return redirect()->route('seasons.closeout', $pendingCloseout);
+        }
 
         if ($season->introduced_at === null) {
             $season->update(['introduced_at' => now()]);
@@ -57,5 +67,14 @@ class SeasonIntroductionController extends Controller
     private function consumeRedirectDestination(Request $request): string
     {
         return $request->session()->pull('season_introduction_redirect', route('seasons.index', absolute: false));
+    }
+
+    private function pendingCloseout(Request $request, Season $currentSeason): ?Season
+    {
+        return $request->user()->seasons()
+            ->where('season_number', $currentSeason->season_number - 1)
+            ->whereNotNull('finalized_at')
+            ->whereNull('recap_seen_at')
+            ->first();
     }
 }

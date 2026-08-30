@@ -20,6 +20,7 @@ class GeneralSettingController extends Controller
         $user = $request->user();
 
         return Inertia::render('settings/General', [
+            'restorePreview' => $request->session()->get('portability.pending.account.preview'),
             'settings' => [
                 'timezone' => $user->timezone,
                 'today' => $calendar->today($user)->toDateString(),

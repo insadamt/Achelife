@@ -10,6 +10,7 @@ use App\Actions\Money\ReactivateMoneyCategory;
 use App\Actions\Money\ReactivateMoneySubcategory;
 use App\Enums\MoneyCategoryType;
 use App\Enums\MoneyTransactionType;
+use App\Models\User;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Validation\ValidationException;
@@ -109,16 +110,13 @@ class CategoryLifecycleTest extends TestCase
         $this->moneyTransaction($user, MoneyTransactionType::Expense, $account, 100, category: $category, subcategory: $subcategory);
     }
 
-    public function test_registration_leaves_money_presets_for_first_run_selection(): void
+    public function test_single_user_setup_leaves_money_presets_for_first_run_selection(): void
     {
-        $this->post('/register', [
+        $this->post('/setup', [
             'name' => 'Money User',
-            'email' => 'money@example.test',
-            'password' => 'password123',
-            'password_confirmation' => 'password123',
-        ])->assertRedirect('/season-introduction');
+        ])->assertRedirect('/onboarding');
 
         $this->assertDatabaseCount('money_categories', 0);
-        $this->assertSame(0, auth()->user()->money_preset_pack_version);
+        $this->assertSame(0, User::query()->sole()->money_preset_pack_version);
     }
 }

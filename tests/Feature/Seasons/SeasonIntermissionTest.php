@@ -2,14 +2,18 @@
 
 namespace Tests\Feature\Seasons;
 
+use App\Actions\Constitution\RecordViolation;
 use App\Actions\Diary\AutosaveDiaryEntry;
 use App\Actions\Habits\SynchronizeHabitOccurrences;
 use App\Actions\Habits\UpdateHabitOccurrence;
+use App\Actions\Objectives\ToggleObjectiveCompletion;
 use App\Actions\Seasons\ResolveUserSeasonCycle;
 use App\Actions\Seasons\StartNextSeason;
 use App\Actions\Seasons\SynchronizeUserSeasons;
 use App\Actions\Tasks\CompleteTask;
 use App\Actions\Tasks\SynchronizeRecurringTaskOccurrences;
+use App\Enums\MoneyCategoryType;
+use App\Enums\MoneyTransactionType;
 use App\Enums\SeasonIntermissionReason;
 use App\Enums\SeasonRolloverPreference;
 use App\Enums\TaskRecurrenceType;
@@ -20,12 +24,18 @@ use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Validation\ValidationException;
 use Inertia\Testing\AssertableInertia as Assert;
+use Tests\Concerns\CreatesConstitution;
 use Tests\Concerns\CreatesHabits;
+use Tests\Concerns\CreatesMoney;
+use Tests\Concerns\CreatesObjectives;
 use Tests\TestCase;
 
 class SeasonIntermissionTest extends TestCase
 {
+    use CreatesConstitution;
     use CreatesHabits;
+    use CreatesMoney;
+    use CreatesObjectives;
     use RefreshDatabase;
 
     public function test_manual_rollover_finalizes_day_thirty_and_enters_an_intermission(): void
@@ -160,6 +170,91 @@ class SeasonIntermissionTest extends TestCase
         foreach (['/tasks', '/habits', '/diary', '/constitution', '/money', '/settings/general'] as $path) {
             $this->get($path)->assertOk();
         }
+    }
+
+    public function test_season_bound_module_mutations_are_blocked_during_intermission(): void
+    {
+        CarbonImmutable::setTestNow('2026-01-01 10:00:00');
+        $user = $this->userWithPreference(SeasonRolloverPreference::Manual);
+        $season = app(SynchronizeUserSeasons::class)->execute($user, CarbonImmutable::parse('2026-01-01'));
+        $objective = $this->createObjective($user, $season, today: '2026-01-01');
+        $habit = $this->createHabit($user, '2026-01-01');
+        $law = $this->createLaw($user, createdOn: '2026-01-01');
+        $task = $user->tasks()->create([
+            'title' => 'Complete during a Season',
+            'scheduled_date' => '2026-02-15',
+            'important' => false,
+        ]);
+        $intermissionDate = CarbonImmutable::parse('2026-02-15');
+        app(SynchronizeUserSeasons::class)->execute($user, CarbonImmutable::parse('2026-01-30'));
+        app(ResolveUserSeasonCycle::class)->execute($user, $intermissionDate);
+
+        $blockedMutations = [
+            fn () => app(CompleteTask::class)->execute($user, $task, $intermissionDate),
+            fn () => app(UpdateHabitOccurrence::class)->toggleBoolean($user, $habit, $intermissionDate, $intermissionDate),
+            fn () => app(AutosaveDiaryEntry::class)->execute($user, $intermissionDate, [
+                'content' => [['type' => 'paragraph', 'children' => [['text' => 'Intermission writing is read-only.']]]],
+                'language_code' => null,
+                'mood_group' => null,
+                'mood' => null,
+                'client_revision' => 1,
+            ], $intermissionDate),
+            fn () => app(RecordViolation::class)->execute($user, $law, $intermissionDate, $intermissionDate),
+            fn () => app(ToggleObjectiveCompletion::class)->execute($objective, $intermissionDate),
+        ];
+
+        foreach ($blockedMutations as $blockedMutation) {
+            try {
+                $blockedMutation();
+                $this->fail('Season-bound mutations must fail during intermission.');
+            } catch (ValidationException) {
+                $this->addToAssertionCount(1);
+            }
+        }
+
+        $this->assertNull($task->refresh()->completed_at);
+        $this->assertDatabaseMissing('habit_occurrences', ['habit_id' => $habit->id, 'occurrence_date' => '2026-02-15']);
+        $this->assertDatabaseMissing('diary_entries', ['user_id' => $user->id, 'entry_date' => '2026-02-15']);
+        $this->assertDatabaseMissing('violations', ['law_id' => $law->id, 'violation_date' => '2026-02-15']);
+        $this->assertNull($objective->refresh()->completed_at);
+    }
+
+    public function test_nonseasonal_planning_money_and_settings_remain_writable_during_intermission(): void
+    {
+        CarbonImmutable::setTestNow('2026-02-15 10:00:00');
+        $user = $this->userWithPreference(SeasonRolloverPreference::Manual);
+        app(SynchronizeUserSeasons::class)->execute($user, CarbonImmutable::parse('2026-01-30'));
+        app(ResolveUserSeasonCycle::class)->execute($user, CarbonImmutable::today());
+
+        $this->actingAs($user)->post('/tasks', [
+            'title' => 'Plan the next Season',
+            'scheduled_date' => '2026-03-01',
+            'important' => true,
+            'subtasks' => [],
+        ])->assertRedirect()->assertSessionHasNoErrors();
+
+        $account = $this->moneyAccount($user, initialMinor: 5000);
+        $category = $this->moneyCategory($user, MoneyCategoryType::Expense, 'Rest');
+        $transaction = $this->moneyTransaction(
+            $user,
+            MoneyTransactionType::Expense,
+            $account,
+            1200,
+            category: $category,
+            date: '2026-02-15',
+        );
+        $law = $this->createLaw($user, name: 'Intermission law', createdOn: '2026-02-15');
+
+        $this->put('/settings/general', [
+            'timezone' => 'Africa/Casablanca',
+            'season_rollover_preference' => 'manual',
+        ])->assertRedirect()->assertSessionHasNoErrors();
+
+        $this->assertDatabaseHas('tasks', ['user_id' => $user->id, 'title' => 'Plan the next Season']);
+        $this->assertSame('2026-02-15', $transaction->transaction_date->toDateString());
+        $this->assertSame('Intermission law', $law->name);
+        $this->assertSame('Africa/Casablanca', $user->refresh()->timezone);
+        $this->assertDatabaseCount('seasons', 1);
     }
 
     public function test_diary_streak_resumes_from_the_previous_seasons_final_day_after_a_gap(): void

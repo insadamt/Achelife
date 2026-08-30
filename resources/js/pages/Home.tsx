@@ -9,6 +9,7 @@ import { TodayTabSwitcher } from '../features/today/TodayTabSwitcher';
 import type { TodayTab } from '../features/today/TodayTabSwitcher';
 import { TodayTaskList } from '../features/today/TodayTaskList';
 import type { TodayPageProps } from '../features/today/types';
+import { MoneySubscriptionSummary } from '../features/money/MoneySubscriptionSummary';
 
 const todayStyle = { '--module-accent': 'var(--accent)' } as CSSProperties;
 const activeTabStorageKey = 'achelife.today.active-tab';
@@ -59,6 +60,8 @@ export default function Home(props: TodayPageProps) {
                 </button>
             </header>
 
+            <MoneySubscriptionSummary due={props.manualSubscriptionPayments} title="Manual payments due" />
+
             <div className="md:hidden">
                 <TodayTabSwitcher
                     activeTab={activeTab}
@@ -76,16 +79,16 @@ export default function Home(props: TodayPageProps) {
                 tabIndex={0}
             >
                 {activeTab === 'tasks'
-                    ? <TodayTaskList overdue={props.tasks.overdue} overdueCount={props.tasks.overdueCount} tasks={props.tasks.today} />
-                    : <TodayHabitSection flexible={props.habits.flexible} required={props.habits.required} />}
+                    ? <TodayTaskList headingId="today-mobile-task-list-title" overdue={props.tasks.overdue} overdueCount={props.tasks.overdueCount} tasks={props.tasks.today} />
+                    : <TodayHabitSection flexible={props.habits.flexible} headingId="today-mobile-habit-list-title" required={props.habits.required} />}
             </main>
 
             <main className="hidden items-start gap-6 pb-8 md:grid md:grid-cols-2">
                 <div className="min-h-[18rem] rounded-[2rem] border border-border-subtle bg-surface/45 p-5 shadow-[0_18px_46px_rgba(0,0,0,0.16)] lg:p-6">
-                    <TodayTaskList overdue={props.tasks.overdue} overdueCount={props.tasks.overdueCount} tasks={props.tasks.today} />
+                    <TodayTaskList headingId="today-desktop-task-list-title" overdue={props.tasks.overdue} overdueCount={props.tasks.overdueCount} tasks={props.tasks.today} />
                 </div>
                 <div className="min-h-[18rem] rounded-[2rem] border border-border-subtle bg-surface/45 p-5 shadow-[0_18px_46px_rgba(0,0,0,0.16)] lg:p-6">
-                    <TodayHabitSection flexible={props.habits.flexible} required={props.habits.required} />
+                    <TodayHabitSection flexible={props.habits.flexible} headingId="today-desktop-habit-list-title" required={props.habits.required} />
                 </div>
             </main>
 

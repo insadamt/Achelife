@@ -10,8 +10,9 @@ import { ActivityList } from '../../features/money/ActivityList';
 import { MoneyBalanceSummary } from '../../features/money/MoneyBalanceSummary';
 import { MoneyQuickActions } from '../../features/money/MoneyQuickActions';
 import { MoneySectionNav } from '../../features/money/MoneySectionNav';
+import { MoneySubscriptionSummary } from '../../features/money/MoneySubscriptionSummary';
 import { TransactionDrawer } from '../../features/money/TransactionDrawer';
-import type { MoneyAccountData, MoneyCategoryData, MoneyTransactionData, MoneyTransactionType } from '../../features/money/types';
+import type { MoneyAccountData, MoneyCategoryData, MoneySubscriptionOccurrenceData, MoneyTransactionData, MoneyTransactionType } from '../../features/money/types';
 
 interface MoneyIndexProps {
     today: string;
@@ -19,6 +20,8 @@ interface MoneyIndexProps {
     totalsByCurrency: Record<string, number>;
     categories: MoneyCategoryData[];
     recentTransactions: MoneyTransactionData[];
+    dueSubscriptions: MoneySubscriptionOccurrenceData[];
+    upcomingSubscriptions: MoneySubscriptionOccurrenceData[];
 }
 
 const moduleStyle = { '--module-accent': 'var(--money-accent)' } as CSSProperties;
@@ -49,6 +52,8 @@ export default function MoneyIndex(props: MoneyIndexProps) {
                 <h2 className="sr-only">Quick actions</h2>
                 <MoneyQuickActions disabled={props.accounts.length === 0} onSelect={setCreatingType} />
             </section>
+
+            <MoneySubscriptionSummary due={props.dueSubscriptions} upcoming={props.upcomingSubscriptions} />
 
             <section className="mt-10">
                 <div className="mb-4 flex items-center justify-between gap-4">
