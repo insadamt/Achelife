@@ -1,13 +1,109 @@
 # Achelife
 
-Achelife v1 is being built progressively from a deliberately small Laravel and React foundation.
+Achelife is a free and open-source, single-user life management application. It brings 30-day Seasons, Tasks, Habits, a private Diary, personal rules, Objectives, progression, and Money tracking into one self-hosted workspace.
 
-Achelife is a single-user, self-hosted application. It does not present a login screen or provide a public-internet authentication boundary. Keep it bound to localhost, a trusted private network, or behind a private VPN. Anyone who can reach the application can use it and access its private Diary and financial data.
+Achelife is licensed under the [MIT License](LICENSE).
 
-Phase 0 provides the framework, internal user ownership, local SQLite database, and quality checks. Phase 0.5 adds the global visual system and application shell. Phase 1 adds automatic 30-day Seasons and Season introductions. Phase 2 adds global Tasks, recurrence, subtasks, dynamic rewards, and historically safe Season SP attribution. Phase 3 adds effective-dated Habits and streak progression. Phase 4 adds the autosaved Diary, People, moods, and writing rewards. Phase 5 adds global Laws and escalating, Season-safe Constitution violations. Phase 6 adds non-gamified Money tracking. Phase 7 adds Boolean Objectives inside each Season with setup locking and exact reward rebalancing. Phase 8 adds the Today aggregation screen. Phase 9 adds live Rank and completed-Season snapshots. Phase 10 adds General Settings and a user-local calendar over UTC timestamp storage.
+> [!IMPORTANT]
+> Achelife v1 is currently a release candidate. It is not a stable release. Release-candidate installation and updates always require explicit `rc` channel opt-in.
 
-Self-hosted production installation uses the host-side `achelife` command, exact versioned images, localhost-first networking, safe updates, and verified full-instance recovery. Phase 17 adds migration, disaster-recovery, container, supply-chain, and RC-only publication gates. `v1.0.0-rc.1` is the first v1 pre-release candidate; it is not stable and requires explicit RC opt-in. See the [Phase 16 operations guide](docs/v1.0.0/phase-16-self-hosted-installer-and-manager.md), [Phase 17 release hardening](docs/v1.0.0/phase-17-release-hardening-and-rc-promotion.md), and [self-hosting quick start](SELF_HOSTING.md).
+> [!WARNING]
+> Achelife has no login screen or public-internet authentication boundary. Keep the default localhost binding, or use only a trusted private network or private VPN. Anyone who can reach the application can read and change its Diary, Money, and other private data.
 
-The product history and domain contracts remain documented under [`docs/v0.1.0`](docs/v0.1.0) and [`docs/v1.0.0`](docs/v1.0.0).
+## Features
 
-The remaining work before v1.0.0 is organized in the [v1 pre-release roadmap](docs/v1.0.0/pre-release-roadmap.md).
+- A focused Today view for current Tasks, Habits, Daily Progress, Season SP, and Rank.
+- Thirty-day Seasons with introductions, Objectives, closeouts, intermissions, holds, and long-absence recovery.
+- One-time and recurring Tasks with subtasks, completion rewards, rescheduling, and historically safe SP attribution.
+- Effective-dated Habits with Boolean and numeric tracking, streaks, skips, and archives.
+- An autosaving Diary with moods, languages, People, mentions, search, and writing rewards.
+- A personal Constitution with Laws, escalating violations, and Season-safe penalties.
+- Local Money accounts, transactions, transfers, fees, categories, presets, history, and recurring Subscriptions.
+- Portable account export/restore and full-instance operational backup/restore.
+- A host-side manager for health checks, updates, rollback, logs, backups, and disaster recovery.
+
+Read the [user guide](docs/user-guide.md) for the product workflow and terminology.
+
+## Install the current release candidate
+
+The supported deployment is a Docker-capable Linux host with Docker Engine, Docker Compose v2, `curl`, `tar`, and a SHA-256 utility. Git, PHP, Composer, Node.js, and npm are not required on the server.
+
+Download the installer, review it, and explicitly select the RC channel:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/insadamt/Achelife/master/scripts/install.sh \
+  -o /tmp/achelife-install.sh
+sh /tmp/achelife-install.sh --channel rc
+```
+
+The installer downloads a checksum-protected manager bundle, resolves exact container digests, binds Achelife to `127.0.0.1:8080`, and waits for health. Open `http://127.0.0.1:8080/setup` to create the single local profile and complete onboarding.
+
+If `$HOME/.local/bin` is not already on your `PATH`, add it before using the manager command:
+
+```bash
+export PATH="$HOME/.local/bin:$PATH"
+```
+
+Useful commands:
+
+```bash
+achelife status
+achelife open
+achelife update --check
+achelife backup
+achelife doctor
+```
+
+See [SELF_HOSTING.md](SELF_HOSTING.md) for installation options, networking, updates, backup/restore, rollback, and uninstall.
+
+## Protect your data
+
+Achelife stores the operational database and uploaded files in persistent Docker volumes. Create full-instance backups regularly and copy them outside the Docker host:
+
+```bash
+achelife backup
+```
+
+Portable exports created inside Achelife are for moving an account snapshot between instances. They are not a substitute for full-instance disaster-recovery backups. Both formats can contain Diary writing, People notes, Money records, and other sensitive information.
+
+## Develop from source
+
+Development requires PHP 8.3 or newer, Composer 2, Node.js 22, npm, SQLite, and the PHP extensions required by Laravel.
+
+```bash
+git clone https://github.com/insadamt/Achelife.git
+cd Achelife
+composer setup
+composer dev
+```
+
+Run the focused suites while developing:
+
+```bash
+composer test
+npm run types:check
+npm run lint
+npm run build
+sh tests/Installer/run.sh
+```
+
+The complete release gate additionally requires Docker:
+
+```bash
+sh scripts/release/verify-source.sh
+```
+
+## Project documentation
+
+- [User guide](docs/user-guide.md)
+- [Self-hosting and operations](SELF_HOSTING.md)
+- [Documentation index](docs/README.md)
+- [v1 pre-release roadmap](docs/v1.0.0/pre-release-roadmap.md)
+- [Contributing](CONTRIBUTING.md)
+- [Security policy](SECURITY.md)
+
+The versioned documents under `docs/` preserve product behavior, decisions, migration boundaries, and release evidence.
+
+## Contributing
+
+Bug reports, documentation improvements, tests, and focused pull requests are welcome. Please read [CONTRIBUTING.md](CONTRIBUTING.md) before starting a substantial change. Report security issues privately as described in [SECURITY.md](SECURITY.md).

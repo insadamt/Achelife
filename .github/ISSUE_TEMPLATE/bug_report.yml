@@ -1,0 +1,67 @@
+name: Bug report
+description: Report a reproducible problem in Achelife or its manager.
+title: "[Bug]: "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Do not include application keys, environment files, backups, account exports, or private Diary, People, or Money data. Report vulnerabilities through GitHub Security Advisories.
+
+  - type: input
+    id: version
+    attributes:
+      label: Achelife version
+      description: Run `achelife version` when reporting a self-hosted release.
+      placeholder: 1.0.0-rc.1
+    validations:
+      required: true
+
+  - type: input
+    id: environment
+    attributes:
+      label: Environment
+      description: Include the host OS, architecture, browser, Docker Engine, and Docker Compose versions that matter.
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: What happened?
+      description: Describe the observed behavior and its effect.
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction steps
+      description: Use synthetic data and list the smallest reliable sequence.
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+
+  - type: textarea
+    id: diagnostics
+    attributes:
+      label: Redacted diagnostics
+      description: Include relevant `achelife doctor`, `achelife status`, browser-console, or test output after removing private data and paths.
+      render: shell
+
+  - type: checkboxes
+    id: safety
+    attributes:
+      label: Safety check
+      options:
+        - label: I removed secrets and personal data from this report.
+          required: true
+        - label: This is not a security vulnerability.
+          required: true

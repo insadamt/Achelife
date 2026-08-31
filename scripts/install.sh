@@ -74,6 +74,7 @@ verify_download_checksum()
 validate_manager_archive()
 {
     archive_path="$1"
+    archive_version="$2"
     tar -tvzf "$archive_path" | awk '{
         type = substr($1, 1, 1)
         if (type != "-" && type != "d") exit 1
@@ -81,6 +82,7 @@ validate_manager_archive()
 
     archive_files="$(tar -tzf "$archive_path" | sed '/\/$/d' | sort)"
     expected_files="$(printf '%s\n' \
+        achelife-manager/LICENSE \
         achelife-manager/achelife \
         achelife-manager/manager/lib/backup.sh \
         achelife-manager/manager/lib/common.sh \
@@ -92,7 +94,11 @@ validate_manager_archive()
         achelife-manager/manager/lib/uninstall.sh \
         achelife-manager/manager/lib/update.sh \
         achelife-manager/manager/templates/compose.yaml | sort)"
-    [ "$archive_files" = "$expected_files" ] || return 1
+    if [ "$archive_files" != "$expected_files" ]; then
+        [ "$archive_version" = 1.0.0-rc.1 ] || return 1
+        legacy_expected_files="$(printf '%s\n' "$expected_files" | grep -Fvx achelife-manager/LICENSE)"
+        [ "$archive_files" = "$legacy_expected_files" ] || return 1
+    fi
 
     duplicate_paths="$(tar -tzf "$archive_path" | sed '/\/$/d' | sort | uniq -d)"
     [ -z "$duplicate_paths" ]
@@ -120,7 +126,7 @@ main()
     curl -fsSL "${release_base}/${archive_name}.sha256" -o "${temporary_directory}/${archive_name}.sha256"
     verify_download_checksum "${temporary_directory}/${archive_name}" "${temporary_directory}/${archive_name}.sha256" \
         || fail "Manager bundle checksum verification failed."
-    validate_manager_archive "${temporary_directory}/${archive_name}" \
+    validate_manager_archive "${temporary_directory}/${archive_name}" "$VERSION" \
         || fail "Manager bundle contains an unsafe or unexpected archive layout."
     tar -xzf "${temporary_directory}/${archive_name}" -C "$temporary_directory"
     exec "${temporary_directory}/achelife-manager/achelife" install "$@" --version "$VERSION" --channel "$CHANNEL"

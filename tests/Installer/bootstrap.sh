@@ -7,6 +7,7 @@ bundle_directory="${TEST_WORK}/bootstrap-downloads"
 bundle_root="${TEST_WORK}/bundle/achelife-manager"
 mkdir -p "$bundle_directory" "$bundle_root/manager"
 cp -R "$TEST_ROOT/manager/." "$bundle_root/manager/"
+cp "$TEST_ROOT/LICENSE" "$bundle_root/LICENSE"
 
 cat >"$bundle_root/achelife" <<'EOF'
 #!/bin/sh
@@ -36,7 +37,29 @@ create_bundle "$rc_version"
 rc_output="$(sh "$TEST_ROOT/scripts/install.sh" --version "$rc_version" --yes --no-start)"
 assert_output_contains "$rc_output" '--channel rc'
 
+legacy_bundle_root="${TEST_WORK}/legacy-bundle"
+mkdir -p "$legacy_bundle_root"
+cp -R "$bundle_root" "$legacy_bundle_root/achelife-manager"
+rm -f "$legacy_bundle_root/achelife-manager/LICENSE"
+legacy_archive="${bundle_directory}/achelife-manager-${rc_version}.tar.gz"
+tar -czf "$legacy_archive" -C "$legacy_bundle_root" achelife-manager
+legacy_checksum="$(sha256sum "$legacy_archive" | awk '{print $1}')"
+printf '%s  %s\n' "$legacy_checksum" "$(basename "$legacy_archive")" >"${legacy_archive}.sha256"
+legacy_rc_output="$(sh "$TEST_ROOT/scripts/install.sh" --version "$rc_version" --yes --no-start)"
+assert_output_contains "$legacy_rc_output" '--channel rc'
+
 printf 'tampered\n' >>"${bundle_directory}/achelife-manager-${bundle_version}.tar.gz"
+assert_command_fails sh "$TEST_ROOT/scripts/install.sh" --version "$bundle_version" --yes --no-start
+create_bundle "$bundle_version"
+
+unlicensed_bundle_root="${TEST_WORK}/unlicensed-bundle"
+mkdir -p "$unlicensed_bundle_root"
+cp -R "$bundle_root" "$unlicensed_bundle_root/achelife-manager"
+rm -f "$unlicensed_bundle_root/achelife-manager/LICENSE"
+unlicensed_archive="${bundle_directory}/achelife-manager-${bundle_version}.tar.gz"
+tar -czf "$unlicensed_archive" -C "$unlicensed_bundle_root" achelife-manager
+unlicensed_checksum="$(sha256sum "$unlicensed_archive" | awk '{print $1}')"
+printf '%s  %s\n' "$unlicensed_checksum" "$(basename "$unlicensed_archive")" >"${unlicensed_archive}.sha256"
 assert_command_fails sh "$TEST_ROOT/scripts/install.sh" --version "$bundle_version" --yes --no-start
 create_bundle "$bundle_version"
 

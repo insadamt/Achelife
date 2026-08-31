@@ -1,0 +1,37 @@
+name: Feature request
+description: Propose a focused improvement to Achelife.
+title: "[Feature]: "
+labels:
+  - enhancement
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What user problem should Achelife solve?
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed behavior
+      description: Describe the smallest useful behavior and its expected workflow.
+    validations:
+      required: true
+
+  - type: textarea
+    id: boundaries
+    attributes:
+      label: Boundaries and alternatives
+      description: Explain alternatives, data or migration effects, and what should remain out of scope.
+
+  - type: checkboxes
+    id: fit
+    attributes:
+      label: Project fit
+      options:
+        - label: This preserves Achelife's single-user model unless the proposal explicitly discusses changing it.
+          required: true
+        - label: This request contains no private data or secrets.
+          required: true

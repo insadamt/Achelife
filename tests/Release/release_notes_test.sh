@@ -7,19 +7,20 @@ trap 'rm -rf "$temporary_directory"' EXIT HUP INT TERM
 
 digest='sha256:0000000000000000000000000000000000000000000000000000000000000000'
 cat >"$temporary_directory/image-digests.txt" <<EOF
-APP_IMAGE=ghcr.io/insadamt/achelife:1.0.0-rc.1@${digest}
-WEB_IMAGE=ghcr.io/insadamt/achelife-web:1.0.0-rc.1@${digest}
+APP_IMAGE=ghcr.io/insadamt/achelife:1.0.0-rc.2@${digest}
+WEB_IMAGE=ghcr.io/insadamt/achelife-web:1.0.0-rc.2@${digest}
 EOF
 
 sh "$repository_root/scripts/release/write-rc-notes.sh" \
-    1.0.0-rc.1 \
+    1.0.0-rc.2 \
     "$temporary_directory/image-digests.txt" \
     "$temporary_directory/release-notes.md"
 
-grep -Fq 'Achelife 1.0.0-rc.1 is the first v1 release candidate.' "$temporary_directory/release-notes.md"
-grep -Fq 'achelife update --to 1.0.0-rc.1 --channel rc' "$temporary_directory/release-notes.md"
-grep -Fq 'ghcr.io/insadamt/achelife:1.0.0-rc.1@sha256:' "$temporary_directory/release-notes.md"
-grep -Fq 'ghcr.io/insadamt/achelife-web:1.0.0-rc.1@sha256:' "$temporary_directory/release-notes.md"
+grep -Fq 'Achelife 1.0.0-rc.2 is a v1 release candidate.' "$temporary_directory/release-notes.md"
+grep -Fq 'achelife update --to 1.0.0-rc.2 --channel rc' "$temporary_directory/release-notes.md"
+grep -Fq 'ghcr.io/insadamt/achelife:1.0.0-rc.2@sha256:' "$temporary_directory/release-notes.md"
+grep -Fq 'ghcr.io/insadamt/achelife-web:1.0.0-rc.2@sha256:' "$temporary_directory/release-notes.md"
+grep -Fq 'under the MIT License' "$temporary_directory/release-notes.md"
 
 if sh "$repository_root/scripts/release/write-rc-notes.sh" \
     1.0.0 \

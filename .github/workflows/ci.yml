@@ -1,0 +1,33 @@
+name: Verify source
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+
+concurrency:
+  group: source-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - uses: shivammathur/setup-php@b604ade2a87db23f8871b7182e69ec5e75effb45 # v2
+        with:
+          php-version: "8.4"
+          extensions: bcmath, intl, mbstring, pdo_sqlite, zip
+          coverage: none
+      - run: composer install --no-interaction --no-progress --prefer-dist
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: "22"
+          cache: npm
+      - run: npm ci
+      - run: sh scripts/release/verify-source.sh

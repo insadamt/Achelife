@@ -21,7 +21,7 @@ printf '%s\n' "$web_image" | grep -Eq "^ghcr\.io/insadamt/achelife-web:${version
 cat >"$output_file" <<EOF
 # Achelife ${version}
 
-Achelife ${version} is the first v1 release candidate. It is a pre-release, not a stable release. Stable updates remain the default and never select this candidate unless the RC channel is explicitly requested.
+Achelife ${version} is a v1 release candidate. It is a pre-release, not a stable release. Stable updates remain the default and never select this candidate unless the RC channel is explicitly requested.
 
 ## Included
 
@@ -31,6 +31,7 @@ Achelife ${version} is the first v1 release candidate. It is a pre-release, not 
 - complete account export, validation, replacement restore, and recovery holds;
 - the self-hosted installer and Achelife Manager with safe updates, verified backups, rollback, clean-host restore, diagnostics, and uninstall;
 - multi-architecture container images with provenance, SBOMs, dependency audits, and vulnerability gates.
+- source code and manager tooling under the MIT License.
 
 ## Verified images
 
@@ -81,7 +82,7 @@ Backups contain the application key, database, Diary, Money, and persistent stor
 - Achelife is passwordless and single-user. Anyone who can reach it can read and change all data.
 - Public-internet exposure is unsupported; use localhost, a trusted private network, or a private VPN.
 - This RC supports \`linux/amd64\` and \`linux/arm64\`.
-- Local pre-publication scans found no HIGH or CRITICAL findings in the application image. The pinned Caddy/Alpine web image reported 21 inherited HIGH findings and no CRITICAL findings; publication re-scans the exact digests and blocks fixable CRITICAL findings.
+- The application image must pass with no HIGH or CRITICAL findings. The pinned Caddy web image can contain reviewed inherited HIGH findings when the official base has no fixed build; publication re-scans exact digests, keeps those findings visible in workflow logs, and blocks fixable CRITICAL findings.
 - Divergent account archives are not merged, and independent servers do not synchronize continuously.
 - Subscriptions do not execute bank transactions, and cross-currency Transfers are unsupported.
 

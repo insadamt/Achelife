@@ -22,6 +22,7 @@ The implementation order is dependency-driven. Season lifecycle and Money schema
 - Subscription automation remains active during intermission because Money is not gamified.
 - Portable account archives and full-instance recovery backups are different products with different restore paths.
 - Achelife is a single-user application with no login boundary and must remain on localhost, a trusted private network, or a private VPN.
+- Achelife source code, manager tooling, and documentation are free and open-source under the MIT License.
 - A restore replaces scoped data after preview and confirmation; it never attempts an automatic merge.
 - Stable releases affecting installation, upgrades, migrations, backups, security, or networking must pass through a release candidate first.
 
@@ -470,12 +471,12 @@ Prove fresh installation, upgrades, portability, scheduling, and recovery before
 
 ### Release process
 
-- [ ] Publish `v1.0.0-rc.1`; do not publish stable directly.
+- [x] Publish `v1.0.0-rc.1`; do not publish stable directly.
 - [ ] Test fresh install, update, backup, restore, failure recovery, and data persistence against the RC image.
 - [ ] Fix issues in subsequent RCs without bypassing the same gates.
 - [ ] Preserve the last RC backup and exact image digests used for acceptance.
 - [ ] Promote the verified RC source to `v1.0.0` only when all required checks pass.
-- [ ] Publish release notes with upgrade, backup, restore, known limitations, and rollback instructions.
+- [x] Publish release notes with upgrade, backup, restore, known limitations, and rollback instructions.
 
 ## Explicit v1 boundaries
 

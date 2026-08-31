@@ -2,7 +2,7 @@
 
 ## Release boundary
 
-Phase 17 adds the gates needed to prepare an Achelife v1 release candidate. It does not publish an RC or a stable release. Publication requires a manual workflow dispatch with an exact `MAJOR.MINOR.PATCH-rc.N` version and the literal confirmation `PUBLISH RC`. The workflow rejects stable versions.
+Phase 17 adds the gates needed to prepare and verify an Achelife v1 release candidate. Publication requires a manual workflow dispatch with an exact `MAJOR.MINOR.PATCH-rc.N` version and the literal confirmation `PUBLISH RC`. The workflow rejects stable versions.
 
 A stable release must be promoted from source already proven as an RC. It must never be built or published as an independent first release.
 
@@ -102,7 +102,19 @@ Before authorizing publication:
 7. fix failures in a later RC without bypassing any gate;
 8. promote the already verified RC source only after every required automated and manual check passes.
 
-No registry publication, GitHub release, stable tag, or promotion was performed during Phase 17 implementation.
+`v1.0.0-rc.1` was published as a GitHub pre-release from commit `62ebae12f97b2b11955c04bd71008942ac269bd8` after the source gate, isolated Docker acceptance, and all four architecture-specific image scans passed. Its manager archive checksum, embedded version, release target, and attached digest manifest were verified independently. No stable tag or promotion was performed.
+
+Anonymous installation remains a separate acceptance gate. The source repository and both GHCR packages must be public before the documented installer path can be tested without credentials. Do not check the published-RC installation or public multi-architecture-image roadmap items until anonymous release downloads, image pulls, fresh install, update, backup, restore, failure recovery, and persistence all pass.
+
+## Open-source publication gate
+
+Achelife is distributed under the MIT License. The repository includes the license text, user and self-hosting documentation, contribution guidance, a security policy, issue forms, pull-request guidance, public pull-request CI, and automated dependency update configuration.
+
+The manager release bundle includes its own copy of `LICENSE`. Application and web images publish `org.opencontainers.image.source`, documentation, revision, version, description, and MIT license annotations. The source annotation also links GHCR packages to the public repository.
+
+Before changing repository visibility, the complete Git history was reviewed for sensitive path names, credential signatures, private keys, tracked databases, archives, and oversized hidden blobs. A redacted Gitleaks v8.30.1 scan of all 23 commits reported zero findings. Local `.env` and production environment files remain ignored and outside Git.
+
+Repository and GHCR visibility are owner-controlled GitHub settings. After changing them manually, enable private vulnerability reporting, confirm anonymous access to the release API and both image manifests, and repeat the published-RC acceptance matrix before preparing `v1.0.0-rc.2` or considering stable promotion.
 
 ## RC release-notes checklist
 

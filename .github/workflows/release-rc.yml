@@ -103,7 +103,9 @@ jobs:
           context: .
           target: ${{ matrix.target }}
           platforms: ${{ matrix.platform }}
-          build-args: ACHELIFE_VERSION=${{ inputs.version }}
+          build-args: |
+            ACHELIFE_VERSION=${{ inputs.version }}
+            ACHELIFE_REVISION=${{ github.sha }}
           outputs: type=image,name=${{ matrix.image }},push-by-digest=true,name-canonical=true,push=true
           provenance: mode=max
           sbom: true
@@ -178,6 +180,7 @@ jobs:
         run: |
           mkdir -p dist/achelife-manager
           cp achelife dist/achelife-manager/achelife
+          cp LICENSE dist/achelife-manager/LICENSE
           cp -R manager dist/achelife-manager/manager
           sed -i 's/^MANAGER_VERSION=.*/MANAGER_VERSION="${{ inputs.version }}"/' dist/achelife-manager/manager/lib/common.sh
           tar -czf "dist/achelife-manager-${{ inputs.version }}.tar.gz" -C dist achelife-manager

@@ -73,9 +73,14 @@ FROM php:8.4-fpm-alpine@sha256:6cb5e4ffa03a7c1b01bb5b120ab3684ef76b75aa5ca417e34
 WORKDIR /var/www/html
 
 ARG ACHELIFE_VERSION=1.0.0-rc.1-dev
+ARG ACHELIFE_REVISION=unknown
 ENV ACHELIFE_VERSION=$ACHELIFE_VERSION
 LABEL org.opencontainers.image.title="Achelife" \
+      org.opencontainers.image.description="Single-user, self-hosted life management" \
       org.opencontainers.image.version=$ACHELIFE_VERSION \
+      org.opencontainers.image.revision=$ACHELIFE_REVISION \
+      org.opencontainers.image.source="https://github.com/insadamt/Achelife" \
+      org.opencontainers.image.documentation="https://github.com/insadamt/Achelife/blob/master/SELF_HOSTING.md" \
       org.opencontainers.image.licenses="MIT"
 
 COPY --from=vendor --chown=www-data:www-data /var/www/html /var/www/html
@@ -109,9 +114,16 @@ FROM caddy:2-alpine@sha256:5f5c8640aae01df9654968d946d8f1a56c497f1dd5c5cda4cf95a
 
 WORKDIR /srv
 
+RUN apk upgrade --no-cache
+
 ARG ACHELIFE_VERSION=1.0.0-rc.1-dev
+ARG ACHELIFE_REVISION=unknown
 LABEL org.opencontainers.image.title="Achelife Web" \
+      org.opencontainers.image.description="Web gateway for the Achelife self-hosted application" \
       org.opencontainers.image.version=$ACHELIFE_VERSION \
+      org.opencontainers.image.revision=$ACHELIFE_REVISION \
+      org.opencontainers.image.source="https://github.com/insadamt/Achelife" \
+      org.opencontainers.image.documentation="https://github.com/insadamt/Achelife/blob/master/SELF_HOSTING.md" \
       org.opencontainers.image.licenses="MIT"
 
 COPY --from=vendor /var/www/html/public /srv/public

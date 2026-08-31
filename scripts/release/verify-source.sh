@@ -22,7 +22,10 @@ verify_shell_syntax()
 
 verify_file_sizes()
 {
-    oversized_files="$(find app database docker docs manager resources routes scripts tests .github -type f -print \
+    oversized_files="$({
+        find app database docker docs manager resources routes scripts tests .github -type f -print
+        printf '%s\n' achelife Dockerfile README.md SELF_HOSTING.md CONTRIBUTING.md SECURITY.md LICENSE
+    } \
         | while IFS= read -r source_file; do
             line_count="$(wc -l <"$source_file")"
             [ "$line_count" -le 500 ] || printf '%s: %s lines\n' "$source_file" "$line_count"
@@ -92,6 +95,7 @@ verify_immutable_supply_chain_references()
     done
 
     grep -Eq "scanner_image='[^']+@sha256:[a-f0-9]{64}'" scripts/release/scan-image.sh
+    grep -Fq 'scanner_timeout="${TRIVY_TIMEOUT:-15m}"' scripts/release/scan-image.sh
     grep -Fq 'docker pull --platform "$BUILT_PLATFORM" "$BUILT_IMAGE"' .github/workflows/release-rc.yml
     grep -Eq "registry_image='[^']+@sha256:[a-f0-9]{64}'" tests/Release/docker_acceptance.sh
     grep -Eq "rollback_image='[^']+@sha256:[a-f0-9]{64}'" tests/Release/docker_acceptance.sh
@@ -104,6 +108,25 @@ verify_caddy_configuration()
         "$caddy_image" caddy fmt --diff /etc/caddy/Caddyfile
     docker run --rm --volume "$repository_root/docker/selfhost/Caddyfile:/etc/caddy/Caddyfile:ro" \
         "$caddy_image" caddy validate --config /etc/caddy/Caddyfile
+}
+
+verify_public_repository_contract()
+{
+    grep -Fq 'MIT License' LICENSE
+    grep -Fq 'Copyright (c) 2026 Achelife contributors' LICENSE
+    php -r '
+        $manifest = json_decode(file_get_contents("composer.json"), true, flags: JSON_THROW_ON_ERROR);
+        exit(($manifest["license"] ?? null) === "MIT" ? 0 : 1);
+    '
+    [ "$(grep -Fc 'org.opencontainers.image.source="https://github.com/insadamt/Achelife"' Dockerfile)" -eq 2 ]
+    [ "$(grep -Fc 'org.opencontainers.image.licenses="MIT"' Dockerfile)" -eq 2 ]
+    grep -Fq 'achelife-manager/LICENSE' scripts/install.sh
+    grep -Fq 'cp LICENSE dist/achelife-manager/LICENSE' .github/workflows/release-rc.yml
+    test -s README.md
+    test -s SELF_HOSTING.md
+    test -s CONTRIBUTING.md
+    test -s SECURITY.md
+    test -s docs/user-guide.md
 }
 
 run_gate 'Composer manifest' composer validate --strict --no-check-publish
@@ -122,5 +145,6 @@ run_gate 'Compose validation' verify_compose_files
 run_gate 'Workflow validation' verify_workflows
 run_gate 'Immutable supply-chain references' verify_immutable_supply_chain_references
 run_gate 'Caddy configuration' verify_caddy_configuration
+run_gate 'Public repository contract' verify_public_repository_contract
 run_gate 'First-party file size limit' verify_file_sizes
 run_gate 'Whitespace errors' git diff --check
