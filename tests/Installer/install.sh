@@ -32,7 +32,11 @@ install_test_instance "${TEST_WORK}/lan" --bind 0.0.0.0 --acknowledge-network-ri
 
 FAKE_PORT_CONFLICT=1
 export FAKE_PORT_CONFLICT
-assert_command_fails install_test_instance "${TEST_WORK}/conflict" --port 18080 --no-start
+conflict_directory="${TEST_WORK}/conflict"
+conflict_output="$(install_test_instance "$conflict_directory" --port 18080 --no-start 2>&1)"
+assert_output_contains "$conflict_output" 'Port 18080 is already in use; using available port 18081.'
+assert_file_contains "$conflict_directory/config/installation.env" 'ACHELIFE_PORT=18081'
+assert_file_contains "$conflict_directory/config/installation.env" 'COMPOSE_PROJECT_NAME=achelife-18081'
 assert_command_fails install_test_instance "${TEST_WORK}/control-character" --project "invalid
 project" --no-start
 unset FAKE_PORT_CONFLICT
@@ -65,5 +69,39 @@ assert_command_fails env PATH="$missing_docker_bin" HOME="$TEST_HOME" XDG_CONFIG
 if printf '%s\n' "$install_output" | grep -F "$original_key" >/dev/null; then
     fail_test 'Installer output exposed the application key.'
 fi
+
+run_interactive_install()
+{
+    prompt_responses="$1"
+    interactive_install_directory="$2"
+    interactive_command="\"$TEST_ROOT/achelife\" install --dir \"$interactive_install_directory\" --bin-dir \"${TEST_HOME}/.local/bin\" --version 1.0.0-rc.1 --channel rc --no-start"
+    printf '%b' "$prompt_responses" | script --quiet --return --command "$interactive_command" /dev/null
+}
+
+enter_confirmation_directory="${TEST_WORK}/enter-confirmation"
+enter_confirmation_output="$(run_interactive_install '\n' "$enter_confirmation_directory")"
+assert_output_contains "$enter_confirmation_output" 'Install Achelife 1.0.0-rc.1? [Y/n]'
+assert_file_contains "$enter_confirmation_directory/config/installation.env" 'ACHELIFE_PORT=8080'
+
+cancelled_directory="${TEST_WORK}/cancelled"
+cancelled_output="$(run_interactive_install 'n\n' "$cancelled_directory")"
+assert_output_contains "$cancelled_output" 'Installation cancelled.'
+[ ! -e "$cancelled_directory/config/installation.env" ] || fail_test 'Cancelled installation wrote configuration.'
+
+FAKE_USED_PORTS='8080'
+export FAKE_USED_PORTS
+suggested_port_directory="${TEST_WORK}/suggested-port"
+suggested_port_output="$(run_interactive_install '\n\n' "$suggested_port_directory")"
+assert_output_contains "$suggested_port_output" 'Press Enter to use available port 8081'
+assert_file_contains "$suggested_port_directory/config/installation.env" 'ACHELIFE_PORT=8081'
+assert_file_contains "$suggested_port_directory/config/installation.env" 'COMPOSE_PROJECT_NAME=achelife-8081'
+
+FAKE_USED_PORTS='8080 9000'
+custom_port_directory="${TEST_WORK}/custom-port-prompt"
+custom_port_output="$(run_interactive_install '9000\n\n\n' "$custom_port_directory")"
+assert_output_contains "$custom_port_output" 'Port 9000 is already in use.'
+assert_output_contains "$custom_port_output" 'Press Enter to use available port 9001'
+assert_file_contains "$custom_port_directory/config/installation.env" 'ACHELIFE_PORT=9001'
+unset FAKE_USED_PORTS
 
 printf 'Installer tests passed.\n'

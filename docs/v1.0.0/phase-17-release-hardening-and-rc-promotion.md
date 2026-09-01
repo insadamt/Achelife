@@ -91,6 +91,8 @@ The harness is a repeatable accessibility smoke check, not a replacement for the
 
 `.github/workflows/release-rc.yml` is the only publication workflow. It orders authorization, source verification, Docker acceptance, per-platform build and scan, manifest assembly, checksum-protected manager bundle creation, and GitHub pre-release creation. A failed scan cannot leave a version tag pointing at an unverified image.
 
+`.github/workflows/release-stable.yml` is the guarded promotion workflow. It must be dispatched from the exact verified RC tag with matching stable and RC versions plus the literal confirmation `PROMOTE VERIFIED RC`. It verifies the RC release target, manager checksum, embedded version, license, and digest manifest; repeats the source and Docker acceptance gates; and re-scans all four platform images. Stable publication creates new stable tags for the already verified multi-architecture manifests and fails unless their digests remain identical. It never rebuilds production images during promotion.
+
 Before authorizing publication:
 
 1. run the source, Docker acceptance, and image gates from the exact candidate source;
@@ -101,6 +103,8 @@ Before authorizing publication:
 6. repeat fresh install, update, rollback, backup, and clean-host restore against the published RC digests;
 7. fix failures in a later RC without bypassing any gate;
 8. promote the already verified RC source only after every required automated and manual check passes.
+
+Stable promotion uses the matching RC tag as both workflow source and release source. For example, dispatch the stable workflow from `v1.0.0-rc.2`, set `version` to `1.0.0`, set `rc_version` to `1.0.0-rc.2`, and provide the exact confirmation only after the acceptance evidence and off-host backup are retained.
 
 `v1.0.0-rc.1` was published as a GitHub pre-release from commit `62ebae12f97b2b11955c04bd71008942ac269bd8` after the source gate, isolated Docker acceptance, and all four architecture-specific image scans passed. Its manager archive checksum, embedded version, release target, and attached digest manifest were verified independently. No stable tag or promotion was performed.
 

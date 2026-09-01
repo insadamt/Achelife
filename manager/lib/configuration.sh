@@ -110,11 +110,17 @@ generate_application_key()
 
 validate_port()
 {
-    case "$1" in
-        ''|*[!0-9]*) fail "Port must be a number between 1 and 65535." ;;
-    esac
-    [ "$1" -ge 1 ] && [ "$1" -le 65535 ] \
+    port_number_is_valid "$1" \
         || fail "Port must be a number between 1 and 65535."
+}
+
+port_number_is_valid()
+{
+    case "$1" in
+        ''|*[!0-9]*) return 1 ;;
+    esac
+
+    [ "$1" -ge 1 ] && [ "$1" -le 65535 ]
 }
 
 validate_bind_address()

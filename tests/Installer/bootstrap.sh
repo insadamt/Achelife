@@ -28,7 +28,7 @@ create_bundle "$bundle_version"
 export FAKE_DOWNLOAD_DIR="$bundle_directory"
 export ACHELIFE_RELEASE_DOWNLOAD_BASE=https://example.test/downloads
 
-stable_output="$(sh "$TEST_ROOT/scripts/install.sh" --version "$bundle_version" --yes --no-start)"
+stable_output="$(printf 'piped bootstrap input\n' | sh "$TEST_ROOT/scripts/install.sh" --version "$bundle_version" --yes --no-start)"
 assert_output_contains "$stable_output" 'BOOTSTRAP_ARGS=install'
 assert_output_contains "$stable_output" '--channel stable'
 

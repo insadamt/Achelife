@@ -6,6 +6,7 @@ use App\Enums\HabitDifficulty;
 use App\Enums\HabitOccurrenceState;
 use App\Enums\HabitScheduleType;
 use App\Enums\HabitType;
+use App\Http\Middleware\HandleInertiaRequests;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
@@ -124,5 +125,23 @@ class HabitCreationTest extends TestCase
             ->assertRedirect();
         $this->assertDatabaseHas('habit_settings', ['user_id' => $user->id, 'calendar_labels' => 'season_days']);
         $this->assertSame(0, $season->refresh()->season_points);
+    }
+
+    public function test_inertia_navigation_updates_the_redirect_destination_for_habit_actions(): void
+    {
+        CarbonImmutable::setTestNow('2026-08-18 10:00:00');
+        $user = $this->userCreatedOn('2026-08-18');
+        $habit = $this->createHabit($user, '2026-08-18');
+        $user->seasons()->update(['introduced_at' => now()]);
+
+        $this->actingAs($user)->get('/seasons')->assertOk();
+        $assetVersion = app(HandleInertiaRequests::class)->version(request());
+        $this->get('/habits', [
+            'X-Inertia' => 'true',
+            'X-Inertia-Version' => $assetVersion,
+        ])->assertOk();
+
+        $this->post("/habits/{$habit->id}/occurrences/2026-08-18/toggle")
+            ->assertRedirect('/habits');
     }
 }

@@ -120,6 +120,30 @@ port_is_in_use()
     return 1
 }
 
+find_available_port()
+{
+    candidate_port="$1"
+
+    while [ "$candidate_port" -le 65535 ]; do
+        if ! port_is_in_use "$candidate_port"; then
+            printf '%s\n' "$candidate_port"
+            return 0
+        fi
+        candidate_port=$((candidate_port + 1))
+    done
+
+    candidate_port=1024
+    while [ "$candidate_port" -lt "$1" ]; do
+        if ! port_is_in_use "$candidate_port"; then
+            printf '%s\n' "$candidate_port"
+            return 0
+        fi
+        candidate_port=$((candidate_port + 1))
+    done
+
+    return 1
+}
+
 installation_owns_port()
 {
     [ -r "$CONFIG_FILE" ] || return 1

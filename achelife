@@ -56,12 +56,12 @@ Commands:
 Install options:
   --dir PATH              Installation directory
   --bin-dir PATH          Executable directory (default: $HOME/.local/bin)
-  --port PORT             Host port (default: 8080)
+  --port PORT             Preferred host port (default: 8080; conflicts prompt)
   --bind ADDRESS          Bind address (default: 127.0.0.1)
   --project NAME          Compose project identity
   --version VERSION       Exact MAJOR.MINOR.PATCH[-rc.N] version
   --channel stable|rc     Release channel (default: stable)
-  --yes                   Non-interactive confirmation
+  --yes                   Accept install and an available suggested port
   --acknowledge-network-risk
                            Required for non-localhost binding
   --no-start              Install without starting the stack

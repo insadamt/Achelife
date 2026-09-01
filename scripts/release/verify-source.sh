@@ -97,6 +97,9 @@ verify_immutable_supply_chain_references()
     grep -Eq "scanner_image='[^']+@sha256:[a-f0-9]{64}'" scripts/release/scan-image.sh
     grep -Fq 'scanner_timeout="${TRIVY_TIMEOUT:-15m}"' scripts/release/scan-image.sh
     grep -Fq 'docker pull --platform "$BUILT_PLATFORM" "$BUILT_IMAGE"' .github/workflows/release-rc.yml
+    grep -Fq 'PROMOTE VERIFIED RC' .github/workflows/release-stable.yml
+    grep -Fq 'docker buildx imagetools create --tag "$stable_image" "${repository}@${candidate_digest}"' .github/workflows/release-stable.yml
+    grep -Fq '[[ "$promoted_digest" == "$candidate_digest" ]]' .github/workflows/release-stable.yml
     grep -Eq "registry_image='[^']+@sha256:[a-f0-9]{64}'" tests/Release/docker_acceptance.sh
     grep -Eq "rollback_image='[^']+@sha256:[a-f0-9]{64}'" tests/Release/docker_acceptance.sh
 }
@@ -122,6 +125,8 @@ verify_public_repository_contract()
     [ "$(grep -Fc 'org.opencontainers.image.licenses="MIT"' Dockerfile)" -eq 2 ]
     grep -Fq 'achelife-manager/LICENSE' scripts/install.sh
     grep -Fq 'cp LICENSE dist/achelife-manager/LICENSE' .github/workflows/release-rc.yml
+    grep -Fq 'cp LICENSE dist/achelife-manager/LICENSE' .github/workflows/release-stable.yml
+    test -x scripts/release/write-stable-notes.sh
     test -s README.md
     test -s SELF_HOSTING.md
     test -s CONTRIBUTING.md
@@ -135,7 +140,7 @@ run_gate 'npm dependency audit' npm audit --audit-level=high
 run_gate 'Pint' ./vendor/bin/pint --test
 run_gate 'PHPUnit' php artisan test
 run_gate 'Installer and manager shell suite' sh tests/Installer/run.sh
-run_gate 'RC release notes' sh tests/Release/release_notes_test.sh
+run_gate 'Release notes' sh tests/Release/release_notes_test.sh
 run_gate 'TypeScript' npm run types:check
 run_gate 'ESLint' npm run lint
 run_gate 'Production frontend build' npm run build

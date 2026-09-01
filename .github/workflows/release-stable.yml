@@ -1,0 +1,249 @@
+name: Promote verified Achelife release candidate
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Exact stable version without the v prefix
+        required: true
+        type: string
+      rc_version:
+        description: Exact verified RC version without the v prefix
+        required: true
+        type: string
+      confirmation:
+        description: Type PROMOTE VERIFIED RC to authorize stable publication
+        required: true
+        type: string
+
+concurrency:
+  group: achelife-stable-${{ inputs.version }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  authorize:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Validate explicit promotion request
+        env:
+          REQUESTED_VERSION: ${{ inputs.version }}
+          VERIFIED_RC_VERSION: ${{ inputs.rc_version }}
+          PROMOTION_CONFIRMATION: ${{ inputs.confirmation }}
+          DISPATCH_REF: ${{ github.ref }}
+        shell: bash
+        run: |
+          [[ "$REQUESTED_VERSION" =~ ^(0|[1-9][0-9]{0,8})\.(0|[1-9][0-9]{0,8})\.(0|[1-9][0-9]{0,8})$ ]]
+          [[ "$VERIFIED_RC_VERSION" =~ ^${REQUESTED_VERSION}-rc\.(0|[1-9][0-9]{0,8})$ ]]
+          [[ "$PROMOTION_CONFIRMATION" == "PROMOTE VERIFIED RC" ]]
+          [[ "$DISPATCH_REF" == "refs/tags/v${VERIFIED_RC_VERSION}" ]]
+
+  verify-candidate:
+    needs: authorize
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - name: Verify RC release identity and assets
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERIFIED_RC_VERSION: ${{ inputs.rc_version }}
+          EXPECTED_COMMIT: ${{ github.sha }}
+        shell: bash
+        run: |
+          release_json="$(gh api "repos/${GITHUB_REPOSITORY}/releases/tags/v${VERIFIED_RC_VERSION}")"
+          [[ "$(jq -r '.draft' <<<"$release_json")" == false ]]
+          [[ "$(jq -r '.prerelease' <<<"$release_json")" == true ]]
+          [[ "$(jq -r '.target_commitish' <<<"$release_json")" == "$EXPECTED_COMMIT" ]]
+          [[ "$(git rev-parse HEAD)" == "$EXPECTED_COMMIT" ]]
+
+          mkdir -p candidate
+          gh release download "v${VERIFIED_RC_VERSION}" \
+            --pattern "achelife-manager-${VERIFIED_RC_VERSION}.tar.gz" \
+            --pattern "achelife-manager-${VERIFIED_RC_VERSION}.tar.gz.sha256" \
+            --pattern image-digests.txt \
+            --dir candidate
+          cd candidate
+          sha256sum -c "achelife-manager-${VERIFIED_RC_VERSION}.tar.gz.sha256"
+          archive="achelife-manager-${VERIFIED_RC_VERSION}.tar.gz"
+          tar -tvzf "$archive" | awk '{ type = substr($1, 1, 1); if (type != "-" && type != "d") exit 1 }'
+          [[ "$(tar -tzf "$archive" | sed '/\/$/d' | sort | uniq -d)" == "" ]]
+          tar -xOf "$archive" achelife-manager/manager/lib/common.sh \
+            | grep -Fx "MANAGER_VERSION=\"${VERIFIED_RC_VERSION}\""
+          tar -tzf "$archive" | grep -Fx achelife-manager/LICENSE
+          grep -Eq "^APP_IMAGE=ghcr\.io/insadamt/achelife:${VERIFIED_RC_VERSION}@sha256:[a-f0-9]{64}$" image-digests.txt
+          grep -Eq "^WEB_IMAGE=ghcr\.io/insadamt/achelife-web:${VERIFIED_RC_VERSION}@sha256:[a-f0-9]{64}$" image-digests.txt
+      - uses: shivammathur/setup-php@b604ade2a87db23f8871b7182e69ec5e75effb45 # v2
+        with:
+          php-version: "8.4"
+          extensions: bcmath, intl, mbstring, pdo_sqlite, zip
+          coverage: none
+      - run: composer install --no-interaction --no-progress --prefer-dist
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: "22"
+          cache: npm
+      - run: npm ci
+      - run: sh scripts/release/verify-source.sh
+
+  docker-acceptance:
+    needs: verify-candidate
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - run: sh tests/Release/docker_acceptance.sh
+
+  rescan-candidate:
+    needs: [verify-candidate, docker-acceptance]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    permissions:
+      contents: read
+      packages: read
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - image-key: APP
+            repository: ghcr.io/insadamt/achelife
+            platform: linux/amd64
+            architecture: amd64
+          - image-key: APP
+            repository: ghcr.io/insadamt/achelife
+            platform: linux/arm64
+            architecture: arm64
+          - image-key: WEB
+            repository: ghcr.io/insadamt/achelife-web
+            platform: linux/amd64
+            architecture: amd64
+          - image-key: WEB
+            repository: ghcr.io/insadamt/achelife-web
+            platform: linux/arm64
+            architecture: arm64
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - uses: docker/setup-qemu-action@96fe6ef7f33517b61c61be40b68a1882f3264fb8 # v4
+      - uses: docker/setup-buildx-action@37fe631027851001ddb9b187196cc803df7f5f0e # v4
+      - uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Resolve and scan exact RC platform image
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERIFIED_RC_VERSION: ${{ inputs.rc_version }}
+          IMAGE_KEY: ${{ matrix.image-key }}
+          IMAGE_REPOSITORY: ${{ matrix.repository }}
+          IMAGE_PLATFORM: ${{ matrix.platform }}
+          IMAGE_ARCHITECTURE: ${{ matrix.architecture }}
+          TRIVY_CACHE_DIR: ${{ runner.temp }}/trivy-cache
+        shell: bash
+        run: |
+          gh release download "v${VERIFIED_RC_VERSION}" --pattern image-digests.txt --dir "$RUNNER_TEMP"
+          candidate_image="$(sed -n "s/^${IMAGE_KEY}_IMAGE=//p" "$RUNNER_TEMP/image-digests.txt")"
+          [[ "$candidate_image" =~ ^${IMAGE_REPOSITORY}:${VERIFIED_RC_VERSION}@sha256:[a-f0-9]{64}$ ]]
+          docker buildx imagetools inspect "$candidate_image" --raw >"$RUNNER_TEMP/manifest.json"
+          platform_digest="$(jq -r --arg architecture "$IMAGE_ARCHITECTURE" \
+            '.manifests[] | select(.platform.os == "linux" and .platform.architecture == $architecture) | .digest' \
+            "$RUNNER_TEMP/manifest.json")"
+          [[ "$platform_digest" =~ ^sha256:[a-f0-9]{64}$ ]]
+          [[ "$(grep -c '^sha256:' <<<"$platform_digest")" -eq 1 ]]
+          platform_image="${IMAGE_REPOSITORY}@${platform_digest}"
+          docker pull --platform "$IMAGE_PLATFORM" "$platform_image"
+          sh scripts/release/scan-image.sh "$platform_image"
+
+  publish-stable:
+    needs: rescan-candidate
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    permissions:
+      contents: write
+      packages: write
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - uses: docker/setup-buildx-action@37fe631027851001ddb9b187196cc803df7f5f0e # v4
+      - uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Prepare stable artifacts from verified RC
+        env:
+          GH_TOKEN: ${{ github.token }}
+          STABLE_VERSION: ${{ inputs.version }}
+          VERIFIED_RC_VERSION: ${{ inputs.rc_version }}
+        shell: bash
+        run: |
+          if gh api "repos/${GITHUB_REPOSITORY}/releases/tags/v${STABLE_VERSION}" >/dev/null 2>&1; then
+            echo "Stable release v${STABLE_VERSION} already exists." >&2
+            exit 1
+          fi
+
+          mkdir -p candidate dist/achelife-manager
+          gh release download "v${VERIFIED_RC_VERSION}" --pattern image-digests.txt --dir candidate
+          : >dist/image-digests.txt
+          for target in app web; do
+            if [[ "$target" == app ]]; then
+              key=APP
+              repository=ghcr.io/insadamt/achelife
+            else
+              key=WEB
+              repository=ghcr.io/insadamt/achelife-web
+            fi
+            candidate_image="$(sed -n "s/^${key}_IMAGE=//p" candidate/image-digests.txt)"
+            [[ "$candidate_image" =~ ^${repository}:${VERIFIED_RC_VERSION}@sha256:[a-f0-9]{64}$ ]]
+            candidate_digest="${candidate_image##*@}"
+            remote_candidate_digest="$(docker buildx imagetools inspect "${repository}:${VERIFIED_RC_VERSION}" --format '{{.Manifest.Digest}}')"
+            [[ "$remote_candidate_digest" == "$candidate_digest" ]]
+
+            stable_image="${repository}:${STABLE_VERSION}"
+            existing_stable_digest="$(docker buildx imagetools inspect "$stable_image" --format '{{.Manifest.Digest}}' 2>/dev/null || true)"
+            if [[ -n "$existing_stable_digest" ]]; then
+              [[ "$existing_stable_digest" == "$candidate_digest" ]]
+            else
+              docker buildx imagetools create --tag "$stable_image" "${repository}@${candidate_digest}"
+            fi
+            promoted_digest="$(docker buildx imagetools inspect "$stable_image" --format '{{.Manifest.Digest}}')"
+            [[ "$promoted_digest" == "$candidate_digest" ]]
+            printf '%s=%s@%s\n' "${key}_IMAGE" "$stable_image" "$promoted_digest" >>dist/image-digests.txt
+          done
+
+          cp achelife dist/achelife-manager/achelife
+          cp LICENSE dist/achelife-manager/LICENSE
+          cp -R manager dist/achelife-manager/manager
+          sed -i "s/^MANAGER_VERSION=.*/MANAGER_VERSION=\"${STABLE_VERSION}\"/" dist/achelife-manager/manager/lib/common.sh
+          tar -czf "dist/achelife-manager-${STABLE_VERSION}.tar.gz" -C dist achelife-manager
+          cd dist
+          sha256sum "achelife-manager-${STABLE_VERSION}.tar.gz" >"achelife-manager-${STABLE_VERSION}.tar.gz.sha256"
+          cd ..
+          sh scripts/release/write-stable-notes.sh \
+            "$STABLE_VERSION" "$VERIFIED_RC_VERSION" dist/image-digests.txt dist/release-notes.md
+      - name: Publish stable GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          STABLE_VERSION: ${{ inputs.version }}
+          EXPECTED_COMMIT: ${{ github.sha }}
+        shell: bash
+        run: |
+          existing_tag_commit="$(gh api "repos/${GITHUB_REPOSITORY}/git/ref/tags/v${STABLE_VERSION}" --jq '.object.sha' 2>/dev/null || true)"
+          if [[ -n "$existing_tag_commit" ]]; then
+            [[ "$existing_tag_commit" == "$EXPECTED_COMMIT" ]]
+            tag_arguments=(--verify-tag)
+          else
+            tag_arguments=(--target "$EXPECTED_COMMIT")
+          fi
+          gh release create "v${STABLE_VERSION}" \
+            "dist/achelife-manager-${STABLE_VERSION}.tar.gz" \
+            "dist/achelife-manager-${STABLE_VERSION}.tar.gz.sha256" \
+            dist/image-digests.txt \
+            "${tag_arguments[@]}" \
+            --latest \
+            --title "Achelife ${STABLE_VERSION}" \
+            --notes-file dist/release-notes.md

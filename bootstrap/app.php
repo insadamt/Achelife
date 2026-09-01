@@ -2,6 +2,7 @@
 
 use App\Http\Middleware\HandleInertiaRequests;
 use App\Http\Middleware\RejectWritesDuringAccountRestore;
+use App\Http\Middleware\RememberInertiaPageUrl;
 use App\Http\Middleware\ResolveSingleUser;
 use App\Http\Middleware\SynchronizeMoneySubscriptionState;
 use Illuminate\Contracts\Auth\Middleware\AuthenticatesRequests;
@@ -28,6 +29,7 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
         $middleware->web(append: [
             ResolveSingleUser::class,
+            RememberInertiaPageUrl::class,
             HandleInertiaRequests::class,
             RejectWritesDuringAccountRestore::class,
             SynchronizeMoneySubscriptionState::class,

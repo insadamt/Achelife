@@ -17,33 +17,45 @@ The tested production path is a Docker-capable Linux host with:
 
 The installing user must be able to run Docker and write to the selected installation and executable directories.
 
-## Install the v1 release candidate
+## Quick install
 
-There is no stable v1 release yet. Download the installer from the public source repository and explicitly select the RC channel:
+There is no stable v1 release yet. This one command installs both Achelife and the `achelife` CLI from the current release-candidate channel:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/insadamt/Achelife/master/scripts/install.sh \
-  -o /tmp/achelife-install.sh
-sh /tmp/achelife-install.sh --channel rc
+curl -fsSL https://raw.githubusercontent.com/insadamt/Achelife/master/scripts/install.sh | sh -s -- --channel rc
 ```
 
-The bootstrap installer:
+If you do not want to pipe a remote script into the shell, [review and download the installer](scripts/install.sh), then run it with `sh /path/to/install.sh --channel rc`.
+
+The installer shows the selected version, location, bind address, and port. At the `[Y/n]` prompt:
+
+- press Enter, `y`, or `yes` to install;
+- enter `n` or `no` to cancel without writing the installation;
+- use `--yes` for an intentional non-interactive installation.
+
+During installation it:
 
 1. resolves the newest RC from GitHub Releases;
 2. downloads the versioned manager archive and checksum;
 3. verifies the checksum and archive layout;
-4. installs the manager under `$HOME/.local/share/achelife`;
-5. links `achelife` into `$HOME/.local/bin`;
+4. installs Achelife under `$HOME/.local/share/achelife`;
+5. installs the `achelife` CLI under `$HOME/.local/bin`;
 6. pulls exact digest-pinned app and web images;
 7. starts the stack and waits for readiness.
 
-Add the default executable directory to your shell path when necessary:
+The final message prints the exact application URL and CLI path. If your shell cannot find `achelife`, reopen the terminal or add the default command directory to `PATH`:
 
 ```bash
 export PATH="$HOME/.local/bin:$PATH"
 ```
 
-The default URL is `http://127.0.0.1:8080`. Complete `/setup` once, then finish the first-run onboarding flow.
+Open the printed URL, visit `/setup`, and complete the first-run flow.
+
+### When the preferred port is busy
+
+Achelife prefers port `8080`. If it is occupied, the installer searches for an available port and shows a suggestion. Press Enter to accept the suggestion or type a custom port. A custom port is checked before installation; if it is also occupied, the installer explains that and suggests another one.
+
+With `--yes`, the installer automatically selects the suggested available port and prints the change. The generated project identity follows the selected port on a fresh default installation.
 
 ## Installation options
 
@@ -66,11 +78,11 @@ Useful options include:
 | `--channel stable\|rc` | Select the release channel; stable is the default. |
 | `--dir PATH` | Select the installation directory. |
 | `--bin-dir PATH` | Select the manager command directory. |
-| `--port PORT` | Select the fixed host port. |
+| `--port PORT` | Prefer a host port; an occupied port triggers another suggestion. |
 | `--bind ADDRESS` | Select a local or trusted-private bind address. |
 | `--project NAME` | Select an isolated Compose project identity. |
 | `--no-start` | Write and verify configuration without starting containers. |
-| `--yes` | Confirm a scripted installation non-interactively. |
+| `--yes` | Confirm non-interactively and accept an available suggested port. |
 
 A non-localhost bind also requires `--acknowledge-network-risk`. Use it only on a trusted private network or private VPN with appropriate firewall rules:
 
@@ -81,7 +93,9 @@ achelife install \
   --acknowledge-network-risk
 ```
 
-## Everyday operations
+## Everyday commands
+
+Start with these commands:
 
 ```bash
 achelife status

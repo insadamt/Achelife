@@ -32,6 +32,8 @@ On smaller widths, the shell uses a bottom bar for Today, Tasks, and Habits plus
 
 Authenticated pages also expose a narrow pull notch attached to the right viewport edge. It opens a focus-managed, screen-attached progress panel shared by the application shell rather than a page-specific standard drawer.
 
+Successful Inertia page visits update the server-side current-page fallback used by mutation redirects. This keeps create, update, completion, and lifecycle actions on the page where they were initiated even when the production privacy policy removes the HTTP referrer and the last full browser refresh occurred on another destination.
+
 ## First-run setup
 
 An empty instance presents one passwordless setup screen for the sole profile's display name and browser-detected timezone. Login, registration, logout, email, and password controls are intentionally absent.

@@ -14,8 +14,10 @@ command_install()
     acquire_management_lock
     verify_install_requirements
     resolve_install_configuration
-    confirm_install_security_boundary
-    verify_install_port
+    resolve_available_install_port
+    if ! confirm_install_security_boundary; then
+        return
+    fi
     require_available_disk_space 524288
     pull_exact_images "$RESOLVED_VERSION"
     create_installation_layout
@@ -106,7 +108,8 @@ resolve_install_configuration()
     RESOLVED_PORT="${RESOLVED_PORT:-8080}"
     RESOLVED_BIND_ADDRESS="${INSTALL_BIND_ADDRESS:-$(read_configuration_value ACHELIFE_BIND_ADDRESS 2>/dev/null || true)}"
     RESOLVED_BIND_ADDRESS="${RESOLVED_BIND_ADDRESS:-127.0.0.1}"
-    RESOLVED_PROJECT="${INSTALL_PROJECT:-$(read_configuration_value COMPOSE_PROJECT_NAME 2>/dev/null || true)}"
+    CONFIGURED_PROJECT="$(read_configuration_value COMPOSE_PROJECT_NAME 2>/dev/null || true)"
+    RESOLVED_PROJECT="${INSTALL_PROJECT:-$CONFIGURED_PROJECT}"
     RESOLVED_PROJECT="${RESOLVED_PROJECT:-achelife-${RESOLVED_PORT}}"
     RESOLVED_CHANNEL="${INSTALL_CHANNEL:-$(read_configuration_value ACHELIFE_CHANNEL 2>/dev/null || true)}"
     RESOLVED_CHANNEL="${RESOLVED_CHANNEL:-stable}"
@@ -140,6 +143,7 @@ and change the private instance, including Diary and financial data.
 
 Bind address: $RESOLVED_BIND_ADDRESS
 Install path: $INSTALL_DIR
+Port: $RESOLVED_PORT
 EOF
 
     if [ "$RESOLVED_BIND_ADDRESS" != 127.0.0.1 ] && [ "$RESOLVED_BIND_ADDRESS" != ::1 ]; then
@@ -149,14 +153,64 @@ EOF
     fi
 
     [ "$INSTALL_ASSUME_YES" = true ] && return
-    confirm_literal INSTALL "Install exact Achelife version $RESOLVED_VERSION?"
+    request_yes_no_confirmation "Install Achelife $RESOLVED_VERSION?" || {
+        info "Installation cancelled."
+        return 1
+    }
 }
 
-verify_install_port()
+resolve_available_install_port()
 {
-    if port_is_in_use "$RESOLVED_PORT" && ! installation_owns_port "$RESOLVED_PORT"; then
-        fail "Port $RESOLVED_PORT is already in use. Choose another port with --port."
+    if ! port_is_in_use "$RESOLVED_PORT" || installation_owns_port "$RESOLVED_PORT"; then
+        return
     fi
+
+    occupied_port="$RESOLVED_PORT"
+    suggested_port="$(find_available_port "$((occupied_port + 1))")" \
+        || fail "No available TCP port could be found."
+
+    if [ "$INSTALL_ASSUME_YES" = true ]; then
+        warn "Port $occupied_port is already in use; using available port $suggested_port."
+        select_install_port "$suggested_port"
+        return
+    fi
+
+    [ -r /dev/tty ] && [ -w /dev/tty ] \
+        || fail "Port $occupied_port is already in use. Re-run with --port PORT, or use --yes to accept port $suggested_port."
+
+    while true; do
+        printf 'Port %s is already in use.\n' "$occupied_port" >/dev/tty
+        printf 'Press Enter to use available port %s, or type a custom port: ' "$suggested_port" >/dev/tty
+        IFS= read -r requested_port </dev/tty \
+            || fail "Could not read the port selection."
+        requested_port="${requested_port:-$suggested_port}"
+
+        if ! port_number_is_valid "$requested_port"; then
+            printf 'Port must be a number between 1 and 65535.\n' >/dev/tty
+            continue
+        fi
+
+        if port_is_in_use "$requested_port" && ! installation_owns_port "$requested_port"; then
+            occupied_port="$requested_port"
+            suggested_port="$(find_available_port "$((occupied_port + 1))")" \
+                || fail "No available TCP port could be found."
+            continue
+        fi
+
+        select_install_port "$requested_port"
+        return
+    done
+}
+
+select_install_port()
+{
+    RESOLVED_PORT="$1"
+
+    if [ -z "$INSTALL_PROJECT" ] && [ -z "$CONFIGURED_PROJECT" ]; then
+        RESOLVED_PROJECT="achelife-${RESOLVED_PORT}"
+    fi
+
+    validate_project_name "$RESOLVED_PROJECT"
 }
 
 require_available_disk_space()
@@ -259,5 +313,9 @@ print_install_completion()
     printf 'Command: %s/achelife\n' "$RESOLVED_BIN_DIR"
     printf 'Configuration: %s\n' "$CONFIG_FILE"
     printf 'Data volumes: %s, %s\n' "$DATA_VOLUME_NAME" "$STORAGE_VOLUME_NAME"
+    case ":${PATH}:" in
+        *":${RESOLVED_BIN_DIR}:"*) ;;
+        *) printf 'CLI setup: add %s to PATH, or run %s/achelife directly.\n' "$RESOLVED_BIN_DIR" "$RESOLVED_BIN_DIR" ;;
+    esac
     [ "$INSTALL_START" = false ] || printf 'Complete passwordless setup at /setup if this is a fresh database.\n'
 }

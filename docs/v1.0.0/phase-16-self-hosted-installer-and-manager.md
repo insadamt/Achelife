@@ -10,7 +10,7 @@ No RC or stable release is published by this change. The guarded workflow accept
 
 ## Installer
 
-After an RC is explicitly authorized and published, download its checksum-verified manager bundle or use the versioned bootstrap script. Run the manager from any directory:
+After an RC is explicitly authorized and published, the bootstrap script installs the checksum-verified manager bundle, application stack, and `achelife` CLI in one command. Run the installed manager from any directory:
 
 ```bash
 achelife install --version 1.0.0-rc.1 --channel rc
@@ -20,7 +20,7 @@ The stable channel is the default. Until a stable release exists, installation m
 
 - `--dir PATH`: installation directory, defaulting to `~/.local/share/achelife`;
 - `--bin-dir PATH`: executable directory, defaulting to `~/.local/bin`;
-- `--port PORT`: fixed host port, defaulting to `8080`;
+- `--port PORT`: preferred host port, defaulting to `8080`;
 - `--bind ADDRESS`: fixed host bind address, defaulting to `127.0.0.1`;
 - `--project NAME`: stable Compose project identity, defaulting to `achelife-PORT`;
 - `--version VERSION`: exact stable or RC image version;
@@ -29,7 +29,9 @@ The stable channel is the default. Until a stable release exists, installation m
 - `--acknowledge-network-risk`: mandatory separate acknowledgement for a non-localhost bind;
 - `--no-start`: write and verify installation configuration without starting containers.
 
-`--yes` never substitutes for the network-risk acknowledgement. Invalid or relative paths, invalid ports or bind addresses, conflicting ports, unavailable Docker, missing Compose v2, insufficient disk space, unavailable exact image tags, missing digests, and failed health checks stop installation with recovery guidance.
+Ordinary interactive installation uses a `[Y/n]` prompt where Enter means yes. When the preferred port is occupied, the manager finds an available port and lets the user accept it with Enter or enter another port; occupied custom ports are rejected with a new suggestion. `--yes` accepts the available suggestion non-interactively. The default Compose project identity follows the final selected port on a fresh install.
+
+`--yes` never substitutes for the network-risk acknowledgement. Invalid or relative paths, invalid ports or bind addresses, unavailable Docker, missing Compose v2, insufficient disk space, unavailable exact image tags, missing digests, and failed health checks stop installation with recovery guidance.
 
 Installation is idempotent. Repeating it preserves the application key, Compose identity, volume names, restart policy, and exact installed version unless a corresponding option is supplied. An existing Phase 15 SQLite data volume can be adopted with its original Compose project identity; when `/data/app-key` exists, the installer preserves that key without printing it.
 
@@ -159,6 +161,6 @@ Default uninstall runs Compose `down`, removes the command pointer, retains the 
 
 ## Verification
 
-The Phase 16 shell suite uses isolated fake Docker and network commands. It covers fresh and repeated install, custom directories/ports/binds/projects, localhost defaults, explicit LAN acknowledgement, missing Docker and Compose, port conflicts, invalid configuration, running/stopped and enabled/disabled states, exact/channel update selection, pull/backup/migration/health failures, rollback, locking, backup verification, clean-host restore, restart persistence, secret redaction, retained-data uninstall, confirmed purge, and JSON status/doctor/version.
+The Phase 16 shell suite uses isolated fake Docker and network commands. It covers fresh and repeated install, Enter-as-yes and no cancellation, available-port suggestions, occupied custom-port retries, non-interactive port selection, custom directories/ports/binds/projects, localhost defaults, explicit LAN acknowledgement, missing Docker and Compose, invalid configuration, running/stopped and enabled/disabled states, exact/channel update selection, pull/backup/migration/health failures, rollback, locking, backup verification, clean-host restore, restart persistence, secret redaction, retained-data uninstall, confirmed purge, and JSON status/doctor/version.
 
 Laravel coverage proves fresh-database setup readiness, existing one-profile compatibility, and safe failure for multiple profiles. Phase 17 adds explicit Phase 15 migration, progression-after-restore, isolated Docker recovery, container scan, dependency audit, Compose, workflow, shell syntax, and source hygiene gates. The guarded RC workflow scans each architecture by digest before it creates any public version manifest. See [Phase 17 release hardening](phase-17-release-hardening-and-rc-promotion.md).

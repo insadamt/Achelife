@@ -4,3 +4,6 @@ printf '%s\n' 'State Recv-Q Send-Q Local Address:Port Peer Address:Port'
 if [ "${FAKE_PORT_CONFLICT:-0}" = 1 ]; then
     printf '%s\n' 'LISTEN 0 128 127.0.0.1:18080 0.0.0.0:*'
 fi
+for used_port in ${FAKE_USED_PORTS:-}; do
+    printf 'LISTEN 0 128 127.0.0.1:%s 0.0.0.0:*\n' "$used_port"
+done

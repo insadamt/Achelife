@@ -159,6 +159,26 @@ confirm_literal()
     [ "$confirmation" = "$expected_literal" ] || fail "Confirmation did not match $expected_literal."
 }
 
+request_yes_no_confirmation()
+{
+    prompt_text="$1"
+
+    [ -r /dev/tty ] && [ -w /dev/tty ] \
+        || fail "Interactive confirmation is unavailable. Use --yes for a non-interactive installation."
+
+    while true; do
+        printf '%s [Y/n] ' "$prompt_text" >/dev/tty
+        IFS= read -r confirmation </dev/tty \
+            || fail "Could not read the installation confirmation."
+        normalized_confirmation="$(printf '%s' "$confirmation" | tr '[:upper:]' '[:lower:]')"
+        case "$normalized_confirmation" in
+            ''|y|yes) return 0 ;;
+            n|no) return 1 ;;
+            *) printf 'Please answer yes or no. Press Enter for yes.\n' >/dev/tty ;;
+        esac
+    done
+}
+
 utc_timestamp()
 {
     date -u '+%Y%m%dT%H%M%SZ'

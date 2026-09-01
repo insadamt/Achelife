@@ -28,17 +28,19 @@ Read the [user guide](docs/user-guide.md) for the product workflow and terminolo
 
 The supported deployment is a Docker-capable Linux host with Docker Engine, Docker Compose v2, `curl`, `tar`, and a SHA-256 utility. Git, PHP, Composer, Node.js, and npm are not required on the server.
 
-Download the installer, review it, and explicitly select the RC channel:
+One command installs the application and the `achelife` CLI. Because v1 is still an RC, the command explicitly selects the RC channel:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/insadamt/Achelife/master/scripts/install.sh \
-  -o /tmp/achelife-install.sh
-sh /tmp/achelife-install.sh --channel rc
+curl -fsSL https://raw.githubusercontent.com/insadamt/Achelife/master/scripts/install.sh | sh -s -- --channel rc
 ```
 
-The installer downloads a checksum-protected manager bundle, resolves exact container digests, binds Achelife to `127.0.0.1:8080`, and waits for health. Open `http://127.0.0.1:8080/setup` to create the single local profile and complete onboarding.
+Review the [installer source](scripts/install.sh) first if you prefer not to pipe a remote script into the shell.
 
-If `$HOME/.local/bin` is not already on your `PATH`, add it before using the manager command:
+Press Enter at the `[Y/n]` prompt to continue. The installer downloads a checksum-protected manager bundle, installs the CLI under `$HOME/.local/bin`, resolves exact container digests, and waits for health. It prefers `127.0.0.1:8080`; if port 8080 is occupied, it suggests an available port and lets you accept it with Enter or enter another one.
+
+Open the URL printed at the end of installation to create the single local profile and complete onboarding.
+
+If your shell cannot find `achelife`, reopen the terminal or add its directory to `PATH`:
 
 ```bash
 export PATH="$HOME/.local/bin:$PATH"
