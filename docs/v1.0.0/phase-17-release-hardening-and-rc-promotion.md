@@ -70,6 +70,7 @@ The script creates a uniquely named localhost registry, images, projects, volume
 - a verified pre-migration backup, complete migrations, preserved single-user Season/Task/Money data, and application-key retention;
 - scheduler-driven automatic Subscription payment, access-driven repeat synchronization, and exact-once results;
 - scheduler startup, restart persistence, and no pending migrations;
+- the production PHP ZIP extension and a real portable-account download through Caddy;
 - a deliberately broken target image, automatic snapshot restoration, prior-image restart, and preserved data;
 - copying a full-instance backup off host, destroying the source stack and volumes, and restoring into a different clean-host home and executable path.
 
@@ -107,6 +108,8 @@ Before authorizing publication:
 Stable promotion uses the matching RC tag as both workflow source and release source. For example, dispatch the stable workflow from `v1.0.0-rc.2`, set `version` to `1.0.0`, set `rc_version` to `1.0.0-rc.2`, and provide the exact confirmation only after the acceptance evidence and off-host backup are retained.
 
 `v1.0.0-rc.1` was published as a GitHub pre-release from commit `62ebae12f97b2b11955c04bd71008942ac269bd8` after the source gate, isolated Docker acceptance, and all four architecture-specific image scans passed. Its manager archive checksum, embedded version, release target, and attached digest manifest were verified independently. No stable tag or promotion was performed.
+
+RC.1 exposed a production-only portability failure: development and CI installed PHP ZIP, but the application container did not. Archive download therefore raised a server error when it reached `ZipArchive`. The next RC declares ZIP as an application requirement, installs it in both production PHP stages, and exercises a real exported download in isolated Docker acceptance before publication.
 
 Anonymous installation remains a separate acceptance gate. The source repository and both GHCR packages must be public before the documented installer path can be tested without credentials. Do not check the published-RC installation or public multi-architecture-image roadmap items until anonymous release downloads, image pulls, fresh install, update, backup, restore, failure recovery, and persistence all pass.
 

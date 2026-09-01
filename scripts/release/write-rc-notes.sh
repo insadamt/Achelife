@@ -28,7 +28,7 @@ Achelife ${version} is a v1 release candidate. It is a pre-release, not a stable
 - explicit Season rollover, holds, intermissions, and closeouts;
 - Money preset categories, Transfer fees, and recurring Subscriptions;
 - passwordless single-user setup and resumable onboarding;
-- complete account export, validation, replacement restore, and recovery holds;
+- complete account export, validation, replacement restore, and recovery holds, with the production archive download verified through the container stack;
 - the self-hosted installer and Achelife Manager with safe updates, verified backups, rollback, clean-host restore, diagnostics, and uninstall;
 - multi-architecture container images with provenance, SBOMs, dependency audits, and vulnerability gates.
 - source code and manager tooling under the MIT License.

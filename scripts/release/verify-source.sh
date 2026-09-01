@@ -134,6 +134,15 @@ verify_public_repository_contract()
     test -s docs/user-guide.md
 }
 
+verify_php_runtime_contract()
+{
+    php -r '
+        $manifest = json_decode(file_get_contents("composer.json"), true, flags: JSON_THROW_ON_ERROR);
+        exit(($manifest["require"]["ext-zip"] ?? null) === "*" ? 0 : 1);
+    '
+    [ "$(grep -Fc 'docker-php-ext-install zip' Dockerfile)" -eq 2 ]
+}
+
 run_gate 'Composer manifest' composer validate --strict --no-check-publish
 run_gate 'Composer dependency audit' composer audit --locked --abandoned=fail
 run_gate 'npm dependency audit' npm audit --audit-level=high
@@ -151,5 +160,6 @@ run_gate 'Workflow validation' verify_workflows
 run_gate 'Immutable supply-chain references' verify_immutable_supply_chain_references
 run_gate 'Caddy configuration' verify_caddy_configuration
 run_gate 'Public repository contract' verify_public_repository_contract
+run_gate 'PHP runtime contract' verify_php_runtime_contract
 run_gate 'First-party file size limit' verify_file_sizes
 run_gate 'Whitespace errors' git diff --check

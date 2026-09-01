@@ -25,7 +25,11 @@ WORKDIR /var/www/html
 
 # git allows Composer to fall back to source downloads if
 # GitHub dist/ZIP downloads temporarily fail.
-RUN apk add --no-cache git unzip
+RUN set -eux; \
+    apk add --no-cache git unzip libzip; \
+    apk add --no-cache --virtual .php-extension-build-dependencies $PHPIZE_DEPS libzip-dev; \
+    docker-php-ext-install zip; \
+    apk del .php-extension-build-dependencies
 
 COPY --from=composer-bin /usr/bin/composer /usr/bin/composer
 
@@ -71,6 +75,12 @@ RUN composer dump-autoload \
 FROM php:8.4-fpm-alpine@sha256:6cb5e4ffa03a7c1b01bb5b120ab3684ef76b75aa5ca417e343936db3f71f419f AS app
 
 WORKDIR /var/www/html
+
+RUN set -eux; \
+    apk add --no-cache libzip; \
+    apk add --no-cache --virtual .php-extension-build-dependencies $PHPIZE_DEPS libzip-dev; \
+    docker-php-ext-install zip; \
+    apk del .php-extension-build-dependencies
 
 ARG ACHELIFE_VERSION=1.0.0-rc.1-dev
 ARG ACHELIFE_REVISION=unknown

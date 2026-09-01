@@ -115,6 +115,10 @@ publish_acceptance_images()
     docker build --target web --build-arg "ACHELIFE_VERSION=${rc_version}" --tag "$rc_web_local" "$repository_root"
     docker build --target app --build-arg "ACHELIFE_VERSION=${phase_fifteen_version}" --tag "$phase_fifteen_app_local" "$repository_root"
 
+    docker run --rm --entrypoint php "$rc_app_local" -r \
+        'exit(extension_loaded("zip") ? 0 : 1);' \
+        || fail_acceptance 'The application image does not provide the required PHP ZIP extension.'
+
     docker tag "$rc_app_local" "${image_repository}:${rc_version}"
     docker tag "$rc_web_local" "${image_repository}-web:${rc_version}"
     docker tag "$phase_fifteen_app_local" "${image_repository}:${phase_fifteen_version}"
@@ -217,6 +221,13 @@ compose_for_installation "$upgrade_install" exec -T scheduler php artisan tinker
 curl --fail --silent "http://127.0.0.1:${upgrade_port}/money" >/dev/null
 curl --fail --silent "http://127.0.0.1:${upgrade_port}/money" >/dev/null
 verify_upgraded_state "$upgrade_install"
+portable_archive="${acceptance_root}/account.achelife.zip"
+curl --fail --silent --show-error \
+    --output "$portable_archive" \
+    "http://127.0.0.1:${upgrade_port}/settings/portability/export"
+[ -s "$portable_archive" ] || fail_acceptance 'The portable account export was empty.'
+unzip -t "$portable_archive" >/dev/null \
+    || fail_acceptance 'The downloaded portable account export was not a readable ZIP archive.'
 scheduler_container="$(compose_for_installation "$upgrade_install" ps --quiet scheduler)"
 [ "$(docker inspect --format '{{.State.Running}}' "$scheduler_container")" = true ] \
     || fail_acceptance 'Scheduler container was not running.'

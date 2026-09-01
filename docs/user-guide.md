@@ -88,6 +88,8 @@ General Settings contains profile and calendar preferences plus account portabil
 
 A portable export moves or copies one Achelife account snapshot. It includes the supported application data and can be restored during onboarding or used to replace an existing instance after explicit confirmation.
 
+Download it from **Settings > General > Account portability**. A successful download ends in `.achelife.zip`; keep that file private and do not rename or extract it before uploading it to another Achelife server.
+
 Portable restore does not continuously synchronize two servers and does not merge divergent histories. Pick one authoritative history before restoring.
 
 ## Full-instance backups
