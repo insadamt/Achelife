@@ -143,6 +143,19 @@ verify_php_runtime_contract()
     [ "$(grep -Fc 'docker-php-ext-install zip' Dockerfile)" -eq 2 ]
 }
 
+verify_caddy_binary_contract()
+{
+    grep -Fq 'golang:1.26.6-alpine@sha256:3889b425f035be855a72fb4755265311293b6d414521f0a519d819df32222d83 AS caddy-builder' Dockerfile
+    grep -Fq 'go get github.com/caddyserver/caddy/v2/cmd/caddy@v2.11.4' Dockerfile
+    grep -Fq 'golang.org/x/crypto@v0.55.0' Dockerfile
+    grep -Fq 'golang.org/x/net@v0.57.0' Dockerfile
+    grep -Fq 'golang.org/x/text@v0.41.0' Dockerfile
+    grep -Fq 'google.golang.org/grpc@v1.83.1' Dockerfile
+    grep -Fq 'go mod verify' Dockerfile
+    grep -Fq 'CustomVersion=v2.11.4-achelife.1' Dockerfile
+    grep -Fq 'COPY --from=caddy-builder /usr/bin/caddy /usr/bin/caddy' Dockerfile
+}
+
 run_gate 'Composer manifest' composer validate --strict --no-check-publish
 run_gate 'Composer dependency audit' composer audit --locked --abandoned=fail
 run_gate 'npm dependency audit' npm audit --audit-level=high
@@ -161,5 +174,6 @@ run_gate 'Immutable supply-chain references' verify_immutable_supply_chain_refer
 run_gate 'Caddy configuration' verify_caddy_configuration
 run_gate 'Public repository contract' verify_public_repository_contract
 run_gate 'PHP runtime contract' verify_php_runtime_contract
+run_gate 'Caddy binary contract' verify_caddy_binary_contract
 run_gate 'First-party file size limit' verify_file_sizes
 run_gate 'Whitespace errors' git diff --check

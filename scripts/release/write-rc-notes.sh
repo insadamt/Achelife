@@ -78,7 +78,7 @@ Backups contain the application key, database, Diary, Money, and persistent stor
 - Achelife is passwordless and single-user. Anyone who can reach it can read and change all data.
 - Public-internet exposure is unsupported; use localhost, a trusted private network, or a private VPN.
 - This RC supports \`linux/amd64\` and \`linux/arm64\`.
-- The application image must pass with no HIGH or CRITICAL findings. The pinned Caddy web image can contain reviewed inherited HIGH findings when the official base has no fixed build; publication re-scans exact digests, keeps those findings visible in workflow logs, and blocks fixable CRITICAL findings.
+- The application image must pass with no HIGH or CRITICAL findings. The web image uses the pinned Caddy 2.11.4 source with patched Go security dependencies because the official image has no fixed build; publication re-scans exact digests, keeps HIGH findings visible in workflow logs, and blocks fixable CRITICAL findings.
 - Divergent account archives are not merged, and independent servers do not synchronize continuously.
 - Subscriptions do not execute bank transactions, and cross-currency Transfers are unsupported.
 

@@ -118,13 +118,44 @@ CMD ["php-fpm"]
 
 
 # ------------------------------------------------------------
-# Stage 4: Caddy web server
+# Stage 4: Build the Caddy binary with patched Go dependencies
+# ------------------------------------------------------------
+FROM --platform=$BUILDPLATFORM golang:1.26.6-alpine@sha256:3889b425f035be855a72fb4755265311293b6d414521f0a519d819df32222d83 AS caddy-builder
+
+ARG TARGETOS
+ARG TARGETARCH
+
+WORKDIR /usr/src/achelife-caddy
+
+RUN --mount=type=cache,target=/go/pkg/mod \
+    --mount=type=cache,target=/root/.cache/go-build \
+    go mod init achelife.local/caddy \
+    && go get github.com/caddyserver/caddy/v2/cmd/caddy@v2.11.4 \
+    && go get \
+        golang.org/x/crypto@v0.55.0 \
+        golang.org/x/net@v0.57.0 \
+        golang.org/x/text@v0.41.0 \
+        google.golang.org/grpc@v1.83.1 \
+    && go mod verify \
+    && CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH go build \
+        -trimpath \
+        -ldflags '-s -w -X github.com/caddyserver/caddy/v2.CustomVersion=v2.11.4-achelife.1' \
+        -o /usr/bin/caddy \
+        github.com/caddyserver/caddy/v2/cmd/caddy
+
+
+# ------------------------------------------------------------
+# Stage 5: Caddy web server
 # ------------------------------------------------------------
 FROM caddy:2-alpine@sha256:5f5c8640aae01df9654968d946d8f1a56c497f1dd5c5cda4cf95ab7c14d58648 AS web
 
 WORKDIR /srv
 
-RUN apk upgrade --no-cache
+COPY --from=caddy-builder /usr/bin/caddy /usr/bin/caddy
+
+RUN apk upgrade --no-cache \
+    && setcap cap_net_bind_service=+ep /usr/bin/caddy \
+    && caddy version
 
 ARG ACHELIFE_VERSION=1.0.0-rc.1-dev
 ARG ACHELIFE_REVISION=unknown

@@ -26,13 +26,15 @@ It validates:
 - every GitHub Actions workflow with a digest-pinned Actionlint image;
 - the 500-line first-party file limit and `git diff --check`.
 
-The production Dockerfile pins Node, Composer, PHP, and Caddy base images by multi-architecture digest. The production context excludes development tooling, tests, documentation, local agent state, and release files. Release workflow actions and scanner images are pinned to immutable commits or digests.
+The production Dockerfile pins Node, Composer, PHP, Go, and Caddy base images by multi-architecture digest. The production context excludes development tooling, tests, documentation, local agent state, and release files. Release workflow actions and scanner images are pinned to immutable commits or digests.
 
 ## Image gate
 
 The RC workflow builds `linux/amd64` and `linux/arm64` application and web images independently. Each platform image is pushed by digest without a public version tag, scanned at that exact digest, and recorded as a short-lived workflow artifact. Only after all four builds and scans pass does the workflow assemble the public multi-architecture RC manifests.
 
 Each BuildKit result includes maximum provenance and an SBOM. The pinned Trivy gate reports fixable HIGH and CRITICAL vulnerabilities and fails on any fixable CRITICAL vulnerability. HIGH findings remain visible for release review and base-image refresh decisions.
+
+The first RC.2 publication attempt correctly stopped when a newly disclosed fixable CRITICAL vulnerability appeared in the Go cryptography module embedded in the latest official Caddy image. Because no fixed upstream Caddy image was available, Achelife keeps the pinned Caddy 2.11.4 runtime and rebuilds its checksum-verified Go module with fixed cryptography, networking, text, and gRPC modules. The source gate locks the toolchain, Caddy version, dependency versions, and replacement step so a later release cannot silently restore the vulnerable binary.
 
 Run the same scan against a locally built image with:
 
