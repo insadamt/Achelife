@@ -19,7 +19,7 @@ RUN npm run build
 # ------------------------------------------------------------
 FROM --platform=$BUILDPLATFORM composer:2@sha256:4d71c3c2109c61d5415544264b59ad4087e4c5b7244481723664138fd36d5040 AS composer-bin
 
-FROM --platform=$BUILDPLATFORM php:8.4-fpm-alpine@sha256:6cb5e4ffa03a7c1b01bb5b120ab3684ef76b75aa5ca417e343936db3f71f419f AS vendor
+FROM --platform=$BUILDPLATFORM php:8.5-fpm-alpine@sha256:22a4c414bb8e91ac7aefe9b1d80e832caa67252aca58b6af7eeb3bc92188fc5b AS vendor
 
 WORKDIR /var/www/html
 
@@ -72,7 +72,7 @@ RUN composer dump-autoload \
 # ------------------------------------------------------------
 # Stage 3: Achelife application
 # ------------------------------------------------------------
-FROM php:8.4-fpm-alpine@sha256:6cb5e4ffa03a7c1b01bb5b120ab3684ef76b75aa5ca417e343936db3f71f419f AS app
+FROM php:8.5-fpm-alpine@sha256:22a4c414bb8e91ac7aefe9b1d80e832caa67252aca58b6af7eeb3bc92188fc5b AS app
 
 WORKDIR /var/www/html
 
