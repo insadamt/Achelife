@@ -1,10 +1,27 @@
 start_stack_and_verify()
 {
     require_command curl
-    docker_compose up -d app || return 1
+    start_application_service_and_wait || return 1
+    start_dependent_services_and_verify || return 1
+}
+
+recreate_stack_and_verify()
+{
+    require_command curl
+    start_application_service_and_wait --force-recreate || return 1
+    start_dependent_services_and_verify --force-recreate || return 1
+}
+
+start_application_service_and_wait()
+{
+    docker_compose up -d "$@" app || return 1
     wait_for_service_health app "$DEFAULT_HEALTH_TIMEOUT" || return 1
     docker_compose exec -T app php artisan up >/dev/null 2>&1 || true
-    docker_compose up -d scheduler web || return 1
+}
+
+start_dependent_services_and_verify()
+{
+    docker_compose up -d "$@" scheduler web || return 1
     wait_for_application_health "$DEFAULT_HEALTH_TIMEOUT" || return 1
     verify_migration_state || return 1
     verify_single_user_readiness || return 1
@@ -58,8 +75,7 @@ command_restart()
     acquire_management_lock
     verify_docker_requirements
     info "Restarting Achelife..."
-    docker_compose stop
-    start_stack_and_verify || {
+    recreate_stack_and_verify || {
         print_health_recovery_instructions
         fail "Achelife failed to restart cleanly."
     }

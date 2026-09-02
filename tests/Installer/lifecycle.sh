@@ -14,7 +14,10 @@ run_manager --dir "$install_directory" stop >/dev/null
 status_json="$(run_manager --dir "$install_directory" status --json)"
 assert_output_contains "$status_json" '"running":false'
 run_manager --dir "$install_directory" start >/dev/null
+: >"$FAKE_DOCKER_STATE/events.log"
 run_manager --dir "$install_directory" restart >/dev/null
+assert_file_contains "$FAKE_DOCKER_STATE/events.log" 'compose-up-arguments:-d --force-recreate app'
+assert_file_contains "$FAKE_DOCKER_STATE/events.log" 'compose-up-arguments:-d --force-recreate scheduler web'
 
 run_manager --dir "$install_directory" disable --now >/dev/null
 assert_file_contains "$install_directory/config/installation.env" 'ACHELIFE_RESTART_POLICY=no'

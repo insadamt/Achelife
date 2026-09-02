@@ -107,6 +107,8 @@ achelife logs
 achelife doctor
 ```
 
+`achelife restart` recreates the disposable app, scheduler, and web containers from the configured images. Your database and uploaded files remain in their persistent Docker volumes.
+
 `achelife status --json`, `achelife doctor --json`, and `achelife version --json` provide machine-readable output without revealing the application key.
 
 Enable or disable Docker restart behavior at boot:

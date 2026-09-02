@@ -30,6 +30,7 @@ compose_command()
         up)
             configured_version="$(sed -n 's/^ACHELIFE_VERSION=//p' "$compose_configuration" 2>/dev/null || true)"
             printf 'compose-up:%s\n' "$configured_version" >>"$state_directory/events.log"
+            printf 'compose-up-arguments:%s\n' "$*" >>"$state_directory/events.log"
             [ "${FAKE_MIGRATION_FAILURE:-0}" != 1 ] || exit 1
             [ "${FAKE_MIGRATION_FAIL_VERSION:-}" != "$configured_version" ] || exit 1
             touch "$state_directory/created" "$state_directory/running"

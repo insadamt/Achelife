@@ -75,7 +75,7 @@ The app health check runs `php artisan achelife:verify`. It proves that all migr
 | `achelife install` | Install or idempotently reconcile an exact version. |
 | `achelife start` | Start app, scheduler, and web; clear maintenance mode; verify health. |
 | `achelife stop` | Stop containers without deleting them or their volumes. |
-| `achelife restart` | Stop, start, and run the complete verification gate. |
+| `achelife restart` | Recreate disposable containers while preserving persistent volumes, then run the complete verification gate. |
 | `achelife status` | Show version, URL, running/health state, container count, database bytes, last backup, auto-start, and cached update state. |
 | `achelife update` | Resolve the latest stable release and perform the safe update transaction. |
 | `achelife update --check` | Resolve and validate exact remote image availability without pulling or mutating the installation. |

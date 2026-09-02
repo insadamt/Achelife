@@ -231,7 +231,16 @@ unzip -t "$portable_archive" >/dev/null \
 scheduler_container="$(compose_for_installation "$upgrade_install" ps --quiet scheduler)"
 [ "$(docker inspect --format '{{.State.Running}}' "$scheduler_container")" = true ] \
     || fail_acceptance 'Scheduler container was not running.'
+app_container_before_restart="$(compose_for_installation "$upgrade_install" ps --quiet app)"
+web_container_before_restart="$(compose_for_installation "$upgrade_install" ps --quiet web)"
+scheduler_container_before_restart="$scheduler_container"
 run_manager "$upgrade_home" --dir "$upgrade_install" restart >/dev/null
+[ "$(compose_for_installation "$upgrade_install" ps --quiet app)" != "$app_container_before_restart" ] \
+    || fail_acceptance 'Restart did not recreate the application container.'
+[ "$(compose_for_installation "$upgrade_install" ps --quiet web)" != "$web_container_before_restart" ] \
+    || fail_acceptance 'Restart did not recreate the web container.'
+[ "$(compose_for_installation "$upgrade_install" ps --quiet scheduler)" != "$scheduler_container_before_restart" ] \
+    || fail_acceptance 'Restart did not recreate the scheduler container.'
 verify_upgraded_state "$upgrade_install"
 key_after="$(configuration_value ACHELIFE_APP_KEY "${upgrade_install}/config/installation.env" | sha256sum | awk '{print $1}')"
 [ "$key_before" = "$key_after" ] || fail_acceptance 'Application key changed during update or restart.'
