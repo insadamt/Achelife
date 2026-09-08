@@ -1,0 +1,11 @@
+# Task statistics
+
+Tasks has two pages connected by Tasks / Statistics navigation. The task list and composer stay at `/tasks`; the separate Statistics page at `/tasks/statistics` shows Completed tasks, Task SP earned, On-time completion, and Important tasks completed. All metrics use completion dates in the user's saved timezone. Older overdue tasks completed now count now; recurring occurrences count individually, and subtasks do not count separately. Stored rewards, timing, and importance at completion are authoritative. Undoing a completion removes it from statistics until it is completed again.
+
+The filters are Season (default), Month, Year, and All time. Season, Month, and Year include previous/next controls around the selected period label, such as `< Season 1 >` or `< September 2026 >`. The next control stops at the current period. Each selected season/month/year compares with the **entire** preceding season/month/year. All time has no selector controls or comparison. During intermission, Season initially displays the latest season. A first season has no previous-season baseline. Calendar periods with no completions have zero count/SP totals.
+
+Count and SP cards display absolute and percentage changes. A zero baseline displays “Previously 0” for growth and “No change” when both totals are zero. On-time completion is the percentage of completions classified early or on-time, with changes in percentage points. With no completions the rate is unavailable, not zero. All time has no deltas or comparison label.
+
+A single-color line chart switches between completed Task count and earned Task SP. It shows daily activity for season/month, monthly activity for year/all time, and yearly activity for all-time histories longer than 36 months. Missing dates within the displayed range are zero-filled; future dates are omitted. Points expose dates and values on hover and keyboard focus. Empty periods display an empty state.
+
+Statistics cover all matching completions, independently of task-list pagination. The filter and selected value are kept in the `statistics_period` and `statistics_value` query parameters; changing either refreshes only statistics. Existing unrelated query parameters are preserved. No schema changes or stored snapshots are required.

@@ -1,6 +1,12 @@
+[Documentation](docs/README.md) / Contributing
+
 # Contributing to Achelife
 
 Thank you for helping improve Achelife. Bug fixes, tests, documentation, accessibility improvements, and focused features are welcome.
+
+[Setup](#development-setup) · [Code expectations](#code-expectations) · [Validation](#validation) · [Pull requests](#pull-requests)
+
+---
 
 ## Before starting
 

@@ -1,10 +1,14 @@
+[Documentation](docs/README.md) / Security
+
 # Security policy
 
 Achelife handles private Diary writing, People notes, Money records, account exports, full-instance backups, and an application encryption key. Please report security problems privately and avoid testing with anyone else's data or deployment.
 
 ## Supported versions
 
-Until stable v1.0.0 is released, only the newest published `1.0.0-rc.x` release candidate receives security fixes. After stable release, the newest stable release will be supported unless release notes state otherwise.
+The newest stable release receives security fixes unless its release notes state otherwise. [Check the latest release](https://github.com/insadamt/Achelife/releases/latest).
+
+Release candidates are for explicitly opted-in testing. Security changes affecting deployment, data, or networking still pass through a verified RC before stable promotion.
 
 ## Report a vulnerability
 

@@ -8,6 +8,7 @@ import { TaskComposer } from '../../features/tasks/TaskComposer';
 import { TaskDetailsDrawer } from '../../features/tasks/TaskDetailsDrawer';
 import { TaskPagination } from '../../features/tasks/TaskPagination';
 import { TaskRow } from '../../features/tasks/TaskRow';
+import { TaskSectionNav } from '../../features/tasks/TaskSectionNav';
 import { TaskTabs } from '../../features/tasks/TaskTabs';
 import type { TaskTab } from '../../features/tasks/TaskTabs';
 import type { PaginatedTasks, TaskViewData } from '../../features/tasks/types';
@@ -91,7 +92,10 @@ export default function TasksIndex(props: TasksPageProps) {
             <Head title="Tasks" />
 
             <div className="mx-auto max-w-5xl">
-                <h1 className="mb-6 text-4xl font-bold tracking-[-0.05em] sm:text-5xl">Tasks</h1>
+                <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
+                    <h1 className="text-4xl font-bold tracking-[-0.05em] sm:text-5xl">Tasks</h1>
+                    <TaskSectionNav active="tasks" />
+                </div>
                 {props.intermission && (
                     <p className="mb-5 rounded-2xl border border-warning/35 bg-warning/10 px-4 py-3 text-sm leading-6 text-warning">
                         Intermission: keep planning and rescheduling Tasks. Completion and SP resume when your next Season starts.

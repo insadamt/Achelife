@@ -19,68 +19,70 @@ printf '%s\n' "$app_image" | grep -Eq "^ghcr\.io/insadamt/achelife:${version}@sh
 printf '%s\n' "$web_image" | grep -Eq "^ghcr\.io/insadamt/achelife-web:${version}@sha256:[a-f0-9]{64}$"
 
 cat >"$output_file" <<EOF
-# Achelife ${version}
+## Summary
 
-Achelife ${version} is a v1 release candidate. It is a pre-release, not a stable release. Stable updates remain the default and never select this candidate unless the RC channel is explicitly requested.
+Achelife ${version} is a v1 release candidate. This pre-release is for testing and requires explicit RC opt-in.
 
-## Included
+## What's New
 
-- explicit Season rollover, holds, intermissions, and closeouts;
-- Money preset categories, Transfer fees, and recurring Subscriptions;
-- passwordless single-user setup and resumable onboarding;
-- complete account export, validation, replacement restore, and recovery holds, with the production archive download verified through the container stack;
-- the self-hosted installer and Achelife Manager with safe updates, verified backups, rollback, clean-host restore, diagnostics, and uninstall;
-- multi-architecture container images with provenance, SBOMs, dependency audits, and vulnerability gates.
-- source code and manager tooling under the MIT License.
+**Daily planning:** Today, Tasks, recurring routines, Habits, and streaks.
 
-## Verified images
+**Seasons:** 30-day Seasons, Objectives, Rank, and end-of-Season reviews.
 
-- Application: \`${app_image}\`
-- Web: \`${web_image}\`
+**Personal records:** Diary, People, Constitution, and Money tracking.
 
-The attached \`image-digests.txt\` is the machine-readable source of these references.
+**Setup and recovery:** Resumable setup, portable account exports, full-instance backups, and failed-update recovery.
 
-## Install this RC
+Free and open-source under the MIT License.
 
-Docker Engine with Docker Compose v2, \`curl\`, \`tar\`, and a SHA-256 utility are required.
+## Install
+
+Requires Linux, Docker Engine, Docker Compose v2, \`curl\`, \`tar\`, and a SHA-256 utility.
 
 \`\`\`bash
 curl -fsSL https://raw.githubusercontent.com/insadamt/Achelife/v${version}/scripts/install.sh | sh -s -- --channel rc
 \`\`\`
 
-The default bind is \`127.0.0.1:8080\`. A trusted-LAN bind requires \`--acknowledge-network-risk\`. Never expose Achelife directly to the public internet.
+Open **http://127.0.0.1:8080** to complete setup.
 
-## Upgrade from the supported pre-v1 state
+**Privacy:** Achelife has no login. Anyone who can reach it can access all data. Keep it on localhost, a trusted private network, or a private VPN.
 
-Create and copy a verified backup off the Docker host before updating:
+## Update
 
 \`\`\`bash
 achelife backup
-achelife update --to ${version} --channel rc
-achelife status
-achelife doctor
 \`\`\`
 
-The manager creates another verified full-instance backup before migrations. A failed migration, startup, persistence, or health check restores the matched snapshot before prior code restarts.
-
-## Restore and rollback
-
-Rollback is a matched full-instance restore, not an image-only downgrade:
+Copy the backup outside the Docker host, then run:
 
 \`\`\`bash
-achelife restore /off-host/achelife-full-TIMESTAMP.tar.gz --bin-dir "\$HOME/.local/bin"
+achelife update --to ${version} --channel rc
+achelife doctor
+\`\`\`
+EOF
+
+cat >>"$output_file" <<EOF
+
+## Testing Notes
+
+Check the candidate's acceptance evidence before upgrading. The image scan gate blocks fixable CRITICAL findings; HIGH findings require release review.
+EOF
+
+cat >>"$output_file" <<EOF
+
+[Documentation](https://github.com/insadamt/Achelife/blob/master/docs/README.md) · [Backup and restore](https://github.com/insadamt/Achelife/blob/master/SELF_HOSTING.md) · [Report a bug](https://github.com/insadamt/Achelife/issues)
+
+<details>
+<summary>Release verification</summary>
+
+Both images support \`linux/amd64\` and \`linux/arm64\`.
+
+\`\`\`text
+${app_image}
+${web_image}
 \`\`\`
 
-Backups contain the application key, database, Diary, Money, and persistent storage. Protect them like a password vault and test recovery on a clean host.
+Downloads below include the manager bundle, its SHA-256 checksum, and \`image-digests.txt\`.
 
-## Known limitations and security boundary
-
-- Achelife is passwordless and single-user. Anyone who can reach it can read and change all data.
-- Public-internet exposure is unsupported; use localhost, a trusted private network, or a private VPN.
-- This RC supports \`linux/amd64\` and \`linux/arm64\`.
-- The application image must pass with no HIGH or CRITICAL findings. The web image uses the pinned Caddy 2.11.4 source with patched Go security dependencies because the official image has no fixed build; publication re-scans exact digests, keeps HIGH findings visible in workflow logs, and blocks fixable CRITICAL findings.
-- Divergent account archives are not merged, and independent servers do not synchronize continuously.
-- Subscriptions do not execute bank transactions, and cross-currency Transfers are unsupported.
-
-See \`SELF_HOSTING.md\` and the Phase 16/17 documentation in the repository for the complete operational and release procedures.
+</details>
 EOF

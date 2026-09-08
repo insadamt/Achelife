@@ -1,5 +1,5 @@
-import { router } from '@inertiajs/react';
-import { Archive, CalendarDays, Flame, Gauge, MoreHorizontal, Pencil, Shuffle, Target, Trash2, TriangleAlert } from 'lucide-react';
+import { Link, router } from '@inertiajs/react';
+import { Archive, BarChart3, CalendarDays, Flame, Gauge, MoreHorizontal, Pencil, Shuffle, Target, Trash2, TriangleAlert } from 'lucide-react';
 import { useState } from 'react';
 
 import { Button, Dialog, Surface } from '../../components/ui';
@@ -95,6 +95,8 @@ export function HabitCard({ habit, calendarLabels, calendarExpanded, weekStart, 
                             <span className="truncate">{scheduleSummary(habit)}</span>
                         </span>
                     </div>
+
+                    <Link className="focus-ring mt-3 inline-flex items-center gap-1.5 rounded-lg text-xs font-bold text-[var(--module-accent)] hover:underline" href={`/habits/${habit.id}/statistics`}><BarChart3 aria-hidden="true" size={15} />Statistics</Link>
 
                     {calendarExpanded && <HabitProgressSummary habit={habit} />}
                 </div>
