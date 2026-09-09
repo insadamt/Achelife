@@ -42,14 +42,14 @@ sh "$repository_root/scripts/release/write-stable-notes.sh" \
     "$temporary_directory/stable-image-digests.txt" \
     "$temporary_directory/stable-release-notes.md"
 
-grep -Fq 'Achelife 1.0.1 is a focused maintenance release' "$temporary_directory/stable-release-notes.md"
-grep -Fq 'verified as 1.0.1-rc.1' "$temporary_directory/stable-release-notes.md"
-grep -Fq 'production images were not rebuilt' "$temporary_directory/stable-release-notes.md"
-grep -Fq 'achelife update --to 1.0.1' "$temporary_directory/stable-release-notes.md"
-grep -Fq 'ghcr.io/insadamt/achelife:1.0.1@sha256:' "$temporary_directory/stable-release-notes.md"
-grep -Fq 'ghcr.io/insadamt/achelife-web:1.0.1@sha256:' "$temporary_directory/stable-release-notes.md"
-grep -Fq 'contains no database migrations, Statistics features, theme changes, or redesign work.' "$temporary_directory/stable-release-notes.md"
-grep -Fq 'scripts/install.sh | sh' "$temporary_directory/stable-release-notes.md"
+grep -Fq 'Achelife v1.0.1 improves account archive safety and Season SP integrity' "$temporary_directory/stable-release-notes.md"
+grep -Fq '## Added' "$temporary_directory/stable-release-notes.md"
+grep -Fq '## Changed' "$temporary_directory/stable-release-notes.md"
+grep -Fq '## Fixed' "$temporary_directory/stable-release-notes.md"
+grep -Fq 'Added full import-grade integrity validation' "$temporary_directory/stable-release-notes.md"
+grep -Fq 'Changed Task and Habit SP reversals' "$temporary_directory/stable-release-notes.md"
+grep -Fq 'Fixed clearing a completed Flexible Habit extra' "$temporary_directory/stable-release-notes.md"
+grep -Fq 'Updated `js-yaml` to 4.3.2' "$temporary_directory/stable-release-notes.md"
 
 if sh "$repository_root/scripts/release/write-stable-notes.sh" \
     1.0.1-rc.1 \

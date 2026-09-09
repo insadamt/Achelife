@@ -21,66 +21,21 @@ printf '%s\n' "$app_image" | grep -Eq "^ghcr\.io/insadamt/achelife:${version}@sh
 printf '%s\n' "$web_image" | grep -Eq "^ghcr\.io/insadamt/achelife-web:${version}@sha256:[a-f0-9]{64}$"
 
 cat >"$output_file" <<EOF
-# Achelife ${version}
+Achelife v${version} improves account archive safety and Season SP integrity, making reward reversals more reliable and strengthening release security.
 
-Achelife ${version} is a focused maintenance release for account archive and Season SP integrity. It promotes the exact application and web image manifests verified as ${rc_version}; the production images were not rebuilt for stable publication.
+## Added
 
-## Included
+- Added full import-grade integrity validation before generated account archives can be downloaded or retained as safety exports.
+- Added a clear Settings error when inconsistent source data prevents a safe account archive from being created.
 
-- clearing a completed Flexible Habit extra now reverses its exact reward before removing the occurrence, preventing orphaned Season SP and invalid account archives;
-- every generated account archive now passes the complete import-grade integrity validator before download or safety retention, with a clear Settings error when source data is inconsistent;
-- Task undo and Habit archive/delete now reverse exact rewards correctly when Constitution penalties have made the signed Season SP total negative;
-- regression coverage for each repaired SP and archive-integrity path.
+## Changed
 
-This maintenance release contains no database migrations, Statistics features, theme changes, or redesign work.
+- Changed Task and Habit SP reversals to preserve the exact signed reward that was originally recorded, including negative totals caused by Constitution penalties.
+- Updated \`js-yaml\` to 4.3.2 for the release security audit.
 
-## Verified images
+## Fixed
 
-- Application: \`${app_image}\`
-- Web: \`${web_image}\`
-
-The attached \`image-digests.txt\` is the machine-readable source of these references. The stable tags resolve to the same manifest digests accepted under ${rc_version}.
-
-## Install
-
-Docker Engine with Docker Compose v2, \`curl\`, \`tar\`, and a SHA-256 utility are required.
-
-\`\`\`bash
-curl -fsSL https://raw.githubusercontent.com/insadamt/Achelife/v${version}/scripts/install.sh | sh
-\`\`\`
-
-The default bind is \`127.0.0.1:8080\`. A trusted-LAN bind requires \`--acknowledge-network-risk\`. Never expose Achelife directly to the public internet.
-
-## Upgrade from Achelife 1.0.0
-
-Create a verified backup and copy it off the Docker host before updating:
-
-\`\`\`bash
-achelife backup
-achelife update --to ${version}
-achelife status
-achelife doctor
-\`\`\`
-
-The manager creates another verified full-instance backup before migrations. A failed migration, startup, persistence, or health check restores the matched snapshot before prior code restarts.
-
-## Restore and rollback
-
-Rollback is a matched full-instance restore, not an image-only downgrade:
-
-\`\`\`bash
-achelife restore /off-host/achelife-full-TIMESTAMP.tar.gz --bin-dir "\$HOME/.local/bin"
-\`\`\`
-
-Backups contain the application key, database, Diary, Money, and persistent storage. Protect them like a password vault and periodically test recovery on a clean host.
-
-## Security boundary and known limitations
-
-- Achelife is passwordless and single-user. Anyone who can reach it can read and change all data.
-- Public-internet exposure is unsupported; use localhost, a trusted private network, or a private VPN.
-- This release supports \`linux/amd64\` and \`linux/arm64\`.
-- Divergent account archives are not merged, and independent servers do not synchronize continuously.
-- Subscriptions do not execute bank transactions, and cross-currency Transfers are unsupported.
-
-See \`SELF_HOSTING.md\` and the Phase 16/17 documentation in the repository for complete operational and recovery procedures.
+- Fixed clearing a completed Flexible Habit extra leaving orphaned Season SP and invalidating account archive integrity.
+- Fixed Task undo and Habit archive/delete applying incorrect SP reversals when the signed Season SP total is negative.
+- Fixed generated account archives not receiving complete import-grade integrity validation before export or safety retention.
 EOF
