@@ -32,23 +32,21 @@ class UpdateHabitOccurrence
 
     public function toggleBoolean(User $user, Habit $habit, CarbonImmutable $date, ?CarbonImmutable $today = null): void
     {
-        $this->mutate($user, $habit, $date, $today, function (HabitOccurrence $occurrence, CarbonImmutable $calendarDate): void {
+        $this->mutate($user, $habit, $date, $today, function (HabitOccurrence $occurrence, CarbonImmutable $calendarDate): bool {
             if ($occurrence->state === HabitOccurrenceState::Skipped) {
-                $this->resetOccurrence($occurrence, $calendarDate);
-
-                return;
+                return $this->resetOccurrence($occurrence, $calendarDate);
             }
 
             if ($occurrence->state === HabitOccurrenceState::Completed) {
-                $this->resetOccurrence($occurrence, $calendarDate);
-
-                return;
+                return $this->resetOccurrence($occurrence, $calendarDate);
             }
 
             $occurrence->update([
                 'state' => HabitOccurrenceState::Completed,
                 'resolved_at' => now(),
             ]);
+
+            return false;
         }, HabitType::Boolean);
     }
 
@@ -59,11 +57,9 @@ class UpdateHabitOccurrence
         ?string $value,
         ?CarbonImmutable $today = null,
     ): void {
-        $this->mutate($user, $habit, $date, $today, function (HabitOccurrence $occurrence, CarbonImmutable $calendarDate) use ($value): void {
+        $this->mutate($user, $habit, $date, $today, function (HabitOccurrence $occurrence, CarbonImmutable $calendarDate) use ($value): bool {
             if ($value === null) {
-                $this->resetOccurrence($occurrence, $calendarDate);
-
-                return;
+                return $this->resetOccurrence($occurrence, $calendarDate);
             }
 
             $completed = (float) $value >= (float) $occurrence->target_snapshot;
@@ -76,12 +72,14 @@ class UpdateHabitOccurrence
                 'state' => $state,
                 'resolved_at' => $state === HabitOccurrenceState::Pending || $state === null ? null : now(),
             ]);
+
+            return false;
         }, HabitType::Numeric);
     }
 
     public function skip(User $user, Habit $habit, CarbonImmutable $date, ?CarbonImmutable $today = null): void
     {
-        $this->mutate($user, $habit, $date, $today, function (HabitOccurrence $occurrence): void {
+        $this->mutate($user, $habit, $date, $today, function (HabitOccurrence $occurrence): bool {
             if ($occurrence->occurrence_kind !== HabitOccurrenceKind::Required) {
                 throw ValidationException::withMessages(['occurrence' => 'Flexible extra days cannot be skipped.']);
             }
@@ -90,6 +88,8 @@ class UpdateHabitOccurrence
                 'state' => HabitOccurrenceState::Skipped,
                 'resolved_at' => now(),
             ]);
+
+            return false;
         });
     }
 
@@ -104,7 +104,7 @@ class UpdateHabitOccurrence
         );
     }
 
-    /** @param callable(HabitOccurrence, CarbonImmutable): void $change */
+    /** @param callable(HabitOccurrence, CarbonImmutable): bool $change */
     private function mutate(
         User $user,
         Habit $habit,
@@ -143,8 +143,12 @@ class UpdateHabitOccurrence
                 $occurrence = $this->createEligibleOccurrence($lockedHabit, $definition, $currentSeason, $date);
             }
 
-            $change($occurrence, $calendarDate);
+            $removeAfterRecalculation = $change($occurrence, $calendarDate);
             $this->recalculateProgression->execute($lockedHabit, $currentSeason);
+
+            if ($removeAfterRecalculation) {
+                $occurrence->delete();
+            }
         }, 3);
     }
 
@@ -188,12 +192,16 @@ class UpdateHabitOccurrence
         ]);
     }
 
-    private function resetOccurrence(HabitOccurrence $occurrence, CarbonImmutable $today): void
+    private function resetOccurrence(HabitOccurrence $occurrence, CarbonImmutable $today): bool
     {
         if ($occurrence->occurrence_kind === HabitOccurrenceKind::FlexibleExtra) {
-            $occurrence->delete();
+            $occurrence->update([
+                'state' => null,
+                'numeric_value' => null,
+                'resolved_at' => null,
+            ]);
 
-            return;
+            return true;
         }
 
         $state = $this->unresolvedState($occurrence, $today);
@@ -202,6 +210,8 @@ class UpdateHabitOccurrence
             'numeric_value' => null,
             'resolved_at' => $state === HabitOccurrenceState::Missed ? now() : null,
         ]);
+
+        return false;
     }
 
     private function unresolvedState(HabitOccurrence $occurrence, CarbonImmutable $today): ?HabitOccurrenceState
