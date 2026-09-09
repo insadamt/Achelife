@@ -23,17 +23,16 @@ printf '%s\n' "$web_image" | grep -Eq "^ghcr\.io/insadamt/achelife-web:${version
 cat >"$output_file" <<EOF
 # Achelife ${version}
 
-Achelife ${version} is the first stable v1 release. It promotes the exact application and web image manifests verified as ${rc_version}; the production images were not rebuilt for stable publication.
+Achelife ${version} is a focused maintenance release for account archive and Season SP integrity. It promotes the exact application and web image manifests verified as ${rc_version}; the production images were not rebuilt for stable publication.
 
 ## Included
 
-- explicit Season rollover, holds, intermissions, and closeouts;
-- Money preset categories, Transfer fees, and recurring Subscriptions;
-- passwordless single-user setup and resumable onboarding;
-- complete account export, validation, replacement restore, and recovery holds;
-- the self-hosted installer and Achelife Manager with safe updates, verified backups, rollback, clean-host restore, diagnostics, and uninstall;
-- multi-architecture container images with provenance, SBOMs, dependency audits, and vulnerability gates;
-- source code and manager tooling under the MIT License.
+- clearing a completed Flexible Habit extra now reverses its exact reward before removing the occurrence, preventing orphaned Season SP and invalid account archives;
+- every generated account archive now passes the complete import-grade integrity validator before download or safety retention, with a clear Settings error when source data is inconsistent;
+- Task undo and Habit archive/delete now reverse exact rewards correctly when Constitution penalties have made the signed Season SP total negative;
+- regression coverage for each repaired SP and archive-integrity path.
+
+This maintenance release contains no database migrations, Statistics features, theme changes, or redesign work.
 
 ## Verified images
 
@@ -52,7 +51,7 @@ curl -fsSL https://raw.githubusercontent.com/insadamt/Achelife/v${version}/scrip
 
 The default bind is \`127.0.0.1:8080\`. A trusted-LAN bind requires \`--acknowledge-network-risk\`. Never expose Achelife directly to the public internet.
 
-## Upgrade from a release candidate
+## Upgrade from Achelife 1.0.0
 
 Create a verified backup and copy it off the Docker host before updating:
 

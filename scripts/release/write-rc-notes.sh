@@ -25,13 +25,12 @@ Achelife ${version} is a v1 release candidate. It is a pre-release, not a stable
 
 ## Included
 
-- explicit Season rollover, holds, intermissions, and closeouts;
-- Money preset categories, Transfer fees, and recurring Subscriptions;
-- passwordless single-user setup and resumable onboarding;
-- complete account export, validation, replacement restore, and recovery holds, with the production archive download verified through the container stack;
-- the self-hosted installer and Achelife Manager with safe updates, verified backups, rollback, clean-host restore, diagnostics, and uninstall;
-- multi-architecture container images with provenance, SBOMs, dependency audits, and vulnerability gates.
-- source code and manager tooling under the MIT License.
+- clearing a completed Flexible Habit extra now reverses its exact reward before removing the occurrence, preventing orphaned Season SP and invalid account archives;
+- every generated account archive now passes the complete import-grade integrity validator before download or safety retention, with a clear Settings error when source data is inconsistent;
+- Task undo and Habit archive/delete now reverse exact rewards correctly when Constitution penalties have made the signed Season SP total negative;
+- regression coverage for each repaired SP and archive-integrity path.
+
+This maintenance candidate contains no database migrations, Statistics features, theme changes, or redesign work.
 
 ## Verified images
 
@@ -50,7 +49,7 @@ curl -fsSL https://raw.githubusercontent.com/insadamt/Achelife/v${version}/scrip
 
 The default bind is \`127.0.0.1:8080\`. A trusted-LAN bind requires \`--acknowledge-network-risk\`. Never expose Achelife directly to the public internet.
 
-## Upgrade from the supported pre-v1 state
+## Upgrade from Achelife 1.0.0
 
 Create and copy a verified backup off the Docker host before updating:
 
