@@ -28,6 +28,27 @@ class AccountPortabilityWorkflowTest extends TestCase
             ->assertHeader('X-Content-Type-Options', 'nosniff');
     }
 
+    public function test_invalid_generated_export_returns_a_clear_integrity_error(): void
+    {
+        $user = User::factory()->create(['calendar_started_on' => '2026-08-01']);
+        Season::query()->create([
+            'user_id' => $user->id,
+            'season_number' => 1,
+            'start_date' => '2026-08-01',
+            'end_date' => '2026-08-30',
+            'season_points' => 4,
+            'introduced_at' => now(),
+        ]);
+
+        $this->actingAs($user)
+            ->from('/settings/general')
+            ->get('/settings/portability/export')
+            ->assertRedirect('/settings/general')
+            ->assertSessionHasErrors([
+                'export' => 'Achelife could not create a valid account archive. Season 1 has an invalid SP total.',
+            ]);
+    }
+
     public function test_fresh_onboarding_validates_previews_and_restores_before_normal_setup(): void
     {
         CarbonImmutable::setTestNow('2026-08-15 12:00:00');

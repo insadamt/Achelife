@@ -11,7 +11,6 @@ use Carbon\CarbonImmutable;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
-use RuntimeException;
 
 class EndHabitLifecycle
 {
@@ -82,11 +81,6 @@ class EndHabitLifecycle
         }
 
         $lockedSeason = Season::query()->lockForUpdate()->findOrFail($season->id);
-
-        if ($lockedSeason->season_points < $reward) {
-            throw new RuntimeException('Season SP cannot cover the exact Habit reward being removed.');
-        }
-
         $lockedSeason->update(['season_points' => $lockedSeason->season_points - $reward]);
     }
 }

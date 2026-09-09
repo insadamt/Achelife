@@ -2,6 +2,8 @@
 
 namespace Tests\Feature\Habits;
 
+use App\Actions\Constitution\CreateLaw;
+use App\Actions\Constitution\RecordViolation;
 use App\Actions\Habits\EndHabitLifecycle;
 use App\Actions\Habits\SynchronizeHabitOccurrences;
 use App\Actions\Habits\UpdateHabitDefinition;
@@ -11,6 +13,7 @@ use App\Enums\HabitDifficulty;
 use App\Enums\HabitOccurrenceState;
 use App\Enums\HabitScheduleType;
 use App\Enums\HabitType;
+use App\Enums\LawSeverity;
 use App\Models\Habit;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -130,6 +133,33 @@ class HabitLifecycleTest extends TestCase
         $this->assertSame(0, $habit->occurrences()->whereDate('occurrence_date', '2026-08-18')->count());
         $this->assertSame(4, $user->seasons()->firstOrFail()->season_points);
         $this->assertSame(1, $user->habits()->whereNotNull('archived_at')->count());
+    }
+
+    public function test_archive_reverses_today_reward_when_penalties_make_season_sp_negative(): void
+    {
+        CarbonImmutable::setTestNow('2026-08-17 10:00:00');
+        $user = $this->userCreatedOn('2026-08-17');
+        $habit = $this->createHabit($user, '2026-08-17');
+        app(UpdateHabitOccurrence::class)->toggleBoolean(
+            $user,
+            $habit,
+            CarbonImmutable::parse('2026-08-17'),
+            CarbonImmutable::parse('2026-08-17'),
+        );
+        $law = app(CreateLaw::class)->execute($user, 'Minor penalty', LawSeverity::Minor);
+        app(RecordViolation::class)->execute(
+            $user,
+            $law,
+            CarbonImmutable::parse('2026-08-17'),
+            CarbonImmutable::parse('2026-08-17'),
+        );
+        $season = $user->seasons()->firstOrFail();
+        $this->assertSame(-6, $season->refresh()->season_points);
+
+        app(EndHabitLifecycle::class)->archive($user, $habit, CarbonImmutable::parse('2026-08-17'));
+
+        $this->assertSame(-10, $season->refresh()->season_points);
+        $this->assertSame(0, $habit->occurrences()->count());
     }
 
     public function test_delete_soft_deletes_habit_without_exposing_it_as_archived(): void

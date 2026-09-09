@@ -1,4 +1,4 @@
-import { useForm } from '@inertiajs/react';
+import { useForm, usePage } from '@inertiajs/react';
 import { Download, FileArchive, RotateCcw } from 'lucide-react';
 import type { FormEvent } from 'react';
 
@@ -7,6 +7,7 @@ import { RestorePreviewCard } from './RestorePreviewCard';
 import type { RestorePreview } from './types';
 
 export function PortabilitySettingsPanel({ restorePreview }: { restorePreview: RestorePreview | null }) {
+    const exportError = (usePage().props.errors as Record<string, string> | undefined)?.export;
     const upload = useForm<{ archive: File | null }>({ archive: null });
     const restore = useForm({ confirmation: '', archive: '' });
 
@@ -32,6 +33,7 @@ export function PortabilitySettingsPanel({ restorePreview }: { restorePreview: R
             </div>
 
             <a className="focus-ring icon-text mt-5 inline-flex min-h-11 items-center gap-2 rounded-2xl bg-accent px-5 py-2.5 text-sm font-bold text-accent-foreground" href="/settings/portability/export"><Download size={17} /> Download account archive</a>
+            {exportError && <p className="mt-3 text-sm font-medium text-danger" role="alert">{exportError}</p>}
 
             <form className="mt-8 border-t border-border-subtle pt-6" onSubmit={preview}>
                 <h3 className="font-bold">Preview a replacement</h3>

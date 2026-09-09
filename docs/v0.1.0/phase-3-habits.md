@@ -37,7 +37,7 @@ Boolean clicks complete or undo an occurrence. Undo returns a required occurrenc
 
 ## Lifecycle
 
-Archive and Delete permanently end future activity and remove today's occurrence. Any exact reward on today's occurrence is reversed before current-Season replay. Earlier dates remain untouched. Archived Habits appear in a read-only archive and cannot reactivate. Deleted Habits are soft-deleted, omitted from active and archived views, and retain internal history and SP attribution.
+Archive and Delete permanently end future activity and remove today's occurrence. Any exact reward on today's occurrence is reversed before current-Season replay, including when Constitution penalties have made the signed Season total negative. Earlier dates remain untouched. Archived Habits appear in a read-only archive and cannot reactivate. Deleted Habits are soft-deleted, omitted from active and archived views, and retain internal history and SP attribution.
 
 ## Interface
 

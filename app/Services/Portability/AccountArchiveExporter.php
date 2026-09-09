@@ -12,7 +12,10 @@ class AccountArchiveExporter
 {
     public const FORMAT_VERSION = 1;
 
-    public function __construct(private readonly PortableTableRegistry $tableRegistry) {}
+    public function __construct(
+        private readonly PortableTableRegistry $tableRegistry,
+        private readonly AccountArchiveValidator $validator,
+    ) {}
 
     public function export(User $user): string
     {
@@ -31,7 +34,17 @@ class AccountArchiveExporter
             $checksumsPath = $workingDirectory.'/checksums.json';
             $this->writeJson($checksumsPath, $checksums);
 
-            return $this->createZip($snapshot['tablePaths'], $manifestPath, $checksumsPath);
+            $archivePath = $this->createZip($snapshot['tablePaths'], $manifestPath, $checksumsPath);
+
+            try {
+                $this->validator->validate($archivePath);
+            } catch (\Throwable $exception) {
+                @unlink($archivePath);
+
+                throw $exception;
+            }
+
+            return $archivePath;
         } finally {
             $this->removeWorkingDirectory($workingDirectory);
         }
