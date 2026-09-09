@@ -26,7 +26,7 @@ class HabitStatisticsController extends Controller
         $cycle = $resolveCycle->execute($user);
 
         return Inertia::render('habits/Statistics', [
-            'habit' => ['id' => $habit->id, 'name' => $habit->name, 'type' => $habit->type->value, 'unit' => $habit->unit, 'archived' => $habit->archived_at !== null],
+            'habit' => ['id' => $habit->id, 'name' => $habit->name, 'icon' => $habit->iconValue(), 'type' => $habit->type->value, 'unit' => $habit->unit, 'archived' => $habit->archived_at !== null],
             'statistics' => fn () => $statistics->summarize($user, $habit, $cycle, $validated['statistics_period'] ?? 'season', $validated['statistics_value'] ?? null),
         ]);
     }

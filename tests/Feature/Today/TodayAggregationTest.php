@@ -78,6 +78,7 @@ class TodayAggregationTest extends TestCase
             ->where('tasks.overdueCount', 1)
             ->missing('tasks.upcoming')
             ->has('habits.required', 3)
+            ->where('habits.required.0.icon', 'check')
             ->has('habits.flexible', 1)
             ->where('diary.state', 'completed')
             ->where('diary.streak', 1)

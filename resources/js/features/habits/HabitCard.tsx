@@ -1,10 +1,11 @@
 import { Link, router } from '@inertiajs/react';
-import { Archive, ArrowUpRight, BarChart3, CalendarDays, CheckCheck, Flame, Gauge, MoreHorizontal, Pencil, Shuffle, Target, Trash2, TriangleAlert } from 'lucide-react';
+import { Archive, ArrowUpRight, BarChart3, CalendarDays, Flame, Gauge, MoreHorizontal, Pencil, Shuffle, Target, Trash2, TriangleAlert } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
 import { Button, Dialog, Surface } from '../../components/ui';
 import { classNames } from '../../components/ui/classNames';
 import { HabitCalendar } from './HabitCalendar';
+import { HabitIcon } from './HabitIcon';
 import { HabitProgressSummary } from './HabitProgressSummary';
 import { difficultyLabels, formatNumber, scheduleSummary } from './habitPresentation';
 import type { HabitCalendarLabels, HabitDayData, HabitViewData } from './types';
@@ -63,7 +64,7 @@ export function HabitCard({ habit, calendarLabels, calendarExpanded, onEdit, onE
                 <div className={classNames('min-w-0', calendarExpanded && 'md:flex md:flex-col')}>
                     <div className="flex items-start justify-between gap-3">
                         <div className="flex min-w-0 flex-wrap items-center gap-2">
-                            <span aria-hidden="true" className="grid size-10 shrink-0 place-items-center rounded-2xl border border-border-subtle bg-elevated text-accent-ink">{habit.type === 'numeric' ? <Target size={19} /> : <CheckCheck size={19} />}</span>
+                            <span aria-hidden="true" className="grid size-10 shrink-0 place-items-center rounded-2xl border border-border-subtle bg-elevated text-accent-ink"><HabitIcon name={habit.icon} /></span>
                             <h2 className="min-w-0 flex-1 break-words text-xl font-bold tracking-[-0.02em] text-foreground sm:text-[1.35rem]">{habit.name}</h2>
                             {habit.flexible && (
                                 <span aria-label="Flexible" className="grid size-7 place-items-center rounded-full border border-[color-mix(in_srgb,var(--module-accent)_42%,var(--border-subtle))] text-accent-ink" title="Flexible">

@@ -15,7 +15,7 @@ const sections: Array<{ href: string; icon: typeof LayoutDashboard; label: strin
 
 export function MoneySectionNav({ active }: { active: MoneySection }) {
     return (
-        <nav aria-label="Money sections" className="flex max-w-full gap-1 overflow-x-auto rounded-full border border-border-subtle bg-surface p-1">
+        <nav aria-label="Money sections" className="flex max-w-full flex-wrap gap-1 rounded-2xl border border-border-subtle bg-surface p-1">
             {sections.map((section) => {
                 const SectionIcon = section.icon;
 

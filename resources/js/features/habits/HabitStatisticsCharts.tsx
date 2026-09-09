@@ -1,19 +1,26 @@
 import { Activity } from 'lucide-react';
-import { useState } from 'react';
+import { useId, useState } from 'react';
 
 import { Surface } from '../../components/ui';
 import { formatStatistic } from './statisticsTypes';
 import type { HabitStatisticsData } from './statisticsTypes';
 
+const chartWidth = 800;
+const chartHeight = 280;
+const padding = { top: 24, right: 18, bottom: 38, left: 42 };
+
 export function HabitStatisticsCharts({ statistics, numeric, unit }: { statistics: HabitStatisticsData; numeric: boolean; unit: string | null }) {
     const [metric, setMetric] = useState<'total' | 'average'>('total');
     const [focusedDate, setFocusedDate] = useState<string | null>(null);
     const [selectedPointDate, setSelectedPointDate] = useState<string | null>(null);
+    const gradientId = useId().replace(/:/g, '');
     const buckets = statistics.trend.buckets;
     const values = buckets.map((bucket) => numeric ? bucket[metric] : bucket.completed);
     const maximum = Math.ceil(Math.max(1, ...values.map((value) => value ?? 0), ...(numeric ? buckets.map((bucket) => bucket.target ?? 0) : [])) / (numeric ? 1 : 2)) * (numeric ? 1 : 2);
-    const x = (index: number) => 48 + index / Math.max(1, buckets.length - 1) * 684;
-    const y = (value: number) => 208 - value / maximum * 176;
+    const plotWidth = chartWidth - padding.left - padding.right;
+    const plotHeight = chartHeight - padding.top - padding.bottom;
+    const x = (index: number) => padding.left + (buckets.length === 1 ? plotWidth / 2 : index / Math.max(1, buckets.length - 1) * plotWidth);
+    const y = (value: number) => padding.top + plotHeight - value / maximum * plotHeight;
     const focused = buckets.find((bucket) => bucket.date === (focusedDate ?? selectedPointDate));
     const outcomeTotal = statistics.current.requiredCompleted + statistics.current.missed + statistics.current.skipped;
     const outcomes = [
@@ -28,6 +35,10 @@ export function HabitStatisticsCharts({ statistics, numeric, unit }: { statistic
         return `${outcome.color} ${start}% ${offset}%`;
     });
     const path = values.map((value, index) => value === null ? '' : `${index === 0 || values[index - 1] === null ? 'M' : 'L'} ${x(index)} ${y(value)}`).join(' ');
+    const firstPoint = values.findIndex((value) => value !== null);
+    const lastPoint = values.reduce<number>((lastIndex, value, index) => value === null ? lastIndex : index, -1);
+    const areaPath = firstPoint === -1 || lastPoint === -1 ? '' : `${path} L ${x(lastPoint)} ${padding.top + plotHeight} L ${x(firstPoint)} ${padding.top + plotHeight} Z`;
+    const labelStep = Math.max(1, Math.ceil(buckets.length / 6));
 
     return <div className="grid gap-5 lg:grid-cols-[minmax(0,2fr)_minmax(16rem,1fr)]">
         <Surface className="min-w-0 rounded-3xl p-4 sm:p-6">
@@ -37,16 +48,21 @@ export function HabitStatisticsCharts({ statistics, numeric, unit }: { statistic
             </div>
             {statistics.days.length === 0 ? <p className="mt-5 grid min-h-64 place-items-center rounded-2xl border border-dashed border-border-strong bg-app/40 px-5 text-center text-sm text-muted">No habit entries in this period.</p> : <>
                 <div aria-label="Scrollable activity chart" className="focus-ring mt-5 overflow-x-auto rounded-xl" role="region" tabIndex={0}>
-                <svg aria-label={`${numeric ? metric : 'Completions'} per ${statistics.trend.unit}`} className="w-full min-w-[34rem] overflow-visible rounded-xl bg-app/30" role="img" viewBox="0 0 760 250">
-                    {[0, 0.5, 1].map((fraction) => <g key={fraction}><line stroke="var(--border-subtle)" x1="48" x2="732" y1={y(maximum * fraction)} y2={y(maximum * fraction)} /><text fill="var(--text-muted)" fontSize="11" textAnchor="end" x="40" y={y(maximum * fraction) + 4}>{formatStatistic(maximum * fraction)}</text></g>)}
-                    {numeric && buckets.map((bucket, index) => bucket.target !== null && <line key={`target-${bucket.date}`} stroke="var(--text-muted)" strokeDasharray="4 3" x1={Math.max(48, x(index) - 342 / Math.max(1, buckets.length - 1))} x2={Math.min(732, x(index) + 342 / Math.max(1, buckets.length - 1))} y1={y(bucket.target)} y2={y(bucket.target)} />)}
-                    <path d={path} fill="none" stroke="var(--module-accent)" strokeLinejoin="round" strokeWidth="3" />
+                <svg aria-label={`${numeric ? metric : 'Completions'} per ${statistics.trend.unit}`} className="h-auto min-w-[620px] w-full" role="img" viewBox={`0 0 ${chartWidth} ${chartHeight}`}>
+                    <defs><linearGradient id={gradientId} x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stopColor="var(--module-accent)" stopOpacity="0.28" /><stop offset="100%" stopColor="var(--module-accent)" stopOpacity="0" /></linearGradient></defs>
+                    {[1, 0.75, 0.5, 0.25, 0].map((fraction) => <g key={fraction}><line stroke="var(--border-subtle)" strokeDasharray={fraction === 0 ? undefined : '4 8'} x1={padding.left} x2={chartWidth - padding.right} y1={y(maximum * fraction)} y2={y(maximum * fraction)} /><text fill="var(--text-muted)" fontSize="11" textAnchor="end" x={padding.left - 10} y={y(maximum * fraction) + 4}>{formatStatistic(maximum * fraction)}</text></g>)}
+                    {numeric && buckets.map((bucket, index) => bucket.target !== null && <line key={`target-${bucket.date}`} stroke="var(--text-muted)" strokeDasharray="4 3" x1={Math.max(padding.left, x(index) - plotWidth / Math.max(1, buckets.length - 1) / 2)} x2={Math.min(chartWidth - padding.right, x(index) + plotWidth / Math.max(1, buckets.length - 1) / 2)} y1={y(bucket.target)} y2={y(bucket.target)} />)}
+                    <path d={areaPath} fill={`url(#${gradientId})`} />
+                    <path d={path} fill="none" stroke="var(--module-accent)" strokeLinecap="round" strokeLinejoin="round" strokeWidth="4" />
                     {buckets.map((bucket, index) => {
                         const value = values[index] ?? null;
                         const label = `${bucket.label}: ${formatStatistic(value)} ${numeric ? unit ?? '' : 'completions'}${numeric && bucket.target !== null ? `, target ${formatStatistic(bucket.target)}` : ''}`;
-                        return value !== null && <circle aria-label={label} className="focus-ring" cx={x(index)} cy={y(value)} fill="var(--module-accent)" key={bucket.date} onClick={() => setSelectedPointDate(bucket.date)} onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); setSelectedPointDate(bucket.date); } }} onBlur={() => setFocusedDate(null)} onFocus={() => setFocusedDate(bucket.date)} onMouseEnter={() => setFocusedDate(bucket.date)} onMouseLeave={() => setFocusedDate(null)} r={focused?.date === bucket.date ? 6 : 3} role="button" stroke="transparent" strokeWidth={16} tabIndex={0}><title>{label}</title></circle>;
+                        const active = focused?.date === bucket.date;
+                        const tooltipX = Math.min(chartWidth - 66, Math.max(66, x(index)));
+                        const tooltipY = Math.max(2, y(value ?? 0) - 56);
+                        return value !== null && <g aria-label={label} key={bucket.date} onBlur={() => setFocusedDate(null)} onClick={() => setSelectedPointDate(bucket.date)} onFocus={() => setFocusedDate(bucket.date)} onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); setSelectedPointDate(bucket.date); } }} onMouseEnter={() => setFocusedDate(bucket.date)} onMouseLeave={() => setFocusedDate(null)} role="button" tabIndex={0}><circle className="cursor-pointer" cx={x(index)} cy={y(value)} fill="transparent" r="14" /><circle cx={x(index)} cy={y(value)} fill={active ? 'var(--module-accent)' : 'var(--surface-primary)'} r={active ? 6 : 4} stroke="var(--module-accent)" strokeWidth="3" />{active && <g aria-hidden="true"><rect fill="var(--surface-elevated)" height="44" rx="10" stroke="var(--border-strong)" width="116" x={tooltipX - 58} y={tooltipY} /><text fill="var(--text-secondary)" fontSize="10" textAnchor="middle" x={tooltipX} y={tooltipY + 15}>{bucket.label}</text><text fill="var(--text-primary)" fontSize="14" fontWeight="700" textAnchor="middle" x={tooltipX} y={tooltipY + 33}>{formatStatistic(value)} {numeric ? unit ?? '' : 'completed'}</text></g>}</g>;
                     })}
-                    {[0, Math.floor((buckets.length - 1) / 2), buckets.length - 1].filter((value, index, list) => value >= 0 && list.indexOf(value) === index).map((index) => <text fill="var(--text-muted)" fontSize="11" key={index} textAnchor={index === 0 ? 'start' : index === buckets.length - 1 ? 'end' : 'middle'} x={x(index)} y="238">{buckets[index]?.label}</text>)}
+                    {buckets.map((bucket, index) => index === 0 || index === buckets.length - 1 || index % labelStep === 0 ? <text fill="var(--text-muted)" fontSize="10" key={bucket.date} textAnchor={index === 0 ? 'start' : index === buckets.length - 1 ? 'end' : 'middle'} x={x(index)} y={chartHeight - 10}>{bucket.label}</text> : null)}
                 </svg>
                 </div>
                 <p className="mt-2 text-[0.65rem] text-muted sm:hidden">Swipe the chart to explore. Tap a point for details.</p>

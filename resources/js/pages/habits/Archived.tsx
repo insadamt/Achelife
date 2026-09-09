@@ -3,6 +3,7 @@ import { Archive, ArrowLeft, CalendarDays, Flame, Gauge, Target } from 'lucide-r
 import type { CSSProperties } from 'react';
 
 import { Surface } from '../../components/ui';
+import { HabitIcon } from '../../features/habits/HabitIcon';
 import { difficultyLabels, formatHabitDate, formatNumber, scheduleSummary } from '../../features/habits/habitPresentation';
 import type { ArchivedHabitData } from '../../features/habits/types';
 
@@ -27,7 +28,7 @@ export default function ArchivedHabits({ habits }: { habits: ArchivedHabitData[]
                         {habits.map((habit) => (
                             <Surface className="p-5" elevated key={habit.id}>
                                 <div className="flex items-start justify-between gap-4">
-                                    <h2 className="text-2xl font-bold">{habit.name}</h2>
+                                    <div className="flex min-w-0 items-center gap-3"><span aria-hidden="true" className="grid size-10 shrink-0 place-items-center rounded-2xl border border-border-subtle bg-elevated text-accent-ink"><HabitIcon name={habit.icon} /></span><h2 className="min-w-0 break-words text-2xl font-bold">{habit.name}</h2></div>
                                     <span aria-label="Archived" className="grid size-9 shrink-0 place-items-center rounded-full border border-border-strong text-muted" title="Archived">
                                         <Archive aria-hidden="true" size={16} />
                                     </span>

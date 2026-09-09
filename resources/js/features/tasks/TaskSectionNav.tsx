@@ -10,7 +10,7 @@ const sections = [
 
 export function TaskSectionNav({ active }: { active: 'tasks' | 'statistics' }) {
     return (
-        <nav aria-label="Task sections" className="flex max-w-full gap-1 rounded-full border border-border-subtle bg-surface p-1">
+        <nav aria-label="Task sections" className="flex max-w-full flex-wrap gap-1 rounded-2xl border border-border-subtle bg-surface p-1">
             {sections.map(({ href, icon: Icon, label, value }) => (
                 <Link
                     aria-current={active === value ? 'page' : undefined}

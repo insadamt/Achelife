@@ -30,6 +30,7 @@ class UpdateHabitDefinition
 
             $lockedHabit->update([
                 'name' => $data->name,
+                'icon' => $data->icon,
                 'unit' => $data->unit,
             ]);
 

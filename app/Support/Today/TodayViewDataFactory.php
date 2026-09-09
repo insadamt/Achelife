@@ -185,6 +185,7 @@ class TodayViewDataFactory
         return [
             'id' => $habit->id,
             'name' => $habit->name,
+            'icon' => $habit->iconValue(),
             'type' => $habit->type->value,
             'unit' => $habit->unit,
             'startsOn' => $habit->starts_on->toDateString(),

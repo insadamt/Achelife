@@ -49,14 +49,14 @@ export function MoneyStatisticCards({ statistics }: { statistics: MoneyStatistic
     ];
 
     return (
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
             {cards.map(({ label, detail, value, current: cardCurrent, previous: cardPrevious, favorable, rate = false, icon: Icon }, index) => (
-                <Surface className={`relative min-w-0 overflow-hidden p-4 sm:p-5 ${index === 0 ? 'border-[color-mix(in_srgb,var(--module-accent)_28%,var(--border-subtle))]' : ''}`} key={label}>
+                <Surface className={`relative flex min-w-0 flex-col overflow-hidden rounded-2xl p-4 sm:p-5 ${index === 0 ? 'col-span-2 border-[color-mix(in_srgb,var(--module-accent)_30%,var(--border-subtle))] sm:col-span-1' : ''}`} key={label}>
                     {index === 0 && <span aria-hidden="true" className="absolute inset-x-0 top-0 h-0.5 bg-[var(--module-accent)]" />}
-                    <div className="flex items-center justify-between gap-2"><h3 className="text-sm font-bold text-secondary">{label}</h3><span className="grid size-9 shrink-0 place-items-center rounded-xl bg-[color-mix(in_srgb,var(--module-accent)_12%,transparent)] text-accent-ink"><Icon aria-hidden="true" size={18} /></span></div>
-                    <p className="mt-4 text-3xl font-bold leading-none tracking-[-0.04em] tabular-nums">{value}</p>
-                    <p className="mt-2 min-h-8 text-xs leading-4 text-muted">{detail}</p>
-                    {statistics.filter !== 'all' && <div className="mt-4 border-t border-border-subtle pt-3"><MoneyDelta current={cardCurrent} currency={currency} favorable={favorable} previous={cardPrevious} rate={rate} /></div>}
+                    <div className="flex items-center justify-between gap-2"><h3 className="text-xs font-semibold text-secondary">{label}</h3><Icon aria-hidden="true" className={index === 0 ? 'shrink-0 text-accent-ink' : 'shrink-0 text-muted'} size={16} /></div>
+                    <p className="mt-5 break-words text-3xl font-bold leading-none tracking-[-0.05em] tabular-nums sm:text-4xl">{value}</p>
+                    <p className="mb-4 mt-2 text-xs leading-5 text-muted">{detail}</p>
+                    {statistics.filter !== 'all' && <div className="mt-auto border-t border-border-subtle pt-3 text-xs font-semibold"><MoneyDelta current={cardCurrent} currency={currency} favorable={favorable} previous={cardPrevious} rate={rate} /></div>}
                 </Surface>
             ))}
         </div>

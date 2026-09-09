@@ -30,7 +30,7 @@ Open **Tasks → Statistics** for the separate statistics page. Statistics show 
 
 ## Habits
 
-Use Boolean check-ins or numeric tracking. Habits support schedules, streaks, skips, and archiving. Schedule changes do not rewrite earlier occurrences.
+Use Boolean check-ins or numeric tracking. Choose an icon when creating or editing a Habit to make it easier to spot across Habits, Today, and archives. Habits support schedules, streaks, skips, and archiving. Schedule changes do not rewrite earlier occurrences.
 
 Open **Statistics** on an active or archived Habit for completion rate, completion count, current and best streaks, period comparisons, an outcome donut, and a history calendar. Numeric Habits also show totals, averages, and a Total / Average chart. Filter by Season, Month, Year, or All time. See [Habit statistics](habit-statistics.md) for metric definitions.
 

@@ -3,11 +3,13 @@ import { CalendarCheck, CalendarDays, CheckCircle2, Gauge, Shuffle, Target, Tria
 import type { FormEvent, ReactNode } from 'react';
 
 import { Button, Drawer, Field } from '../../components/ui';
+import { habitIcons, HabitIcon } from './HabitIcon';
 import { difficultyLabels, formatNumber, weekdayShortLabels } from './habitPresentation';
-import type { HabitDifficulty, HabitScheduleType, HabitType, HabitViewData } from './types';
+import type { HabitDifficulty, HabitIconName, HabitScheduleType, HabitType, HabitViewData } from './types';
 
 interface HabitFormPayload {
     name: string;
+    icon: HabitIconName;
     type: HabitType;
     unit: string;
     numeric_target: string;
@@ -43,6 +45,7 @@ export function HabitFormSheet({ open, habit = null, onClose }: HabitFormSheetPr
     const definition = habit?.editDefinition;
     const form = useForm<HabitFormPayload>({
         name: habit?.name ?? '',
+        icon: habit?.icon ?? 'check',
         type: habit?.type ?? 'boolean',
         unit: habit?.unit ?? '',
         numeric_target: definition?.numericTarget ? formatNumber(definition.numericTarget) : '',
@@ -86,6 +89,31 @@ export function HabitFormSheet({ open, habit = null, onClose }: HabitFormSheetPr
                     required
                     value={form.data.name}
                 />
+
+                <fieldset>
+                    <legend className="text-sm font-semibold text-secondary">Icon</legend>
+                    <div className="mt-2 grid grid-cols-4 gap-2 sm:grid-cols-7">
+                        {Object.entries(habitIcons).map(([name, { label }]) => {
+                            const icon = name as HabitIconName;
+                            const selected = form.data.icon === icon;
+
+                            return (
+                                <button
+                                    aria-label={label}
+                                    aria-pressed={selected}
+                                    className={`focus-ring grid aspect-square place-items-center rounded-xl border transition-colors ${selected ? 'border-[var(--module-accent)] bg-[var(--module-accent)] text-accent-foreground' : 'border-border-strong bg-app text-secondary hover:text-foreground'}`}
+                                    key={icon}
+                                    onClick={() => form.setData('icon', icon)}
+                                    title={label}
+                                    type="button"
+                                >
+                                    <HabitIcon name={icon} size={18} />
+                                </button>
+                            );
+                        })}
+                    </div>
+                    {form.errors.icon && <p className="mt-2 text-sm text-danger">{form.errors.icon}</p>}
+                </fieldset>
 
                 <fieldset>
                     <legend className="text-sm font-semibold text-secondary">

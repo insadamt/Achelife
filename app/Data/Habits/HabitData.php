@@ -3,6 +3,7 @@
 namespace App\Data\Habits;
 
 use App\Enums\HabitDifficulty;
+use App\Enums\HabitIcon;
 use App\Enums\HabitScheduleType;
 use App\Enums\HabitType;
 
@@ -18,6 +19,7 @@ readonly class HabitData
         public array $weekdays,
         public bool $flexible,
         public ?string $numericTarget,
+        public HabitIcon $icon = HabitIcon::Check,
     ) {}
 
     /** @param array<string, mixed> $validated */
@@ -32,6 +34,7 @@ readonly class HabitData
 
         return new self(
             name: trim($validated['name']),
+            icon: HabitIcon::tryFrom($validated['icon'] ?? '') ?? HabitIcon::Check,
             type: $type,
             unit: $type === HabitType::Numeric ? trim($validated['unit']) : null,
             difficulty: HabitDifficulty::from($validated['difficulty']),

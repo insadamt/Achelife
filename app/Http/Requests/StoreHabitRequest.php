@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use App\Enums\HabitDifficulty;
+use App\Enums\HabitIcon;
 use App\Enums\HabitScheduleType;
 use App\Enums\HabitType;
 use Illuminate\Foundation\Http\FormRequest;
@@ -20,6 +21,7 @@ class StoreHabitRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string', 'max:255'],
+            'icon' => ['nullable', Rule::enum(HabitIcon::class)],
             'type' => ['required', Rule::enum(HabitType::class)],
             'unit' => ['exclude_unless:type,numeric', 'required_if:type,numeric', 'string', 'max:40'],
             'numeric_target' => ['exclude_unless:type,numeric', 'required_if:type,numeric', 'numeric', 'gt:0', 'max:999999999'],

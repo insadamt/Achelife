@@ -3,6 +3,7 @@ export type HabitDifficulty = 'easy' | 'normal' | 'hard';
 export type HabitScheduleType = 'every_day' | 'selected_weekdays';
 export type HabitOccurrenceState = 'pending' | 'completed' | 'skipped' | 'missed' | null;
 export type HabitCalendarLabels = 'calendar_dates' | 'season_days';
+export type HabitIconName = 'check' | 'activity' | 'apple' | 'bed' | 'book' | 'brain' | 'dumbbell' | 'droplets' | 'footprints' | 'heart' | 'islam' | 'pencil' | 'sprout';
 
 export interface HabitDefinitionData {
     difficulty: HabitDifficulty;
@@ -38,6 +39,7 @@ export interface HabitDayData {
 export interface HabitViewData extends HabitDefinitionData {
     id: number;
     name: string;
+    icon: HabitIconName;
     type: HabitType;
     unit: string | null;
     startsOn: string;
@@ -51,6 +53,7 @@ export interface HabitViewData extends HabitDefinitionData {
 export interface ArchivedHabitData extends HabitDefinitionData {
     id: number;
     name: string;
+    icon: HabitIconName;
     type: HabitType;
     unit: string | null;
     startsOn: string;

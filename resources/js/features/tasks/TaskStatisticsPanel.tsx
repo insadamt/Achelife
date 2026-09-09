@@ -1,5 +1,5 @@
 import { router } from '@inertiajs/react';
-import { ArrowDownRight, ArrowUpRight, CheckCheck, ChevronLeft, ChevronRight, Clock3, Minus, Star, Zap } from 'lucide-react';
+import { ArrowDownRight, ArrowUpRight, CalendarDays, CheckCheck, ChevronLeft, ChevronRight, Clock3, LoaderCircle, Minus, Star, Zap } from 'lucide-react';
 import { useState } from 'react';
 
 import { Surface } from '../../components/ui';
@@ -87,42 +87,37 @@ export function TaskStatisticsPanel({ statistics }: { statistics: TaskStatistics
 
     return (
         <section aria-busy={loading} aria-labelledby="task-statistics-heading" className={`space-y-5 transition-opacity ${loading ? 'opacity-60' : 'opacity-100'}`}>
-            <Surface className="overflow-hidden p-1">
-                <div aria-label="Statistics period" className="grid grid-cols-4 gap-1" role="group">
-                    {filters.map(([key, label]) => (
-                        <button aria-pressed={statistics.filter === key} className={`focus-ring min-h-11 rounded-[1.35rem] px-2 text-sm font-bold transition-all ${statistics.filter === key ? 'bg-[var(--module-accent)] text-accent-foreground shadow-lg' : 'text-muted hover:bg-surface-hover hover:text-foreground'}`} disabled={loading} key={key} onClick={() => changeFilter(key)} type="button">{label}</button>
-                    ))}
+            <Surface className="rounded-2xl p-3 sm:p-4">
+                <div className="flex flex-col justify-between gap-4 lg:flex-row lg:items-center">
+                    <div aria-label="Statistics period" className="grid grid-cols-4 gap-1 rounded-xl bg-app p-1 lg:min-w-80" role="group">
+                        {filters.map(([key, label]) => (
+                            <button aria-pressed={statistics.filter === key} className={`focus-ring min-h-10 rounded-lg px-3 text-xs font-bold transition-colors ${statistics.filter === key ? 'bg-[var(--module-accent)] text-accent-foreground' : 'text-muted hover:bg-surface-hover hover:text-foreground'}`} disabled={loading} key={key} onClick={() => changeFilter(key)} type="button">{label}</button>
+                        ))}
+                    </div>
+                    {statistics.filter === 'all' ? (
+                        <div className="min-w-36 text-center"><h2 className="inline-flex items-center gap-2 text-base font-bold" id="task-statistics-heading">{loading ? <LoaderCircle aria-hidden="true" className="animate-spin" size={15} /> : <CalendarDays aria-hidden="true" className="text-muted" size={15} />}All time</h2><p aria-live="polite" className="mt-1 text-xs text-muted">Your complete task history</p></div>
+                    ) : (
+                        <div className="flex items-center justify-between gap-3 lg:justify-end">
+                            <button aria-label="Previous period" className="focus-ring grid size-11 shrink-0 place-items-center rounded-xl border border-border-subtle hover:bg-surface-hover disabled:cursor-not-allowed disabled:opacity-30" disabled={!statistics.selector.previousValue || loading} onClick={() => changeSelectedPeriod(statistics.selector.previousValue)} type="button"><ChevronLeft aria-hidden="true" size={18} /></button>
+                            <div className="min-w-36 flex-1 text-center lg:flex-none"><h2 className="inline-flex items-center gap-2 text-base font-bold" id="task-statistics-heading">{loading ? <LoaderCircle aria-hidden="true" className="animate-spin" size={15} /> : <CalendarDays aria-hidden="true" className="text-muted" size={15} />}{statistics.label}</h2><p aria-live="polite" className="mt-1 text-xs text-muted">{loading ? 'Updating statistics…' : statistics.comparisonLabel}</p></div>
+                            <button aria-label="Next period" className="focus-ring grid size-11 shrink-0 place-items-center rounded-xl border border-border-subtle hover:bg-surface-hover disabled:cursor-not-allowed disabled:opacity-30" disabled={!statistics.selector.nextValue || loading} onClick={() => changeSelectedPeriod(statistics.selector.nextValue)} type="button"><ChevronRight aria-hidden="true" size={18} /></button>
+                        </div>
+                    )}
                 </div>
             </Surface>
 
-            <div className="flex justify-center">
-                {statistics.filter === 'all' ? (
-                    <div className="text-center"><p className="text-xs font-bold uppercase tracking-[0.16em] text-accent-ink">Selected period</p><h2 className="mt-1 text-2xl font-bold tracking-tight" id="task-statistics-heading">All time</h2></div>
-                ) : (
-                    <div className="grid grid-cols-[2.75rem_minmax(11rem,1fr)_2.75rem] items-center gap-2">
-                        <button aria-label="Previous period" className="focus-ring grid size-11 place-items-center rounded-full border border-border-subtle bg-surface text-secondary transition-colors hover:border-border-strong hover:bg-surface-hover hover:text-foreground disabled:cursor-not-allowed disabled:opacity-30" disabled={!statistics.selector.previousValue || loading} onClick={() => changeSelectedPeriod(statistics.selector.previousValue)} type="button"><ChevronLeft aria-hidden="true" size={20} /></button>
-                        <div className="text-center">
-                            <p className="text-xs font-bold uppercase tracking-[0.16em] text-accent-ink">Selected period</p>
-                            <h2 className="mt-1 text-2xl font-bold tracking-tight" id="task-statistics-heading">{statistics.label}</h2>
-                            <p className="mt-1 text-xs font-semibold text-muted">{statistics.comparisonLabel}</p>
-                        </div>
-                        <button aria-label="Next period" className="focus-ring grid size-11 place-items-center rounded-full border border-border-subtle bg-surface text-secondary transition-colors hover:border-border-strong hover:bg-surface-hover hover:text-foreground disabled:cursor-not-allowed disabled:opacity-30" disabled={!statistics.selector.nextValue || loading} onClick={() => changeSelectedPeriod(statistics.selector.nextValue)} type="button"><ChevronRight aria-hidden="true" size={20} /></button>
-                    </div>
-                )}
-            </div>
-
-            <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
                 {metrics.map(({ key, label, detail, icon: Icon }, index) => {
                     const percentage = key === 'onTime';
                     const previous = statistics.previous?.[key] ?? null;
 
                     return (
-                        <Surface className={`relative min-w-0 overflow-hidden p-4 sm:p-5 ${index === 0 ? 'border-[color-mix(in_srgb,var(--module-accent)_28%,var(--border-subtle))]' : ''}`} key={key}>
+                        <Surface className={`relative flex min-w-0 flex-col overflow-hidden rounded-2xl p-4 sm:p-5 ${index === 0 ? 'col-span-2 border-[color-mix(in_srgb,var(--module-accent)_30%,var(--border-subtle))] sm:col-span-1' : ''}`} key={key}>
                             {index === 0 && <span aria-hidden="true" className="absolute inset-x-0 top-0 h-0.5 bg-[var(--module-accent)]" />}
-                            <div className="flex items-center justify-between gap-2"><h3 className="text-sm font-bold text-secondary">{label}</h3><span className="grid size-9 shrink-0 place-items-center rounded-xl bg-[color-mix(in_srgb,var(--module-accent)_12%,transparent)] text-accent-ink"><Icon aria-hidden="true" size={18} /></span></div>
-                            <p className="mt-4 text-4xl font-bold leading-none tracking-[-0.04em]">{formatMetric(statistics.current[key], percentage)}</p>
-                            <p className="mt-2 text-xs text-muted">{detail}</p>
-                            {statistics.filter !== 'all' && <div className="mt-4 flex flex-wrap items-center justify-between gap-2 border-t border-border-subtle pt-3"><span className="text-xs text-muted">Previous {formatMetric(previous, percentage)}</span><MetricDelta current={statistics.current[key]} percentage={percentage} previous={previous} /></div>}
+                            <div className="flex items-center justify-between gap-2"><h3 className="text-xs font-semibold text-secondary">{label}</h3><Icon aria-hidden="true" className={index === 0 ? 'shrink-0 text-accent-ink' : 'shrink-0 text-muted'} size={16} /></div>
+                            <p className="mt-5 text-3xl font-bold leading-none tracking-[-0.05em] tabular-nums sm:text-4xl">{formatMetric(statistics.current[key], percentage)}</p>
+                            <p className="mb-4 mt-2 text-xs leading-5 text-muted">{detail}</p>
+                            {statistics.filter !== 'all' && <div className="mt-auto space-y-1.5 border-t border-border-subtle pt-3 text-xs font-semibold"><MetricDelta current={statistics.current[key]} percentage={percentage} previous={previous} /><p className="font-normal text-muted">Previous {formatMetric(previous, percentage)}</p></div>}
                         </Surface>
                     );
                 })}

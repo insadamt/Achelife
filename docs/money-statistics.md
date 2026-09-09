@@ -28,7 +28,7 @@ Category and Subcategory rows show amount, share of their total, amount delta, p
 
 ## Charts and drill-through
 
-The cash-flow chart shows recorded Income, opening balances, Spending, and net cash flow. Season and Month use daily buckets, Year uses monthly buckets, and All time switches from monthly to yearly buckets after 36 months. Missing buckets are zero-filled and future dates are omitted. A comparison toggle overlays the preceding period where one exists.
+The activity chart switches between Income and Spending using the same single-line presentation as Task statistics. Income combines recorded Income and opening balances; point details expose that split. Net cash flow remains available in the summary metrics instead of adding another competing chart series. Season and Month use daily buckets, Year uses monthly buckets, and All time switches from monthly to yearly buckets after 36 months. Missing buckets are zero-filled and future dates are omitted. A comparison toggle overlays the selected metric from the preceding period where one exists.
 
 Category and Subcategory links open Transaction History with the selected dates, currency, Account, and categorization filters. History supports the same currency boundary so a drill-through cannot mix currencies.
 

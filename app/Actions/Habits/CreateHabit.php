@@ -26,6 +26,7 @@ class CreateHabit
         $habit = DB::transaction(function () use ($user, $data, $calendarDate): Habit {
             $habit = $user->habits()->create([
                 'name' => $data->name,
+                'icon' => $data->icon,
                 'type' => $data->type,
                 'unit' => $data->unit,
                 'starts_on' => $calendarDate,

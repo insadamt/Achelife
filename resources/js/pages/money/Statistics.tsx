@@ -1,11 +1,11 @@
-import { Head } from '@inertiajs/react';
+import { Head, Link } from '@inertiajs/react';
+import { ArrowLeft } from 'lucide-react';
 import { useState } from 'react';
 import type { CSSProperties } from 'react';
 
 import { MoneyAccountStatistics } from '../../features/money/MoneyAccountStatistics';
 import { MoneyBreakdownPanel } from '../../features/money/MoneyBreakdownPanel';
 import { MoneyCashFlowChart } from '../../features/money/MoneyCashFlowChart';
-import { MoneySectionNav } from '../../features/money/MoneySectionNav';
 import { MoneyStatisticCards } from '../../features/money/MoneyStatisticCards';
 import { MoneyStatisticsToolbar } from '../../features/money/MoneyStatisticsToolbar';
 import type { MoneyStatisticsData } from '../../features/money/statisticsTypes';
@@ -16,9 +16,11 @@ export default function MoneyStatisticsPage({ statistics }: { statistics: MoneyS
     return (
         <div style={{ '--module-accent': 'var(--money-accent)' } as CSSProperties}>
             <Head title="Money statistics" />
-            <header className="mb-7 flex flex-col justify-between gap-5 lg:flex-row lg:items-end">
-                <div><p className="mb-2 text-xs font-bold uppercase tracking-[0.18em] text-accent-ink">Money</p><h1 className="text-4xl font-bold tracking-[-0.05em] sm:text-5xl">Money statistics</h1><p className="mt-3 max-w-xl text-sm leading-6 text-muted">See where money enters, where it goes, and how your cash flow changes.</p></div>
-                <MoneySectionNav active="statistics" />
+            <Link className="focus-ring mb-6 inline-flex min-h-10 items-center gap-2 rounded-xl border border-border-subtle px-3 text-xs font-semibold text-secondary hover:bg-surface-hover hover:text-foreground" href="/money">
+                <ArrowLeft aria-hidden="true" size={15} />Back to money
+            </Link>
+            <header className="mb-7">
+                <div className="min-w-0"><p className="mb-2 text-xs font-bold uppercase tracking-[0.16em] text-accent-ink">Money statistics</p><h1 className="text-4xl font-bold tracking-[-0.05em] sm:text-5xl">Money statistics</h1><p className="mt-3 text-sm text-muted">See where money enters, where it goes, and how your cash flow changes.</p></div>
             </header>
             <section aria-busy={loading} className={`space-y-5 transition-opacity ${loading ? 'pointer-events-none opacity-60' : 'opacity-100'}`}>
                 <MoneyStatisticsToolbar loading={loading} setLoading={setLoading} statistics={statistics} />

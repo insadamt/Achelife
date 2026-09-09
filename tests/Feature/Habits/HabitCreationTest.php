@@ -8,6 +8,7 @@ use App\Enums\HabitDifficulty;
 use App\Enums\HabitOccurrenceState;
 use App\Enums\HabitScheduleType;
 use App\Enums\HabitType;
+use App\Support\Habits\HabitViewDataFactory;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
@@ -24,11 +25,77 @@ class HabitCreationTest extends TestCase
         $habit = $this->createHabit($user, '2026-08-18', name: 'Workout');
 
         $this->assertSame(HabitType::Boolean, $habit->type);
+        $this->assertSame('check', $habit->icon->value);
         $this->assertSame('2026-08-18', $habit->starts_on->toDateString());
         $this->assertCount(1, $habit->occurrences);
         $this->assertSame(HabitOccurrenceState::Pending, $habit->occurrences->first()->state);
         $this->assertSame(4, $habit->occurrences->first()->base_reward);
         $this->assertDatabaseMissing('habit_occurrences', ['occurrence_date' => '2026-08-19']);
+    }
+
+    public function test_habits_store_a_selected_icon_and_expose_it_in_the_page_payload(): void
+    {
+        CarbonImmutable::setTestNow('2026-08-18 10:00:00');
+        $user = $this->userCreatedOn('2026-08-18');
+
+        $this->actingAs($user)->post('/habits', [
+            'name' => 'Lift weights',
+            'icon' => 'dumbbell',
+            'type' => 'boolean',
+            'difficulty' => 'normal',
+            'schedule_type' => 'every_day',
+        ])->assertRedirect();
+
+        $this->assertDatabaseHas('habits', ['user_id' => $user->id, 'name' => 'Lift weights', 'icon' => 'dumbbell']);
+        $user->seasons()->update(['introduced_at' => now()]);
+
+        $this->actingAs($user)->get('/habits')->assertInertia(fn (Assert $page) => $page
+            ->where('habits.0.icon', 'dumbbell'));
+    }
+
+    public function test_habits_accept_the_islam_icon(): void
+    {
+        $user = $this->userCreatedOn('2026-08-18');
+
+        $this->actingAs($user)->post('/habits', [
+            'name' => 'Read Quran',
+            'icon' => 'islam',
+            'type' => 'boolean',
+            'difficulty' => 'normal',
+            'schedule_type' => 'every_day',
+        ])->assertSessionHasNoErrors();
+
+        $this->assertDatabaseHas('habits', ['user_id' => $user->id, 'name' => 'Read Quran', 'icon' => 'islam']);
+    }
+
+    public function test_habit_icons_must_come_from_the_supported_set(): void
+    {
+        $user = $this->userCreatedOn('2026-08-18');
+
+        $this->actingAs($user)->post('/habits', [
+            'name' => 'Invalid icon',
+            'icon' => 'untrusted-icon',
+            'type' => 'boolean',
+            'difficulty' => 'normal',
+            'schedule_type' => 'every_day',
+        ])->assertSessionHasErrors('icon');
+    }
+
+    public function test_missing_legacy_icon_uses_the_default_in_habit_page_data(): void
+    {
+        $user = $this->userCreatedOn('2026-08-18');
+        $habit = $this->createHabit($user, '2026-08-18');
+        $season = $user->seasons()->firstOrFail();
+        $habit->setAttribute('icon', null);
+
+        $data = app(HabitViewDataFactory::class)->make(
+            $habit,
+            $season,
+            CarbonImmutable::parse('2026-08-18'),
+            collect([$season]),
+        );
+
+        $this->assertSame('check', $data['icon']);
     }
 
     public function test_numeric_habit_preserves_target_and_uses_global_unit(): void

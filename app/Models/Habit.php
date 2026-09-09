@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\HabitIcon;
 use App\Enums\HabitType;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
@@ -12,6 +13,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 #[Fillable([
     'user_id',
     'name',
+    'icon',
     'type',
     'unit',
     'starts_on',
@@ -42,10 +44,16 @@ class Habit extends Model
         return $this->hasMany(HabitOccurrence::class)->orderBy('occurrence_date');
     }
 
+    public function iconValue(): string
+    {
+        return $this->icon?->value ?? HabitIcon::Check->value;
+    }
+
     /** @return array<string, string> */
     protected function casts(): array
     {
         return [
+            'icon' => HabitIcon::class,
             'type' => HabitType::class,
             'starts_on' => 'immutable_date',
             'synchronized_through' => 'immutable_date',

@@ -3,6 +3,7 @@ import { Check, ChevronDown, MoreVertical } from 'lucide-react';
 import { useState } from 'react';
 
 import { classNames } from '../../components/ui/classNames';
+import { HabitIcon } from '../habits/HabitIcon';
 import { NumericValueDialog } from '../habits/NumericValueDialog';
 import { SkipConfirmationDialog } from '../habits/SkipConfirmationDialog';
 import { formatNumber } from '../habits/habitPresentation';
@@ -56,7 +57,7 @@ function HabitCard({ habit, onNumeric, onSkip }: {
                     type="button"
                 >
                     <span className={classNames('grid size-9 shrink-0 place-items-center rounded-full border-2 transition-colors', completed ? 'border-[var(--habit-accent)] bg-[var(--habit-accent)] text-accent-foreground' : skipped ? 'border-warning text-warning' : 'border-border-strong hover:border-[var(--habit-accent)]')}>
-                        {completed && <Check aria-hidden="true" size={18} strokeWidth={3} />}
+                        {completed ? <Check aria-hidden="true" size={18} strokeWidth={3} /> : <HabitIcon name={habit.icon} size={16} />}
                     </span>
                     <span className={classNames('min-w-0 flex-1 truncate text-base font-bold', completed && 'line-through opacity-60')}>{habit.name}</span>
                     {valueLabel && <span className={classNames('shrink-0 text-xs font-bold', skipped ? 'text-warning' : 'text-secondary')}>{valueLabel}</span>}

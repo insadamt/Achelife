@@ -4,14 +4,17 @@ import { useState } from 'react';
 import type { CSSProperties } from 'react';
 
 import { Surface } from '../../components/ui';
+import { HabitIcon } from '../../features/habits/HabitIcon';
 import { HabitStatisticCards } from '../../features/habits/HabitStatisticCards';
 import { HabitStatisticsCalendar } from '../../features/habits/HabitStatisticsCalendar';
 import { HabitStatisticsCharts } from '../../features/habits/HabitStatisticsCharts';
 import type { HabitStatisticsData } from '../../features/habits/statisticsTypes';
+import type { HabitIconName } from '../../features/habits/types';
 
 interface HabitIdentity {
     id: number;
     name: string;
+    icon: HabitIconName;
     type: 'boolean' | 'numeric';
     unit: string | null;
     archived: boolean;
@@ -44,7 +47,7 @@ export default function HabitStatisticsPage({ habit, statistics }: { habit: Habi
                 <header className="mb-7 flex flex-wrap items-end justify-between gap-5">
                     <div className="min-w-0 flex-1">
                         <p className="mb-2 text-xs font-bold uppercase tracking-[0.16em] text-accent-ink">Habit statistics{habit.archived ? ' · Archived' : ''}</p>
-                        <h1 className="break-words text-4xl font-bold tracking-[-0.05em] sm:text-5xl">{habit.name}</h1>
+                        <div className="flex items-center gap-3"><span aria-hidden="true" className="grid size-11 shrink-0 place-items-center rounded-2xl border border-border-subtle bg-elevated text-accent-ink"><HabitIcon name={habit.icon} size={21} /></span><h1 className="break-words text-4xl font-bold tracking-[-0.05em] sm:text-5xl">{habit.name}</h1></div>
                         <p className="mt-3 text-sm text-muted">See your consistency take shape.</p>
                     </div>
                     <div className="flex shrink-0 items-center gap-3 rounded-2xl border border-border-subtle bg-elevated px-4 py-3">
