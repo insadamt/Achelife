@@ -11,7 +11,7 @@ export function ActivityItem({ transaction, contextAccountId, onClick }: { trans
 
     return (
         <button className="focus-ring flex w-full items-center gap-4 rounded-2xl px-3 py-3 text-left transition-colors hover:bg-surface-hover" onClick={onClick} type="button">
-            <span className={`grid size-11 shrink-0 place-items-center rounded-2xl ${transaction.type === 'income' ? 'bg-success/10 text-success' : transaction.type === 'expense' ? 'bg-danger/10 text-danger' : 'bg-[color-mix(in_srgb,var(--money-accent)_12%,transparent)] text-[var(--money-accent)]'}`}>
+            <span className={`grid size-11 shrink-0 place-items-center rounded-2xl ${transaction.type === 'income' ? 'bg-success/10 text-success' : transaction.type === 'expense' ? 'bg-danger/10 text-danger' : 'bg-[color-mix(in_srgb,var(--money-accent)_12%,transparent)] text-accent-ink'}`}>
                 <TransactionIcon aria-hidden="true" size={19} />
             </span>
             <span className="min-w-0 flex-1">

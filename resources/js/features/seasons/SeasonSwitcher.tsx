@@ -121,7 +121,7 @@ export function SeasonSwitcher({ seasons, selectedSeasonNumber, onSelect }: Seas
                                             locked && 'border-border-subtle bg-surface/50',
                                         )}
                                     />
-                                    <span className={classNames('relative', season.state === 'current' && 'text-[var(--module-accent)]', season.state === 'completed' && 'text-success')}>
+                                    <span className={classNames('relative', season.state === 'current' && 'text-accent-ink', season.state === 'completed' && 'text-success')}>
                                         <SeasonStateIcon season={season} />
                                     </span>
                                 </span>

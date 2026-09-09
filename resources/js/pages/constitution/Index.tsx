@@ -96,7 +96,7 @@ export default function ConstitutionIndex(props: ConstitutionPageProps) {
                 {props.laws.length === 0 ? (
                     <Surface className="grid min-h-64 place-items-center p-8 text-center" elevated>
                         <div>
-                            <ShieldCheck className="mx-auto text-[var(--module-accent)]" size={34} />
+                            <ShieldCheck className="mx-auto text-accent-ink" size={34} />
                             <p className="mt-4 text-xl font-bold">No active Laws</p>
                             <Button className="mt-5" onClick={() => setCreating(true)}>
                                 <Plus aria-hidden="true" size={18} />
@@ -146,7 +146,7 @@ export default function ConstitutionIndex(props: ConstitutionPageProps) {
                     <span className="min-w-0 flex-1 truncate text-sm font-semibold">
                         #{recentViolation.sequence} {recentViolation.lawName} · {recentViolation.penalty.toLocaleString()} SP
                     </span>
-                    <button className="focus-ring icon-text flex min-h-10 items-center gap-1.5 rounded-full px-3 text-xs font-bold text-[var(--module-accent)] hover:bg-surface-hover" onClick={undoViolation} type="button">
+                    <button className="focus-ring icon-text flex min-h-10 items-center gap-1.5 rounded-full px-3 text-xs font-bold text-accent-ink hover:bg-surface-hover" onClick={undoViolation} type="button">
                         <Undo2 aria-hidden="true" size={15} />
                         Undo
                     </button>
@@ -168,7 +168,7 @@ function SummaryMetric({ className = '', danger = false, icon, label, value }: {
 }) {
     return (
         <div className={`flex min-w-0 items-center gap-3 rounded-2xl bg-app px-3 py-3 ${className}`}>
-            <span className={`grid size-10 shrink-0 place-items-center rounded-xl bg-elevated ${danger ? 'text-danger' : 'text-[var(--module-accent)]'}`}>{icon}</span>
+            <span className={`grid size-10 shrink-0 place-items-center rounded-xl bg-elevated ${danger ? 'text-danger' : 'text-accent-ink'}`}>{icon}</span>
             <span className="min-w-0">
                 <span className="block text-[0.625rem] font-bold tracking-[0.12em] text-muted uppercase">{label}</span>
                 <span className={`mt-0.5 block truncate text-lg font-bold ${danger ? 'text-danger' : 'text-foreground'}`}>{value}</span>

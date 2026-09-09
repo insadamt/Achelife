@@ -35,10 +35,10 @@ export default function Intermission({ cycle, lastSeason, closeout, manualSubscr
             <Surface className="overflow-hidden p-6 sm:p-9" elevated>
                 <div className="flex flex-col gap-7 md:flex-row md:items-center md:justify-between">
                     <div className="max-w-2xl">
-                        <span className="grid size-12 place-items-center rounded-2xl bg-[color-mix(in_srgb,var(--season-accent)_12%,transparent)] text-[var(--season-accent)]">
+                        <span className="grid size-12 place-items-center rounded-2xl bg-[color-mix(in_srgb,var(--season-accent)_12%,transparent)] text-accent-ink">
                             <Coffee aria-hidden="true" size={23} />
                         </span>
-                        <p className="mt-6 text-xs font-bold tracking-[0.18em] text-[var(--season-accent)] uppercase">Intermission · {cycle.intermission.reasonLabel}</p>
+                        <p className="mt-6 text-xs font-bold tracking-[0.18em] text-accent-ink uppercase">Intermission · {cycle.intermission.reasonLabel}</p>
                         <h1 className="mt-2 text-4xl font-bold tracking-[-0.045em] sm:text-6xl">Your next Season is waiting.</h1>
                         <p className="mt-4 max-w-xl text-base leading-7 text-secondary">
                             You have rested for {cycle.intermission.elapsedRestDays} {cycle.intermission.elapsedRestDays === 1 ? 'day' : 'days'}. Money, settings, planning, and your history remain available; seasonal rewards resume when you start again.
@@ -48,7 +48,7 @@ export default function Intermission({ cycle, lastSeason, closeout, manualSubscr
                     <div className="w-full rounded-[1.75rem] border border-border-subtle bg-app/60 p-5 md:max-w-sm">
                         <p className="text-xs font-bold tracking-[0.14em] text-muted uppercase">Season {cycle.nextSeasonNumber}</p>
                         <div className="mt-4 flex items-start gap-3">
-                            <CalendarDays aria-hidden="true" className="mt-0.5 text-[var(--season-accent)]" size={19} />
+                            <CalendarDays aria-hidden="true" className="mt-0.5 text-accent-ink" size={19} />
                             <div>
                                 <p className="font-semibold">{cycle.intermission.proposedStartDate}</p>
                                 <p className="mt-1 text-sm text-muted">through {cycle.intermission.proposedEndDate}</p>
@@ -70,12 +70,12 @@ export default function Intermission({ cycle, lastSeason, closeout, manualSubscr
 
             <section className="mt-6 grid gap-4 sm:grid-cols-2">
                 <Link className="focus-ring rounded-3xl border border-border-subtle bg-surface p-5 hover:bg-surface-hover" href="/seasons">
-                    <History aria-hidden="true" className="text-[var(--season-accent)]" size={20} />
+                    <History aria-hidden="true" className="text-accent-ink" size={20} />
                     <p className="mt-4 font-bold">Last closeout</p>
                     <p className="mt-1 text-sm text-muted">Season {lastSeason.number} · {lastSeason.rank?.displayName} · {lastSeason.seasonPoints} SP</p>
                 </Link>
                 <Link className="focus-ring rounded-3xl border border-border-subtle bg-surface p-5 hover:bg-surface-hover" href="/tasks">
-                    <CalendarDays aria-hidden="true" className="text-[var(--season-accent)]" size={20} />
+                    <CalendarDays aria-hidden="true" className="text-accent-ink" size={20} />
                     <p className="mt-4 font-bold">Plan ahead</p>
                     <p className="mt-1 text-sm text-muted">Create and reschedule Tasks without earning SP.</p>
                 </Link>

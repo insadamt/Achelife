@@ -33,7 +33,7 @@ export function ObjectiveBoard({
         <Surface className="mt-5 p-5 sm:p-7" elevated>
             <div className="flex items-center justify-between gap-4">
                 <div className="flex min-w-0 items-center gap-3">
-                    <span className="grid size-11 shrink-0 place-items-center rounded-2xl bg-[color-mix(in_srgb,var(--module-accent)_10%,transparent)] text-[var(--module-accent)]">
+                    <span className="grid size-11 shrink-0 place-items-center rounded-2xl bg-[color-mix(in_srgb,var(--module-accent)_10%,transparent)] text-accent-ink">
                         <Target aria-hidden="true" size={21} />
                     </span>
                     <div>
@@ -57,7 +57,7 @@ export function ObjectiveBoard({
                     {season.objectiveCount} / 3 slots
                 </span>
                 <span className="inline-flex min-h-9 shrink-0 items-center gap-2 rounded-full border border-border-subtle bg-app px-3 text-xs font-bold text-secondary">
-                    <Sparkles aria-hidden="true" className="text-[var(--module-accent)]" size={14} />
+                    <Sparkles aria-hidden="true" className="text-accent-ink" size={14} />
                     {season.objectiveCount > 0 ? `${season.objectiveRewardPerObjective.toLocaleString()} SP each` : '300 SP pool'}
                 </span>
                 <span className="inline-flex min-h-9 shrink-0 items-center gap-2 rounded-full border border-border-subtle bg-app px-3 text-xs font-bold text-secondary">

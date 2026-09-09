@@ -3,10 +3,12 @@ import { useState } from 'react';
 import type { PropsWithChildren } from 'react';
 
 import { BrandMark } from '../components/BrandMark';
+import { ThemeToggle } from '../components/ThemeToggle';
 import { Drawer, Icon } from '../components/ui';
 import type { IconName } from '../components/ui';
 import { ProgressNotch } from '../features/progress/ProgressNotch';
 import type { SharedPageProps } from '../types';
+import { ThemeProvider } from '../theme/ThemeProvider';
 
 interface NavigationDestination {
     label: string;
@@ -44,7 +46,7 @@ function NavigationItem({
           }`
         : mobile
           ? `focus-ring icon-text relative flex min-h-14 flex-1 flex-col items-center justify-center gap-1 rounded-xl px-1 text-[0.625rem] font-bold tracking-[0.06em] uppercase transition-colors duration-200 ${
-                active ? 'text-[var(--module-accent)]' : 'text-muted'
+                active ? 'text-accent-ink' : 'text-muted'
             }`
           : `focus-ring icon-text group flex min-h-11 w-full items-center gap-3 rounded-xl px-3 text-sm font-semibold transition-[background-color,color] duration-200 ${
                 active ? 'bg-[color-mix(in_srgb,var(--module-accent)_10%,transparent)] text-foreground' : 'text-secondary'
@@ -53,7 +55,7 @@ function NavigationItem({
     const content = (
         <>
             {active && !mobile && !rail && <span className="h-5 w-0.5 rounded-full bg-[var(--module-accent)]" aria-hidden="true" />}
-            <Icon className={active && !rail ? 'text-[var(--module-accent)]' : ''} name={destination.icon} />
+            <Icon className={active && !rail ? 'text-accent-ink' : ''} name={destination.icon} />
             {!rail && <span>{destination.label}</span>}
             {!destination.href && !mobile && !rail && <span className="ml-auto text-[0.5625rem] tracking-[0.12em] text-muted uppercase">Soon</span>}
             {rail && (
@@ -94,7 +96,7 @@ function UserIdentity({ name }: { name: string }) {
     );
 }
 
-export default function AppLayout({ children }: PropsWithChildren) {
+function AppShell({ children }: PropsWithChildren) {
     const page = usePage<SharedPageProps>();
     const { auth } = page.props;
     const [mobileNavigationOpen, setMobileNavigationOpen] = useState(false);
@@ -102,7 +104,7 @@ export default function AppLayout({ children }: PropsWithChildren) {
 
     return (
         <div className="min-h-screen bg-app text-foreground">
-            <aside className="fixed top-4 bottom-4 left-4 z-30 hidden w-20 rounded-[2rem] border border-border-subtle bg-surface/96 shadow-[0_24px_60px_rgba(0,0,0,0.32)] md:flex md:flex-col">
+            <aside className="fixed top-4 bottom-4 left-4 z-30 hidden w-20 rounded-[2rem] border border-border-subtle bg-surface/96 shadow-[var(--shadow-navigation)] md:flex md:flex-col">
                 <div className="flex justify-center py-4">
                     <BrandMark compact />
                 </div>
@@ -117,6 +119,7 @@ export default function AppLayout({ children }: PropsWithChildren) {
                         <span className="grid size-10 place-items-center rounded-full bg-[linear-gradient(145deg,var(--preview-violet),var(--preview-orange))] text-sm font-bold text-white" title={user.name}>
                             {user.name.charAt(0).toUpperCase()}
                         </span>
+                        <ThemeToggle />
                         <NavigationItem destination={settingsDestination} rail />
                     </div>
                 )}
@@ -124,7 +127,12 @@ export default function AppLayout({ children }: PropsWithChildren) {
 
             <header className="sticky top-0 z-20 flex h-16 items-center justify-between border-b border-border-subtle bg-app/92 px-4 backdrop-blur-md md:hidden">
                 <BrandMark />
-                {user && <span className="grid size-9 place-items-center rounded-xl bg-elevated text-sm font-bold">{user.name.charAt(0).toUpperCase()}</span>}
+                {user && (
+                    <div className="flex items-center gap-2">
+                        <ThemeToggle className="size-10 rounded-xl" />
+                        <span className="grid size-9 place-items-center rounded-xl bg-elevated text-sm font-bold">{user.name.charAt(0).toUpperCase()}</span>
+                    </div>
+                )}
             </header>
 
             <main className="min-h-screen px-4 pt-7 pb-28 sm:px-6 md:ml-28 md:px-8 md:pt-10 md:pb-12 lg:px-12">
@@ -133,7 +141,7 @@ export default function AppLayout({ children }: PropsWithChildren) {
 
             <nav
                 aria-label="Mobile primary navigation"
-                className="fixed right-3 bottom-3 left-3 z-30 flex items-center rounded-2xl border border-border-strong bg-elevated/96 p-1.5 shadow-[0_18px_50px_rgba(0,0,0,0.42)] backdrop-blur-md md:hidden"
+                className="fixed right-3 bottom-3 left-3 z-30 flex items-center rounded-2xl border border-border-strong bg-elevated/96 p-1.5 shadow-[var(--shadow-navigation)] backdrop-blur-md md:hidden"
             >
                 {destinations.filter((destination) => mobilePrimaryLabels.has(destination.label)).map((destination) => (
                     <NavigationItem destination={destination} key={destination.label} mobile />
@@ -172,5 +180,13 @@ export default function AppLayout({ children }: PropsWithChildren) {
 
             {page.props.progressPanel && <ProgressNotch data={page.props.progressPanel} />}
         </div>
+    );
+}
+
+export default function AppLayout({ children }: PropsWithChildren) {
+    return (
+        <ThemeProvider>
+            <AppShell>{children}</AppShell>
+        </ThemeProvider>
     );
 }

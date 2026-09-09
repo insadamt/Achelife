@@ -22,7 +22,7 @@ export function RestorePreviewCard({ preview }: { preview: RestorePreview }) {
         <div className="mt-5 space-y-4" aria-label="Validated restore preview">
             <Surface className="border-accent/35 p-5">
                 <div className="flex items-start gap-3">
-                    <DatabaseZap className="mt-0.5 shrink-0 text-accent" size={20} />
+                    <DatabaseZap className="mt-0.5 shrink-0 text-accent-ink" size={20} />
                     <div>
                         <p className="font-bold">Validated Achelife archive</p>
                         <p className="mt-1 text-sm leading-6 text-secondary">
@@ -43,7 +43,7 @@ export function RestorePreviewCard({ preview }: { preview: RestorePreview }) {
 
             {catchUp && (
                 <Surface className="p-5">
-                    <div className="flex items-start gap-3"><CalendarClock className="mt-0.5 text-accent" size={20} /><div><p className="font-bold">Bounded catch-up preview</p><p className="mt-1 text-sm text-secondary">{catchUp.throughDate ? `${catchUp.fromDate} through ${catchUp.throughDate}` : 'No elapsed Season dates to catch up'} · never beyond original Day 30 ({catchUp.originalDay30})</p></div></div>
+                    <div className="flex items-start gap-3"><CalendarClock className="mt-0.5 text-accent-ink" size={20} /><div><p className="font-bold">Bounded catch-up preview</p><p className="mt-1 text-sm text-secondary">{catchUp.throughDate ? `${catchUp.fromDate} through ${catchUp.throughDate}` : 'No elapsed Season dates to catch up'} · never beyond original Day 30 ({catchUp.originalDay30})</p></div></div>
                     <dl className="mt-4 grid gap-3 text-sm sm:grid-cols-2 lg:grid-cols-4">
                         <div><dt className="text-muted">Habit misses</dt><dd className="font-bold">{catchUp.habitMisses}</dd></div>
                         <div><dt className="text-muted">Diary missed days / streak</dt><dd className="font-bold">{catchUp.diary.missedDays} / {catchUp.diary.resultingStreak}</dd></div>

@@ -13,10 +13,6 @@ import type { HabitCalendarLabels, HabitDayData, HabitViewData } from '../../fea
 
 interface HabitsPageProps {
     today: string;
-    currentWeek: {
-        startDate: string;
-        endDate: string;
-    };
     calendarLabels: HabitCalendarLabels;
     habits: HabitViewData[];
     intermission: boolean;
@@ -71,8 +67,12 @@ export default function HabitsIndex(props: HabitsPageProps) {
             <Head title="Habits" />
 
             <div className="mx-auto max-w-5xl">
-                <header className="mb-6 flex items-center justify-between gap-4">
-                    <h1 className="text-4xl font-bold tracking-[-0.05em] sm:text-5xl">Habits</h1>
+                <header className="mb-8 flex flex-wrap items-end justify-between gap-4">
+                    <div>
+                        <p className="mb-2 text-xs font-bold uppercase tracking-[0.16em] text-accent-ink">Build consistency</p>
+                        <h1 className="text-4xl font-bold tracking-[-0.05em] sm:text-5xl">Habits</h1>
+                        <p className="mt-2 text-sm text-muted">Small actions. A clearer picture of your progress.</p>
+                    </div>
                     <div className="flex items-center gap-2">
                         <CalendarLabelSetting value={props.calendarLabels} />
                         <Link
@@ -106,7 +106,7 @@ export default function HabitsIndex(props: HabitsPageProps) {
                         </div>
                     </Surface>
                 ) : (
-                    <div className="grid items-start gap-3">
+                    <div className="grid items-start gap-4">
                         {props.habits.map((habit) => (
                             <HabitCard
                                 calendarLabels={props.calendarLabels}
@@ -117,7 +117,6 @@ export default function HabitsIndex(props: HabitsPageProps) {
                                 onExpansionChange={(expanded) => setHabitCalendarExpanded(habit.id, expanded)}
                                 onRequestSkip={(day) => setSkipSelection({ habit, day })}
                                 onSelectNumeric={(day) => setNumericSelection({ habit, day })}
-                                weekStart={props.currentWeek.startDate}
                             />
                         ))}
                     </div>

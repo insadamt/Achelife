@@ -16,10 +16,10 @@ export function MoneyBalanceSummary({ accounts, totalsByCurrency }: MoneyBalance
         <Surface className="money-balance-hero overflow-hidden p-5 sm:p-7" elevated>
             <div className="flex items-center justify-between gap-4">
                 <div>
-                    <p className="text-xs font-bold tracking-[0.18em] text-[var(--money-accent)] uppercase">Balances by currency</p>
+                    <p className="text-xs font-bold tracking-[0.18em] text-accent-ink uppercase">Balances by currency</p>
                     <p className="mt-1 text-sm text-muted">{accounts.length} {accounts.length === 1 ? 'Account' : 'Accounts'}</p>
                 </div>
-                <span className="grid size-11 shrink-0 place-items-center rounded-2xl border border-[color-mix(in_srgb,var(--money-accent)_30%,transparent)] bg-[color-mix(in_srgb,var(--money-accent)_10%,transparent)] text-[var(--money-accent)]">
+                <span className="grid size-11 shrink-0 place-items-center rounded-2xl border border-[color-mix(in_srgb,var(--money-accent)_30%,transparent)] bg-[color-mix(in_srgb,var(--money-accent)_10%,transparent)] text-accent-ink">
                     <WalletCards aria-hidden="true" size={21} />
                 </span>
             </div>
@@ -27,7 +27,7 @@ export function MoneyBalanceSummary({ accounts, totalsByCurrency }: MoneyBalance
             {totals.length > 0 ? (
                 <div className="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
                     {totals.map(([currency, amount]) => (
-                        <div className="rounded-2xl border border-white/8 bg-black/15 px-4 py-4" key={currency}>
+                        <div className="rounded-2xl border border-border-subtle bg-surface/70 px-4 py-4" key={currency}>
                             <p className="text-xs font-bold tracking-[0.16em] text-muted uppercase">{currency}</p>
                             <p className="mt-1 text-3xl font-bold tracking-[-0.04em] tabular-nums sm:text-4xl">
                                 {formatMinorUnits(amount, currency, false)}

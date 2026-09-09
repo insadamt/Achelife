@@ -161,7 +161,7 @@ function PersonProfile({ person, onBack, onRemove, onOpenEntry }: { person: Diar
         <div>
             <div className="flex items-center justify-between gap-3">
                 <button className="focus-ring text-sm font-bold text-secondary" onClick={onBack} type="button">← All People</button>
-                {!person.archived && <button className="focus-ring text-sm font-bold text-[var(--diary-accent)]" onClick={() => setEditing((value) => !value)} type="button">{editing ? 'Cancel' : 'Edit'}</button>}
+                {!person.archived && <button className="focus-ring text-sm font-bold text-accent-ink" onClick={() => setEditing((value) => !value)} type="button">{editing ? 'Cancel' : 'Edit'}</button>}
             </div>
             {editing ? (
                 <div className="mt-5 space-y-3">

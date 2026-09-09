@@ -10,6 +10,7 @@ use App\Models\Season;
 use App\Services\Habits\HabitDefinitionResolver;
 use App\Services\Habits\HabitSchedule;
 use Carbon\CarbonImmutable;
+use Illuminate\Support\Collection;
 
 class HabitViewDataFactory
 {
@@ -19,7 +20,7 @@ class HabitViewDataFactory
     ) {}
 
     /** @return array<string, mixed> */
-    public function make(Habit $habit, Season $season, CarbonImmutable $today): array
+    public function make(Habit $habit, Season $season, CarbonImmutable $today, Collection $recentSeasons): array
     {
         $habit->loadMissing('definitionVersions', 'occurrences');
         $todayDefinition = $this->definitionResolver->fromLoadedVersions($habit->definitionVersions, $today);
@@ -31,6 +32,12 @@ class HabitViewDataFactory
 
         for ($date = $season->start_date; $date->lessThanOrEqualTo($season->end_date); $date = $date->addDay()) {
             $days[] = $this->dayData($habit, $occurrences->get($date->toDateString()), $date, $today, $season);
+        }
+
+        $recentDays = [];
+        for ($date = $today->subDays(6); $date->lessThanOrEqualTo($today); $date = $date->addDay()) {
+            $dateSeason = $recentSeasons->first(fn (Season $candidate) => $date->betweenIncluded($candidate->start_date, $candidate->end_date));
+            $recentDays[] = $this->dayData($habit, $occurrences->get($date->toDateString()), $date, $today, $dateSeason);
         }
 
         return [
@@ -49,6 +56,7 @@ class HabitViewDataFactory
             'editDefinition' => $this->definitionData($editableDefinition),
             'changesStartTomorrow' => $editableDefinition->effective_from->isAfter($today),
             'days' => $days,
+            'recentDays' => $recentDays,
         ];
     }
 
@@ -80,19 +88,19 @@ class HabitViewDataFactory
         ?HabitOccurrence $occurrence,
         CarbonImmutable $date,
         CarbonImmutable $today,
-        Season $season,
+        ?Season $season,
     ): array {
         $beforeHabit = $date->isBefore($habit->starts_on);
         $future = $date->isAfter($today);
-        $definition = $beforeHabit ? null : $this->definitionResolver->fromLoadedVersions($habit->definitionVersions, $date);
+        $definition = $beforeHabit || $season === null ? null : $this->definitionResolver->fromLoadedVersions($habit->definitionVersions, $date);
         $required = $definition !== null && $this->schedule->isRequired($definition, $date);
         $flexibleAvailable = $definition !== null && $this->schedule->isFlexibleExtraAvailable($definition, $date);
-        $seasonIsActive = $today->betweenIncluded($season->start_date, $season->end_date);
+        $seasonIsActive = $season !== null && $today->betweenIncluded($season->start_date, $season->end_date);
         $available = $seasonIsActive && ! $beforeHabit && ! $future && ($required || $flexibleAvailable);
 
         return [
             'date' => $date->toDateString(),
-            'seasonDay' => $season->start_date->diffInDays($date) + 1,
+            'seasonDay' => $season === null ? 0 : $season->start_date->diffInDays($date) + 1,
             'calendarDay' => $date->day,
             'month' => $date->format('M'),
             'weekday' => $date->isoWeekday(),

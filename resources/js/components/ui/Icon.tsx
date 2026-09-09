@@ -14,19 +14,20 @@ export type IconName =
 
 interface IconProps extends SVGProps<SVGSVGElement> {
     name: IconName;
+    size?: number;
 }
 
-export function Icon({ name, ...props }: IconProps) {
+export function Icon({ name, size = 24, strokeWidth = 2, ...props }: IconProps) {
     const commonProps = {
         fill: 'none',
         stroke: 'currentColor',
         strokeLinecap: 'round' as const,
         strokeLinejoin: 'round' as const,
-        strokeWidth: 1.8,
+        strokeWidth,
     };
 
     return (
-        <svg aria-hidden="true" height="20" viewBox="0 0 24 24" width="20" {...props} {...commonProps}>
+        <svg aria-hidden="true" height={size} viewBox="0 0 24 24" width={size} {...props} {...commonProps}>
             {name === 'today' && <path d="M5 4.8h14v14.4H5zM8 3v3.5M16 3v3.5M5 9h14M8.5 13h2M13.5 13h2" />}
             {name === 'seasons' && <path d="M12 3a9 9 0 1 0 9 9c-4.4 1.3-8.3-2.6-7-7A8.7 8.7 0 0 0 12 3Z" />}
             {name === 'tasks' && <path d="m4 7 2 2 3-4M12 7h8M4 15l2 2 3-4M12 15h8" />}

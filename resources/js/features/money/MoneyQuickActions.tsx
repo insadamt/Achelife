@@ -34,7 +34,7 @@ export function MoneyQuickActions({ disabled = false, onSelect }: { disabled?: b
                         <ActionIcon
                             aria-hidden="true"
                             className={classNames(
-                                'text-[var(--money-accent)]',
+                                'text-accent-ink',
                                 action.type === 'income' && 'text-success',
                                 action.type === 'expense' && 'text-danger',
                             )}

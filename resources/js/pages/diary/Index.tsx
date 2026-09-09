@@ -90,7 +90,7 @@ function DiaryWorkspace(props: DiaryPageProps) {
 
             <header className="mb-5 flex items-end justify-between gap-4">
                 <div>
-                    <p className="text-xs font-bold tracking-[0.22em] text-[var(--diary-accent)] uppercase">A day, kept</p>
+                    <p className="text-xs font-bold tracking-[0.22em] text-accent-ink uppercase">A day, kept</p>
                     <h1 className="mt-1 text-4xl font-bold tracking-[-0.05em] sm:text-5xl">Diary</h1>
                 </div>
                 <div aria-label="Diary tools" className="flex items-center gap-1 rounded-2xl border border-border-subtle bg-surface p-1">
@@ -106,7 +106,7 @@ function DiaryWorkspace(props: DiaryPageProps) {
                 </p>
             )}
 
-            <div className="overflow-hidden rounded-[2rem] border border-border-subtle bg-surface shadow-[0_28px_80px_rgba(0,0,0,0.3)] lg:grid lg:grid-cols-[14rem_minmax(0,1fr)]">
+            <div className="overflow-hidden rounded-[2rem] border border-border-subtle bg-surface shadow-[var(--shadow-panel)] lg:grid lg:grid-cols-[14rem_minmax(0,1fr)]">
                 <aside className="hidden border-r border-border-subtle bg-elevated/45 p-4 lg:flex lg:min-h-[72vh] lg:flex-col">
                     <p className="px-2 text-[0.625rem] font-bold tracking-[0.18em] text-muted uppercase">Recent days</p>
                     <div className="mt-4 space-y-1">
@@ -147,7 +147,7 @@ function DiaryWorkspace(props: DiaryPageProps) {
                             <span aria-live="polite" className={saveState === 'error' ? 'text-danger' : ''}>{saveLabel(saveState, day)}</span>
                             {day.locked && <span>{day.mood ? titleCase(day.mood) : 'No mood'} · {day.languageName ?? 'No language'}</span>}
                             {day.state === 'completed' && <span className="text-success">{day.streakAfter} day streak · ×{day.multiplier} · +{day.earnedSp} SP</span>}
-                            {day.date !== props.today && <button className="focus-ring rounded-full px-2 py-1 font-bold text-[var(--diary-accent)] hover:bg-surface-hover" disabled={dateNavigationPending} onClick={() => void selectDate(props.today)} type="button">Go to today</button>}
+                            {day.date !== props.today && <button className="focus-ring rounded-full px-2 py-1 font-bold text-accent-ink hover:bg-surface-hover" disabled={dateNavigationPending} onClick={() => void selectDate(props.today)} type="button">Go to today</button>}
                         </div>
                     </div>
 

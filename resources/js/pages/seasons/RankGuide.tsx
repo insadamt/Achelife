@@ -123,7 +123,7 @@ export default function RankGuide({ ranks }: RankGuideProps) {
                     </div>
                     {currentRankIndex !== selectedIndex && (
                         <button
-                            className="focus-ring rounded-full px-3 py-2 text-xs font-bold tracking-[0.1em] text-[var(--module-accent)] uppercase hover:bg-surface-hover"
+                            className="focus-ring rounded-full px-3 py-2 text-xs font-bold tracking-[0.1em] text-accent-ink uppercase hover:bg-surface-hover"
                             onClick={() => selectRank(currentRankIndex)}
                             type="button"
                         >
@@ -234,7 +234,7 @@ export default function RankGuide({ ranks }: RankGuideProps) {
                         </div>
                         <div className="bg-app px-4 py-3 sm:px-5 sm:py-4">
                             <p className="text-[0.625rem] font-bold tracking-[0.14em] text-muted uppercase">Status</p>
-                            <p className={classNames('mt-1 text-lg font-bold', selectedIsCurrent ? 'text-[var(--module-accent)]' : 'text-secondary')}>
+                            <p className={classNames('mt-1 text-lg font-bold', selectedIsCurrent ? 'text-accent-ink' : 'text-secondary')}>
                                 {selectedIsCurrent ? `${progressSeason?.seasonPoints.toLocaleString() ?? 0} SP now` : selectedIndex < currentRankIndex ? 'Passed' : 'Ahead'}
                             </p>
                         </div>

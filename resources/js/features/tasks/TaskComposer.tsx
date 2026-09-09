@@ -50,11 +50,11 @@ export function TaskComposer({ today }: { today: string }) {
     return (
         <section className="sticky top-18 z-10 mx-auto max-w-4xl md:top-4" aria-label="Create a Task">
             <form
-                className="rounded-[1.5rem] border border-border-strong bg-elevated/96 p-2 shadow-[0_18px_48px_rgba(0,0,0,0.34)] backdrop-blur-xl"
+                className="rounded-[1.5rem] border border-border-strong bg-elevated/96 p-2 shadow-[var(--shadow-raised)] backdrop-blur-xl"
                 onSubmit={submit}
             >
                 <div className="flex items-center gap-2">
-                    <span className="grid size-10 shrink-0 place-items-center rounded-full text-[var(--module-accent)]" aria-hidden="true">
+                    <span className="grid size-10 shrink-0 place-items-center rounded-full text-accent-ink" aria-hidden="true">
                         <Plus size={21} strokeWidth={2.2} />
                     </span>
                     <label className="sr-only" htmlFor="quick-task-title">Add a task</label>
@@ -94,7 +94,7 @@ export function TaskComposer({ today }: { today: string }) {
                             <ListChecks size={18} />
                             {form.data.subtasks.length > 0 && <span>{form.data.subtasks.length}</span>}
                         </ComposerControl>
-                        {hasTitle && <span className="ml-auto px-2 text-sm font-bold text-[var(--module-accent)]">+{reward.points} SP</span>}
+                        {hasTitle && <span className="ml-auto px-2 text-sm font-bold text-accent-ink">+{reward.points} SP</span>}
                     </div>
                 )}
 
@@ -139,7 +139,7 @@ function ComposerControl({ active = false, label, onClick, children }: {
             className={classNames(
                 'focus-ring icon-text flex min-h-10 items-center gap-1.5 rounded-full px-3 text-xs font-bold transition-colors',
                 active
-                    ? 'bg-[color-mix(in_srgb,var(--module-accent)_14%,transparent)] text-[var(--module-accent)]'
+                    ? 'bg-[color-mix(in_srgb,var(--module-accent)_14%,transparent)] text-accent-ink'
                     : 'text-muted hover:bg-surface-hover hover:text-foreground',
             )}
             onClick={onClick}

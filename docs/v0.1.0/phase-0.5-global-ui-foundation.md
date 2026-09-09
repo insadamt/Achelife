@@ -8,10 +8,14 @@ Phase 0.5 establishes Achelife's global visual language, reusable UI primitives,
 
 - League Spartan is bundled through `@fontsource-variable/league-spartan` and used as the unified interface typeface.
 - Semantic color tokens live in `resources/css/app.css` for the application background, surfaces, borders, text hierarchy, accent, and feedback states.
+- Light and dark palettes implement the same semantic tokens. Appearance can follow the operating system or be set explicitly per device, and the resolved theme is applied before the application renders to avoid a color flash. Light mode uses neutral gray surfaces and charcoal text.
+- Keep the brand lime (`--accent`, `bg-accent`) identical in both themes for filled controls and highlights, paired with `text-accent-foreground`. Standalone accent labels and icons use `text-accent-ink`: lime in dark mode and a readable darker shade on light surfaces. Never darken the brand fill to fix text contrast.
+- New interface work must use semantic utilities such as `bg-app`, `bg-surface`, `text-foreground`, and `border-border-subtle` instead of theme-specific neutral colors. Intentional illustrations and data-series colors may remain fixed when their contrast is independently controlled.
 - Lime is the application-wide primary accent. The legacy module accent tokens resolve to the same lime value so navigation, controls, progress, focus, and active surfaces remain harmonized across every destination.
 - Surfaces use restrained borders, rounded geometry, controlled elevation, and accent glow only for meaningful active states.
 - Interaction transitions use a 160–220ms motion range and collapse when reduced motion is requested.
 - Controls that combine icons and text use a shared optical baseline adjustment so navigation, actions, and compact metadata remain visually aligned.
+- Primary navigation icons use the shared 24px icon size, while button icons have an 18px minimum. Small metadata icons remain optically subordinate by design.
 
 ## Component primitives
 

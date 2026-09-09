@@ -144,7 +144,7 @@ export default function TasksIndex(props: TasksPageProps) {
             {recentlyCompletedTask && (
                 <div aria-live="polite" className="fixed right-4 bottom-24 left-4 z-40 mx-auto flex max-w-sm items-center gap-3 rounded-2xl border border-border-strong bg-elevated p-3 shadow-2xl md:bottom-6">
                     <span className="min-w-0 flex-1 truncate text-sm font-semibold">Task completed</span>
-                    <button className="focus-ring icon-text flex min-h-10 items-center gap-1.5 rounded-full px-3 text-xs font-bold text-[var(--module-accent)] hover:bg-surface-hover" onClick={undoCompletion} type="button">
+                    <button className="focus-ring icon-text flex min-h-10 items-center gap-1.5 rounded-full px-3 text-xs font-bold text-accent-ink hover:bg-surface-hover" onClick={undoCompletion} type="button">
                         <Undo2 aria-hidden="true" size={15} />
                         Undo
                     </button>

@@ -52,7 +52,7 @@ Money never changes SP, Rank, or Daily Progress. Cross-currency Transfers are un
 
 ## Settings
 
-General Settings contains your name, timezone, rollover preference, and account portability. Changing timezone can change which local day contains an activity.
+General Settings contains appearance, your name, timezone, rollover preference, and account portability. Choose System, Light, or Dark under Appearance; the choice is stored on the current device. Changing timezone can change which local day contains an activity.
 
 ## Portable account exports
 

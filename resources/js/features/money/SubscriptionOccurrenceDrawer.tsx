@@ -68,7 +68,7 @@ export function SubscriptionOccurrenceDrawer({
                     <p className="mt-2 text-sm text-secondary">{occurrence.account.name} · {occurrence.category.name}{occurrence.subcategory ? ` → ${occurrence.subcategory.name}` : ''}</p>
                     {occurrence.note && <p className="mt-3 whitespace-pre-wrap text-sm text-muted">{occurrence.note}</p>}
                     {occurrence.transactionId && (
-                        <Link className="mt-4 inline-flex items-center gap-1.5 text-sm font-bold text-[var(--money-accent)] hover:underline" href="/money/history">
+                        <Link className="mt-4 inline-flex items-center gap-1.5 text-sm font-bold text-accent-ink hover:underline" href="/money/history">
                             Linked Expense #{occurrence.transactionId} <ExternalLink aria-hidden="true" size={14} />
                         </Link>
                     )}
@@ -80,7 +80,7 @@ export function SubscriptionOccurrenceDrawer({
                             <label className="text-sm font-semibold text-secondary" htmlFor="subscription-payment-amount">Payment amount</label>
                             <div className="mt-2 flex items-center rounded-2xl border border-border-strong bg-app focus-within:border-[var(--money-accent)]">
                                 <input className="focus-ring min-w-0 flex-1 bg-transparent px-4 py-3 text-xl font-bold tabular-nums" id="subscription-payment-amount" inputMode="decimal" onChange={(event) => form.setData('amount', event.target.value)} required value={form.data.amount} />
-                                <span className="pr-4 text-sm font-bold text-[var(--money-accent)]">{selectedAccount?.currency ?? occurrence.currency}</span>
+                                <span className="pr-4 text-sm font-bold text-accent-ink">{selectedAccount?.currency ?? occurrence.currency}</span>
                             </div>
                             {form.errors.amount && <p className="mt-2 text-sm text-danger">{form.errors.amount}</p>}
                         </div>

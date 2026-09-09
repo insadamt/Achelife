@@ -23,7 +23,7 @@ interface OnboardingProps {
 function StepHeader({ eyebrow, title, description }: { eyebrow: string; title: string; description: string }) {
     return (
         <header>
-            <p className="text-xs font-bold tracking-[0.18em] text-accent uppercase">{eyebrow}</p>
+            <p className="text-xs font-bold tracking-[0.18em] text-accent-ink uppercase">{eyebrow}</p>
             <h1 className="mt-2 text-3xl font-bold tracking-[-0.04em] sm:text-5xl">{title}</h1>
             <p className="mt-3 max-w-2xl text-base leading-7 text-secondary">{description}</p>
         </header>
@@ -45,10 +45,10 @@ function PathStep({ restorePreview }: { restorePreview: RestorePreview | null })
             <StepHeader eyebrow="Welcome to Achelife" title="How should we begin?" description="Choose before Achelife creates any Seasons, goals, routines, or financial records." />
             <div className="mt-8 grid gap-4 md:grid-cols-2">
                 <button className="focus-ring rounded-[2rem] border border-accent/45 bg-accent/8 p-6 text-left hover:bg-accent/12" disabled={form.processing} onClick={() => form.post('/onboarding/path')} type="button">
-                    <Sparkles aria-hidden="true" className="text-accent" />
+                    <Sparkles aria-hidden="true" className="text-accent-ink" />
                     <span className="mt-5 block text-xl font-bold">Start fresh</span>
                     <span className="mt-2 block text-sm leading-6 text-secondary">Confirm your calendar, begin Season 1, and optionally set up each module.</span>
-                    <span className="mt-6 flex items-center gap-2 text-sm font-bold text-accent">Begin setup <ArrowRight size={16} /></span>
+                    <span className="mt-6 flex items-center gap-2 text-sm font-bold text-accent-ink">Begin setup <ArrowRight size={16} /></span>
                 </button>
                 <div className="rounded-[2rem] border border-border-subtle bg-surface p-6">
                     <ArchiveRestore aria-hidden="true" className="text-muted" />
@@ -152,7 +152,7 @@ function OptionalNameStep({ kind }: { kind: 'habit' | 'task' }) {
         <form onSubmit={submit}>
             <StepHeader eyebrow={`${kind === 'habit' ? 'Step 3' : 'Step 4'} of 5 · Optional`} title={kind === 'habit' ? 'Start one daily Habit' : 'Add a Task for today'} description={kind === 'habit' ? 'Begin with a simple daily Boolean Habit. You can customize schedules, difficulty, and numeric tracking later.' : 'Capture one concrete next action. Full scheduling, importance, recurrence, and subtasks remain available in Tasks.'} />
             <div className="mt-7 rounded-[2rem] border border-border-subtle bg-surface p-6">
-                <span className="mb-5 grid size-11 place-items-center rounded-2xl bg-accent/10 text-accent">{icon}</span>
+                <span className="mb-5 grid size-11 place-items-center rounded-2xl bg-accent/10 text-accent-ink">{icon}</span>
                 <Field error={kind === 'habit' ? form.errors.name : form.errors.title} label={label} onChange={(event) => kind === 'habit' ? form.setData('name', event.target.value) : form.setData('title', event.target.value)} placeholder={kind === 'habit' ? 'Drink water' : 'Plan tomorrow'} value={value} />
                 <div className="mt-6 flex flex-wrap gap-3"><Button disabled={form.processing} type="submit">Create and continue</Button><Button disabled={form.processing} onClick={skip} variant="ghost">Skip</Button></div>
             </div>

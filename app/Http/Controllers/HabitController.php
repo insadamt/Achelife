@@ -35,19 +35,21 @@ class HabitController extends Controller
             ['user_id' => $request->user()->id],
             ['calendar_labels' => HabitCalendarLabels::CalendarDates],
         );
+        $recentSeasons = $request->user()->seasons()
+            ->whereDate('start_date', '<=', $today)
+            ->whereDate('end_date', '>=', $today->subDays(6))
+            ->get();
         $habits = $request->user()->habits()
             ->whereNull('archived_at')
-            ->with(['definitionVersions', 'occurrences' => fn ($query) => $query->where('season_id', $displaySeason->id)])
+            ->with(['definitionVersions', 'occurrences' => fn ($query) => $query->where(fn ($dates) => $dates
+                ->where('season_id', $displaySeason->id)
+                ->orWhereBetween('occurrence_date', [$today->subDays(6)->toDateString(), $today->toDateString()]))])
             ->orderBy('created_at')
             ->get()
-            ->map(fn (Habit $habit) => $viewDataFactory->make($habit, $displaySeason, $today));
+            ->map(fn (Habit $habit) => $viewDataFactory->make($habit, $displaySeason, $today, $recentSeasons));
 
         return Inertia::render('habits/Index', [
             'today' => $today->toDateString(),
-            'currentWeek' => [
-                'startDate' => $today->startOfWeek()->toDateString(),
-                'endDate' => $today->endOfWeek()->toDateString(),
-            ],
             'calendarLabels' => $settings->calendar_labels->value,
             'currentSeason' => [
                 'id' => $displaySeason->id,

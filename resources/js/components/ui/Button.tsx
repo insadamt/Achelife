@@ -40,7 +40,7 @@ export function Button({
     return (
         <button
             className={classNames(
-                'focus-ring inline-flex cursor-pointer items-center justify-center gap-2 rounded-full border font-bold tracking-[0.08em] uppercase transition-[transform,background-color,border-color,color,filter,box-shadow] duration-200 disabled:pointer-events-none disabled:opacity-45',
+                'focus-ring inline-flex cursor-pointer items-center justify-center gap-2 rounded-full border font-bold tracking-[0.08em] uppercase transition-[transform,background-color,border-color,color,filter,box-shadow] duration-200 [&>svg]:size-[1.125rem] [&>svg]:shrink-0 disabled:pointer-events-none disabled:opacity-45',
                 hasTextChild && 'icon-text',
                 variantClasses[variant],
                 sizeClasses[size],

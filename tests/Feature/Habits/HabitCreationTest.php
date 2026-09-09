@@ -2,6 +2,8 @@
 
 namespace Tests\Feature\Habits;
 
+use App\Actions\Habits\UpdateHabitOccurrence;
+use App\Actions\Seasons\ResolveUserSeasonCycle;
 use App\Enums\HabitDifficulty;
 use App\Enums\HabitOccurrenceState;
 use App\Enums\HabitScheduleType;
@@ -113,8 +115,10 @@ class HabitCreationTest extends TestCase
         $this->actingAs($user)->get('/habits')->assertInertia(fn (Assert $page) => $page
             ->component('habits/Index')
             ->where('calendarLabels', 'calendar_dates')
-            ->where('currentWeek.startDate', '2026-08-17')
-            ->where('currentWeek.endDate', '2026-08-23')
+            ->has('habits.0.recentDays', 7)
+            ->where('habits.0.recentDays.0.date', '2026-08-12')
+            ->where('habits.0.recentDays.6.date', '2026-08-18')
+            ->where('habits.0.recentDays.6.today', true)
             ->has('habits.0.days', 30)
             ->where('habits.0.days.0.date', '2026-08-01')
             ->where('habits.0.days.29.date', '2026-08-30'));
@@ -124,6 +128,53 @@ class HabitCreationTest extends TestCase
             ->assertRedirect();
         $this->assertDatabaseHas('habit_settings', ['user_id' => $user->id, 'calendar_labels' => 'season_days']);
         $this->assertSame(0, $season->refresh()->season_points);
+    }
+
+    public function test_recent_days_cross_season_boundaries_and_end_on_the_users_local_today(): void
+    {
+        CarbonImmutable::setTestNow('2026-08-30 16:00:00 UTC');
+        $user = $this->userCreatedOn('2026-08-01');
+        $user->update(['timezone' => 'Asia/Tokyo']);
+        $habit = $this->createHabit($user, '2026-08-28');
+        $date = CarbonImmutable::parse('2026-08-30');
+        app(UpdateHabitOccurrence::class)->toggleBoolean($user, $habit, $date, $date);
+        app(ResolveUserSeasonCycle::class)->execute($user)->activeSeason->update(['introduced_at' => now()]);
+
+        $this->actingAs($user)->get('/habits')->assertInertia(fn (Assert $page) => $page
+            ->where('today', '2026-08-31')
+            ->has('habits.0.recentDays', 7)
+            ->where('habits.0.recentDays.0.date', '2026-08-25')
+            ->where('habits.0.recentDays.0.clickable', false)
+            ->where('habits.0.recentDays.5.date', '2026-08-30')
+            ->where('habits.0.recentDays.5.state', 'completed')
+            ->where('habits.0.recentDays.5.seasonDay', 30)
+            ->where('habits.0.recentDays.5.clickable', false)
+            ->where('habits.0.recentDays.6.date', '2026-08-31')
+            ->where('habits.0.recentDays.6.weekday', 1)
+            ->where('habits.0.recentDays.6.today', true)
+            ->where('habits.0.recentDays.6.clickable', true)
+            ->has('habits.0.days', 30)
+            ->where('habits.0.days.0.date', '2026-08-31'));
+    }
+
+    public function test_recent_days_include_inactive_intermission_dates_without_scheduled_states(): void
+    {
+        CarbonImmutable::setTestNow('2026-09-02 12:00:00');
+        $user = $this->userCreatedOn('2026-08-01');
+        $user->update(['season_rollover_preference' => 'manual']);
+        $this->createHabit($user, '2026-08-28');
+        $user->seasons()->update(['introduced_at' => now()]);
+
+        $this->actingAs($user)->get('/habits')->assertInertia(fn (Assert $page) => $page
+            ->where('intermission', true)
+            ->has('habits.0.recentDays', 7)
+            ->where('habits.0.recentDays.0.date', '2026-08-27')
+            ->where('habits.0.recentDays.6.date', '2026-09-02')
+            ->where('habits.0.recentDays.6.today', true)
+            ->where('habits.0.recentDays.6.state', null)
+            ->where('habits.0.recentDays.6.required', false)
+            ->where('habits.0.recentDays.6.clickable', false)
+            ->where('habits.0.days.29.date', '2026-08-30'));
     }
 
     public function test_inertia_navigation_updates_the_redirect_destination_for_habit_actions(): void

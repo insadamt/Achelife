@@ -45,6 +45,7 @@ export interface HabitViewData extends HabitDefinitionData {
     editDefinition: HabitDefinitionData;
     changesStartTomorrow: boolean;
     days: HabitDayData[];
+    recentDays: HabitDayData[];
 }
 
 export interface ArchivedHabitData extends HabitDefinitionData {

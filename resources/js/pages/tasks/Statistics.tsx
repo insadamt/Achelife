@@ -12,7 +12,7 @@ export default function TaskStatisticsPage({ statistics }: { statistics: TaskSta
             <div className="mx-auto max-w-6xl">
                 <div className="mb-8 flex flex-wrap items-end justify-between gap-5">
                     <div>
-                        <p className="mb-2 text-xs font-bold uppercase tracking-[0.18em] text-[var(--module-accent)]">Tasks</p>
+                        <p className="mb-2 text-xs font-bold uppercase tracking-[0.18em] text-accent-ink">Tasks</p>
                         <h1 className="text-4xl font-bold tracking-[-0.05em] sm:text-5xl">Task statistics</h1>
                         <p className="mt-3 max-w-xl text-sm leading-6 text-muted">See how often you finish, how reliably you meet your dates, and where your momentum changes.</p>
                     </div>

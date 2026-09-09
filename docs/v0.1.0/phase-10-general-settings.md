@@ -28,6 +28,7 @@ Passwordless setup submits the browser's timezone from `Intl.DateTimeFormat` whe
 
 `/settings/general` provides:
 
+- a per-device appearance preference for System, Light, or Dark mode;
 - the saved timezone;
 - a complete validated IANA timezone list with current UTC offsets;
 - the browser-detected timezone as an explicit option;

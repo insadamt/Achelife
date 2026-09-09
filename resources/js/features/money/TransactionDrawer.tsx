@@ -157,7 +157,7 @@ export function TransactionDrawer({
                         </div>
                         <p className={classNames(
                             'mt-5 text-4xl font-bold tracking-[-0.04em] tabular-nums',
-                            transaction.type === 'income' ? 'text-success' : transaction.type === 'expense' ? 'text-foreground' : 'text-[var(--money-accent)]',
+                            transaction.type === 'income' ? 'text-success' : transaction.type === 'expense' ? 'text-foreground' : 'text-accent-ink',
                         )}>
                             {formatMinorUnits(transaction.amountMinor, transaction.account.currency)}
                         </p>
@@ -212,7 +212,7 @@ export function TransactionDrawer({
                             required
                             value={form.data.amount}
                         />
-                        <span className="pr-4 text-sm font-bold tracking-[0.12em] text-[var(--money-accent)]">{selectedAccount?.currency ?? '—'}</span>
+                        <span className="pr-4 text-sm font-bold tracking-[0.12em] text-accent-ink">{selectedAccount?.currency ?? '—'}</span>
                     </div>
                     {form.errors.amount && <p className="mt-2 text-sm font-medium text-danger">{form.errors.amount}</p>}
                 </div>
@@ -248,7 +248,7 @@ export function TransactionDrawer({
                                     placeholder="0.00"
                                     value={form.data.fee}
                                 />
-                                <span className="pr-4 text-sm font-bold tracking-[0.12em] text-[var(--money-accent)]">{selectedAccount?.currency ?? '—'}</span>
+                                <span className="pr-4 text-sm font-bold tracking-[0.12em] text-accent-ink">{selectedAccount?.currency ?? '—'}</span>
                             </div>
                             {form.errors.fee && <p className="mt-2 text-sm font-medium text-danger">{form.errors.fee}</p>}
                             <p className="mt-2 text-xs text-muted">The fee uses the source Account currency and is reported under Financial → Bank Fees.</p>
@@ -275,7 +275,7 @@ export function TransactionDrawer({
                         />
                         {relevantCategories.length === 0 && (
                             <p className="rounded-2xl border border-warning/25 bg-warning/8 px-4 py-3 text-sm text-secondary">
-                                No active {type} Categories are available. <Link className="font-bold text-[var(--money-accent)] hover:underline" href="/money/categories">Create one in Categories</Link> before recording this transaction.
+                                No active {type} Categories are available. <Link className="font-bold text-accent-ink hover:underline" href="/money/categories">Create one in Categories</Link> before recording this transaction.
                             </p>
                         )}
                         {subcategories.length > 0 && (

@@ -4,7 +4,8 @@
 @source '../../storage/framework/views/*.php';
 @source '../js/**/*.tsx';
 
-:root {
+:root,
+:root[data-theme='dark'] {
     color-scheme: dark;
     --app-background: #121315;
     --surface-primary: #060708;
@@ -16,6 +17,7 @@
     --text-secondary: #afb6c0;
     --text-muted: #737c89;
     --accent: #d7e66b;
+    --accent-ink: var(--accent);
     --accent-foreground: #0b0d06;
     --success: #55d58a;
     --warning: #f1b84b;
@@ -25,6 +27,19 @@
     --preview-orange: #ff8a45;
     --preview-green: #7ddc69;
     --preview-pink: #ec63bc;
+    --habit-completed: #3fbf73;
+    --habit-completed-foreground: #07170e;
+    --habit-completed-border: #267948;
+    --habit-skipped: #818a97;
+    --habit-skipped-foreground: #0d1014;
+    --habit-skipped-border: #555d69;
+    --habit-missed: #e25760;
+    --habit-missed-foreground: #1d080a;
+    --habit-missed-border: #9e363d;
+    --habit-pending: #e8ad3d;
+    --habit-pending-foreground: #211504;
+    --habit-pending-border: #a87318;
+    --success-foreground: #07150d;
     --season-accent: var(--accent);
     --task-accent: var(--accent);
     --habit-accent: var(--accent);
@@ -36,6 +51,50 @@
     --radius-panel: 1.75rem;
     --motion-fast: 160ms;
     --motion-standard: 220ms;
+    --shadow-panel: 0 20px 55px rgb(0 0 0 / 20%);
+    --shadow-raised: 0 18px 50px rgb(0 0 0 / 22%);
+    --shadow-navigation: 0 24px 60px rgb(0 0 0 / 32%);
+}
+
+:root[data-theme='light'] {
+    color-scheme: light;
+    --app-background: #ededee;
+    --surface-primary: #fafafa;
+    --surface-elevated: #f5f5f6;
+    --surface-hover: #e5e5e8;
+    --border-subtle: #dcdce0;
+    --border-strong: #b7b7bf;
+    --text-primary: #303139;
+    --text-secondary: #555761;
+    --text-muted: #686a75;
+    --accent: #d7e66b;
+    --accent-ink: #59651f;
+    --accent-foreground: #0b0d06;
+    --success: #286a48;
+    --success-foreground: #f3faf5;
+    --warning: #805c18;
+    --danger: #a83a46;
+    --preview-blue: #176db2;
+    --preview-violet: #6f4fc2;
+    --preview-orange: #b9571f;
+    --preview-green: #397a2e;
+    --preview-pink: #ad3c83;
+    --habit-completed: #b9d9c3;
+    --habit-completed-foreground: #24553a;
+    --habit-completed-border: #7eaa8d;
+    --habit-skipped: #d0d4d1;
+    --habit-skipped-foreground: #4e5851;
+    --habit-skipped-border: #a7afa9;
+    --habit-missed: #ecc6c7;
+    --habit-missed-foreground: #7c343a;
+    --habit-missed-border: #cf9296;
+    --habit-pending: #ead8ae;
+    --habit-pending-foreground: #6b4d12;
+    --habit-pending-border: #c5a764;
+    --focus-ring: var(--accent-ink);
+    --shadow-panel: 0 8px 28px rgb(24 25 32 / 5%);
+    --shadow-raised: 0 8px 24px rgb(24 25 32 / 5%);
+    --shadow-navigation: 0 12px 32px rgb(24 25 32 / 7%);
 }
 
 .season-switcher-track {
@@ -75,7 +134,7 @@
 .habit-card {
     background:
         linear-gradient(145deg, var(--surface-primary), color-mix(in srgb, var(--surface-primary) 95%, var(--habit-accent)));
-    box-shadow: 0 10px 28px rgb(0 0 0 / 20%);
+    box-shadow: var(--shadow-raised);
 }
 
 .progress-notch-panel {
@@ -172,6 +231,7 @@
     --color-secondary: var(--text-secondary);
     --color-muted: var(--text-muted);
     --color-accent: var(--accent);
+    --color-accent-ink: var(--accent-ink);
     --color-accent-foreground: var(--accent-foreground);
     --color-success: var(--success);
     --color-warning: var(--warning);
@@ -234,7 +294,7 @@
     }
 
     .accent-text {
-        color: var(--module-accent);
+        color: var(--accent-ink);
     }
 
     .accent-background {

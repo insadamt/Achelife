@@ -90,19 +90,19 @@ export function TaskStatisticsPanel({ statistics }: { statistics: TaskStatistics
             <Surface className="overflow-hidden p-1">
                 <div aria-label="Statistics period" className="grid grid-cols-4 gap-1" role="group">
                     {filters.map(([key, label]) => (
-                        <button aria-pressed={statistics.filter === key} className={`focus-ring min-h-11 rounded-[1.35rem] px-2 text-sm font-bold transition-all ${statistics.filter === key ? 'bg-[var(--module-accent)] text-black shadow-lg' : 'text-muted hover:bg-surface-hover hover:text-foreground'}`} disabled={loading} key={key} onClick={() => changeFilter(key)} type="button">{label}</button>
+                        <button aria-pressed={statistics.filter === key} className={`focus-ring min-h-11 rounded-[1.35rem] px-2 text-sm font-bold transition-all ${statistics.filter === key ? 'bg-[var(--module-accent)] text-accent-foreground shadow-lg' : 'text-muted hover:bg-surface-hover hover:text-foreground'}`} disabled={loading} key={key} onClick={() => changeFilter(key)} type="button">{label}</button>
                     ))}
                 </div>
             </Surface>
 
             <div className="flex justify-center">
                 {statistics.filter === 'all' ? (
-                    <div className="text-center"><p className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--module-accent)]">Selected period</p><h2 className="mt-1 text-2xl font-bold tracking-tight" id="task-statistics-heading">All time</h2></div>
+                    <div className="text-center"><p className="text-xs font-bold uppercase tracking-[0.16em] text-accent-ink">Selected period</p><h2 className="mt-1 text-2xl font-bold tracking-tight" id="task-statistics-heading">All time</h2></div>
                 ) : (
                     <div className="grid grid-cols-[2.75rem_minmax(11rem,1fr)_2.75rem] items-center gap-2">
                         <button aria-label="Previous period" className="focus-ring grid size-11 place-items-center rounded-full border border-border-subtle bg-surface text-secondary transition-colors hover:border-border-strong hover:bg-surface-hover hover:text-foreground disabled:cursor-not-allowed disabled:opacity-30" disabled={!statistics.selector.previousValue || loading} onClick={() => changeSelectedPeriod(statistics.selector.previousValue)} type="button"><ChevronLeft aria-hidden="true" size={20} /></button>
                         <div className="text-center">
-                            <p className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--module-accent)]">Selected period</p>
+                            <p className="text-xs font-bold uppercase tracking-[0.16em] text-accent-ink">Selected period</p>
                             <h2 className="mt-1 text-2xl font-bold tracking-tight" id="task-statistics-heading">{statistics.label}</h2>
                             <p className="mt-1 text-xs font-semibold text-muted">{statistics.comparisonLabel}</p>
                         </div>
@@ -119,7 +119,7 @@ export function TaskStatisticsPanel({ statistics }: { statistics: TaskStatistics
                     return (
                         <Surface className={`relative min-w-0 overflow-hidden p-4 sm:p-5 ${index === 0 ? 'border-[color-mix(in_srgb,var(--module-accent)_28%,var(--border-subtle))]' : ''}`} key={key}>
                             {index === 0 && <span aria-hidden="true" className="absolute inset-x-0 top-0 h-0.5 bg-[var(--module-accent)]" />}
-                            <div className="flex items-center justify-between gap-2"><h3 className="text-sm font-bold text-secondary">{label}</h3><span className="grid size-9 shrink-0 place-items-center rounded-xl bg-[color-mix(in_srgb,var(--module-accent)_12%,transparent)] text-[var(--module-accent)]"><Icon aria-hidden="true" size={18} /></span></div>
+                            <div className="flex items-center justify-between gap-2"><h3 className="text-sm font-bold text-secondary">{label}</h3><span className="grid size-9 shrink-0 place-items-center rounded-xl bg-[color-mix(in_srgb,var(--module-accent)_12%,transparent)] text-accent-ink"><Icon aria-hidden="true" size={18} /></span></div>
                             <p className="mt-4 text-4xl font-bold leading-none tracking-[-0.04em]">{formatMetric(statistics.current[key], percentage)}</p>
                             <p className="mt-2 text-xs text-muted">{detail}</p>
                             {statistics.filter !== 'all' && <div className="mt-4 flex flex-wrap items-center justify-between gap-2 border-t border-border-subtle pt-3"><span className="text-xs text-muted">Previous {formatMetric(previous, percentage)}</span><MetricDelta current={statistics.current[key]} percentage={percentage} previous={previous} /></div>}
@@ -132,8 +132,8 @@ export function TaskStatisticsPanel({ statistics }: { statistics: TaskStatistics
                 <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
                     <div><h3 className="text-lg font-bold">Activity trend</h3><p className="mt-1 text-sm text-muted">{chartMetric === 'tasks' ? 'Tasks completed' : 'Task SP earned'} per {statistics.trend.unit}</p></div>
                     <div aria-label="Chart metric" className="flex gap-1 rounded-full border border-border-subtle bg-app p-1" role="group">
-                        <button aria-pressed={chartMetric === 'tasks'} className={`focus-ring rounded-full px-3 py-1.5 text-xs font-bold transition-colors ${chartMetric === 'tasks' ? 'bg-[var(--module-accent)] text-black' : 'text-muted hover:text-foreground'}`} onClick={() => setChartMetric('tasks')} type="button">Tasks</button>
-                        <button aria-pressed={chartMetric === 'sp'} className={`focus-ring rounded-full px-3 py-1.5 text-xs font-bold transition-colors ${chartMetric === 'sp' ? 'bg-[var(--module-accent)] text-black' : 'text-muted hover:text-foreground'}`} onClick={() => setChartMetric('sp')} type="button">SP</button>
+                        <button aria-pressed={chartMetric === 'tasks'} className={`focus-ring rounded-full px-3 py-1.5 text-xs font-bold transition-colors ${chartMetric === 'tasks' ? 'bg-[var(--module-accent)] text-accent-foreground' : 'text-muted hover:text-foreground'}`} onClick={() => setChartMetric('tasks')} type="button">Tasks</button>
+                        <button aria-pressed={chartMetric === 'sp'} className={`focus-ring rounded-full px-3 py-1.5 text-xs font-bold transition-colors ${chartMetric === 'sp' ? 'bg-[var(--module-accent)] text-accent-foreground' : 'text-muted hover:text-foreground'}`} onClick={() => setChartMetric('sp')} type="button">SP</button>
                     </div>
                 </div>
                 {statistics.current.completed === 0

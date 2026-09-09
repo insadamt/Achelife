@@ -84,10 +84,10 @@ export default function Home(props: TodayPageProps) {
             </main>
 
             <main className="hidden items-start gap-6 pb-8 md:grid md:grid-cols-2">
-                <div className="min-h-[18rem] rounded-[2rem] border border-border-subtle bg-surface/45 p-5 shadow-[0_18px_46px_rgba(0,0,0,0.16)] lg:p-6">
+                <div className="min-h-[18rem] rounded-[2rem] border border-border-subtle bg-surface/45 p-5 shadow-[var(--shadow-panel)] lg:p-6">
                     <TodayTaskList headingId="today-desktop-task-list-title" overdue={props.tasks.overdue} overdueCount={props.tasks.overdueCount} tasks={props.tasks.today} />
                 </div>
-                <div className="min-h-[18rem] rounded-[2rem] border border-border-subtle bg-surface/45 p-5 shadow-[0_18px_46px_rgba(0,0,0,0.16)] lg:p-6">
+                <div className="min-h-[18rem] rounded-[2rem] border border-border-subtle bg-surface/45 p-5 shadow-[var(--shadow-panel)] lg:p-6">
                     <TodayHabitSection flexible={props.habits.flexible} headingId="today-desktop-habit-list-title" required={props.habits.required} />
                 </div>
             </main>

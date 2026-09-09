@@ -53,7 +53,7 @@ export default function ArchivedHabits({ habits }: { habits: ArchivedHabitData[]
                                     </span>
                                 </div>
                                 <div className="mt-4 flex flex-wrap gap-x-5 gap-y-1 border-t border-border-subtle pt-4 text-xs font-semibold text-muted">
-                                    <Link className="focus-ring rounded text-[var(--module-accent)] hover:underline" href={`/habits/${habit.id}/statistics`}>Statistics</Link>
+                                    <Link className="focus-ring rounded text-accent-ink hover:underline" href={`/habits/${habit.id}/statistics`}>Statistics</Link>
                                     <span>Started {formatHabitDate(habit.startsOn)}</span>
                                     <span>Archived {formatHabitDate(habit.inactiveOn)}</span>
                                 </div>

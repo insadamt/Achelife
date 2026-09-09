@@ -91,7 +91,7 @@ export function TaskEditorDialog({ editor, onClose, task, today }: {
                             />
                         )}
                         {form.errors.weekdays && <p className="text-sm font-semibold text-danger">Choose at least one weekday.</p>}
-                        <p className="text-right text-lg font-bold text-[var(--module-accent)]">+{reward.points} SP</p>
+                        <p className="text-right text-lg font-bold text-accent-ink">+{reward.points} SP</p>
                     </div>
                 )}
 

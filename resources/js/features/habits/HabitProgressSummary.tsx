@@ -42,7 +42,7 @@ export function HabitProgressSummary({ habit }: { habit: HabitViewData }) {
                         <p className="mt-1 text-[0.65rem] font-bold tracking-[0.16em] text-muted uppercase">Current streak</p>
                     </div>
                     <div className="pb-1 text-right">
-                        <strong className="text-3xl leading-none text-[var(--module-accent)]">×{currentMultiplier}</strong>
+                        <strong className="text-3xl leading-none text-accent-ink">×{currentMultiplier}</strong>
                         <p className="mt-1 text-[0.65rem] font-bold tracking-[0.14em] text-muted uppercase">Multiplier</p>
                     </div>
                 </div>
@@ -63,7 +63,7 @@ export function HabitProgressSummary({ habit }: { habit: HabitViewData }) {
 
                 <div className="mt-7 grid grid-cols-3 divide-x divide-border-subtle border-t border-border-subtle pt-4 text-center">
                     <div className="px-2">
-                        <Sparkles aria-hidden="true" className="mx-auto text-[var(--module-accent)]" size={15} />
+                        <Sparkles aria-hidden="true" className="mx-auto text-accent-ink" size={15} />
                         <strong className="mt-2 block text-sm text-foreground">+{nextReward} SP</strong>
                         <span className="mt-0.5 block text-[0.6rem] font-bold tracking-wider text-muted uppercase">Next</span>
                     </div>

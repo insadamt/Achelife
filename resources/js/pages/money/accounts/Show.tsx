@@ -54,7 +54,7 @@ export default function AccountShow(props: AccountShowProps) {
 
             <header className="mt-5 mb-7 flex items-end justify-between gap-4">
                 <div>
-                    <p className="text-xs font-bold tracking-[0.2em] text-[var(--money-accent)] uppercase">{props.account.currency} Account</p>
+                    <p className="text-xs font-bold tracking-[0.2em] text-accent-ink uppercase">{props.account.currency} Account</p>
                     <h1 className="mt-2 text-4xl font-bold tracking-[-0.05em] sm:text-5xl">{props.account.name}</h1>
                 </div>
                 <Button onClick={() => setSettingsOpen(true)} size="small" variant="secondary">
@@ -90,7 +90,7 @@ export default function AccountShow(props: AccountShowProps) {
             <section className="mt-10">
                 <div className="mb-4 flex items-center justify-between">
                     <h2 className="text-sm font-bold tracking-[0.17em] text-secondary uppercase">Recent activity</h2>
-                    <Link className="icon-text flex items-center gap-1.5 text-sm font-bold text-[var(--money-accent)] hover:underline" href={`/money/history?account=${props.account.id}`}><ReceiptText aria-hidden="true" size={15} />Full history</Link>
+                    <Link className="icon-text flex items-center gap-1.5 text-sm font-bold text-accent-ink hover:underline" href={`/money/history?account=${props.account.id}`}><ReceiptText aria-hidden="true" size={15} />Full history</Link>
                 </div>
                 <Surface className="p-2 sm:p-3" elevated>
                     <ActivityList

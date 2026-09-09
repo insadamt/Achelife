@@ -9,7 +9,7 @@ interface StatusChipProps {
 }
 
 const statusClasses: Record<Status, string> = {
-    active: 'border-[color-mix(in_srgb,var(--module-accent)_42%,transparent)] bg-[color-mix(in_srgb,var(--module-accent)_10%,transparent)] text-[var(--module-accent)]',
+    active: 'border-[color-mix(in_srgb,var(--module-accent)_42%,transparent)] bg-[color-mix(in_srgb,var(--module-accent)_10%,transparent)] text-accent-ink',
     completed: 'border-success/35 bg-success/10 text-success',
     locked: 'border-border-subtle bg-app text-muted',
     warning: 'border-warning/35 bg-warning/10 text-warning',

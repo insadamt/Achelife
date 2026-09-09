@@ -21,9 +21,9 @@ export function PortabilitySettingsPanel({ restorePreview }: { restorePreview: R
     }
 
     return (
-        <section className="mt-6 rounded-[2rem] border border-border-subtle bg-surface p-5 shadow-[0_20px_55px_rgba(0,0,0,0.2)] sm:p-7">
+        <section className="mt-6 rounded-[2rem] border border-border-subtle bg-surface p-5 shadow-[var(--shadow-panel)] sm:p-7">
             <div className="flex items-start gap-4">
-                <span className="grid size-11 shrink-0 place-items-center rounded-2xl bg-accent/10 text-accent"><FileArchive size={21} /></span>
+                <span className="grid size-11 shrink-0 place-items-center rounded-2xl bg-accent/10 text-accent-ink"><FileArchive size={21} /></span>
                 <div><h2 className="text-xl font-bold">Account data portability</h2><p className="mt-1 text-sm leading-6 text-muted">Export a transactionally consistent snapshot or replace this account from a validated Achelife archive.</p></div>
             </div>
 

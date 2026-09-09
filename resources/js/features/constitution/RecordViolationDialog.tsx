@@ -82,7 +82,7 @@ function ImpactMetric({ className = '', danger = false, icon, label, value }: {
 }) {
     return (
         <div className={`flex items-center gap-3 rounded-2xl border border-border-subtle bg-app p-3 ${className}`}>
-            <span className={`grid size-9 shrink-0 place-items-center rounded-xl bg-elevated ${danger ? 'text-danger' : 'text-[var(--module-accent)]'}`}>{icon}</span>
+            <span className={`grid size-9 shrink-0 place-items-center rounded-xl bg-elevated ${danger ? 'text-danger' : 'text-accent-ink'}`}>{icon}</span>
             <span>
                 <span className="block text-[0.625rem] font-bold tracking-[0.12em] text-muted uppercase">{label}</span>
                 <span className={`mt-0.5 block font-bold ${danger ? 'text-danger' : 'text-foreground'}`}>{value}</span>

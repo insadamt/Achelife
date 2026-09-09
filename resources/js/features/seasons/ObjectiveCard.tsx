@@ -72,7 +72,7 @@ export function ObjectiveCard({
                             <span
                                 aria-hidden="true"
                                 className={`grid size-5 place-items-center rounded-full border ${
-                                    objective.completed ? 'border-success bg-success text-[#07150d]' : 'border-border-strong'
+                                    objective.completed ? 'border-success bg-success text-[var(--success-foreground)]' : 'border-border-strong'
                                 }`}
                             >
                                 {objective.completed && <Check size={12} strokeWidth={3} />}
@@ -88,7 +88,7 @@ export function ObjectiveCard({
                     )}
 
                     <div className="shrink-0 text-right">
-                        <p className={`text-lg font-bold ${objective.completed ? 'text-success' : 'text-[var(--module-accent)]'}`}>
+                        <p className={`text-lg font-bold ${objective.completed ? 'text-success' : 'text-accent-ink'}`}>
                             +{objective.rewardSp.toLocaleString()} SP
                         </p>
                         <p className="mt-1 text-[0.625rem] font-bold tracking-[0.15em] text-muted uppercase">

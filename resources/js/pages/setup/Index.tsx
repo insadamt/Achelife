@@ -24,7 +24,7 @@ export default function Setup() {
     return (
         <>
             <Head title="Set up Achelife" />
-            <p className="text-xs font-bold tracking-[0.18em] text-accent uppercase">Your private space</p>
+            <p className="text-xs font-bold tracking-[0.18em] text-accent-ink uppercase">Your private space</p>
             <h1 className="mt-2 text-3xl font-bold tracking-[-0.035em]">Set up Achelife</h1>
             <p className="mt-2 text-sm leading-6 text-secondary">
                 Achelife is a single-user, self-hosted application. Choose the name shown inside your private instance—no login is required.

@@ -94,7 +94,7 @@ export default function MoneyIndex(props: MoneyIndexProps) {
             <section className="mt-9">
                 <div className="mb-4 flex items-center justify-between">
                     <h2 className="text-sm font-bold tracking-[0.17em] text-secondary uppercase">Recent activity</h2>
-                    {props.recentTransactions.length > 0 && <Link className="icon-text flex items-center gap-1.5 text-sm font-bold text-[var(--money-accent)] hover:underline" href="/money/history">View all <ArrowRight aria-hidden="true" size={15} /></Link>}
+                    {props.recentTransactions.length > 0 && <Link className="icon-text flex items-center gap-1.5 text-sm font-bold text-accent-ink hover:underline" href="/money/history">View all <ArrowRight aria-hidden="true" size={15} /></Link>}
                 </div>
                 <Surface className="p-2 sm:p-3" elevated>
                     <ActivityList

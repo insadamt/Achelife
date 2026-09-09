@@ -42,12 +42,12 @@ export default function SeasonIntroduction({ season, previousSeason }: SeasonInt
                             <StatusChip status="completed">Completed</StatusChip>
                         </div>
                         <div className="mx-auto mt-7 h-10 w-px bg-linear-to-b from-border-strong to-[var(--module-accent)]" aria-hidden="true" />
-                        <span className="mt-1 block text-xl text-[var(--module-accent)]" aria-hidden="true">↓</span>
+                        <span className="mt-1 block text-xl text-accent-ink" aria-hidden="true">↓</span>
                     </div>
                 )}
 
                 <div className="season-introduction-current">
-                    <p className="text-xs font-bold tracking-[0.25em] text-[var(--module-accent)] uppercase">
+                    <p className="text-xs font-bold tracking-[0.25em] text-accent-ink uppercase">
                         {isFirstSeason ? 'Your first chapter' : 'A new chapter'}
                     </p>
                     <h1 id="season-introduction-title" className="mt-4 text-5xl font-bold tracking-[-0.055em] sm:text-7xl">

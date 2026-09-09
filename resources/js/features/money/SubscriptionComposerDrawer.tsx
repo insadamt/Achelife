@@ -86,7 +86,7 @@ export function SubscriptionComposerDrawer({
                     <label className="text-sm font-semibold text-secondary" htmlFor="subscription-amount">Amount</label>
                     <div className="mt-2 flex items-center rounded-2xl border border-border-strong bg-app focus-within:border-[var(--money-accent)]">
                         <input className="focus-ring min-w-0 flex-1 bg-transparent px-4 py-4 text-3xl font-bold tabular-nums" id="subscription-amount" inputMode="decimal" onChange={(event) => form.setData('amount', event.target.value)} placeholder="0.00" required value={form.data.amount} />
-                        <span className="pr-4 text-sm font-bold text-[var(--money-accent)]">{selectedAccount?.currency ?? '—'}</span>
+                        <span className="pr-4 text-sm font-bold text-accent-ink">{selectedAccount?.currency ?? '—'}</span>
                     </div>
                     {form.errors.amount && <p className="mt-2 text-sm text-danger">{form.errors.amount}</p>}
                 </div>

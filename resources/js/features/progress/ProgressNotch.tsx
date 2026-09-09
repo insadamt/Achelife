@@ -75,7 +75,7 @@ function ProgressPanel({ data, onClose }: { data: ProgressPanelData; onClose: ()
                 <div className="mt-5 grid grid-cols-2 gap-3">
                     <Surface className="p-4">
                         <p className="text-[0.625rem] font-bold tracking-[0.14em] text-muted uppercase">Today’s SP</p>
-                        <p className={classNames('mt-2 text-2xl font-bold', data.todaySp < 0 ? 'text-danger' : 'text-accent')}>{formatSignedPoints(data.todaySp)}</p>
+                        <p className={classNames('mt-2 text-2xl font-bold', data.todaySp < 0 ? 'text-danger' : 'text-accent-ink')}>{formatSignedPoints(data.todaySp)}</p>
                     </Surface>
                     <Surface className="p-4">
                         <p className="text-[0.625rem] font-bold tracking-[0.14em] text-muted uppercase">Season total</p>
@@ -133,7 +133,7 @@ export function ProgressNotch({ data }: { data: ProgressPanelData }) {
         <>
             <button aria-expanded={open} aria-label="Pull open progress panel" className="focus-ring group fixed top-1/2 right-0 z-30 grid h-28 w-7 -translate-y-1/2 place-items-center rounded-l-[1.15rem] border border-r-0 border-border-strong bg-surface shadow-[-10px_10px_28px_rgba(0,0,0,0.34)] transition-[width,background-color,border-color] hover:w-9 hover:border-accent hover:bg-elevated" onClick={() => setOpen(true)} type="button">
                 <span aria-hidden="true" className="absolute inset-y-5 left-0 w-px bg-accent/70" />
-                <ChevronLeft aria-hidden="true" className="text-accent transition-transform group-hover:-translate-x-0.5" size={17} />
+                <ChevronLeft aria-hidden="true" className="text-accent-ink transition-transform group-hover:-translate-x-0.5" size={17} />
             </button>
             {open && <ProgressPanel data={data} onClose={() => setOpen(false)} />}
         </>

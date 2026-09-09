@@ -5,6 +5,7 @@ import { useMemo } from 'react';
 
 import { Button, SelectField } from '../../components/ui';
 import { AccountSettingsPanel } from '../../features/settings/AccountSettingsPanel';
+import { AppearanceSettingsPanel } from '../../features/settings/AppearanceSettingsPanel';
 import { PortabilitySettingsPanel } from '../../features/portability/PortabilitySettingsPanel';
 import type { RestorePreview } from '../../features/portability/types';
 import type { SharedPageProps } from '../../types';
@@ -69,16 +70,18 @@ export default function General({ settings, timezones, restorePreview }: General
             <Head title="General Settings" />
 
             <header>
-                <p className="text-xs font-bold tracking-[0.18em] text-accent uppercase">Settings</p>
+                <p className="text-xs font-bold tracking-[0.18em] text-accent-ink uppercase">Settings</p>
                 <h1 className="mt-2 text-4xl font-bold tracking-[-0.04em] sm:text-5xl">General</h1>
                 <p className="mt-3 max-w-2xl text-base leading-7 text-secondary">
                     Choose when your Achelife calendar day begins and ends. Timestamps remain safely stored in UTC.
                 </p>
             </header>
 
-            <form className="mt-8 rounded-[2rem] border border-border-subtle bg-surface p-5 shadow-[0_20px_55px_rgba(0,0,0,0.2)] sm:p-7" onSubmit={submit}>
+            <AppearanceSettingsPanel />
+
+            <form className="mt-8 rounded-[2rem] border border-border-subtle bg-surface p-5 shadow-[var(--shadow-panel)] sm:p-7" onSubmit={submit}>
                 <div className="flex items-start gap-4">
-                    <span className="grid size-11 shrink-0 place-items-center rounded-2xl bg-[color-mix(in_srgb,var(--accent)_12%,transparent)] text-accent">
+                    <span className="grid size-11 shrink-0 place-items-center rounded-2xl bg-[color-mix(in_srgb,var(--accent)_12%,transparent)] text-accent-ink">
                         <Clock3 aria-hidden="true" size={21} />
                     </span>
                     <div className="min-w-0 flex-1">
@@ -122,9 +125,9 @@ export default function General({ settings, timezones, restorePreview }: General
                 </div>
             </form>
 
-            <section className="mt-6 rounded-[2rem] border border-border-subtle bg-surface p-5 shadow-[0_20px_55px_rgba(0,0,0,0.2)] sm:p-7">
+            <section className="mt-6 rounded-[2rem] border border-border-subtle bg-surface p-5 shadow-[var(--shadow-panel)] sm:p-7">
                 <div className="flex items-start gap-4">
-                    <span className="grid size-11 shrink-0 place-items-center rounded-2xl bg-[color-mix(in_srgb,var(--season-accent)_12%,transparent)] text-[var(--season-accent)]">
+                    <span className="grid size-11 shrink-0 place-items-center rounded-2xl bg-[color-mix(in_srgb,var(--season-accent)_12%,transparent)] text-accent-ink">
                         <RefreshCw aria-hidden="true" size={21} />
                     </span>
                     <div className="min-w-0 flex-1">

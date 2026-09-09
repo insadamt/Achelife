@@ -47,7 +47,7 @@ export default function SeasonsIndex({ seasons, currentSeasonNumber, cycle }: Se
             <div className="mx-auto max-w-6xl">
                 <header className="flex items-center justify-between gap-4">
                     <div className="flex min-w-0 items-center gap-3">
-                        <span className="grid size-11 shrink-0 place-items-center rounded-2xl border border-[color-mix(in_srgb,var(--module-accent)_38%,var(--border-subtle))] bg-[color-mix(in_srgb,var(--module-accent)_8%,transparent)] text-[var(--module-accent)]">
+                        <span className="grid size-11 shrink-0 place-items-center rounded-2xl border border-[color-mix(in_srgb,var(--module-accent)_38%,var(--border-subtle))] bg-[color-mix(in_srgb,var(--module-accent)_8%,transparent)] text-accent-ink">
                             <Orbit aria-hidden="true" size={21} />
                         </span>
                         <div>
@@ -70,7 +70,7 @@ export default function SeasonsIndex({ seasons, currentSeasonNumber, cycle }: Se
                 {cycle.state === 'intermission' && cycle.intermission && (
                     <section className="mt-5 flex flex-col gap-4 rounded-[1.5rem] border border-[color-mix(in_srgb,var(--module-accent)_30%,var(--border-subtle))] bg-[color-mix(in_srgb,var(--module-accent)_7%,var(--surface-primary))] p-5 sm:flex-row sm:items-center sm:justify-between">
                         <div className="flex items-start gap-3">
-                            <Coffee aria-hidden="true" className="mt-0.5 text-[var(--module-accent)]" size={20} />
+                            <Coffee aria-hidden="true" className="mt-0.5 text-accent-ink" size={20} />
                             <div>
                                 <p className="font-bold">{cycle.intermission.reasonLabel}</p>
                                 <p className="mt-1 text-sm text-muted">Season {cycle.nextSeasonNumber} is waiting for you. Its dates will begin today.</p>

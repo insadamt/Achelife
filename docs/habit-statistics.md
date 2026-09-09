@@ -17,3 +17,9 @@ Boolean charts show completions. Numeric charts switch between Total and Average
 The calendar uses the habit calendar's state colors and symbols. Season shows a continuous grid across its dates; Month shows a single month grid; Year shows month grids through the current month or the full historical year. All time offers a calendar year selector without changing the statistics period. Selecting a day shows its outcome, whether it was a flexible extra, and any numeric value/target. Dates outside the selected period and future dates cannot be selected. Entries cannot be edited from this view.
 
 Statistics use stored local occurrence dates and synchronize habits through today in the user's saved timezone before reading history. No schema changes or additional snapshots are required.
+
+## Presentation and interaction
+
+The header separates the overall current streak from period metrics. A compact toolbar groups the period tabs, previous/next controls, comparison label, and loading status. Completion rate receives a progress bar; metric cards align their comparison footers. During period changes, the results are dimmed and temporarily non-interactive.
+
+Charts retain a readable minimum width on phones with horizontal scrolling, larger point hit areas, and tap/keyboard selection of exact values. The outcome legend explains why the donut's completed share differs from completion rate. The calendar keeps its state legend visible, initially selects the latest recorded day, and displays a day-detail panel with recorded value and historical target. Selection has its own outline, distinct from today's marker.

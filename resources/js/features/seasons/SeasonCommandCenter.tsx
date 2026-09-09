@@ -44,7 +44,7 @@ export function SeasonCommandCenter({ season, onReturnToCurrent }: { season: Sea
                 <div className="relative z-1 flex flex-wrap items-start justify-between gap-4">
                     <div>
                         <div className="flex flex-wrap items-center gap-3">
-                            <p className="text-xs font-bold tracking-[0.18em] text-[var(--module-accent)] uppercase">
+                            <p className="text-xs font-bold tracking-[0.18em] text-accent-ink uppercase">
                                 Season {String(season.number).padStart(2, '0')}
                             </p>
                             <StatusChip status={completedSeason ? 'completed' : 'active'}>{completedSeason ? 'Completed' : 'Current'}</StatusChip>

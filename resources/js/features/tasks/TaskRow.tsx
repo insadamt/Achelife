@@ -86,7 +86,7 @@ export function TaskRow({ task, onOpen, onCompleted }: {
 
                 <span className={classNames(
                     'shrink-0 rounded-full bg-elevated px-2.5 py-1 text-sm font-bold',
-                    completed ? 'text-success' : 'text-[var(--module-accent)]',
+                    completed ? 'text-success' : 'text-accent-ink',
                 )}>
                     +{completed ? task.earnedSp : task.projectedSp} SP
                 </span>

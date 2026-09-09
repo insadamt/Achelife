@@ -45,7 +45,7 @@ export function TodayTaskRow({ task }: { task: TaskViewData }) {
                     </div>
                 </div>
                 {task.state === 'overdue' && <span className="icon-text flex shrink-0 items-center gap-1.5 text-xs font-bold text-warning"><AlertTriangle aria-hidden="true" size={14} /><span>Overdue</span></span>}
-                {completed && task.earnedSp !== null && <span className="shrink-0 text-xs font-bold text-[var(--task-accent)]">+{task.earnedSp} SP</span>}
+                {completed && task.earnedSp !== null && <span className="shrink-0 text-xs font-bold text-accent-ink">+{task.earnedSp} SP</span>}
             </div>
             <ExpandableTaskChecklist compact task={task} />
         </div>

@@ -57,7 +57,7 @@ export function TaskDetailsDrawer({ task, today, onClose }: TaskDetailsDrawerPro
                     <button
                         className={classNames(
                             'focus-ring min-w-0 flex-1 rounded-xl text-left',
-                            task.canEdit ? 'hover:text-[var(--module-accent)]' : 'cursor-default',
+                            task.canEdit ? 'hover:text-accent-ink' : 'cursor-default',
                         )}
                         disabled={!task.canEdit}
                         onClick={() => setEditor('title')}
@@ -106,7 +106,7 @@ export function TaskDetailsDrawer({ task, today, onClose }: TaskDetailsDrawerPro
                     <div className="rounded-2xl border border-border-subtle bg-app p-4">
                         <div className="flex items-center justify-between gap-4">
                             <span className="text-xs font-bold tracking-[0.14em] text-muted uppercase">Reward</span>
-                            <span className={classNames('text-2xl font-bold', completed ? 'text-success' : 'text-[var(--module-accent)]')}>
+                            <span className={classNames('text-2xl font-bold', completed ? 'text-success' : 'text-accent-ink')}>
                                 +{completed ? task.earnedSp : task.projectedSp} SP
                             </span>
                         </div>
@@ -164,7 +164,7 @@ function DetailSection({ children, editable, icon, label, onClick }: {
 }) {
     const content = (
         <>
-            <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-elevated text-[var(--module-accent)]">{icon}</span>
+            <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-elevated text-accent-ink">{icon}</span>
             <span className="min-w-0 flex-1">
                 <span className="block text-xs font-bold tracking-[0.12em] text-muted uppercase">{label}</span>
                 <span className="mt-1 flex flex-wrap items-center gap-2 text-sm font-semibold text-secondary">{children}</span>

@@ -82,7 +82,7 @@ function MentionProfileButton({ label, personId, onOpen }: { label: string; pers
     return (
         <button
             aria-label={`Open ${label}'s Person profile`}
-            className="diary-mention focus-ring group pointer-events-auto relative rounded bg-[color-mix(in_srgb,var(--diary-accent)_16%,transparent)] text-[var(--diary-accent)]"
+            className="diary-mention focus-ring group pointer-events-auto relative rounded bg-[color-mix(in_srgb,var(--diary-accent)_16%,transparent)] text-accent-ink"
             onMouseDown={(event) => event.preventDefault()}
             onClick={() => onOpen(personId)}
             type="button"
@@ -412,7 +412,7 @@ export const DiaryEditor = forwardRef<DiaryEditorHandle, DiaryEditorProps>(funct
                                 </button>
                             ))}
                             {mentionQuery !== '' && !suggestions.some((person) => person.name.toLocaleLowerCase() === mentionQuery) && (
-                                <button className="focus-ring w-full rounded-xl px-3 py-2.5 text-left font-semibold text-[var(--diary-accent)] hover:bg-surface-hover" onClick={() => setCreateName(mentionMatch?.[1] ?? '')} type="button">+ Create “{mentionMatch?.[1]}”</button>
+                                <button className="focus-ring w-full rounded-xl px-3 py-2.5 text-left font-semibold text-accent-ink hover:bg-surface-hover" onClick={() => setCreateName(mentionMatch?.[1] ?? '')} type="button">+ Create “{mentionMatch?.[1]}”</button>
                             )}
                         </div>
                     )}

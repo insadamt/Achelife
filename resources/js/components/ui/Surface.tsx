@@ -29,7 +29,7 @@ export function Surface({
         <div
             className={classNames(
                 'rounded-[var(--radius-panel)] border bg-surface',
-                elevated && 'bg-elevated shadow-[0_18px_50px_rgba(0,0,0,0.22)]',
+                elevated && 'bg-elevated shadow-[var(--shadow-raised)]',
                 tinted && 'accent-surface',
                 active && 'accent-border accent-glow',
                 interactive &&

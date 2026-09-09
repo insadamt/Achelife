@@ -9,24 +9,23 @@ interface HabitCalendarProps {
     habit: HabitViewData;
     calendarLabels: HabitCalendarLabels;
     expanded: boolean;
-    weekStart: string;
     onExpansionChange: (expanded: boolean) => void;
     onSelectNumeric: (day: HabitDayData) => void;
     onRequestSkip: (day: HabitDayData) => void;
 }
 
 const stateClasses = {
-    completed: 'border-transparent bg-[#3fbf73] text-[#07170e]',
-    skipped: 'border-transparent bg-[#818a97] text-[#0d1014]',
-    missed: 'border-transparent bg-[#e25760] text-[#1d080a]',
-    pending: 'border-[#a87318] bg-[#e8ad3d] text-[#211504]',
+    completed: 'border-transparent bg-[var(--habit-completed)] text-[var(--habit-completed-foreground)]',
+    skipped: 'border-transparent bg-[var(--habit-skipped)] text-[var(--habit-skipped-foreground)]',
+    missed: 'border-transparent bg-[var(--habit-missed)] text-[var(--habit-missed-foreground)]',
+    pending: 'border-[var(--habit-pending-border)] bg-[var(--habit-pending)] text-[var(--habit-pending-foreground)]',
 };
 
 const pastStateBorders = {
-    completed: 'border-[#267948]',
-    skipped: 'border-[#555d69]',
-    missed: 'border-[#9e363d]',
-    pending: 'border-[#a87318]',
+    completed: 'border-[var(--habit-completed-border)]',
+    skipped: 'border-[var(--habit-skipped-border)]',
+    missed: 'border-[var(--habit-missed-border)]',
+    pending: 'border-[var(--habit-pending-border)]',
 };
 
 const stateIcons = {
@@ -36,15 +35,8 @@ const stateIcons = {
     pending: Circle,
 };
 
-function addDays(date: string, days: number): string {
-    const value = new Date(`${date}T12:00:00`);
-    value.setDate(value.getDate() + days);
-
-    return value.toISOString().slice(0, 10);
-}
-
 function dayLabel(day: HabitDayData, labels: HabitCalendarLabels): number {
-    return labels === 'season_days' ? day.seasonDay : day.calendarDay;
+    return labels === 'season_days' && day.seasonDay > 0 ? day.seasonDay : day.calendarDay;
 }
 
 function DaySquare({
@@ -67,7 +59,7 @@ function DaySquare({
     const availableClass = day.available
         ? 'border-border-strong bg-transparent text-secondary hover:border-[var(--module-accent)] hover:text-foreground'
         : weekdayLabel
-          ? 'border-transparent bg-white/[0.035] text-muted/60'
+          ? 'border-transparent bg-foreground/[0.035] text-muted/60'
           : 'border-transparent bg-transparent text-muted/45';
     const pastBorderClass = day.past && day.state ? pastStateBorders[day.state] : '';
     const showMonth = !weekdayLabel && labels === 'calendar_dates' && (day.calendarDay === 1 || day.seasonDay === 1);
@@ -141,9 +133,7 @@ function DaySquare({
     );
 }
 
-export function HabitCalendar({ habit, calendarLabels, expanded, weekStart, onExpansionChange, onSelectNumeric, onRequestSkip }: HabitCalendarProps) {
-    const daysByDate = new Map(habit.days.map((day) => [day.date, day]));
-    const weekDays = Array.from({ length: 7 }, (_, index) => daysByDate.get(addDays(weekStart, index)) ?? null);
+export function HabitCalendar({ habit, calendarLabels, expanded, onExpansionChange, onSelectNumeric, onRequestSkip }: HabitCalendarProps) {
     const leadingPlaceholders = habit.days[0] ? habit.days[0].weekday - 1 : 0;
     const expandedCells = [...Array.from({ length: leadingPlaceholders }, () => null), ...habit.days];
     const trailingPlaceholders = (7 - (expandedCells.length % 7)) % 7;
@@ -174,7 +164,7 @@ export function HabitCalendar({ habit, calendarLabels, expanded, weekStart, onEx
                 weekdayLabel={weekdayLabel}
             />
         ) : (
-            <div aria-hidden="true" className={`relative aspect-square min-w-0 rounded-lg sm:rounded-xl ${weekdayLabel ? 'bg-white/[0.035]' : 'bg-transparent'}`} key={`placeholder-${index}`}>
+            <div aria-hidden="true" className={`relative aspect-square min-w-0 rounded-lg sm:rounded-xl ${weekdayLabel ? 'bg-foreground/[0.035]' : 'bg-transparent'}`} key={`placeholder-${index}`}>
                 {weekdayLabel && <span className="absolute inset-x-0 top-1.5 text-center text-[0.5rem] font-bold tracking-[0.08em] text-muted/65 uppercase">{weekdayLabel}</span>}
             </div>
         );
@@ -182,6 +172,12 @@ export function HabitCalendar({ habit, calendarLabels, expanded, weekStart, onEx
 
     return (
         <div className="mx-auto w-full max-w-[27rem]">
+            <div className="mb-3 flex items-center justify-between gap-3">
+                <p className="text-xs font-bold text-secondary">{expanded ? 'Season calendar' : 'Last 7 days'}</p>
+                <button aria-expanded={expanded} aria-label={expanded ? 'Collapse calendar' : 'Expand calendar'} className="focus-ring inline-flex min-h-10 items-center gap-1.5 rounded-lg px-2 text-xs font-semibold text-muted hover:bg-surface-hover hover:text-foreground" onClick={() => onExpansionChange(!expanded)} type="button">
+                    {expanded ? 'Last 7 days' : 'Show season'}<ChevronDown aria-hidden="true" className={`transition-transform ${expanded ? 'rotate-180' : ''}`} size={15} />
+                </button>
+            </div>
             {expanded ? (
                 <div className="rounded-2xl border border-border-subtle bg-app/45 p-3 sm:p-4">
                     <div className="grid grid-cols-7 gap-1.5 sm:gap-2">
@@ -195,19 +191,10 @@ export function HabitCalendar({ habit, calendarLabels, expanded, weekStart, onEx
                 </div>
             ) : (
                 <div className="grid grid-cols-7 gap-1.5 sm:gap-2">
-                    {weekDays.map((day, index) => renderDay(day, index, weekdayLabels[index]))}
+                    {habit.recentDays.map((day, index) => renderDay(day, index, day.today ? 'Today' : weekdayLabels[day.weekday - 1]))}
                 </div>
             )}
-            <button
-                aria-expanded={expanded}
-                aria-label={expanded ? 'Collapse calendar' : 'Expand calendar'}
-                className="focus-ring ml-auto mt-1.5 grid size-8 place-items-center rounded-full text-muted hover:bg-surface-hover hover:text-foreground"
-                onClick={() => onExpansionChange(!expanded)}
-                title={expanded ? 'Collapse calendar' : 'Expand calendar'}
-                type="button"
-            >
-                <ChevronDown aria-hidden="true" className={`transition-transform ${expanded ? 'rotate-180' : ''}`} size={18} />
-            </button>
+
         </div>
     );
 }
