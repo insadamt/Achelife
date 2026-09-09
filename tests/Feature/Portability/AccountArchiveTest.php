@@ -4,6 +4,7 @@ namespace Tests\Feature\Portability;
 
 use App\Actions\Portability\RestoreAccountArchive;
 use App\Data\Portability\AccountRestoreRequest;
+use App\Exceptions\InvalidAccountArchive;
 use App\Models\Season;
 use App\Models\User;
 use App\Services\Portability\AccountArchiveExporter;
@@ -46,6 +47,26 @@ class AccountArchiveTest extends TestCase
         } finally {
             @unlink($path);
         }
+    }
+
+    public function test_export_rejects_an_account_with_an_inconsistent_season_sp_total(): void
+    {
+        $user = User::factory()->create([
+            'timezone' => 'UTC',
+            'calendar_started_on' => '2026-08-01',
+        ]);
+        Season::query()->create([
+            'user_id' => $user->id,
+            'season_number' => 1,
+            'start_date' => '2026-08-01',
+            'end_date' => '2026-08-30',
+            'season_points' => 4,
+        ]);
+
+        $this->expectException(InvalidAccountArchive::class);
+        $this->expectExceptionMessage('Season 1 has an invalid SP total.');
+
+        app(AccountArchiveExporter::class)->export($user);
     }
 
     public function test_fresh_restore_preserves_the_internal_target_identity_and_maps_ids_without_touching_other_users(): void

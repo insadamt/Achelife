@@ -11,7 +11,6 @@ use Carbon\CarbonImmutable;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
-use RuntimeException;
 
 class MarkTaskIncomplete
 {
@@ -41,10 +40,6 @@ class MarkTaskIncomplete
             }
 
             $rewardSeason = Season::query()->lockForUpdate()->findOrFail($lockedTask->reward_season_id);
-            if ($rewardSeason->season_points < $lockedTask->earned_sp) {
-                throw new RuntimeException('Season SP is lower than the exact Task reward being reversed.');
-            }
-
             $rewardSeason->update(['season_points' => $rewardSeason->season_points - $lockedTask->earned_sp]);
             $lockedTask->update([
                 'completed_at' => null,

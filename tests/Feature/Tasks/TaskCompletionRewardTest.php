@@ -2,11 +2,14 @@
 
 namespace Tests\Feature\Tasks;
 
+use App\Actions\Constitution\CreateLaw;
+use App\Actions\Constitution\RecordViolation;
 use App\Actions\Tasks\CompleteTask;
 use App\Actions\Tasks\DeleteTaskOccurrence;
 use App\Actions\Tasks\MarkTaskIncomplete;
 use App\Actions\Tasks\UpdateTask;
 use App\Data\Tasks\TaskData;
+use App\Enums\LawSeverity;
 use App\Models\User;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -58,6 +61,32 @@ class TaskCompletionRewardTest extends TestCase
         app(CompleteTask::class)->execute($user, $task, CarbonImmutable::parse('2026-02-04 11:00:00'));
         $this->assertSame(8, $task->refresh()->earned_sp);
         $this->assertSame(8, $user->seasons()->findOrFail($rewardSeasonId)->season_points);
+    }
+
+    public function test_active_season_completion_can_be_reverted_when_penalties_make_sp_negative(): void
+    {
+        CarbonImmutable::setTestNow('2026-08-01 10:00:00');
+        $user = $this->userCreatedOn('2026-08-01');
+        $task = $user->tasks()->create([
+            'title' => 'Reversible despite penalties',
+            'scheduled_date' => '2026-08-01',
+            'important' => false,
+        ]);
+        app(CompleteTask::class)->execute($user, $task, CarbonImmutable::now());
+        $law = app(CreateLaw::class)->execute($user, 'Critical penalty', LawSeverity::Critical);
+        app(RecordViolation::class)->execute(
+            $user,
+            $law,
+            CarbonImmutable::parse('2026-08-01'),
+            CarbonImmutable::parse('2026-08-01'),
+        );
+        $season = $user->seasons()->firstOrFail();
+        $this->assertSame(-96, $season->refresh()->season_points);
+
+        app(MarkTaskIncomplete::class)->execute($user, $task, CarbonImmutable::parse('2026-08-01'));
+
+        $this->assertNull($task->refresh()->earned_sp);
+        $this->assertSame(-100, $season->refresh()->season_points);
     }
 
     public function test_finished_season_completion_cannot_be_reverted_or_deleted(): void

@@ -20,9 +20,16 @@ use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class AccountPortabilityController extends Controller
 {
-    public function export(Request $request, AccountArchiveExporter $exporter): BinaryFileResponse
+    public function export(Request $request, AccountArchiveExporter $exporter): BinaryFileResponse|RedirectResponse
     {
-        $path = $exporter->export($request->user());
+        try {
+            $path = $exporter->export($request->user());
+        } catch (InvalidAccountArchive $exception) {
+            return back()->withErrors([
+                'export' => 'Achelife could not create a valid account archive. '.$exception->getMessage(),
+            ]);
+        }
+
         $name = 'achelife-account-'.now('UTC')->format('Y-m-d-His').'.achelife.zip';
 
         return response()->download($path, $name, [

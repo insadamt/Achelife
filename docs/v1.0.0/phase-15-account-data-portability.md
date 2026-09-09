@@ -26,7 +26,7 @@ The safe profile row includes only domain identity and calendar settings. Email,
 
 The exporter reads the user graph in one database transaction. PostgreSQL explicitly uses repeatable-read isolation; SQLite and MySQL use their transaction snapshot behavior. The internal profile row is locked and all account requests plus scheduled Subscription synchronization share the same per-user operation lock. Date-only values are normalized to `YYYY-MM-DD`, making the archive independent from database-specific midnight serialization.
 
-NDJSON files are written incrementally and then checksummed. The ZIP is created only after the manifest, counts, and digests are complete. Checksums detect corruption or alteration; they are not a digital signature and do not prove who created an archive.
+NDJSON files are written incrementally and then checksummed. The ZIP is created only after the manifest, counts, and digests are complete, and the complete generated archive must pass the same structural, checksum, relationship, and SP-total validation used by import before it can be returned or retained. Checksums detect corruption or alteration; they are not a digital signature and do not prove who created an archive.
 
 ## Validation and preview
 
