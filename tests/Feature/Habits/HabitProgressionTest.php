@@ -8,6 +8,8 @@ use App\Enums\HabitDifficulty;
 use App\Enums\HabitOccurrenceState;
 use App\Enums\HabitScheduleType;
 use App\Enums\HabitType;
+use App\Services\Portability\AccountArchiveExporter;
+use App\Services\Portability\AccountArchiveValidator;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Validation\ValidationException;
@@ -200,6 +202,39 @@ class HabitProgressionTest extends TestCase
         app(SynchronizeHabitOccurrences::class)->execute($user, CarbonImmutable::parse('2026-08-18'));
 
         $this->assertDatabaseMissing('habit_occurrences', ['habit_id' => $habit->id, 'occurrence_date' => '2026-08-18']);
+    }
+
+    public function test_clearing_completed_flexible_extra_removes_its_exact_season_reward(): void
+    {
+        $user = $this->userCreatedOn('2026-08-17');
+        $habit = $this->createHabit(
+            $user,
+            '2026-08-17',
+            schedule: HabitScheduleType::SelectedWeekdays,
+            weekdays: [1],
+            flexible: true,
+        );
+        $updates = app(UpdateHabitOccurrence::class);
+        $extraDate = CarbonImmutable::parse('2026-08-18');
+
+        $updates->toggleBoolean($user, $habit, $extraDate, $extraDate);
+        $this->assertSame(4, $user->seasons()->firstOrFail()->season_points);
+
+        $updates->clear($user, $habit, $extraDate, $extraDate);
+
+        $this->assertDatabaseMissing('habit_occurrences', [
+            'habit_id' => $habit->id,
+            'occurrence_date' => '2026-08-18',
+        ]);
+        $this->assertSame(0, $user->seasons()->firstOrFail()->season_points);
+
+        $archivePath = app(AccountArchiveExporter::class)->export($user);
+
+        try {
+            app(AccountArchiveValidator::class)->validate($archivePath);
+        } finally {
+            @unlink($archivePath);
+        }
     }
 
     public function test_owner_routes_complete_boolean_and_store_numeric_flexible_extra(): void

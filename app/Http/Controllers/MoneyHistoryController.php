@@ -22,6 +22,7 @@ class MoneyHistoryController extends Controller
         $user = $request->user();
         $filters = $request->validate([
             'type' => ['nullable', Rule::enum(MoneyTransactionType::class)],
+            'currency' => ['nullable', 'string', 'size:3', 'regex:/^[A-Z]{3}$/'],
             'account' => ['nullable', 'integer'],
             'category' => ['nullable', 'integer'],
             'subcategory' => ['nullable', 'integer'],
@@ -51,6 +52,8 @@ class MoneyHistoryController extends Controller
     private function applyFilters(Builder $query, array $filters, User $user): void
     {
         $query->when($filters['type'] ?? null, fn (Builder $builder, string $type) => $builder->where('type', $type));
+        $query->when($filters['currency'] ?? null, fn (Builder $builder, string $currency) => $builder
+            ->whereHas('account', fn (Builder $account) => $account->where('currency', $currency)));
         $query->when($filters['account'] ?? null, fn (Builder $builder, int|string $id) => $builder->where(
             fn (Builder $accounts) => $accounts->where('account_id', $id)->orWhere('destination_account_id', $id),
         ));

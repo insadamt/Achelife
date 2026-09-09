@@ -46,6 +46,8 @@ Create personal Laws and record violations. Penalties follow each Law's rules; h
 
 Track Accounts, income, expenses, Transfers, fees, categories, and recurring Subscriptions. Install the editable category pack during setup or from Money settings.
 
+Open **Money → Statistics** to compare income, opening balances, spending, net cash flow, savings rate, Categories, Account movement, fees, and Subscription spending. Filter by Season, Month, Year, currency, Account, or All time. Opening balances enter the period containing the Account creation date. See [Money statistics](money-statistics.md) for metric definitions and delta behavior.
+
 **Manual Subscriptions** wait for you to pay or skip. **Automatic Subscriptions** record Expenses when due; they do not move money through a bank. Repeated synchronization does not duplicate payments.
 
 Money never changes SP, Rank, or Daily Progress. Cross-currency Transfers are unsupported.

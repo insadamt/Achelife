@@ -19,6 +19,7 @@ use App\Http\Controllers\MoneyCategoryController;
 use App\Http\Controllers\MoneyController;
 use App\Http\Controllers\MoneyHistoryController;
 use App\Http\Controllers\MoneyPresetController;
+use App\Http\Controllers\MoneyStatisticsController;
 use App\Http\Controllers\MoneySubcategoryController;
 use App\Http\Controllers\MoneySubscriptionController;
 use App\Http\Controllers\MoneySubscriptionOccurrenceController;
@@ -80,6 +81,7 @@ Route::middleware('auth')->group(function (): void {
             Route::get('/money/accounts/archived', [MoneyArchiveController::class, 'accounts'])->name('money.accounts.archived');
             Route::get('/money/categories', [MoneyArchiveController::class, 'categories'])->name('money.categories.index');
             Route::get('/money/subscriptions', MoneySubscriptionPageController::class)->name('money.subscriptions.index');
+            Route::get('/money/statistics', MoneyStatisticsController::class)->name('money.statistics');
             Route::get('/money/accounts/{account}', [MoneyAccountController::class, 'show'])->name('money.accounts.show');
             Route::get('/settings/general', [GeneralSettingController::class, 'index'])->name('settings.general');
         });
