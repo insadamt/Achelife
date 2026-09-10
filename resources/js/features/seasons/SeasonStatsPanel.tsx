@@ -89,7 +89,7 @@ export function SeasonStatsPanel({ season }: { season: SeasonViewData }) {
             </Surface>
 
             <div className="grid gap-5 lg:grid-cols-[minmax(0,1.45fr)_minmax(19rem,0.55fr)]">
-                <Surface className="p-5 sm:p-6">
+                <Surface className="min-w-0 overflow-hidden p-5 sm:p-6">
                     <div><h3 className="flex items-center gap-2 text-lg font-bold"><Activity aria-hidden="true" className="text-accent-ink" size={19} />SP trajectory</h3><p className="mt-1 text-sm text-muted">Cumulative points across the 30-day Season</p></div>
                     <div className="mt-5"><SeasonInsightsChart current={insights.timeline} previous={insights.previousTimeline} /></div>
                     {insights.previousTimeline && <div className="mt-3 flex justify-end gap-4 text-xs text-muted"><span className="flex items-center gap-1.5"><span className="h-0.5 w-5 bg-[var(--module-accent)]" />Selected</span><span className="flex items-center gap-1.5"><span className="w-5 border-t-2 border-dashed border-border-strong" />Previous</span></div>}
