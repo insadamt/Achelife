@@ -70,6 +70,8 @@ Phase 15 adds no database migration. It uses the final Phase 11 lifecycle, Phase
 
 `ACHELIFE_VERSION` identifies the source application build in new archives and defaults to `1.0.0-rc.1-dev`. This work does not publish a stable release; installation, upgrade, migration, backup/restore, and security changes must pass through an RC.
 
+Format 1 archives created before Habit icons were introduced remain supported. A Habit row without the later `icon` field is adapted in memory during validation and import and receives the original `check` icon default. The archive and its checksums remain unchanged, while other missing or unexpected fields are still rejected.
+
 Phase 16 adds a separate `achelife-full-*.tar.gz` operational backup. It contains the complete SQLite volume, application key, manager configuration, recorded image digests, and persistent application storage for server recovery and update rollback. It must never be uploaded to the `.achelife.zip` import interface. Conversely, a `.achelife.zip` profile snapshot excludes infrastructure secrets and is not sufficient as the only pre-migration rollback point.
 
 ## Verification

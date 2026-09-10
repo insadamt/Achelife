@@ -2,6 +2,8 @@
 
 namespace Tests\Feature\Portability;
 
+use App\Actions\Portability\RestoreAccountArchive;
+use App\Data\Portability\AccountRestoreRequest;
 use App\Exceptions\InvalidAccountArchive;
 use App\Models\Season;
 use App\Models\User;
@@ -89,6 +91,38 @@ class AccountArchiveSecurityTest extends TestCase
 
         $older = $this->mutateManifest($valid, fn (array &$manifest) => $manifest['archive_format_version'] = 0, resign: false);
         $this->expectInvalid($older, 'no explicit compatibility adapter');
+    }
+
+    public function test_restores_format_one_habits_exported_before_icons_were_added(): void
+    {
+        CarbonImmutable::setTestNow('2026-09-15 12:00:00');
+        $source = User::factory()->create();
+        $this->buildCompletePortableGraph($source);
+        $currentArchive = app(AccountArchiveExporter::class)->export($source);
+        $this->temporaryArchives[] = $currentArchive;
+        $legacyArchive = $this->mutate($currentArchive, function (array &$entries): void {
+            $legacyRows = array_map(function (string $line): string {
+                $habit = json_decode($line, true, 512, JSON_THROW_ON_ERROR);
+                unset($habit['icon']);
+
+                return trim($this->jsonLine($habit));
+            }, array_values(array_filter(explode("\n", $entries['tables/habits.ndjson']))));
+
+            $entries['tables/habits.ndjson'] = implode("\n", $legacyRows)."\n";
+        }, resign: true);
+        $target = User::factory()->create([
+            'onboarding_step' => 'path',
+            'onboarding_completed_at' => null,
+        ]);
+
+        $validated = app(AccountArchiveValidator::class)->validate($legacyArchive);
+        app(RestoreAccountArchive::class)->execute(
+            $target,
+            $validated,
+            new AccountRestoreRequest(freshInstall: true),
+        );
+
+        $this->assertSame('check', $target->habits()->sole()->icon->value);
     }
 
     public function test_rejects_oversized_entries_and_excessive_expanded_archives(): void

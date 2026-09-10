@@ -39,6 +39,7 @@ class ArchiveSemanticValidator
     public function __construct(
         private readonly PortableTableRegistry $tableRegistry,
         private readonly ArchiveReader $reader,
+        private readonly ArchiveRowAdapter $rowAdapter,
     ) {}
 
     /** @param array<string, mixed> $manifest */
@@ -52,6 +53,11 @@ class ArchiveSemanticValidator
             $count = 0;
 
             foreach ($this->reader->rows($archivePath, $definition->path()) as $row) {
+                $row = $this->rowAdapter->adapt(
+                    (int) $manifest['archive_format_version'],
+                    $definition->name,
+                    $row,
+                );
                 $this->validateRow($definition, $row, $originalUserId);
                 $count++;
             }

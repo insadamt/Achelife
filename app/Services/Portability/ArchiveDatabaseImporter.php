@@ -17,6 +17,7 @@ class ArchiveDatabaseImporter
     public function __construct(
         private readonly PortableTableRegistry $tableRegistry,
         private readonly ArchiveReader $reader,
+        private readonly ArchiveRowAdapter $rowAdapter,
     ) {}
 
     public function replaceAccountData(User $lockedUser, ValidatedArchive $archive): Season
@@ -68,6 +69,12 @@ class ArchiveDatabaseImporter
     private function importTable(User $user, ValidatedArchive $archive, PortableTableDefinition $definition): void
     {
         foreach ($this->reader->rows($archive->path, $definition->path()) as $row) {
+            $row = $this->rowAdapter->adapt(
+                (int) $archive->manifest['archive_format_version'],
+                $definition->name,
+                $row,
+            );
+
             if ($definition->name === 'users') {
                 $this->updateSafeProfile($user, $row);
 
