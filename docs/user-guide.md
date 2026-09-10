@@ -18,6 +18,8 @@ Today shows your Tasks, Habit check-ins, Daily Progress, and Season Points. Use 
 
 A Season lasts 30 local calendar days. Set Objectives, earn Season Points (SP), and review your Rank and closeout at the end.
 
+Use the **Overview / Stats** toggle in the Season selector to switch between the command center and on-demand performance analysis. Stats include the SP trajectory, source breakdown, practical outcomes, and a same-day comparison with the preceding finalized Season.
+
 **Automatic rollover** starts the next Season the following day. **Manual rollover** waits until you start it. You can also request a one-time hold after the current Season.
 
 During an intermission, seasonal progression pauses. Money and historical records remain available.

@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import type { KeyboardEvent } from 'react';
-import { Check, ChevronLeft, ChevronRight, Crown, LockKeyhole } from 'lucide-react';
+import { ChartNoAxesCombined, Check, ChevronLeft, ChevronRight, Crown, LayoutDashboard, LockKeyhole } from 'lucide-react';
 
 import { classNames } from '../../components/ui/classNames';
 import { formatSeasonRange, formatShortDate } from './dateFormat';
@@ -10,7 +10,11 @@ interface SeasonSwitcherProps {
     seasons: SeasonViewData[];
     selectedSeasonNumber: number;
     onSelect: (season: SeasonViewData) => void;
+    activeView: SeasonPageView;
+    onViewChange: (view: SeasonPageView) => void;
 }
+
+export type SeasonPageView = 'overview' | 'stats';
 
 function SeasonStateIcon({ season }: { season: SeasonViewData }) {
     if (season.state === 'current') return <Crown aria-hidden="true" size={21} strokeWidth={2.2} />;
@@ -30,7 +34,7 @@ function seasonAccessibleLabel(season: SeasonViewData, selected: boolean) {
     return `Season ${season.number}, ${state}, ${date}${selected ? ', selected' : ''}`;
 }
 
-export function SeasonSwitcher({ seasons, selectedSeasonNumber, onSelect }: SeasonSwitcherProps) {
+export function SeasonSwitcher({ seasons, selectedSeasonNumber, onSelect, activeView, onViewChange }: SeasonSwitcherProps) {
     const seasonElements = useRef(new Map<number, HTMLLIElement>());
     const selectableSeasons = seasons.filter((season) => season.state !== 'locked' && season.state !== 'held');
     const selectedIndex = selectableSeasons.findIndex((season) => season.number === selectedSeasonNumber);
@@ -66,82 +70,115 @@ export function SeasonSwitcher({ seasons, selectedSeasonNumber, onSelect }: Seas
     }
 
     return (
-        <section aria-label="Season switcher" className="flex items-center gap-2 sm:gap-3">
-            <button
-                aria-label="Previous Season"
-                className="focus-ring grid size-10 shrink-0 place-items-center rounded-full text-muted transition-colors hover:bg-surface-hover hover:text-foreground disabled:opacity-25"
-                disabled={selectedIndex <= 0}
-                onClick={() => selectByOffset(-1)}
-                type="button"
-            >
-                <ChevronLeft aria-hidden="true" size={19} />
-            </button>
+        <section aria-label="Season selector">
+            <div className="flex items-center justify-between gap-3 border-b border-border-subtle px-2 py-3 sm:px-0">
+                <p className="text-xs font-bold tracking-[0.14em] text-muted uppercase">Select Season</p>
+                <div aria-label="Season views" className="grid grid-cols-2 rounded-xl border border-border-subtle bg-app/55 p-1" role="tablist">
+                    {([
+                        { id: 'overview', label: 'Overview', icon: LayoutDashboard },
+                        { id: 'stats', label: 'Stats', icon: ChartNoAxesCombined },
+                    ] as const).map(({ id, label, icon: Icon }) => {
+                        const selected = activeView === id;
 
-            <ol className="season-switcher-track flex min-w-0 flex-1 snap-x snap-mandatory gap-2 overflow-x-auto py-3 [scrollbar-width:none] sm:gap-3 [&::-webkit-scrollbar]:hidden">
-                {seasons.map((season) => {
-                    const selected = season.number === selectedSeasonNumber;
-                    const locked = season.state === 'locked' || season.state === 'held';
-
-                    return (
-                        <li
-                            className="w-20 shrink-0 snap-center"
-                            key={season.number}
-                            ref={(element) => {
-                                if (element) seasonElements.current.set(season.number, element);
-                                else seasonElements.current.delete(season.number);
-                            }}
-                        >
+                        return (
                             <button
-                                aria-label={seasonAccessibleLabel(season, selected)}
-                                aria-pressed={locked ? undefined : selected}
+                                aria-controls={`season-${id}-panel`}
+                                aria-selected={selected}
                                 className={classNames(
-                                    'focus-ring group flex w-full flex-col items-center rounded-2xl px-1 py-2 transition-[transform,background-color,color,opacity] duration-200',
-                                    selected && 'bg-[color-mix(in_srgb,var(--module-accent)_8%,transparent)] text-foreground',
-                                    !selected && !locked && 'text-secondary hover:-translate-y-0.5 hover:bg-surface-hover',
-                                    locked && 'cursor-not-allowed text-muted opacity-45',
+                                    'focus-ring flex min-h-9 items-center justify-center gap-2 rounded-lg px-3 text-xs font-bold transition-colors sm:px-4',
+                                    selected ? 'bg-elevated text-foreground shadow-sm' : 'text-muted hover:bg-surface-hover hover:text-foreground',
                                 )}
-                                disabled={locked}
-                                onClick={() => onSelect(season)}
-                                onKeyDown={handleKeyboard}
-                                title={season.state === 'held' ? 'Waiting for you' : locked ? (season.startDate ? `Starts ${formatShortDate(season.startDate)}` : 'Date not scheduled') : formatSeasonRange(season.startDate, season.endDate)}
+                                id={`season-${id}-tab`}
+                                key={id}
+                                onClick={() => onViewChange(id)}
+                                role="tab"
                                 type="button"
                             >
-                                <span
+                                <Icon aria-hidden="true" size={15} />
+                                {label}
+                            </button>
+                        );
+                    })}
+                </div>
+            </div>
+
+            <div className="flex items-center gap-2 sm:gap-3">
+                <button
+                    aria-label="Previous Season"
+                    className="focus-ring grid size-10 shrink-0 place-items-center rounded-full text-muted transition-colors hover:bg-surface-hover hover:text-foreground disabled:opacity-25"
+                    disabled={selectedIndex <= 0}
+                    onClick={() => selectByOffset(-1)}
+                    type="button"
+                >
+                    <ChevronLeft aria-hidden="true" size={19} />
+                </button>
+
+                <ol className="season-switcher-track flex min-w-0 flex-1 snap-x snap-mandatory gap-2 overflow-x-auto py-3 [scrollbar-width:none] sm:gap-3 [&::-webkit-scrollbar]:hidden">
+                    {seasons.map((season) => {
+                        const selected = season.number === selectedSeasonNumber;
+                        const locked = season.state === 'locked' || season.state === 'held';
+
+                        return (
+                            <li
+                                className="w-20 shrink-0 snap-center"
+                                key={season.number}
+                                ref={(element) => {
+                                    if (element) seasonElements.current.set(season.number, element);
+                                    else seasonElements.current.delete(season.number);
+                                }}
+                            >
+                                <button
+                                    aria-label={seasonAccessibleLabel(season, selected)}
+                                    aria-pressed={locked ? undefined : selected}
                                     className={classNames(
-                                        'relative grid size-12 place-items-center transition-transform duration-200 group-hover:scale-105',
-                                        selected && 'scale-110',
+                                        'focus-ring group flex w-full flex-col items-center rounded-2xl px-1 py-2 transition-[transform,background-color,color,opacity] duration-200',
+                                        selected && 'bg-[color-mix(in_srgb,var(--module-accent)_8%,transparent)] text-foreground',
+                                        !selected && !locked && 'text-secondary hover:-translate-y-0.5 hover:bg-surface-hover',
+                                        locked && 'cursor-not-allowed text-muted opacity-45',
                                     )}
+                                    disabled={locked}
+                                    onClick={() => onSelect(season)}
+                                    onKeyDown={handleKeyboard}
+                                    title={season.state === 'held' ? 'Waiting for you' : locked ? (season.startDate ? `Starts ${formatShortDate(season.startDate)}` : 'Date not scheduled') : formatSeasonRange(season.startDate, season.endDate)}
+                                    type="button"
                                 >
                                     <span
-                                        aria-hidden="true"
                                         className={classNames(
-                                            'absolute inset-1 rotate-45 rounded-[0.9rem] border bg-surface shadow-[0_8px_20px_rgba(0,0,0,0.24)]',
-                                            season.state === 'current' && 'border-[var(--module-accent)] bg-[color-mix(in_srgb,var(--module-accent)_12%,var(--surface-primary))] shadow-[0_0_22px_color-mix(in_srgb,var(--module-accent)_18%,transparent)]',
-                                            season.state === 'completed' && 'border-success/45 bg-success/8',
-                                            locked && 'border-border-subtle bg-surface/50',
+                                            'relative grid size-12 place-items-center transition-transform duration-200 group-hover:scale-105',
+                                            selected && 'scale-110',
                                         )}
-                                    />
-                                    <span className={classNames('relative', season.state === 'current' && 'text-accent-ink', season.state === 'completed' && 'text-success')}>
-                                        <SeasonStateIcon season={season} />
+                                    >
+                                        <span
+                                            aria-hidden="true"
+                                            className={classNames(
+                                                'absolute inset-1 rotate-45 rounded-[0.9rem] border bg-surface shadow-[0_8px_20px_rgba(0,0,0,0.24)]',
+                                                season.state === 'current' && 'border-[var(--module-accent)] bg-[color-mix(in_srgb,var(--module-accent)_12%,var(--surface-primary))] shadow-[0_0_22px_color-mix(in_srgb,var(--module-accent)_18%,transparent)]',
+                                                season.state === 'completed' && 'border-success/45 bg-success/8',
+                                                locked && 'border-border-subtle bg-surface/50',
+                                            )}
+                                        />
+                                        <span className={classNames('relative', season.state === 'current' && 'text-accent-ink', season.state === 'completed' && 'text-success')}>
+                                            <SeasonStateIcon season={season} />
+                                        </span>
                                     </span>
-                                </span>
-                                <span className="mt-2 text-xs font-bold tracking-[0.1em]">S{String(season.number).padStart(2, '0')}</span>
-                                <span className={classNames('mt-1 h-0.5 w-5 rounded-full', selected ? 'bg-[var(--module-accent)]' : 'bg-transparent')} aria-hidden="true" />
-                            </button>
-                        </li>
-                    );
-                })}
-            </ol>
+                                    <span className="mt-2 text-xs font-bold tracking-[0.1em]">S{String(season.number).padStart(2, '0')}</span>
+                                    <span className={classNames('mt-1 h-0.5 w-5 rounded-full', selected ? 'bg-[var(--module-accent)]' : 'bg-transparent')} aria-hidden="true" />
+                                </button>
+                            </li>
+                        );
+                    })}
+                </ol>
 
-            <button
-                aria-label="Next Season"
-                className="focus-ring grid size-10 shrink-0 place-items-center rounded-full text-muted transition-colors hover:bg-surface-hover hover:text-foreground disabled:opacity-25"
-                disabled={selectedIndex === selectableSeasons.length - 1}
-                onClick={() => selectByOffset(1)}
-                type="button"
-            >
-                <ChevronRight aria-hidden="true" size={19} />
-            </button>
+                <button
+                    aria-label="Next Season"
+                    className="focus-ring grid size-10 shrink-0 place-items-center rounded-full text-muted transition-colors hover:bg-surface-hover hover:text-foreground disabled:opacity-25"
+                    disabled={selectedIndex === selectableSeasons.length - 1}
+                    onClick={() => selectByOffset(1)}
+                    type="button"
+                >
+                    <ChevronRight aria-hidden="true" size={19} />
+                </button>
+            </div>
         </section>
     );
 }

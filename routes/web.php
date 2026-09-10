@@ -32,6 +32,7 @@ use App\Http\Controllers\PersonController;
 use App\Http\Controllers\SeasonCloseoutController;
 use App\Http\Controllers\SeasonController;
 use App\Http\Controllers\SeasonCycleController;
+use App\Http\Controllers\SeasonInsightsController;
 use App\Http\Controllers\SeasonIntroductionController;
 use App\Http\Controllers\SeasonRankGuideController;
 use App\Http\Controllers\SingleUserSetupController;
@@ -68,6 +69,7 @@ Route::middleware('auth')->group(function (): void {
             Route::get('/home', TodayController::class)->name('home');
             Route::get('/seasons', SeasonController::class)->name('seasons.index');
             Route::get('/seasons/ranks', SeasonRankGuideController::class)->name('seasons.ranks');
+            Route::get('/seasons/{season}/insights', SeasonInsightsController::class)->name('seasons.insights');
             Route::get('/tasks', [TaskController::class, 'index'])->name('tasks.index');
             Route::get('/tasks/statistics', TaskStatisticsController::class)->name('tasks.statistics');
             Route::get('/habits', [HabitController::class, 'index'])->name('habits.index');

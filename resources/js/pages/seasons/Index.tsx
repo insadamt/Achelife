@@ -4,7 +4,9 @@ import { useState } from 'react';
 
 import { Button } from '../../components/ui';
 import { SeasonCommandCenter } from '../../features/seasons/SeasonCommandCenter';
+import { SeasonStatsPanel } from '../../features/seasons/SeasonStatsPanel';
 import { SeasonSwitcher } from '../../features/seasons/SeasonSwitcher';
+import type { SeasonPageView } from '../../features/seasons/SeasonSwitcher';
 import type { SeasonViewData } from '../../features/seasons/types';
 
 interface SeasonsPageProps {
@@ -28,6 +30,7 @@ export default function SeasonsIndex({ seasons, currentSeasonNumber, cycle }: Se
     const realSeasons = seasons.filter((season) => season.state === 'completed' || season.state === 'current');
     const initialSeasonNumber = currentSeasonNumber ?? realSeasons.at(-1)?.number ?? 1;
     const [selectedSeasonNumber, setSelectedSeasonNumber] = useState(initialSeasonNumber);
+    const [activeView, setActiveView] = useState<SeasonPageView>('overview');
     const selectedSeason = realSeasons.find((season) => season.number === selectedSeasonNumber) ?? realSeasons.at(-1);
     const currentSeason = currentSeasonNumber === null ? null : realSeasons.find((season) => season.number === currentSeasonNumber);
 
@@ -95,20 +98,32 @@ export default function SeasonsIndex({ seasons, currentSeasonNumber, cycle }: Se
 
                 <div className="mt-5 rounded-[1.5rem] border border-border-subtle bg-surface/55 px-2 sm:px-4">
                     <SeasonSwitcher
+                        activeView={activeView}
                         onSelect={(season) => {
                             if (season.state === 'completed' || season.state === 'current') setSelectedSeasonNumber(season.number);
                         }}
+                        onViewChange={setActiveView}
                         seasons={seasons}
                         selectedSeasonNumber={selectedSeasonNumber}
                     />
                 </div>
 
-                <section aria-label="Selected Season" className="mt-5">
-                    <SeasonCommandCenter
-                        key={selectedSeason.number}
-                        onReturnToCurrent={() => setSelectedSeasonNumber(currentSeason?.number ?? selectedSeason.number)}
-                        season={selectedSeason}
-                    />
+                <section
+                    aria-label={`Season ${selectedSeason.number} ${activeView}`}
+                    aria-labelledby={`season-${activeView}-tab`}
+                    className="mt-5"
+                    id={`season-${activeView}-panel`}
+                    role="tabpanel"
+                >
+                    {activeView === 'overview' ? (
+                        <SeasonCommandCenter
+                            key={selectedSeason.number}
+                            onReturnToCurrent={() => setSelectedSeasonNumber(currentSeason?.number ?? selectedSeason.number)}
+                            season={selectedSeason}
+                        />
+                    ) : (
+                        <SeasonStatsPanel key={selectedSeason.number} season={selectedSeason} />
+                    )}
                 </section>
             </div>
         </div>
