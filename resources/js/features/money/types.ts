@@ -55,6 +55,50 @@ export interface MoneyTransactionData {
     subcategory: { id: number; name: string; archived: boolean } | null;
     createdAt: string;
     subscriptionOccurrence: { id: number; subscriptionId: number; subscriptionName: string } | null;
+    debtMovement: { debtId: number; kind: 'opening' | 'repayment'; direction: MoneyDebtDirection; personName: string } | null;
+}
+
+export type MoneyDebtDirection = 'payable' | 'receivable';
+export type MoneyDebtStatus = 'active' | 'overdue' | 'settled';
+
+export interface MoneyDebtPersonData {
+    id: number;
+    name: string;
+    nickname: string | null;
+    archived?: boolean;
+}
+
+export interface MoneyDebtAccountOption {
+    id: number;
+    name: string;
+    currency: string;
+}
+
+export interface MoneyDebtSettlementData {
+    id: number;
+    type: 'repayment' | 'forgiveness';
+    amountMinor: number;
+    settledOn: string;
+    note: string | null;
+    transactionId: number | null;
+    account: { id: number; name: string; archived: boolean } | null;
+}
+
+export interface MoneyDebtData {
+    id: number;
+    direction: MoneyDebtDirection;
+    originalAmountMinor: number;
+    settledAmountMinor: number;
+    remainingAmountMinor: number;
+    currency: string;
+    openedOn: string;
+    dueOn: string | null;
+    note: string | null;
+    status: MoneyDebtStatus;
+    canDelete: boolean;
+    person: MoneyDebtPersonData & { archived: boolean };
+    openingMovement: { transactionId: number; account: { id: number; name: string; archived: boolean } } | null;
+    settlements: MoneyDebtSettlementData[];
 }
 
 export type MoneySubscriptionRecurrence = 'weekly' | 'monthly' | 'every_three_months' | 'yearly';

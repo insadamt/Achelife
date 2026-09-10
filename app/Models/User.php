@@ -110,6 +110,18 @@ class User extends Authenticatable
         return $this->hasMany(MoneyAccount::class);
     }
 
+    /** @return HasMany<MoneyDebt, $this> */
+    public function moneyDebts(): HasMany
+    {
+        return $this->hasMany(MoneyDebt::class);
+    }
+
+    /** @return HasMany<MoneyDebtSettlement, $this> */
+    public function moneyDebtSettlements(): HasMany
+    {
+        return $this->hasMany(MoneyDebtSettlement::class);
+    }
+
     /** @return HasMany<MoneyCategory, $this> */
     public function moneyCategories(): HasMany
     {

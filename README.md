@@ -10,7 +10,7 @@ A private, self-hosted app for Tasks, Habits, Diary, Seasons, and Money. Free an
 
 **Seasons:** Set Objectives for a 30-day Season, earn Season Points, and review your progress at the end.
 
-**Personal records:** Write in your Diary, track personal Laws, and manage Money accounts, transactions, and Subscriptions.
+**Personal records:** Write in your Diary, track personal Laws, and manage Money Accounts, Transactions, Subscriptions, and Person-linked Debts.
 
 **Backups:** Export an account or use the manager to back up and restore your installation.
 

@@ -1,5 +1,5 @@
 import { Link, router } from '@inertiajs/react';
-import { Archive, ArrowUpRight, BarChart3, CalendarDays, Flame, Gauge, MoreHorizontal, Pencil, Shuffle, Target, Trash2, TriangleAlert } from 'lucide-react';
+import { Archive, ArrowUpRight, BarChart3, Flame, MoreHorizontal, Pencil, Shuffle, Trash2, TriangleAlert } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
 import { Button, Dialog, Surface } from '../../components/ui';
@@ -7,7 +7,6 @@ import { classNames } from '../../components/ui/classNames';
 import { HabitCalendar } from './HabitCalendar';
 import { HabitIcon } from './HabitIcon';
 import { HabitProgressSummary } from './HabitProgressSummary';
-import { difficultyLabels, formatNumber, scheduleSummary } from './habitPresentation';
 import type { HabitCalendarLabels, HabitDayData, HabitViewData } from './types';
 
 interface HabitCardProps {
@@ -96,23 +95,6 @@ export function HabitCard({ habit, calendarLabels, calendarExpanded, onEdit, onE
                                 </div>
                             )}
                         </div>
-                    </div>
-
-                    <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-2 text-xs font-medium text-secondary">
-                        {habit.type === 'numeric' && (
-                            <span className="inline-flex items-center gap-1.5" title="Target">
-                                <Target aria-hidden="true" size={15} />
-                                {formatNumber(habit.numericTarget)} {habit.unit}
-                            </span>
-                        )}
-                        <span className="inline-flex items-center gap-1.5" title="Difficulty and base reward">
-                            <Gauge aria-hidden="true" size={15} />
-                            {difficultyLabels[habit.difficulty]} · {habit.baseReward} SP
-                        </span>
-                        <span className="inline-flex min-w-0 items-center gap-1.5" title={scheduleSummary(habit)}>
-                            <CalendarDays aria-hidden="true" className="shrink-0" size={15} />
-                            <span className="truncate">{scheduleSummary(habit)}</span>
-                        </span>
                     </div>
 
                     <div className="mt-5 flex flex-wrap items-center justify-between gap-3 border-t border-border-subtle pt-4">

@@ -40,6 +40,15 @@ class MoneyAccount extends Model
         return $this->hasMany(MoneySubscriptionOccurrence::class, 'account_id');
     }
 
+    /** @return HasMany<MoneyTransaction, $this> */
+    public function debtTransactions(): HasMany
+    {
+        return $this->hasMany(MoneyTransaction::class, 'account_id')
+            ->where(function ($query): void {
+                $query->whereHas('openedDebt')->orWhereHas('debtSettlement');
+            });
+    }
+
     protected function casts(): array
     {
         return [

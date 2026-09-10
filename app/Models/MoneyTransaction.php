@@ -47,6 +47,18 @@ class MoneyTransaction extends Model
         return $this->hasOne(MoneySubscriptionOccurrence::class, 'transaction_id');
     }
 
+    /** @return HasOne<MoneyDebt, $this> */
+    public function openedDebt(): HasOne
+    {
+        return $this->hasOne(MoneyDebt::class, 'opening_transaction_id');
+    }
+
+    /** @return HasOne<MoneyDebtSettlement, $this> */
+    public function debtSettlement(): HasOne
+    {
+        return $this->hasOne(MoneyDebtSettlement::class, 'transaction_id');
+    }
+
     protected function casts(): array
     {
         return [

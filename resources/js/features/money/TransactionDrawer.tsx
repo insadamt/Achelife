@@ -150,8 +150,8 @@ export function TransactionDrawer({
                 <MoneyDrawer onClose={onClose} open title="Transaction details">
                     <div className="rounded-[1.5rem] border border-border-subtle bg-app p-5">
                         <div className="flex items-center justify-between gap-3">
-                            <StatusChip status={transaction.type === 'income' ? 'completed' : transaction.type === 'expense' ? 'danger' : 'active'}>
-                                {transaction.type}
+                            <StatusChip status={transaction.debtMovement ? 'active' : transaction.type === 'income' ? 'completed' : transaction.type === 'expense' ? 'danger' : 'active'}>
+                                {transaction.debtMovement ? 'debt principal' : transaction.type}
                             </StatusChip>
                             <p className="text-sm font-semibold text-muted">{formatMoneyDate(transaction.date)}</p>
                         </div>
@@ -173,11 +173,13 @@ export function TransactionDrawer({
                             )}
                             {transaction.note && <div className="py-3"><dt className="text-muted">Note</dt><dd className="mt-1 whitespace-pre-wrap font-semibold">{transaction.note}</dd></div>}
                             {transaction.subscriptionOccurrence && <div className="py-3"><dt className="text-muted">Subscription</dt><dd className="mt-1 font-semibold">{transaction.subscriptionOccurrence.subscriptionName} · occurrence #{transaction.subscriptionOccurrence.id}</dd></div>}
+                            {transaction.debtMovement && <div className="py-3"><dt className="text-muted">Debt movement</dt><dd className="mt-1 font-semibold">Principal linked to {transaction.debtMovement.personName}. Manage it from Debts.</dd></div>}
                         </dl>
                     </div>
                     <div className="mt-6 flex gap-2">
-                        {!transaction.subscriptionOccurrence && <Button className="flex-1" onClick={() => setEditing(true)}><Pencil aria-hidden="true" size={16} />Edit</Button>}
-                        <Button onClick={() => setDeleteConfirmationOpen(true)} variant="destructive"><Trash2 aria-hidden="true" size={16} />Delete</Button>
+                        {!transaction.subscriptionOccurrence && !transaction.debtMovement && <Button className="flex-1" onClick={() => setEditing(true)}><Pencil aria-hidden="true" size={16} />Edit</Button>}
+                        {transaction.debtMovement && <Link className="focus-ring icon-text inline-flex min-h-11 flex-1 items-center justify-center rounded-full border border-border-strong bg-elevated px-5 py-2.5 text-sm font-bold uppercase tracking-[0.08em]" href="/money/debts">Open Debts</Link>}
+                        {!transaction.debtMovement && <Button onClick={() => setDeleteConfirmationOpen(true)} variant="destructive"><Trash2 aria-hidden="true" size={16} />Delete</Button>}
                     </div>
                 </MoneyDrawer>
                 <MoneyConfirmationDialog

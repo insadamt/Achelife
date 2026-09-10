@@ -93,7 +93,32 @@ class MoneyViewDataFactory
                 'subscriptionId' => $transaction->subscriptionOccurrence->subscription_id,
                 'subscriptionName' => $transaction->subscriptionOccurrence->subscription->name,
             ] : null,
+            'debtMovement' => $this->debtMovement($transaction),
         ];
+    }
+
+    /** @return array<string, mixed>|null */
+    private function debtMovement(MoneyTransaction $transaction): ?array
+    {
+        if ($transaction->openedDebt !== null) {
+            return [
+                'debtId' => $transaction->openedDebt->id,
+                'kind' => 'opening',
+                'direction' => $transaction->openedDebt->direction->value,
+                'personName' => $transaction->openedDebt->person->name,
+            ];
+        }
+
+        if ($transaction->debtSettlement !== null) {
+            return [
+                'debtId' => $transaction->debtSettlement->debt->id,
+                'kind' => 'repayment',
+                'direction' => $transaction->debtSettlement->debt->direction->value,
+                'personName' => $transaction->debtSettlement->debt->person->name,
+            ];
+        }
+
+        return null;
     }
 
     /** @return array{id: int, name: string, currency: string, archived: bool} */

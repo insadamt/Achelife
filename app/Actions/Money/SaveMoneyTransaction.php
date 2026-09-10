@@ -55,6 +55,11 @@ class SaveMoneyTransaction
                     'transaction' => 'Subscription payments are edited from their occurrence so the snapshot and transaction stay consistent.',
                 ]);
             }
+            if ($lockedTransaction->openedDebt()->exists() || $lockedTransaction->debtSettlement()->exists()) {
+                throw ValidationException::withMessages([
+                    'transaction' => 'Debt movements are changed from Debts so the outstanding balance and Account stay consistent.',
+                ]);
+            }
             $this->lockAccounts($user, $data, $lockedTransaction);
             $this->validator->validate($user, $data, $lockedTransaction);
             $lockedTransaction->update($this->attributes($data));

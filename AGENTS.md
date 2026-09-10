@@ -34,6 +34,7 @@ Include only the sections that apply.
 ## Documentation and implementation
 
 - Always read the relevant files in `docs/` before making changes.
+- Use the nearest available development port from 8000 through 8009 for implementation and UI verification. Do not rebuild, recreate, or otherwise modify installed Docker instances such as the v1.0.1 instance on port 8081 unless the user explicitly requests it.
 - Use intention-revealing names.
 - Keep high-level flow readable.
 - Extract low-level details into named functions or services.

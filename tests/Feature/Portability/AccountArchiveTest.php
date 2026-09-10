@@ -38,7 +38,7 @@ class AccountArchiveTest extends TestCase
         try {
             $archive = app(AccountArchiveValidator::class)->validate($path);
 
-            $this->assertSame(1, $archive->manifest['archive_format_version']);
+            $this->assertSame(2, $archive->manifest['archive_format_version']);
             $this->assertSame('Achelife', $archive->manifest['source_application']);
             $this->assertSame('Africa/Casablanca', $archive->manifest['user']['timezone']);
             $this->assertArrayNotHasKey('email', $archive->manifest['user']);

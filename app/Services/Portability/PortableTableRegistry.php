@@ -9,8 +9,10 @@ use Illuminate\Support\Facades\DB;
 class PortableTableRegistry
 {
     /** @return list<PortableTableDefinition> */
-    public function definitions(): array
+    public function definitions(?int $formatVersion = null): array
     {
+        $formatVersion ??= AccountArchiveExporter::FORMAT_VERSION;
+
         return [
             $this->table('users', 'settings', ['id', 'name', 'timezone', 'calendar_started_on', 'season_rollover_preference', 'hold_next_season', 'money_preset_pack_version']),
             $this->table('seasons', 'seasons', ['id', 'user_id', 'season_number', 'start_date', 'end_date', 'season_points', 'rank', 'introduced_at', 'finalized_at', 'reflection', 'recap_seen_at', 'created_at', 'updated_at']),
@@ -36,17 +38,21 @@ class PortableTableRegistry
             $this->table('money_subcategories', 'money', ['id', 'user_id', 'category_id', 'name', 'preset_key', 'archived_at', 'created_at', 'updated_at'], ['category_id' => 'money_categories']),
             $this->table('money_subscriptions', 'subscriptions', ['id', 'user_id', 'name', 'amount_minor', 'account_id', 'category_id', 'subcategory_id', 'note', 'starts_on', 'materialize_from', 'ends_on', 'recurrence', 'payment_mode', 'status', 'anchor_day', 'paused_at', 'ended_at', 'created_at', 'updated_at'], ['account_id' => 'money_accounts', 'category_id' => 'money_categories', 'subcategory_id' => 'money_subcategories']),
             $this->table('money_transactions', 'money', ['id', 'user_id', 'type', 'amount_minor', 'fee_minor', 'account_id', 'destination_account_id', 'category_id', 'subcategory_id', 'transaction_date', 'note', 'created_at', 'updated_at'], ['account_id' => 'money_accounts', 'destination_account_id' => 'money_accounts', 'category_id' => 'money_categories', 'subcategory_id' => 'money_subcategories']),
+            ...($formatVersion >= 2 ? [
+                $this->table('money_debts', 'debts', ['id', 'user_id', 'person_id', 'direction', 'original_amount_minor', 'currency', 'opened_on', 'due_on', 'note', 'opening_transaction_id', 'created_at', 'updated_at'], ['person_id' => 'people', 'opening_transaction_id' => 'money_transactions']),
+                $this->table('money_debt_settlements', 'debts', ['id', 'user_id', 'debt_id', 'type', 'amount_minor', 'settled_on', 'note', 'transaction_id', 'created_at', 'updated_at'], ['debt_id' => 'money_debts', 'transaction_id' => 'money_transactions']),
+            ] : []),
             $this->table('money_subscription_occurrences', 'subscriptions', ['id', 'user_id', 'subscription_id', 'due_date', 'amount_minor', 'account_id', 'category_id', 'subcategory_id', 'note', 'payment_mode', 'status', 'transaction_id', 'paid_at', 'skipped_at', 'automatic_retry_blocked_at', 'created_at', 'updated_at'], ['subscription_id' => 'money_subscriptions', 'account_id' => 'money_accounts', 'category_id' => 'money_categories', 'subcategory_id' => 'money_subcategories', 'transaction_id' => 'money_transactions']),
             $this->table('today_settings', 'settings', ['user_id', 'show_flexible_habits', 'show_upcoming_tasks', 'created_at', 'updated_at'], identityColumn: null),
         ];
     }
 
     /** @return array<string, PortableTableDefinition> */
-    public function keyedDefinitions(): array
+    public function keyedDefinitions(?int $formatVersion = null): array
     {
         $keyed = [];
 
-        foreach ($this->definitions() as $definition) {
+        foreach ($this->definitions($formatVersion) as $definition) {
             $keyed[$definition->name] = $definition;
         }
 

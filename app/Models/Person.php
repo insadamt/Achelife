@@ -22,6 +22,12 @@ class Person extends Model
         return $this->hasMany(DiaryEntryMention::class);
     }
 
+    /** @return HasMany<MoneyDebt, $this> */
+    public function moneyDebts(): HasMany
+    {
+        return $this->hasMany(MoneyDebt::class);
+    }
+
     /** @return array<string, string> */
     protected function casts(): array
     {

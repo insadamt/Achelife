@@ -170,7 +170,8 @@ class AccountArchiveValidator
             throw new InvalidAccountArchive('The archive declarations are malformed.');
         }
 
-        $expectedTableNames = array_map(fn ($definition): string => $definition->name, $this->tableRegistry->definitions());
+        $definitions = $this->tableRegistry->definitions($manifest['archive_format_version']);
+        $expectedTableNames = array_map(fn ($definition): string => $definition->name, $definitions);
         $declaredTableNames = array_keys($manifest['table_counts']);
         sort($expectedTableNames);
         sort($declaredTableNames);
@@ -182,7 +183,7 @@ class AccountArchiveValidator
 
         $expectedModuleCounts = [];
 
-        foreach ($this->tableRegistry->definitions() as $definition) {
+        foreach ($definitions as $definition) {
             $expectedModuleCounts[$definition->module] = ($expectedModuleCounts[$definition->module] ?? 0) + $manifest['table_counts'][$definition->name];
         }
 
@@ -196,7 +197,10 @@ class AccountArchiveValidator
      */
     private function validateDeclaredFiles(array $entryNames, array $manifest): void
     {
-        $expectedTableFiles = array_map(fn ($definition): string => $definition->path(), $this->tableRegistry->definitions());
+        $expectedTableFiles = array_map(
+            fn ($definition): string => $definition->path(),
+            $this->tableRegistry->definitions($manifest['archive_format_version']),
+        );
         $declaredFiles = $manifest['files'];
 
         sort($expectedTableFiles);

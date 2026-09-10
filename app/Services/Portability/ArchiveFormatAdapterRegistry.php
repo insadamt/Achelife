@@ -8,7 +8,7 @@ class ArchiveFormatAdapterRegistry
 {
     public function requireSupported(int $formatVersion): void
     {
-        if ($formatVersion === AccountArchiveExporter::FORMAT_VERSION) {
+        if (in_array($formatVersion, [1, AccountArchiveExporter::FORMAT_VERSION], true)) {
             return;
         }
 

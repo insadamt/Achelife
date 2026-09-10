@@ -25,7 +25,7 @@ class ArchiveDatabaseImporter
         $this->idMaps = [];
         $this->deleteExistingGraph($lockedUser);
 
-        foreach ($this->tableRegistry->definitions() as $definition) {
+        foreach ($this->tableRegistry->definitions((int) $archive->manifest['archive_format_version']) as $definition) {
             $this->importTable($lockedUser, $archive, $definition);
         }
 
@@ -177,7 +177,7 @@ class ArchiveDatabaseImporter
     {
         $ownedIds = [];
 
-        foreach ($this->tableRegistry->definitions() as $definition) {
+        foreach ($this->tableRegistry->definitions((int) $archive->manifest['archive_format_version']) as $definition) {
             $query = $this->tableRegistry->queryForUser($definition, $user->id, $ownedIds);
             $count = $query->count();
 

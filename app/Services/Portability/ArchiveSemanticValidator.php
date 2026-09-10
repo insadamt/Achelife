@@ -24,6 +24,15 @@ class ArchiveSemanticValidator
     /** @var array<int, array<string, mixed>> */
     private array $subscriptions = [];
 
+    /** @var array<int, array<string, mixed>> */
+    private array $accounts = [];
+
+    /** @var array<int, array<string, mixed>> */
+    private array $debts = [];
+
+    /** @var array<int, int> */
+    private array $debtSettledAmounts = [];
+
     /** @var list<array<string, mixed>> */
     private array $intermissions = [];
 
@@ -49,7 +58,7 @@ class ArchiveSemanticValidator
         $originalUserId = (int) data_get($manifest, 'user.original_id');
         $this->manifestUser = $manifest['user'];
 
-        foreach ($this->tableRegistry->definitions() as $definition) {
+        foreach ($this->tableRegistry->definitions((int) $manifest['archive_format_version']) as $definition) {
             $count = 0;
 
             foreach ($this->reader->rows($archivePath, $definition->path()) as $row) {
@@ -156,9 +165,15 @@ class ArchiveSemanticValidator
             $this->addContribution((int) $row['season_id'], (int) $row['penalty_sp']);
         } elseif ($table === 'objectives' && $row['deleted_at'] === null) {
             $this->addContribution((int) $row['season_id'], (int) ($row['earned_sp'] ?? 0));
+        } elseif ($table === 'money_accounts') {
+            $this->accounts[(int) $row['id']] = $row;
         } elseif ($table === 'money_transactions') {
             $this->transactions[(int) $row['id']] = $row;
             $this->validateTransferFee($row);
+        } elseif ($table === 'money_debts') {
+            $this->validateMoneyDebt($row);
+        } elseif ($table === 'money_debt_settlements') {
+            $this->validateMoneyDebtSettlement($row);
         } elseif ($table === 'money_subscriptions') {
             $this->subscriptions[(int) $row['id']] = $row;
         } elseif ($table === 'money_subscription_occurrences') {
@@ -241,6 +256,80 @@ class ArchiveSemanticValidator
             throw new InvalidAccountArchive('A Subscription occurrence does not match its payment snapshot.');
         }
 
+    }
+
+    /** @param array<string, mixed> $row */
+    private function validateMoneyDebt(array $row): void
+    {
+        $direction = (string) $row['direction'];
+        $amount = (int) $row['original_amount_minor'];
+        $openedOn = $this->date((string) $row['opened_on'], 'Debt opening date');
+        $dueOn = $row['due_on'] === null ? null : $this->date((string) $row['due_on'], 'Debt due date');
+        $transactionId = $row['opening_transaction_id'] === null ? null : (int) $row['opening_transaction_id'];
+
+        if (! in_array($direction, ['payable', 'receivable'], true)
+            || $amount < 1
+            || preg_match('/^[A-Z]{3}$/', (string) $row['currency']) !== 1
+            || ($dueOn !== null && $dueOn->isBefore($openedOn))) {
+            throw new InvalidAccountArchive('A Debt contains invalid terms.');
+        }
+
+        if ($transactionId !== null) {
+            $expectedType = $direction === 'payable' ? 'income' : 'expense';
+            $this->validateDebtTransaction($transactionId, $expectedType, $amount, (string) $row['currency']);
+        }
+
+        $this->debts[(int) $row['id']] = $row;
+        $this->debtSettledAmounts[(int) $row['id']] = 0;
+    }
+
+    /** @param array<string, mixed> $row */
+    private function validateMoneyDebtSettlement(array $row): void
+    {
+        $debtId = (int) $row['debt_id'];
+        $debt = $this->debts[$debtId];
+        $amount = (int) $row['amount_minor'];
+        $settledOn = $this->date((string) $row['settled_on'], 'Debt settlement date');
+        $transactionId = $row['transaction_id'] === null ? null : (int) $row['transaction_id'];
+
+        if (! in_array($row['type'], ['repayment', 'forgiveness'], true)
+            || $amount < 1
+            || $settledOn->isBefore($this->date((string) $debt['opened_on'], 'Debt opening date'))
+            || ($row['type'] === 'forgiveness' && $transactionId !== null)) {
+            throw new InvalidAccountArchive('A Debt settlement is invalid.');
+        }
+
+        $this->debtSettledAmounts[$debtId] += $amount;
+        if ($this->debtSettledAmounts[$debtId] > (int) $debt['original_amount_minor']) {
+            throw new InvalidAccountArchive('A Debt is settled beyond its original amount.');
+        }
+
+        if ($transactionId !== null) {
+            $expectedType = $debt['direction'] === 'payable' ? 'expense' : 'income';
+            $this->validateDebtTransaction($transactionId, $expectedType, $amount, (string) $debt['currency']);
+        }
+    }
+
+    private function validateDebtTransaction(int $transactionId, string $expectedType, int $amount, string $currency): void
+    {
+        if (isset($this->linkedTransactionIds[$transactionId])) {
+            throw new InvalidAccountArchive('A Money transaction is linked to more than one protected financial record.');
+        }
+
+        $transaction = $this->transactions[$transactionId];
+        $account = $this->accounts[(int) $transaction['account_id']];
+
+        if ($transaction['type'] !== $expectedType
+            || (int) $transaction['amount_minor'] !== $amount
+            || (int) $transaction['fee_minor'] !== 0
+            || $transaction['destination_account_id'] !== null
+            || $transaction['category_id'] !== null
+            || $transaction['subcategory_id'] !== null
+            || $account['currency'] !== $currency) {
+            throw new InvalidAccountArchive('A Debt Account movement does not match its debt record.');
+        }
+
+        $this->linkedTransactionIds[$transactionId] = true;
     }
 
     /** @param array<string, mixed> $manifest */
@@ -375,6 +464,9 @@ class ArchiveSemanticValidator
         $this->seasonContributions = [];
         $this->transactions = [];
         $this->subscriptions = [];
+        $this->accounts = [];
+        $this->debts = [];
+        $this->debtSettledAmounts = [];
         $this->intermissions = [];
         $this->linkedTransactionIds = [];
         $this->presetKeys = ['money_categories' => [], 'money_subcategories' => []];

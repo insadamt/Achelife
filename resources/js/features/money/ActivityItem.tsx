@@ -1,4 +1,4 @@
-import { ArrowDownLeft, ArrowRightLeft, ArrowUpRight } from 'lucide-react';
+import { ArrowDownLeft, ArrowRightLeft, ArrowUpRight, HandCoins } from 'lucide-react';
 
 import { formatMinorUnits, transactionSignedAmount, transactionTitle } from './moneyPresentation';
 import type { MoneyTransactionData } from './types';
@@ -7,7 +7,7 @@ export function ActivityItem({ transaction, contextAccountId, onClick }: { trans
     const signedAmount = transactionSignedAmount(transaction, contextAccountId);
     const currency = transaction.account.currency;
     const globalTransfer = transaction.type === 'transfer' && contextAccountId === undefined;
-    const TransactionIcon = transaction.type === 'income' ? ArrowDownLeft : transaction.type === 'expense' ? ArrowUpRight : ArrowRightLeft;
+    const TransactionIcon = transaction.debtMovement ? HandCoins : transaction.type === 'income' ? ArrowDownLeft : transaction.type === 'expense' ? ArrowUpRight : ArrowRightLeft;
 
     return (
         <button className="focus-ring flex w-full items-center gap-4 rounded-2xl px-3 py-3 text-left transition-colors hover:bg-surface-hover" onClick={onClick} type="button">
@@ -18,6 +18,7 @@ export function ActivityItem({ transaction, contextAccountId, onClick }: { trans
                 <span className="block truncate font-bold text-foreground">{transactionTitle(transaction, contextAccountId)}</span>
                 <span className="mt-0.5 block truncate text-sm text-muted">
                     {transaction.type === 'transfer' ? `${transaction.account.name} → ${transaction.destinationAccount?.name}` : transaction.account.name}
+                    {transaction.debtMovement ? ' · Debt principal' : ''}
                     {transaction.type === 'transfer' && transaction.feeMinor > 0 ? ` · Fee ${formatMinorUnits(transaction.feeMinor, currency)}` : ''}
                     {transaction.note ? ` · ${transaction.note}` : ''}
                 </span>

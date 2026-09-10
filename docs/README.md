@@ -6,6 +6,8 @@
 
 [Season stats](season-statistics.md) — on-demand Season trajectory, SP sources, outcomes, and comparison definitions.
 
+[Money debts](money-debts.md) — payable and receivable agreements, repayments, Account effects, statistics, and portability.
+
 ## Run your instance
 
 [Self-hosting](../SELF_HOSTING.md) — install, update, back up, restore, and troubleshoot.

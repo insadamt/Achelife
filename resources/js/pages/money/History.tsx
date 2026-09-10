@@ -22,7 +22,7 @@ interface PaginatedTransactions {
 }
 
 interface RawAccount { id: number; name: string; currency: string; archived_at: string | null }
-interface HistoryFilters { type?: MoneyTransactionType; currency?: string; account?: string | number; category?: string | number; subcategory?: string | number; from?: string; to?: string; search?: string }
+interface HistoryFilters { type?: MoneyTransactionType | 'debt'; currency?: string; account?: string | number; category?: string | number; subcategory?: string | number; from?: string; to?: string; search?: string }
 interface EditableHistoryFilters { type: string; currency: string; account: string; category: string; subcategory: string; from: string; to: string; search: string }
 interface HistoryProps { today: string; transactions: PaginatedTransactions; accounts: RawAccount[]; categories: MoneyCategoryData[]; filters: HistoryFilters }
 
@@ -46,7 +46,7 @@ function FilterFields({
 
     return (
         <>
-            <SelectField label="Type" onChange={(event) => onChange({ ...filters, type: event.target.value })} options={[{ label: 'All types', value: '' }, { label: 'Income', value: 'income' }, { label: 'Expense', value: 'expense' }, { label: 'Transfer', value: 'transfer' }]} value={filters.type} />
+            <SelectField label="Type" onChange={(event) => onChange({ ...filters, type: event.target.value })} options={[{ label: 'All types', value: '' }, { label: 'Income', value: 'income' }, { label: 'Expense', value: 'expense' }, { label: 'Transfer', value: 'transfer' }, { label: 'Debt', value: 'debt' }]} value={filters.type} />
             <SelectField label="Currency" onChange={(event) => onChange({ ...filters, currency: event.target.value, account: '' })} options={[{ label: 'All currencies', value: '' }, ...currencies.map((currency) => ({ label: currency, value: currency }))]} value={filters.currency} />
             <SelectField label="Account" onChange={(event) => onChange({ ...filters, account: event.target.value })} options={[{ label: 'All Accounts', value: '' }, ...scopedAccounts.map((account) => ({ label: `${account.name}${account.archived_at ? ' · Archived' : ''}`, value: String(account.id) }))]} value={filters.account} />
             <SelectField label="Category" onChange={(event) => onChange({ ...filters, category: event.target.value, subcategory: '' })} options={[{ label: 'All Categories', value: '' }, ...categories.map((category) => ({ label: `${category.name}${category.archivedAt ? ' · Archived' : ''}`, value: String(category.id) }))]} value={filters.category} />
@@ -135,10 +135,10 @@ export default function MoneyHistory(props: HistoryProps) {
                 <form className="flex flex-col gap-3 lg:grid lg:grid-cols-[minmax(14rem,2fr)_repeat(5,minmax(7rem,1fr))_auto] lg:items-end" onSubmit={applyFilters}>
                     <div className="relative">
                         <Search aria-hidden="true" className="pointer-events-none absolute top-[2.8rem] left-4 text-muted" size={18} />
-                        <Field className="pl-11" label="Search" onChange={(event) => setFilters({ ...filters, search: event.target.value })} placeholder="Notes or categories" value={filters.search} />
+                        <Field className="pl-11" label="Search" onChange={(event) => setFilters({ ...filters, search: event.target.value })} placeholder="Notes, categories, or People" value={filters.search} />
                     </div>
                     <div className="hidden lg:contents">
-                        <SelectField label="Type" onChange={(event) => setFilters({ ...filters, type: event.target.value })} options={[{ label: 'All types', value: '' }, { label: 'Income', value: 'income' }, { label: 'Expense', value: 'expense' }, { label: 'Transfer', value: 'transfer' }]} value={filters.type} />
+                        <SelectField label="Type" onChange={(event) => setFilters({ ...filters, type: event.target.value })} options={[{ label: 'All types', value: '' }, { label: 'Income', value: 'income' }, { label: 'Expense', value: 'expense' }, { label: 'Transfer', value: 'transfer' }, { label: 'Debt', value: 'debt' }]} value={filters.type} />
                         <SelectField label="Currency" onChange={(event) => setFilters({ ...filters, currency: event.target.value, account: '' })} options={[{ label: 'All currencies', value: '' }, ...Array.from(new Set(props.accounts.map((account) => account.currency))).sort().map((currency) => ({ label: currency, value: currency }))]} value={filters.currency} />
                         <SelectField label="Account" onChange={(event) => setFilters({ ...filters, account: event.target.value })} options={[{ label: 'All Accounts', value: '' }, ...props.accounts.filter((account) => !filters.currency || account.currency === filters.currency).map((account) => ({ label: account.name, value: String(account.id) }))]} value={filters.account} />
                         <SelectField label="Category" onChange={(event) => setFilters({ ...filters, category: event.target.value, subcategory: '' })} options={[{ label: 'All Categories', value: '' }, ...props.categories.map((category) => ({ label: category.name, value: String(category.id) }))]} value={filters.category} />

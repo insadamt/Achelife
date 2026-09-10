@@ -90,7 +90,7 @@ class MoneyStatistics
                 ->whereIn('account_id', $accountIds)
                 ->orWhereIn('destination_account_id', $accountIds))
             ->whereDate('transaction_date', '<=', $period->end)
-            ->with(['category:id,name', 'subcategory:id,name', 'subscriptionOccurrence:id,transaction_id']);
+            ->with(['category:id,name', 'subcategory:id,name', 'subscriptionOccurrence:id,transaction_id', 'openedDebt:id,opening_transaction_id', 'debtSettlement:id,transaction_id']);
         $queryStart = $period->previousStart ?? $period->start;
 
         if ($queryStart !== null) {
@@ -152,6 +152,12 @@ class MoneyStatistics
             $dateKey = $date->toDateString();
             $summary['daily'][$dateKey] ??= $this->emptyDailyTotal();
 
+            if ($transaction->openedDebt !== null || $transaction->debtSettlement !== null) {
+                $this->addDebtMovement($summary, $transaction);
+
+                continue;
+            }
+
             match ($transaction->type) {
                 MoneyTransactionType::Income => $this->addIncome($summary, $transaction, $dateKey),
                 MoneyTransactionType::Expense => $this->addExpense($summary, $transaction, $dateKey),
@@ -160,6 +166,20 @@ class MoneyStatistics
         }
 
         return $this->finalizeSummary($summary, $start, $end, $today);
+    }
+
+    /** @param array<string, mixed> $summary */
+    private function addDebtMovement(array &$summary, MoneyTransaction $transaction): void
+    {
+        if (! isset($summary['accounts'][$transaction->account_id])) {
+            return;
+        }
+
+        if ($transaction->type === MoneyTransactionType::Income) {
+            $summary['accounts'][$transaction->account_id]['debtInMinor'] += $transaction->amount_minor;
+        } else {
+            $summary['accounts'][$transaction->account_id]['debtOutMinor'] += $transaction->amount_minor;
+        }
     }
 
     /** @param array<string, mixed> $summary */
@@ -309,6 +329,8 @@ class MoneyStatistics
                 'spendingMinor' => 0,
                 'transferredInMinor' => 0,
                 'transferredOutMinor' => 0,
+                'debtInMinor' => 0,
+                'debtOutMinor' => 0,
                 'netMovementMinor' => 0,
             ]])->all(),
             'daily' => [],
@@ -346,7 +368,8 @@ class MoneyStatistics
 
         foreach ($summary['accounts'] as &$account) {
             $account['netMovementMinor'] = $account['moneyInMinor'] - $account['spendingMinor']
-                + $account['transferredInMinor'] - $account['transferredOutMinor'];
+                + $account['transferredInMinor'] - $account['transferredOutMinor']
+                + $account['debtInMinor'] - $account['debtOutMinor'];
         }
         unset($account);
         $summary['accounts'] = array_values($summary['accounts']);

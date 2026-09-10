@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Enums\MoneyTransactionType;
 use App\Models\MoneyCategory;
 use App\Models\MoneyTransaction;
 use App\Models\User;
@@ -21,7 +20,7 @@ class MoneyHistoryController extends Controller
     {
         $user = $request->user();
         $filters = $request->validate([
-            'type' => ['nullable', Rule::enum(MoneyTransactionType::class)],
+            'type' => ['nullable', Rule::in(['income', 'expense', 'transfer', 'debt'])],
             'currency' => ['nullable', 'string', 'size:3', 'regex:/^[A-Z]{3}$/'],
             'account' => ['nullable', 'integer'],
             'category' => ['nullable', 'integer'],
@@ -32,7 +31,7 @@ class MoneyHistoryController extends Controller
         ]);
         $query = MoneyTransaction::query()
             ->where('user_id', $user->id)
-            ->with(['account', 'destinationAccount', 'category', 'subcategory', 'subscriptionOccurrence.subscription']);
+            ->with(['account', 'destinationAccount', 'category', 'subcategory', 'subscriptionOccurrence.subscription', 'openedDebt.person', 'debtSettlement.debt.person']);
         $this->applyFilters($query, $filters, $user);
         $transactions = $query->orderByDesc('transaction_date')->orderByDesc('created_at')->orderByDesc('id')
             ->paginate(30)->withQueryString()->through(fn (MoneyTransaction $transaction) => $factory->transaction($transaction));
@@ -51,7 +50,19 @@ class MoneyHistoryController extends Controller
     /** @param array<string, mixed> $filters */
     private function applyFilters(Builder $query, array $filters, User $user): void
     {
-        $query->when($filters['type'] ?? null, fn (Builder $builder, string $type) => $builder->where('type', $type));
+        $query->when($filters['type'] ?? null, function (Builder $builder, string $type): void {
+            if ($type === 'debt') {
+                $builder->where(fn (Builder $debt) => $debt->whereHas('openedDebt')->orWhereHas('debtSettlement'));
+
+                return;
+            }
+
+            $builder->where('type', $type);
+
+            if (in_array($type, ['income', 'expense'], true)) {
+                $builder->whereDoesntHave('openedDebt')->whereDoesntHave('debtSettlement');
+            }
+        });
         $query->when($filters['currency'] ?? null, fn (Builder $builder, string $currency) => $builder
             ->whereHas('account', fn (Builder $account) => $account->where('currency', $currency)));
         $query->when($filters['account'] ?? null, fn (Builder $builder, int|string $id) => $builder->where(
@@ -67,7 +78,9 @@ class MoneyHistoryController extends Controller
             $builder->where(function (Builder $matches) use ($pattern, $matchesTransferFeeLabel): void {
                 $matches->where('note', 'like', $pattern)
                     ->orWhereHas('category', fn (Builder $category) => $category->where('name', 'like', $pattern))
-                    ->orWhereHas('subcategory', fn (Builder $subcategory) => $subcategory->where('name', 'like', $pattern));
+                    ->orWhereHas('subcategory', fn (Builder $subcategory) => $subcategory->where('name', 'like', $pattern))
+                    ->orWhereHas('openedDebt.person', fn (Builder $person) => $person->where('name', 'like', $pattern))
+                    ->orWhereHas('debtSettlement.debt.person', fn (Builder $person) => $person->where('name', 'like', $pattern));
                 if ($matchesTransferFeeLabel) {
                     $matches->orWhere(fn (Builder $fees) => $fees->where('type', 'transfer')->where('fee_minor', '>', 0));
                 }

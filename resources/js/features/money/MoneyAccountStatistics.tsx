@@ -82,6 +82,8 @@ function AccountActivityCard({
             <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 border-t border-border-subtle pt-3 text-xs text-muted">
                 <span>Transferred in {formatMinorUnits(account.transferredInMinor, currency)}</span>
                 <span>Transferred out {formatMinorUnits(account.transferredOutMinor, currency)}</span>
+                <span>Debt money in {formatMinorUnits(account.debtInMinor, currency)}</span>
+                <span>Debt money out {formatMinorUnits(account.debtOutMinor, currency)}</span>
             </div>
         </article>
     );

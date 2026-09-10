@@ -57,6 +57,16 @@ export function formatMoneyDate(value: string): string {
 }
 
 export function transactionTitle(transaction: MoneyTransactionData, contextAccountId?: number): string {
+    if (transaction.debtMovement) {
+        const movement = transaction.debtMovement;
+
+        if (movement.kind === 'opening') {
+            return movement.direction === 'payable' ? `Borrowed from ${movement.personName}` : `Lent to ${movement.personName}`;
+        }
+
+        return movement.direction === 'payable' ? `Repaid ${movement.personName}` : `Repayment from ${movement.personName}`;
+    }
+
     if (transaction.type !== 'transfer') {
         return transaction.subcategory
             ? `${transaction.category?.name} · ${transaction.subcategory.name}`

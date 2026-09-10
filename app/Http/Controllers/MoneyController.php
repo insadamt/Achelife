@@ -75,7 +75,7 @@ class MoneyController extends Controller
     private function transactions(User $user): HasMany
     {
         return $user->moneyTransactions()
-            ->with(['account', 'destinationAccount', 'category', 'subcategory', 'subscriptionOccurrence.subscription'])
+            ->with(['account', 'destinationAccount', 'category', 'subcategory', 'subscriptionOccurrence.subscription', 'openedDebt.person', 'debtSettlement.debt.person'])
             ->orderByDesc('transaction_date')
             ->orderByDesc('created_at')
             ->orderByDesc('id');

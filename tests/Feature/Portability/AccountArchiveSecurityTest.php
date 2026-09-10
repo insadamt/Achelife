@@ -86,7 +86,7 @@ class AccountArchiveSecurityTest extends TestCase
         });
         $this->expectInvalid($future, 'materially in the future');
 
-        $newer = $this->mutateManifest($valid, fn (array &$manifest) => $manifest['archive_format_version'] = 2, resign: false);
+        $newer = $this->mutateManifest($valid, fn (array &$manifest) => $manifest['archive_format_version'] = 3, resign: false);
         $this->expectInvalid($newer, 'Update Achelife first');
 
         $older = $this->mutateManifest($valid, fn (array &$manifest) => $manifest['archive_format_version'] = 0, resign: false);
@@ -101,6 +101,19 @@ class AccountArchiveSecurityTest extends TestCase
         $currentArchive = app(AccountArchiveExporter::class)->export($source);
         $this->temporaryArchives[] = $currentArchive;
         $legacyArchive = $this->mutate($currentArchive, function (array &$entries): void {
+            $manifest = json_decode($entries['manifest.json'], true, 512, JSON_THROW_ON_ERROR);
+            $manifest['archive_format_version'] = 1;
+
+            foreach (['money_debts', 'money_debt_settlements'] as $table) {
+                unset($entries["tables/{$table}.ndjson"], $manifest['table_counts'][$table]);
+            }
+
+            unset($manifest['module_counts']['debts']);
+            $manifest['files'] = array_values(array_filter(
+                $manifest['files'],
+                fn (string $file): bool => ! in_array($file, ['tables/money_debts.ndjson', 'tables/money_debt_settlements.ndjson'], true),
+            ));
+            $entries['manifest.json'] = $this->encodeJson($manifest);
             $legacyRows = array_map(function (string $line): string {
                 $habit = json_decode($line, true, 512, JSON_THROW_ON_ERROR);
                 unset($habit['icon']);

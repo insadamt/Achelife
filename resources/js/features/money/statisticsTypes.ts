@@ -22,6 +22,8 @@ export interface MoneyAccountActivity {
     spendingMinor: number;
     transferredInMinor: number;
     transferredOutMinor: number;
+    debtInMinor: number;
+    debtOutMinor: number;
     netMovementMinor: number;
 }
 

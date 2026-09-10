@@ -12,11 +12,11 @@ The Account creation date in the user's saved timezone is the effective date of 
 
 ## Authoritative totals
 
-Total income is recorded Income plus signed opening balances effective in the period. Spending is ordinary Expenses plus positive Transfer fees. Transfer principal is excluded from both totals. Net cash flow is total income minus spending. Savings rate is net cash flow divided by total income and is unavailable when total income is not positive.
+Total income is recorded Income plus signed opening balances effective in the period. Spending is ordinary Expenses plus positive Transfer fees. Transfer and Debt principal are excluded from both totals. Net cash flow is total income minus spending. Savings rate is net cash flow divided by total income and is unavailable when total income is not positive.
 
 Paid Subscription occurrences are already ordinary Expense transactions and therefore count once. Due, Upcoming, and Skipped occurrences have no statistical effect. Deleting or editing an authoritative transaction immediately changes statistics.
 
-Account activity keeps Transfer principal visible as transferred in and transferred out. Account net movement is opening balance plus recorded Income minus Expenses and fees, plus transferred in, minus transferred out.
+Account activity keeps Transfer principal visible as transferred in and transferred out, and Debt principal visible as Debt money in and Debt money out. Account net movement is opening balance plus recorded Income minus Expenses and fees, plus transferred in, minus transferred out, plus Debt money in, minus Debt money out.
 
 ## Deltas
 

@@ -2,7 +2,7 @@
 
 # Engineering history
 
-[Foundation: phases 0–10](v0.1.0/README.md) · [v1: phases 11–17](v1.0.0/README.md)
+[Foundation: phases 0–10](v0.1.0/README.md) · [v1: phases 11–17](v1.0.0/README.md) · [v1.1: phase 18](v1.1.0/README.md)
 
 [Original roadmap](v1.0.0/pre-release-roadmap.md) · [RC.2 acceptance and stable promotion](v1.0.0/rc2-acceptance-2026-09-05.md)
 
