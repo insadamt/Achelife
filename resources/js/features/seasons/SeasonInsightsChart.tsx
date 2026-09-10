@@ -2,14 +2,17 @@ import { useId, useState } from 'react';
 
 import type { SeasonTimelinePoint } from './insightsTypes';
 
+export type SeasonChartView = 'cumulative' | 'daily';
+
 const chartWidth = 800;
 const chartHeight = 280;
 const padding = { top: 24, right: 18, bottom: 38, left: 48 };
 
-export function SeasonInsightsChart({ current, previous }: { current: SeasonTimelinePoint[]; previous: SeasonTimelinePoint[] | null }) {
+export function SeasonInsightsChart({ current, previous, view }: { current: SeasonTimelinePoint[]; previous: SeasonTimelinePoint[] | null; view: SeasonChartView }) {
     const gradientId = useId().replace(/:/g, '');
     const [activeIndex, setActiveIndex] = useState<number | null>(null);
-    const values = [...current, ...(previous ?? [])].map((point) => point.cumulativeSp);
+    const pointValue = (point: SeasonTimelinePoint) => view === 'cumulative' ? point.cumulativeSp : point.dailySp;
+    const values = [...current, ...(previous ?? [])].map(pointValue);
     const minimum = Math.min(0, ...values);
     const maximum = Math.max(1, ...values);
     const range = Math.max(1, maximum - minimum);
@@ -17,7 +20,7 @@ export function SeasonInsightsChart({ current, previous }: { current: SeasonTime
     const plotHeight = chartHeight - padding.top - padding.bottom;
     const x = (day: number) => padding.left + (day - 1) / 29 * plotWidth;
     const y = (value: number) => padding.top + (maximum - value) / range * plotHeight;
-    const path = (points: SeasonTimelinePoint[]) => points.map((point, index) => `${index === 0 ? 'M' : 'L'} ${x(point.day)} ${y(point.cumulativeSp)}`).join(' ');
+    const path = (points: SeasonTimelinePoint[]) => points.map((point, index) => `${index === 0 ? 'M' : 'L'} ${x(point.day)} ${y(pointValue(point))}`).join(' ');
     const currentPath = path(current);
     const firstPoint = current[0];
     const currentLast = current.at(-1);
@@ -27,14 +30,14 @@ export function SeasonInsightsChart({ current, previous }: { current: SeasonTime
     const yTicks = [1, 0.75, 0.5, 0.25, 0];
     const activePoint = activeIndex === null ? null : current[activeIndex];
     const activePointX = activePoint ? x(activePoint.day) : 0;
-    const activePointY = activePoint ? y(activePoint.cumulativeSp) : 0;
+    const activePointY = activePoint ? y(pointValue(activePoint)) : 0;
     const tooltipX = Math.min(chartWidth - 74, Math.max(74, activePointX));
     const tooltipY = Math.max(2, activePointY - 64);
 
     return (
         <div>
             <div className="relative overflow-x-auto pb-1">
-                <svg aria-label="Line chart of cumulative Season Points by Season day" className="h-auto min-w-[620px] w-full" role="img" viewBox={`0 0 ${chartWidth} ${chartHeight}`}>
+                <svg aria-label={`Line chart of ${view === 'cumulative' ? 'cumulative Season Points' : 'daily Season Points'} by Season day`} className="h-auto min-w-[620px] w-full" role="img" viewBox={`0 0 ${chartWidth} ${chartHeight}`}>
                     <defs>
                         <linearGradient id={gradientId} x1="0" x2="0" y1="0" y2="1">
                             <stop offset="0%" stopColor="var(--module-accent)" stopOpacity="0.28" />
@@ -53,7 +56,7 @@ export function SeasonInsightsChart({ current, previous }: { current: SeasonTime
                     <path d={currentPath} fill="none" stroke="var(--module-accent)" strokeLinecap="round" strokeLinejoin="round" strokeWidth="4" />
                     {current.map((point, index) => {
                         const pointX = x(point.day);
-                        const pointY = y(point.cumulativeSp);
+                        const pointY = y(pointValue(point));
                         const active = activeIndex === index;
 
                         return (
@@ -73,14 +76,14 @@ export function SeasonInsightsChart({ current, previous }: { current: SeasonTime
                             <>
                                 <rect fill="var(--surface-elevated)" height="52" rx="10" stroke="var(--border-strong)" width="132" x={tooltipX - 66} y={tooltipY} />
                                 <text fill="var(--text-secondary)" fontSize="10" textAnchor="middle" x={tooltipX} y={tooltipY + 15}>{activePoint.label} · Day {activePoint.day}</text>
-                                <text fill="var(--text-primary)" fontSize="14" fontWeight="700" textAnchor="middle" x={tooltipX} y={tooltipY + 34}>{activePoint.cumulativeSp} SP total</text>
-                                <text fill="var(--text-muted)" fontSize="9" textAnchor="middle" x={tooltipX} y={tooltipY + 46}>{activePoint.dailySp > 0 ? '+' : ''}{activePoint.dailySp} SP that day</text>
+                                <text fill="var(--text-primary)" fontSize="14" fontWeight="700" textAnchor="middle" x={tooltipX} y={tooltipY + 34}>{view === 'cumulative' ? `${activePoint.cumulativeSp} SP total` : `${activePoint.dailySp > 0 ? '+' : ''}${activePoint.dailySp} SP that day`}</text>
+                                <text fill="var(--text-muted)" fontSize="9" textAnchor="middle" x={tooltipX} y={tooltipY + 46}>{view === 'cumulative' ? `${activePoint.dailySp > 0 ? '+' : ''}${activePoint.dailySp} SP that day` : `${activePoint.cumulativeSp} SP total`}</text>
                             </>
                         )}
                     </g>
                 </svg>
             </div>
-            <p className="mt-2 text-xs leading-5 text-muted">Follow the line to see how your Season Points build over time. Hover or focus a point for its daily change and cumulative total.</p>
+            <p className="mt-2 text-xs leading-5 text-muted">{view === 'cumulative' ? 'Follow the line to see how your Season Points build over time.' : 'Follow the line to see the net SP earned or lost on each day.'} Hover or focus a point for its daily change and cumulative total.</p>
         </div>
     );
 }

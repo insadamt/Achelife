@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { Button, StatusChip, Surface } from '../../components/ui';
 import { formatSeasonRange } from './dateFormat';
 import { SeasonInsightsChart } from './SeasonInsightsChart';
+import type { SeasonChartView } from './SeasonInsightsChart';
 import type { SeasonInsightsData } from './insightsTypes';
 import type { SeasonViewData } from './types';
 
@@ -23,6 +24,7 @@ export function SeasonStatsPanel({ season }: { season: SeasonViewData }) {
     const [insights, setInsights] = useState<SeasonInsightsData | null>(null);
     const [error, setError] = useState(false);
     const [requestAttempt, setRequestAttempt] = useState(0);
+    const [chartView, setChartView] = useState<SeasonChartView>('cumulative');
 
     useEffect(() => {
         if (season.id === null) return;
@@ -90,8 +92,14 @@ export function SeasonStatsPanel({ season }: { season: SeasonViewData }) {
 
             <div className="grid gap-5 lg:grid-cols-[minmax(0,1.45fr)_minmax(19rem,0.55fr)]">
                 <Surface className="min-w-0 overflow-hidden p-5 sm:p-6">
-                    <div><h3 className="flex items-center gap-2 text-lg font-bold"><Activity aria-hidden="true" className="text-accent-ink" size={19} />SP trajectory</h3><p className="mt-1 text-sm text-muted">Cumulative points across the 30-day Season</p></div>
-                    <div className="mt-5"><SeasonInsightsChart current={insights.timeline} previous={insights.previousTimeline} /></div>
+                    <div className="flex flex-wrap items-start justify-between gap-3">
+                        <div><h3 className="flex items-center gap-2 text-lg font-bold"><Activity aria-hidden="true" className="text-accent-ink" size={19} />SP trajectory</h3><p className="mt-1 text-sm text-muted">{chartView === 'cumulative' ? 'Cumulative points across the 30-day Season' : 'Net SP earned or lost on each Season day'}</p></div>
+                        <div aria-label="Season chart view" className="flex gap-1 rounded-full border border-border-subtle bg-app p-1" role="group">
+                            <button aria-pressed={chartView === 'cumulative'} className={`focus-ring rounded-full px-3 py-1.5 text-xs font-bold transition-colors ${chartView === 'cumulative' ? 'bg-[var(--module-accent)] text-accent-foreground' : 'text-muted hover:text-foreground'}`} onClick={() => setChartView('cumulative')} type="button">Cumulative</button>
+                            <button aria-pressed={chartView === 'daily'} className={`focus-ring rounded-full px-3 py-1.5 text-xs font-bold transition-colors ${chartView === 'daily' ? 'bg-[var(--module-accent)] text-accent-foreground' : 'text-muted hover:text-foreground'}`} onClick={() => setChartView('daily')} type="button">Daily SP</button>
+                        </div>
+                    </div>
+                    <div className="mt-5"><SeasonInsightsChart current={insights.timeline} previous={insights.previousTimeline} view={chartView} /></div>
                     {insights.previousTimeline && <div className="mt-3 flex justify-end gap-4 text-xs text-muted"><span className="flex items-center gap-1.5"><span className="h-0.5 w-5 bg-[var(--module-accent)]" />Selected</span><span className="flex items-center gap-1.5"><span className="w-5 border-t-2 border-dashed border-border-strong" />Previous</span></div>}
                 </Surface>
 
