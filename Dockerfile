@@ -17,7 +17,7 @@ RUN npm run build
 # ------------------------------------------------------------
 # Stage 2: Install production Composer dependencies
 # ------------------------------------------------------------
-FROM --platform=$BUILDPLATFORM composer:2@sha256:4d71c3c2109c61d5415544264b59ad4087e4c5b7244481723664138fd36d5040 AS composer-bin
+FROM --platform=$BUILDPLATFORM composer:2@sha256:d8f6343d3fae98107426bc49163ccad46ef85aabd4a27d80a74401fab4aba332 AS composer-bin
 
 FROM --platform=$BUILDPLATFORM php:8.4-fpm-alpine@sha256:6cb5e4ffa03a7c1b01bb5b120ab3684ef76b75aa5ca417e343936db3f71f419f AS vendor
 
