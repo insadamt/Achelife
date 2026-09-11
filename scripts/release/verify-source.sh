@@ -148,9 +148,11 @@ verify_caddy_binary_contract()
     grep -Fq 'golang:1.26.6-alpine@sha256:3889b425f035be855a72fb4755265311293b6d414521f0a519d819df32222d83 AS caddy-builder' Dockerfile
     grep -Fq 'go get github.com/caddyserver/caddy/v2/cmd/caddy@v2.11.4' Dockerfile
     grep -Fq 'golang.org/x/crypto@v0.55.0' Dockerfile
-    grep -Fq 'golang.org/x/net@v0.57.0' Dockerfile
+    grep -Fq 'golang.org/x/net@v0.58.0' Dockerfile
     grep -Fq 'golang.org/x/text@v0.41.0' Dockerfile
-    grep -Fq 'google.golang.org/grpc@v1.83.1' Dockerfile
+    grep -Fq 'google.golang.org/grpc@v1.83.2' Dockerfile
+    grep -Fq 'FROM alpine:3.24@sha256:28bd5fe8b56d1bd048e5babf5b10710ebe0bae67db86916198a6eec434943f8b AS web' Dockerfile
+    grep -Fq 'apk add --no-cache ca-certificates curl libcap mailcap' Dockerfile
     grep -Fq 'go mod verify' Dockerfile
     grep -Fq 'CustomVersion=v2.11.4-achelife.1' Dockerfile
     grep -Fq 'COPY --from=caddy-builder /usr/bin/caddy /usr/bin/caddy' Dockerfile

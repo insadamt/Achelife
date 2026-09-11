@@ -133,9 +133,9 @@ RUN --mount=type=cache,target=/go/pkg/mod \
     && go get github.com/caddyserver/caddy/v2/cmd/caddy@v2.11.4 \
     && go get \
         golang.org/x/crypto@v0.55.0 \
-        golang.org/x/net@v0.57.0 \
+        golang.org/x/net@v0.58.0 \
         golang.org/x/text@v0.41.0 \
-        google.golang.org/grpc@v1.83.1 \
+        google.golang.org/grpc@v1.83.2 \
     && go mod verify \
     && CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH go build \
         -trimpath \
@@ -147,13 +147,14 @@ RUN --mount=type=cache,target=/go/pkg/mod \
 # ------------------------------------------------------------
 # Stage 5: Caddy web server
 # ------------------------------------------------------------
-FROM caddy:2-alpine@sha256:5f5c8640aae01df9654968d946d8f1a56c497f1dd5c5cda4cf95ab7c14d58648 AS web
+FROM alpine:3.24@sha256:28bd5fe8b56d1bd048e5babf5b10710ebe0bae67db86916198a6eec434943f8b AS web
 
 WORKDIR /srv
 
 COPY --from=caddy-builder /usr/bin/caddy /usr/bin/caddy
 
 RUN apk upgrade --no-cache \
+    && apk add --no-cache ca-certificates curl libcap mailcap \
     && setcap cap_net_bind_service=+ep /usr/bin/caddy \
     && caddy version
 
@@ -170,3 +171,5 @@ LABEL org.opencontainers.image.title="Achelife Web" \
 COPY --from=vendor /var/www/html/public /srv/public
 COPY --from=frontend /app/public/build /srv/public/build
 COPY docker/selfhost/Caddyfile /etc/caddy/Caddyfile
+
+CMD ["caddy", "run", "--config", "/etc/caddy/Caddyfile", "--adapter", "caddyfile"]
