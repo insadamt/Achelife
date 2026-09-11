@@ -25,13 +25,8 @@ class OpenMoneyDebt
             $this->validateDates($user, $data);
             $person = $this->resolvePerson($user, $data);
             $account = $this->resolveAccount($user, $data->accountId);
-            $currency = $account?->currency ?? $data->currency;
 
-            if ($account !== null && $data->currency !== $account->currency) {
-                throw ValidationException::withMessages(['currency' => 'The debt currency must match the selected Account.']);
-            }
-
-            $transaction = $account === null ? null : $this->movementRecorder->recordOpening(
+            $transaction = $this->movementRecorder->recordOpening(
                 $user,
                 $data->direction,
                 $data->amountMinor,
@@ -44,11 +39,11 @@ class OpenMoneyDebt
                 'person_id' => $person->id,
                 'direction' => $data->direction,
                 'original_amount_minor' => $data->amountMinor,
-                'currency' => $currency,
+                'currency' => $account->currency,
                 'opened_on' => $data->openedOn,
                 'due_on' => $data->dueOn,
                 'note' => $data->note,
-                'opening_transaction_id' => $transaction?->id,
+                'opening_transaction_id' => $transaction->id,
             ]);
         }, 3);
     }
@@ -94,12 +89,8 @@ class OpenMoneyDebt
         ]);
     }
 
-    private function resolveAccount(User $user, ?int $accountId): ?MoneyAccount
+    private function resolveAccount(User $user, int $accountId): MoneyAccount
     {
-        if ($accountId === null) {
-            return null;
-        }
-
         $account = $user->moneyAccounts()->lockForUpdate()->find($accountId);
 
         if ($account === null) {

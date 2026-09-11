@@ -8,7 +8,7 @@ readonly class MoneyDebtRepaymentData
 {
     public function __construct(
         public int $amountMinor,
-        public ?int $accountId,
+        public int $accountId,
         public CarbonImmutable $settledOn,
         public ?string $note,
     ) {}

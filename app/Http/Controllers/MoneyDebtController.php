@@ -19,16 +19,13 @@ class MoneyDebtController extends Controller
     {
         $validated = $request->validated();
         $createPerson = (bool) $validated['create_person'];
-        $trackAccount = (bool) $validated['track_account'];
-
         $open->execute($request->user(), new MoneyDebtData(
             direction: MoneyDebtDirection::from($validated['direction']),
             amountMinor: $amount->toMinorUnits($validated['amount']),
             personId: $createPerson ? null : (int) $validated['person_id'],
             personName: $createPerson ? $validated['person_name'] : null,
             personNickname: $createPerson ? ($validated['person_nickname'] ?? null) : null,
-            accountId: $trackAccount ? (int) $validated['account_id'] : null,
-            currency: $validated['currency'],
+            accountId: (int) $validated['account_id'],
             openedOn: CarbonImmutable::parse($validated['opened_on']),
             dueOn: empty($validated['due_on']) ? null : CarbonImmutable::parse($validated['due_on']),
             note: $validated['note'] ?? null,

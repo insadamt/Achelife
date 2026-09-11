@@ -45,7 +45,9 @@ Charity is the ordinary `Gifts & Donations → Charity` Expense preset. It has n
 
 ## Interface, history, and reporting projection
 
-`/money` presents independent balance panels for each currency, compact Account cards, direct Income, Expense, and Transfer actions, and date-grouped recent activity. Each Account opens a detailed page with one authoritative balance presentation, preselected actions, lifecycle controls, and context-aware transfer direction.
+`/money` presents compact independent balances for each currency, date-grouped recent activity, and a scan-friendly Account list. A fixed Add control opens Income, Expense, Transfer, Debt, and Subscription actions while staying above the mobile navigation. Every primary Money page shares the same section navigation and page hierarchy so Overview, History, Debts, Subscriptions, Categories, and Statistics stay easy to locate. Each Account opens a detailed page with one authoritative balance presentation, preselected actions, lifecycle controls, and context-aware transfer direction.
+
+Income and Expense composition uses a searchable visual Category picker. Category icons are derived from existing preset keys and names, so custom, renamed, archived, imported, and older Categories remain compatible without a new persisted format. Choosing a parent with children opens its Subcategory view, including an explicit no-Subcategory option.
 
 The transaction drawer previews the amount received, source-currency fee, total source debit, and destination credit before a Transfer is saved. Details and activity history show the exact fee and source-side Account history uses `amount_minor + fee_minor` while destination history uses `amount_minor`.
 

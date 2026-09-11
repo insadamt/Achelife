@@ -34,7 +34,7 @@ Synchronization does not resolve or inspect a Season. It continues during manual
 
 ## Interface
 
-`/money/subscriptions` provides Active, Due, Paused, and Ended views. The composer shows a readable recurrence sentence, next payment, automatic-bookkeeping explanation, and the count and total of historical catch-up payments before creation. Subscription cards expose lifecycle controls, future schedule editing, occurrence history, and linked Expense IDs. Due occurrence details provide prefilled Pay values, one-payment overrides, the explicit future-value action, and confirmed Skip.
+`/money/subscriptions` provides compact Active, Due, Paused, and Ended views with an at-a-glance active count and attention count. Each Subscription is one schedule row prioritizing name, Category, amount, payment mode, recurrence, and next date. Selecting it opens a detail drawer containing editing, lifecycle controls, Account and Category details, notes, and occurrence history. A fixed Add control opens the composer. The composer shows a readable recurrence sentence, next payment, automatic-bookkeeping explanation, and the count and total of historical catch-up payments before creation. Due occurrence details provide prefilled Pay values, one-payment overrides, the explicit future-value action, and confirmed Skip.
 
 Money Overview includes compact Due and Upcoming lists. Today includes only due manual payments, including during intermission. Those payments are a separate financial section and never enter Daily Progress or Today SP.
 

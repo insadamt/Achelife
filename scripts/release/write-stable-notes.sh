@@ -23,8 +23,12 @@ printf '%s\n' "$web_image" | grep -Eq "^ghcr\.io/insadamt/achelife-web:${version
 release_summary="Achelife ${version} is a stable release."
 [ "$version" != 1.0.0 ] || release_summary="Achelife ${version} is the first stable v1 release."
 script_directory="$(CDPATH= cd -- "$(dirname "$0")" && pwd)"
+release_changes="${script_directory}/changes/${version}.md"
 
-cat >"$output_file" <<EOF
+if [ -f "$release_changes" ]; then
+    cat "$release_changes" >"$output_file"
+else
+    cat >"$output_file" <<EOF
 ## Summary
 
 ${release_summary}
@@ -38,7 +42,10 @@ ${release_summary}
 **Personal records:** Diary, People, Constitution, and Money tracking.
 
 **Setup and recovery:** Resumable setup, portable account exports, full-instance backups, and failed-update recovery.
+EOF
+fi
 
+cat >>"$output_file" <<EOF
 Free and open-source under the MIT License.
 
 ## Install

@@ -4,6 +4,7 @@ import { useState } from 'react';
 
 import { Button, StatusChip, Surface } from '../../components/ui';
 import { CategoryRenameDrawer } from './CategoryEditorDrawers';
+import { MoneyCategoryIcon } from './MoneyCategoryIcon';
 import { MoneyConfirmationDialog } from './MoneyConfirmationDialog';
 import { MoneyDrawer } from './MoneyDrawer';
 import type { MoneyCategoryData, MoneySubcategoryData } from './types';
@@ -68,11 +69,14 @@ export function CategoryCard({ category, onAddSubcategory }: { category: MoneyCa
         <>
             <Surface className={archived ? 'p-5 opacity-75' : 'p-5'} elevated>
                 <div className="flex items-start justify-between gap-4">
-                    <div>
+                    <div className="flex min-w-0 items-center gap-3">
+                        <MoneyCategoryIcon className="size-10" name={category.name} presetKey={category.presetKey} />
+                        <div className="min-w-0">
                         <div className="flex flex-wrap items-center gap-2">
-                            <h3 className="text-xl font-bold">{category.name}</h3>
+                            <h3 className="truncate text-lg font-bold">{category.name}</h3>
                             {category.presetKey && <StatusChip status="completed">Preset</StatusChip>}
                             {archived && <StatusChip>Archived</StatusChip>}
+                        </div>
                         </div>
                     </div>
                     <Button aria-label={`Manage ${category.name}`} className="size-10 px-0" onClick={() => setActionTarget({ kind: 'category', item: category })} size="small" variant="ghost">

@@ -38,7 +38,7 @@ export function MoneyBreakdownPanel({ statistics, type }: { statistics: MoneySta
             {currentItems.length === 0 ? (
                 <div className="grid min-h-40 place-items-center rounded-2xl border border-dashed border-border-strong px-4 text-center text-sm text-muted">No {type} activity in this period.</div>
             ) : (
-                <div className="space-y-2">
+                <div className="divide-y divide-border-subtle">
                     {currentItems.map((item) => {
                         const previous = previousByKey.get(item.key);
                         const share = total === 0 ? 0 : item.amountMinor / total * 100;
@@ -48,9 +48,9 @@ export function MoneyBreakdownPanel({ statistics, type }: { statistics: MoneySta
                         const content = <><span className="truncate font-bold">{item.name}</span><span className="shrink-0 text-sm font-bold tabular-nums">{formatMinorUnits(item.amountMinor, statistics.currency ?? '')}</span></>;
 
                         return (
-                            <div className="rounded-2xl border border-border-subtle bg-app/30 p-3" key={item.key}>
+                            <div className="py-3" key={item.key}>
                                 <div className="flex items-center justify-between gap-3">{url ? <Link className="focus-ring flex min-w-0 flex-1 items-center justify-between gap-3 rounded-lg hover:text-accent-ink" href={url}>{content}</Link> : <div className="flex min-w-0 flex-1 items-center justify-between gap-3">{content}</div>}</div>
-                                <div className="mt-2 h-2 overflow-hidden rounded-full bg-surface-hover"><div className="h-full rounded-full bg-[var(--module-accent)]" style={{ width: `${Math.max(0, Math.min(100, share))}%` }} /></div>
+                                <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-surface-hover"><div className="h-full rounded-full bg-[var(--module-accent)]" style={{ width: `${Math.max(0, Math.min(100, share))}%` }} /></div>
                                 <div className="mt-2 flex flex-wrap items-center justify-between gap-2 text-xs"><span className="font-semibold text-muted">{formatShare(item.amountMinor, total)} of {type}</span>{statistics.filter !== 'all' && <div className="flex flex-wrap items-center gap-2"><MoneyDelta current={item.amountMinor} currency={statistics.currency ?? ''} favorable={type === 'income' ? 'up' : 'down'} previous={previous?.amountMinor ?? 0} /><span className={shareDelta > 0 ? type === 'expense' ? 'text-danger' : 'text-success' : shareDelta < 0 ? type === 'expense' ? 'text-success' : 'text-danger' : 'text-muted'}>{shareDelta > 0 ? '+' : ''}{shareDelta} pp share</span></div>}</div>
                                 {item.subcategories.length > 0 && <details className="group mt-3 border-t border-border-subtle pt-2"><summary className="focus-ring flex cursor-pointer list-none items-center gap-1 rounded-lg text-xs font-bold text-muted hover:text-foreground"><ChevronDown className="transition-transform group-open:rotate-180" size={14} />Subcategories</summary><div className="mt-2 space-y-1">{item.subcategories.map((subcategory) => {
                                     const previousSubcategory = previous?.subcategories.find((candidate) => candidate.key === subcategory.key);

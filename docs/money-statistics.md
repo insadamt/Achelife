@@ -34,6 +34,6 @@ Category and Subcategory links open Transaction History with the selected dates,
 
 ## Supporting metrics
 
-The page includes Account activity, average daily spending, no-spend days, Subscription spending, Transfer fees, transaction count, and the highest-spending day. Average daily spending divides total spending by every elapsed calendar day in the selected range. For All time, the range begins on the first scoped opening balance or transaction date. A no-spend day has neither an Expense nor a positive Transfer fee. Its delta compares the share of elapsed days rather than raw counts, so a partial current period remains meaningful against a full previous period.
+The first Statistics view prioritizes income, spending, net cash flow, savings rate, the activity chart, and spending breakdown. Income sources, Account activity, average daily spending, no-spend days, Subscription spending, Transfer fees, transaction count, and the highest-spending day remain available under More insights. Average daily spending divides total spending by every elapsed calendar day in the selected range. For All time, the range begins on the first scoped opening balance or transaction date. A no-spend day has neither an Expense nor a positive Transfer fee. Its delta compares the share of elapsed days rather than raw counts, so a partial current period remains meaningful against a full previous period.
 
 No additional statistics snapshots or cached balances are stored. Results are derived from Accounts and authoritative transaction rows.

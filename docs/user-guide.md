@@ -46,9 +46,9 @@ Create personal Laws and record violations. Penalties follow each Law's rules; h
 
 ## Money
 
-Track Accounts, income, expenses, Transfers, fees, categories, recurring Subscriptions, and Debts. Install the editable category pack during setup or from Money settings.
+Track Accounts, income, expenses, Transfers, fees, categories, recurring Subscriptions, and Debts. Use the fixed **Add** control for new activity. Income and Expense entry uses a searchable visual Category and Subcategory picker. Install the editable category pack during setup or from Money settings.
 
-Open **Money → Debts** to record money you borrowed or lent. Choose an existing Person or create one inline, then optionally add the opening amount to an Account or remove it from one. Every partial repayment may use a different same-currency Account or remain track-only. Forgiveness closes the remaining balance without pretending that money moved. See [Money debts](money-debts.md) for the complete behavior.
+Open **Money → Debts** to record money you borrowed or lent. Choose an existing Person or create one inline, then select the Account that received the borrowed money or funded the loan. Every partial repayment must use a same-currency Account, though it may differ from the opening Account. Forgiveness closes the remaining balance without pretending that money moved. See [Money debts](money-debts.md) for the complete behavior.
 
 Open **Money → Statistics** to compare income, opening balances, spending, net cash flow, savings rate, Categories, Account movement, fees, and Subscription spending. Filter by Season, Month, Year, currency, Account, or All time. Opening balances enter the period containing the Account creation date. See [Money statistics](money-statistics.md) for metric definitions and delta behavior.
 

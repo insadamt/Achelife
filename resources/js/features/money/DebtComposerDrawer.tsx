@@ -14,9 +14,7 @@ interface DebtPayload {
     person_id: number | '';
     person_name: string;
     person_nickname: string;
-    track_account: boolean;
     account_id: number | '';
-    currency: string;
     opened_on: string;
     due_on: string;
     note: string;
@@ -41,9 +39,7 @@ export function DebtComposerDrawer({
         person_id: people[0]?.id ?? '',
         person_name: '',
         person_nickname: '',
-        track_account: Boolean(firstAccount),
         account_id: firstAccount?.id ?? '',
-        currency: firstAccount?.currency ?? 'MAD',
         opened_on: today,
         due_on: '',
         note: '',
@@ -51,18 +47,7 @@ export function DebtComposerDrawer({
     const selectedAccount = accounts.find((account) => account.id === Number(form.data.account_id));
 
     function selectAccount(accountId: number | '') {
-        const account = accounts.find((item) => item.id === Number(accountId));
-        form.setData({ ...form.data, account_id: accountId, currency: account?.currency ?? form.data.currency });
-    }
-
-    function toggleAccountMovement(trackAccount: boolean) {
-        const account = selectedAccount ?? accounts[0];
-        form.setData({
-            ...form.data,
-            track_account: trackAccount,
-            account_id: trackAccount ? account?.id ?? '' : '',
-            currency: trackAccount ? account?.currency ?? form.data.currency : form.data.currency,
-        });
+        form.setData('account_id', accountId);
     }
 
     function submit(event: FormEvent) {
@@ -72,7 +57,6 @@ export function DebtComposerDrawer({
             person_id: data.create_person ? null : data.person_id,
             person_name: data.create_person ? data.person_name : null,
             person_nickname: data.create_person && data.person_nickname ? data.person_nickname : null,
-            account_id: data.track_account ? data.account_id : null,
             due_on: data.due_on || null,
             note: data.note || null,
         }));
@@ -103,11 +87,14 @@ export function DebtComposerDrawer({
 
                 <div className="grid gap-4 sm:grid-cols-2">
                     <Field error={form.errors.amount} inputMode="decimal" label="Amount" onChange={(event) => form.setData('amount', event.target.value)} placeholder="0.00" required value={form.data.amount} />
-                    <Field disabled={form.data.track_account} error={form.errors.currency} label="Currency" maxLength={3} onChange={(event) => form.setData('currency', event.target.value.toUpperCase())} pattern="[A-Z]{3}" required value={selectedAccount?.currency ?? form.data.currency} />
+                    <Field disabled label="Currency" value={selectedAccount?.currency ?? 'Choose an Account'} />
                 </div>
 
-                <Checkbox checked={form.data.track_account} description={form.data.direction === 'receivable' ? 'Remove the lent amount from an Account.' : 'Add the borrowed amount to an Account.'} disabled={accounts.length === 0} error={form.errors.track_account} label="Record Account movement" onChange={(event) => toggleAccountMovement(event.target.checked)} />
-                {form.data.track_account && <SelectField error={form.errors.account_id} label={form.data.direction === 'receivable' ? 'Lend from Account' : 'Deposit into Account'} onChange={(event) => selectAccount(Number(event.target.value))} options={[{ label: 'Choose Account', value: '' }, ...accounts.map((account) => ({ label: `${account.name} · ${account.currency}`, value: String(account.id) }))]} required value={form.data.account_id} />}
+                {accounts.length > 0 ? (
+                    <SelectField error={form.errors.account_id} label={form.data.direction === 'receivable' ? 'Lend from Account' : 'Deposit into Account'} onChange={(event) => selectAccount(Number(event.target.value))} options={[{ label: 'Choose Account', value: '' }, ...accounts.map((account) => ({ label: `${account.name} · ${account.currency}`, value: String(account.id) }))]} required value={form.data.account_id} />
+                ) : (
+                    <p className="rounded-2xl border border-warning/30 bg-warning/8 px-4 py-3 text-sm text-warning">Create an active Account before recording a debt. Every loan and borrowing must move money through an Account.</p>
+                )}
 
                 <div className="grid gap-4 sm:grid-cols-2">
                     <Field error={form.errors.opened_on} label="Date" max={today} onChange={(event) => form.setData('opened_on', event.target.value)} required type="date" value={form.data.opened_on} />
@@ -115,7 +102,7 @@ export function DebtComposerDrawer({
                 </div>
                 <Field error={form.errors.note} label="Note (optional)" maxLength={1000} onChange={(event) => form.setData('note', event.target.value)} value={form.data.note} />
 
-                <Button disabled={form.processing} fullWidth type="submit">Create debt</Button>
+                <Button disabled={form.processing || accounts.length === 0} fullWidth type="submit">Create debt</Button>
             </form>
         </MoneyDrawer>
     );

@@ -6,7 +6,7 @@ import type { CSSProperties, FormEvent } from 'react';
 import { Button, Field, SelectField, Surface } from '../../components/ui';
 import { ActivityList } from '../../features/money/ActivityList';
 import { MoneyDrawer } from '../../features/money/MoneyDrawer';
-import { MoneySectionNav } from '../../features/money/MoneySectionNav';
+import { MoneyPageHeader } from '../../features/money/MoneyPageHeader';
 import { TransactionDrawer } from '../../features/money/TransactionDrawer';
 import type { MoneyAccountData, MoneyCategoryData, MoneyTransactionData, MoneyTransactionType } from '../../features/money/types';
 
@@ -124,12 +124,7 @@ export default function MoneyHistory(props: HistoryProps) {
     return (
         <div style={{ '--module-accent': 'var(--money-accent)' } as CSSProperties}>
             <Head title="Money history" />
-            <header className="mb-7 flex flex-col justify-between gap-5 lg:flex-row lg:items-end">
-                <div>
-                    <h1 className="text-4xl font-bold tracking-[-0.05em] sm:text-5xl">Transaction history</h1>
-                </div>
-                <MoneySectionNav active="history" />
-            </header>
+            <MoneyPageHeader active="history" description="Search, filter, and review every movement across your Accounts." title="History" />
 
             <Surface className="mb-5 p-4 sm:p-5" elevated>
                 <form className="flex flex-col gap-3 lg:grid lg:grid-cols-[minmax(14rem,2fr)_repeat(5,minmax(7rem,1fr))_auto] lg:items-end" onSubmit={applyFilters}>

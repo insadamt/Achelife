@@ -6,7 +6,7 @@ import type { CSSProperties } from 'react';
 import { Button, Field, Surface } from '../../../components/ui';
 import { CategoryCard } from '../../../features/money/CategoryCard';
 import { CategoryCreateDrawer, SubcategoryCreateDrawer } from '../../../features/money/CategoryEditorDrawers';
-import { MoneySectionNav } from '../../../features/money/MoneySectionNav';
+import { MoneyPageHeader } from '../../../features/money/MoneyPageHeader';
 import { MoneyPresetPackDrawer } from '../../../features/money/MoneyPresetPackDrawer';
 import type { MoneyPresetPackData } from '../../../features/money/MoneyPresetPackDrawer';
 import type { MoneyCategoryData, MoneyCategoryType } from '../../../features/money/types';
@@ -36,12 +36,7 @@ export default function MoneyCategories({ categories, presetPack }: { categories
     return (
         <div style={{ '--module-accent': 'var(--money-accent)' } as CSSProperties}>
             <Head title="Money Categories" />
-            <header className="mb-7 flex flex-col justify-between gap-5 lg:flex-row lg:items-end">
-                <div>
-                    <h1 className="text-4xl font-bold tracking-[-0.05em] sm:text-5xl">Categories</h1>
-                </div>
-                <MoneySectionNav active="categories" />
-            </header>
+            <MoneyPageHeader active="categories" description="Keep income and spending organized with your own reusable structure." title="Categories" />
 
             <div className="mb-6 flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
                 <div aria-label="Category views" className="flex max-w-full overflow-x-auto rounded-full border border-border-subtle bg-surface p-1" role="tablist">

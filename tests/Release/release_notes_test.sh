@@ -16,12 +16,29 @@ sh "$repository_root/scripts/release/write-rc-notes.sh" \
     "$temporary_directory/image-digests.txt" \
     "$temporary_directory/release-notes.md"
 
-grep -Fq 'Achelife 1.0.0-rc.2 is a v1 release candidate.' "$temporary_directory/release-notes.md"
+grep -Fq 'Achelife v1.0.0 improves daily planning' "$temporary_directory/release-notes.md"
+grep -Fq 'This 1.0.0-rc.2 build is an internal release candidate' "$temporary_directory/release-notes.md"
 grep -Fq 'achelife update --to 1.0.0-rc.2 --channel rc' "$temporary_directory/release-notes.md"
 grep -Fq 'ghcr.io/insadamt/achelife:1.0.0-rc.2@sha256:' "$temporary_directory/release-notes.md"
 grep -Fq 'ghcr.io/insadamt/achelife-web:1.0.0-rc.2@sha256:' "$temporary_directory/release-notes.md"
 grep -Fq 'under the MIT License' "$temporary_directory/release-notes.md"
 grep -Fq "scripts/install.sh | sh -s -- --channel rc" "$temporary_directory/release-notes.md"
+
+cat >"$temporary_directory/v1.1-image-digests.txt" <<EOF
+APP_IMAGE=ghcr.io/insadamt/achelife:1.1.0-rc.1@${digest}
+WEB_IMAGE=ghcr.io/insadamt/achelife-web:1.1.0-rc.1@${digest}
+EOF
+
+sh "$repository_root/scripts/release/write-rc-notes.sh" \
+    1.1.0-rc.1 \
+    "$temporary_directory/v1.1-image-digests.txt" \
+    "$temporary_directory/v1.1-release-notes.md"
+
+grep -Fq 'Achelife v1.1.0 improves Money' "$temporary_directory/v1.1-release-notes.md"
+grep -Fq '## Added' "$temporary_directory/v1.1-release-notes.md"
+grep -Fq '## Changed' "$temporary_directory/v1.1-release-notes.md"
+grep -Fq 'Required every debt and repayment to use an Account' "$temporary_directory/v1.1-release-notes.md"
+grep -Fq 'preserving format version 1 imports' "$temporary_directory/v1.1-release-notes.md"
 
 if sh "$repository_root/scripts/release/write-rc-notes.sh" \
     1.0.0 \

@@ -26,7 +26,7 @@ class MoneyDebtRepaymentController extends Controller
 
         $record->execute($debt, new MoneyDebtRepaymentData(
             amountMinor: $amount->toMinorUnits($validated['amount']),
-            accountId: $validated['track_account'] ? (int) $validated['account_id'] : null,
+            accountId: (int) $validated['account_id'],
             settledOn: CarbonImmutable::parse($validated['settled_on']),
             note: $validated['note'] ?? null,
         ));

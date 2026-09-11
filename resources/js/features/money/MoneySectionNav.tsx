@@ -16,7 +16,7 @@ const sections: Array<{ href: string; icon: typeof LayoutDashboard; label: strin
 
 export function MoneySectionNav({ active }: { active: MoneySection }) {
     return (
-        <nav aria-label="Money sections" className="flex max-w-full flex-wrap gap-1 rounded-2xl border border-border-subtle bg-surface p-1">
+        <nav aria-label="Money sections" className="-mx-4 flex max-w-[calc(100%+2rem)] gap-1 overflow-x-auto px-4 pt-2 sm:mx-0 sm:max-w-full sm:px-0">
             {sections.map((section) => {
                 const SectionIcon = section.icon;
 
@@ -24,14 +24,15 @@ export function MoneySectionNav({ active }: { active: MoneySection }) {
                     <Link
                         aria-current={active === section.value ? 'page' : undefined}
                         className={classNames(
-                            'focus-ring icon-text flex shrink-0 items-center gap-1.5 rounded-full px-4 py-2 text-sm font-bold transition-colors',
-                            active === section.value ? 'bg-elevated text-foreground shadow-sm' : 'text-muted hover:text-foreground',
+                            'focus-ring icon-text relative flex min-h-10 shrink-0 items-center gap-2 rounded-xl px-3 text-xs font-bold transition-colors sm:text-sm',
+                            active === section.value ? 'bg-elevated text-foreground' : 'text-muted hover:bg-surface-hover hover:text-foreground',
                         )}
                         href={section.href}
                         key={section.value}
                     >
                         <SectionIcon aria-hidden="true" size={15} />
                         {section.label}
+                        {active === section.value && <span aria-hidden="true" className="absolute right-3 bottom-0 left-3 h-0.5 rounded-full bg-[var(--money-accent)]" />}
                     </Link>
                 );
             })}

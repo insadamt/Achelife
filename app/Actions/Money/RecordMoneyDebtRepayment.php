@@ -26,7 +26,7 @@ class RecordMoneyDebtRepayment
             $lockedDebt->settlements()->lockForUpdate()->get();
             $this->validate($lockedDebt, $data);
             $account = $this->resolveAccount($lockedDebt, $data->accountId);
-            $transaction = $account === null ? null : $this->movementRecorder->recordRepayment(
+            $transaction = $this->movementRecorder->recordRepayment(
                 $lockedDebt->user,
                 $lockedDebt->direction,
                 $data->amountMinor,
@@ -41,7 +41,7 @@ class RecordMoneyDebtRepayment
                 'amount_minor' => $data->amountMinor,
                 'settled_on' => $data->settledOn,
                 'note' => $data->note,
-                'transaction_id' => $transaction?->id,
+                'transaction_id' => $transaction->id,
             ]);
         }, 3);
     }
@@ -65,12 +65,8 @@ class RecordMoneyDebtRepayment
         }
     }
 
-    private function resolveAccount(MoneyDebt $debt, ?int $accountId): ?MoneyAccount
+    private function resolveAccount(MoneyDebt $debt, int $accountId): MoneyAccount
     {
-        if ($accountId === null) {
-            return null;
-        }
-
         $account = $debt->user->moneyAccounts()->lockForUpdate()->find($accountId);
 
         if ($account === null) {

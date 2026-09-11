@@ -1,4 +1,4 @@
-import { Landmark, PiggyBank, ReceiptText, TrendingUp } from 'lucide-react';
+import { PiggyBank } from 'lucide-react';
 
 import { Surface } from '../../components/ui';
 import { formatMinorUnits } from './moneyPresentation';
@@ -16,7 +16,6 @@ export function MoneyStatisticCards({ statistics }: { statistics: MoneyStatistic
             current: current.totalIncomeMinor,
             previous: previous?.totalIncomeMinor ?? null,
             favorable: 'up' as const,
-            icon: Landmark,
         },
         {
             label: 'Total spending',
@@ -25,7 +24,6 @@ export function MoneyStatisticCards({ statistics }: { statistics: MoneyStatistic
             current: current.spendingMinor,
             previous: previous?.spendingMinor ?? null,
             favorable: 'down' as const,
-            icon: ReceiptText,
         },
         {
             label: 'Net cash flow',
@@ -34,7 +32,6 @@ export function MoneyStatisticCards({ statistics }: { statistics: MoneyStatistic
             current: current.netCashFlowMinor,
             previous: previous?.netCashFlowMinor ?? null,
             favorable: 'up' as const,
-            icon: TrendingUp,
         },
         {
             label: 'Savings rate',
@@ -44,21 +41,26 @@ export function MoneyStatisticCards({ statistics }: { statistics: MoneyStatistic
             previous: previous?.savingsRate ?? null,
             favorable: 'up' as const,
             rate: true,
-            icon: PiggyBank,
         },
     ];
+    const savingsCard = cards[3]!;
 
     return (
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-            {cards.map(({ label, detail, value, current: cardCurrent, previous: cardPrevious, favorable, rate = false, icon: Icon }, index) => (
-                <Surface className={`relative flex min-w-0 flex-col overflow-hidden rounded-2xl p-4 sm:p-5 ${index === 0 ? 'col-span-2 border-[color-mix(in_srgb,var(--module-accent)_30%,var(--border-subtle))] sm:col-span-1' : ''}`} key={label}>
-                    {index === 0 && <span aria-hidden="true" className="absolute inset-x-0 top-0 h-0.5 bg-[var(--module-accent)]" />}
-                    <div className="flex items-center justify-between gap-2"><h3 className="text-xs font-semibold text-secondary">{label}</h3><Icon aria-hidden="true" className={index === 0 ? 'shrink-0 text-accent-ink' : 'shrink-0 text-muted'} size={16} /></div>
-                    <p className="mt-5 break-words text-3xl font-bold leading-none tracking-[-0.05em] tabular-nums sm:text-4xl">{value}</p>
-                    <p className="mb-4 mt-2 text-xs leading-5 text-muted">{detail}</p>
-                    {statistics.filter !== 'all' && <div className="mt-auto border-t border-border-subtle pt-3 text-xs font-semibold"><MoneyDelta current={cardCurrent} currency={currency} favorable={favorable} previous={cardPrevious} rate={rate} /></div>}
-                </Surface>
-            ))}
-        </div>
+        <Surface className="overflow-hidden" elevated>
+            <div className="grid divide-y divide-border-subtle sm:grid-cols-3 sm:divide-x sm:divide-y-0">
+                {cards.slice(0, 3).map(({ label, detail, value, current: cardCurrent, previous: cardPrevious, favorable }) => (
+                    <div className="min-w-0 p-4 sm:p-5" key={label}>
+                        <h3 className="text-xs font-semibold text-muted">{label}</h3>
+                        <p className="mt-2 break-words text-2xl font-bold leading-none tracking-[-0.04em] tabular-nums sm:text-3xl">{value}</p>
+                        <p className="mt-2 truncate text-xs text-muted">{detail}</p>
+                        {statistics.filter !== 'all' && <div className="mt-3 text-xs font-semibold"><MoneyDelta current={cardCurrent} currency={currency} favorable={favorable} previous={cardPrevious} /></div>}
+                    </div>
+                ))}
+            </div>
+            <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border-subtle px-4 py-3 sm:px-5">
+                <p className="flex items-center gap-2 text-sm font-semibold text-secondary"><PiggyBank aria-hidden="true" className="text-accent-ink" size={16} />Savings rate</p>
+                <div className="flex items-center gap-3"><strong className="text-lg tabular-nums">{savingsCard.value}</strong>{statistics.filter !== 'all' && <MoneyDelta current={savingsCard.current} currency={currency} favorable="up" previous={savingsCard.previous} rate />}</div>
+            </div>
+        </Surface>
     );
 }

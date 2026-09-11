@@ -1,10 +1,12 @@
 import { Link, router, useForm } from '@inertiajs/react';
-import { ArrowDownLeft, ArrowRightLeft, ArrowUpRight, Pencil, Plus, Trash2 } from 'lucide-react';
+import { ArrowDownLeft, ArrowRightLeft, ArrowUpRight, ChevronRight, Pencil, Plus, Trash2 } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import type { FormEvent } from 'react';
 
 import { Button, Field, SelectField, StatusChip } from '../../components/ui';
 import { classNames } from '../../components/ui/classNames';
+import { MoneyCategoryIcon } from './MoneyCategoryIcon';
+import { MoneyCategoryPickerDialog } from './MoneyCategoryPickerDialog';
 import { MoneyConfirmationDialog } from './MoneyConfirmationDialog';
 import { MoneyDrawer } from './MoneyDrawer';
 import { formatMinorUnits, formatMoneyDate, minorUnitsInput, transactionTitle } from './moneyPresentation';
@@ -91,6 +93,7 @@ export function TransactionDrawer({
 }) {
     const [editing, setEditing] = useState(transaction === null);
     const [deleteConfirmationOpen, setDeleteConfirmationOpen] = useState(false);
+    const [categoryPickerOpen, setCategoryPickerOpen] = useState(false);
     const accountsWithHistory = useMemo(() => accountOptions(accounts, transaction), [accounts, transaction]);
     const form = useForm<TransactionPayload>({
         type: transaction?.type ?? initialType ?? 'expense',
@@ -115,6 +118,7 @@ export function TransactionDrawer({
     const subcategories = selectedCategory?.subcategories.filter(
         (subcategory) => subcategory.archivedAt === null || subcategory.id === Number(form.data.subcategory_id),
     ) ?? [];
+    const selectedSubcategory = subcategories.find((subcategory) => subcategory.id === Number(form.data.subcategory_id));
 
     function chooseType(nextType: MoneyTransactionType) {
         form.setData({ ...form.data, type: nextType, destination_account_id: '', category_id: '', subcategory_id: '' });
@@ -267,27 +271,27 @@ export function TransactionDrawer({
                     </div>
                 ) : (
                     <div className="space-y-5">
-                        <SelectField
-                            error={form.errors.category_id}
-                            label="Category"
-                            onChange={(event) => form.setData({ ...form.data, category_id: Number(event.target.value), subcategory_id: '' })}
-                            options={[{ label: 'Choose Category', value: '' }, ...relevantCategories.map((category) => ({ label: category.name, value: String(category.id) }))]}
-                            required
-                            value={form.data.category_id}
-                        />
+                        <div>
+                            <p className="text-sm font-semibold text-secondary">Category</p>
+                            <button
+                                aria-invalid={Boolean(form.errors.category_id)}
+                                className={classNames('focus-ring mt-2 flex min-h-16 w-full items-center gap-3 rounded-2xl border bg-app px-3 text-left transition-colors hover:bg-surface-hover', form.errors.category_id ? 'border-danger' : 'border-border-strong')}
+                                onClick={() => setCategoryPickerOpen(true)}
+                                type="button"
+                            >
+                                {selectedCategory ? <MoneyCategoryIcon className="size-10" name={selectedCategory.name} presetKey={selectedCategory.presetKey} /> : <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-surface-hover text-muted"><Plus aria-hidden="true" size={18} /></span>}
+                                <span className="min-w-0 flex-1">
+                                    <span className={classNames('block text-sm font-bold', !selectedCategory && 'text-muted')}>{selectedCategory?.name ?? 'Choose Category'}</span>
+                                    {selectedCategory && <span className="mt-0.5 block truncate text-xs text-muted">{selectedSubcategory?.name ?? 'No Subcategory'}</span>}
+                                </span>
+                                <ChevronRight aria-hidden="true" className="shrink-0 text-muted" size={18} />
+                            </button>
+                            {form.errors.category_id && <p className="mt-2 text-sm font-medium text-danger">{form.errors.category_id}</p>}
+                        </div>
                         {relevantCategories.length === 0 && (
                             <p className="rounded-2xl border border-warning/25 bg-warning/8 px-4 py-3 text-sm text-secondary">
                                 No active {type} Categories are available. <Link className="font-bold text-accent-ink hover:underline" href="/money/categories">Create one in Categories</Link> before recording this transaction.
                             </p>
-                        )}
-                        {subcategories.length > 0 && (
-                            <SelectField
-                                error={form.errors.subcategory_id}
-                                label="Subcategory (optional)"
-                                onChange={(event) => form.setData('subcategory_id', event.target.value ? Number(event.target.value) : '')}
-                                options={[{ label: 'None', value: '' }, ...subcategories.map((subcategory) => ({ label: subcategory.name, value: String(subcategory.id) }))]}
-                                value={form.data.subcategory_id}
-                            />
                         )}
                     </div>
                 )}
@@ -309,6 +313,17 @@ export function TransactionDrawer({
                     {transaction ? 'Save changes' : `Add ${type}`}
                 </Button>
             </form>
+            {categoryPickerOpen && <MoneyCategoryPickerDialog
+                categories={relevantCategories}
+                onClose={() => setCategoryPickerOpen(false)}
+                onSelect={(categoryId, subcategoryId) => {
+                    form.setData({ ...form.data, category_id: categoryId, subcategory_id: subcategoryId });
+                    setCategoryPickerOpen(false);
+                }}
+                open
+                selectedCategoryId={form.data.category_id}
+                selectedSubcategoryId={form.data.subcategory_id}
+            />}
         </MoneyDrawer>
     );
 }

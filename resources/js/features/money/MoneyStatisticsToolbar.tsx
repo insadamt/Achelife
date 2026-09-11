@@ -24,7 +24,7 @@ export function MoneyStatisticsToolbar({ statistics, loading, setLoading }: { st
     }
 
     return (
-        <Surface className="rounded-2xl p-3 sm:p-4">
+        <Surface className="rounded-2xl p-3 sm:p-4" elevated>
             <div className="flex flex-col justify-between gap-4 lg:flex-row lg:items-center">
                 <div aria-label="Statistics period" className="grid grid-cols-4 gap-1 rounded-xl bg-app p-1 lg:min-w-80" role="group">
                     {periods.map(([key, label]) => (

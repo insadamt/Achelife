@@ -9,6 +9,8 @@ set -eu
 version="$1"
 image_digests="$2"
 output_file="$3"
+stable_version="${version%%-rc.*}"
+script_directory="$(CDPATH= cd -- "$(dirname "$0")" && pwd)"
 
 printf '%s\n' "$version" | grep -Eq '^(0|[1-9][0-9]{0,8})\.(0|[1-9][0-9]{0,8})\.(0|[1-9][0-9]{0,8})-rc\.(0|[1-9][0-9]{0,8})$'
 [ -f "$image_digests" ]
@@ -18,20 +20,25 @@ web_image="$(sed -n 's/^WEB_IMAGE=//p' "$image_digests")"
 printf '%s\n' "$app_image" | grep -Eq "^ghcr\.io/insadamt/achelife:${version}@sha256:[a-f0-9]{64}$"
 printf '%s\n' "$web_image" | grep -Eq "^ghcr\.io/insadamt/achelife-web:${version}@sha256:[a-f0-9]{64}$"
 
-cat >"$output_file" <<EOF
-## Summary
-
-Achelife ${version} is a v1 release candidate. This pre-release is for testing and requires explicit RC opt-in.
+release_changes="${script_directory}/changes/${stable_version}.md"
+if [ -f "$release_changes" ]; then
+    cat "$release_changes" >"$output_file"
+else
+    cat >"$output_file" <<EOF
+Achelife v${stable_version} improves daily planning, Seasons, personal records, setup, and recovery.
 
 ## What's New
 
-**Daily planning:** Today, Tasks, recurring routines, Habits, and streaks.
+## Changed
 
-**Seasons:** 30-day Seasons, Objectives, Rank, and end-of-Season reviews.
+- Improved Today, Tasks, recurring routines, Habits, streaks, Seasons, Objectives, Rank, Diary, People, Constitution, and Money tracking.
+- Improved resumable setup, portable account exports, full-instance backups, and failed-update recovery.
+EOF
+fi
 
-**Personal records:** Diary, People, Constitution, and Money tracking.
+cat >>"$output_file" <<EOF
 
-**Setup and recovery:** Resumable setup, portable account exports, full-instance backups, and failed-update recovery.
+This ${version} build is an internal release candidate for testing and requires explicit RC opt-in. It is not a stable release.
 
 Free and open-source under the MIT License.
 

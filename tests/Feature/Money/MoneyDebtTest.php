@@ -74,18 +74,20 @@ class MoneyDebtTest extends TestCase
         $this->assertSame(10000, $accounts['Bank']['netMovementMinor']);
     }
 
-    public function test_track_only_debt_can_be_forgiven_and_reopened_without_account_activity(): void
+    public function test_tracked_debt_can_be_forgiven_and_reopened_without_an_extra_account_movement(): void
     {
         $user = $this->moneyUser();
         $person = $user->people()->create(['name' => 'Adam']);
-        $debt = $this->openDebt($user, $person, MoneyDebtDirection::Payable, 25000);
+        $account = $this->moneyAccount($user, 'Bank', 'MAD');
+        $debt = $this->openDebt($user, $person, MoneyDebtDirection::Payable, 25000, $account->id);
 
         $forgiveness = app(ForgiveMoneyDebtBalance::class)->execute($debt);
 
-        $this->assertNull($debt->opening_transaction_id);
+        $this->assertNotNull($debt->opening_transaction_id);
         $this->assertNull($forgiveness->transaction_id);
         $this->assertSame(0, $debt->refresh()->remainingAmountMinor());
-        $this->assertSame(0, $user->moneyTransactions()->count());
+        $this->assertSame(1, $user->moneyTransactions()->count());
+        $this->assertSame(25000, $this->balance($user, $account));
 
         app(DeleteMoneyDebtSettlement::class)->execute($forgiveness);
 
@@ -101,9 +103,9 @@ class MoneyDebtTest extends TestCase
         $debt = $this->openDebt($user, $person, MoneyDebtDirection::Receivable, 10000, $mad->id);
 
         foreach ([
-            new MoneyDebtRepaymentData(10001, null, CarbonImmutable::parse('2026-09-10'), null),
+            new MoneyDebtRepaymentData(10001, $mad->id, CarbonImmutable::parse('2026-09-10'), null),
             new MoneyDebtRepaymentData(1000, $usd->id, CarbonImmutable::parse('2026-09-10'), null),
-            new MoneyDebtRepaymentData(1000, null, CarbonImmutable::parse('2026-09-11'), null),
+            new MoneyDebtRepaymentData(1000, $mad->id, CarbonImmutable::parse('2026-09-11'), null),
         ] as $invalid) {
             try {
                 app(RecordMoneyDebtRepayment::class)->execute($debt, $invalid);
@@ -142,6 +144,7 @@ class MoneyDebtTest extends TestCase
     {
         $user = $this->moneyUser();
         $other = $this->moneyUser();
+        $account = $this->moneyAccount($user, 'Cash', 'MAD');
         $otherPerson = $other->people()->create(['name' => 'Not mine']);
 
         $this->actingAs($user)->post('/money/debts', [
@@ -149,9 +152,16 @@ class MoneyDebtTest extends TestCase
             'amount' => '75.00',
             'create_person' => true,
             'person_name' => 'Nora',
+            'opened_on' => '2026-09-10',
+        ])->assertSessionHasErrors('account_id');
+
+        $this->actingAs($user)->post('/money/debts', [
+            'direction' => 'receivable',
+            'amount' => '75.00',
+            'create_person' => true,
+            'person_name' => 'Nora',
             'person_nickname' => 'N',
-            'track_account' => false,
-            'currency' => 'MAD',
+            'account_id' => $account->id,
             'opened_on' => '2026-09-10',
         ])->assertRedirect();
 
@@ -163,13 +173,17 @@ class MoneyDebtTest extends TestCase
             ->where('debts.0.person.name', 'Nora')
             ->where('debts.0.remainingAmountMinor', 7500));
 
+        $this->post("/money/debts/{$debt->id}/repayments", [
+            'amount' => '10.00',
+            'settled_on' => '2026-09-10',
+        ])->assertSessionHasErrors('account_id');
+
         $this->post('/money/debts', [
             'direction' => 'payable',
             'amount' => '10.00',
             'create_person' => false,
             'person_id' => $otherPerson->id,
-            'track_account' => false,
-            'currency' => 'MAD',
+            'account_id' => $account->id,
             'opened_on' => '2026-09-10',
         ])->assertSessionHasErrors('person_id');
     }
@@ -200,7 +214,7 @@ class MoneyDebtTest extends TestCase
         }
     }
 
-    private function openDebt(User $user, Person $person, MoneyDebtDirection $direction, int $amountMinor, ?int $accountId = null): MoneyDebt
+    private function openDebt(User $user, Person $person, MoneyDebtDirection $direction, int $amountMinor, int $accountId): MoneyDebt
     {
         return app(OpenMoneyDebt::class)->execute($user, new MoneyDebtData(
             direction: $direction,
@@ -209,7 +223,6 @@ class MoneyDebtTest extends TestCase
             personName: null,
             personNickname: null,
             accountId: $accountId,
-            currency: 'MAD',
             openedOn: CarbonImmutable::parse('2026-09-01'),
             dueOn: CarbonImmutable::parse('2026-09-20'),
             note: null,
