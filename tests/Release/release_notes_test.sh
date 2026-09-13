@@ -40,6 +40,22 @@ grep -Fq '## Changed' "$temporary_directory/v1.1-release-notes.md"
 grep -Fq 'Required every debt and repayment to use an Account' "$temporary_directory/v1.1-release-notes.md"
 grep -Fq 'preserving format version 1 imports' "$temporary_directory/v1.1-release-notes.md"
 
+cat >"$temporary_directory/v1.2-image-digests.txt" <<EOF
+APP_IMAGE=ghcr.io/insadamt/achelife:1.2.0-rc.1@${digest}
+WEB_IMAGE=ghcr.io/insadamt/achelife-web:1.2.0-rc.1@${digest}
+EOF
+
+sh "$repository_root/scripts/release/write-rc-notes.sh" \
+    1.2.0-rc.1 \
+    "$temporary_directory/v1.2-image-digests.txt" \
+    "$temporary_directory/v1.2-release-notes.md"
+
+grep -Fq 'Achelife v1.2.0 improves Money organization' "$temporary_directory/v1.2-release-notes.md"
+grep -Fq '## Added' "$temporary_directory/v1.2-release-notes.md"
+grep -Fq '## Changed' "$temporary_directory/v1.2-release-notes.md"
+grep -Fq 'Unified Categories, Merchants, and Tags' "$temporary_directory/v1.2-release-notes.md"
+grep -Fq 'preserving format versions 1 and 2 imports' "$temporary_directory/v1.2-release-notes.md"
+
 if sh "$repository_root/scripts/release/write-rc-notes.sh" \
     1.0.0 \
     "$temporary_directory/image-digests.txt" \
