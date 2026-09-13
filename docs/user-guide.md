@@ -46,7 +46,11 @@ Create personal Laws and record violations. Penalties follow each Law's rules; h
 
 ## Money
 
-Track Accounts, income, expenses, Transfers, fees, categories, recurring Subscriptions, and Debts. Use the fixed **Add** control for new activity. Income and Expense entry uses a searchable visual Category and Subcategory picker. Install the editable category pack during setup or from Money settings.
+Track Accounts, income, expenses, Transfers, fees, categories, recurring Subscriptions, and Debts. Use the fixed **Add** control for new activity. Income and Expense entry uses a searchable visual Category and Subcategory picker. You can also add one Merchant and up to ten colored Tags to Income or Expenses. Merchant identifies where money came from or went, while Tags add reusable dimensions across Categories. Install the editable category pack during setup or from Money settings.
+
+Open **Money → History** to search Merchant and Tag names or filter activity by a specific Merchant or Tag. Transfers do not use Merchants or Tags because both Accounts already identify the movement endpoints.
+
+Open **Money → Organization** to control Categories, Merchants, and Tags from one page. The three views let you manage Category presets and Subcategories, create or rename Merchants, and create or recolor Tags. Used Merchants and Tags cannot be deleted because that would damage history; archive them instead. Unused values can be deleted permanently.
 
 Open **Money → Debts** to record money you borrowed or lent. Choose an existing Person or create one inline, then select the Account that received the borrowed money or funded the loan. Every partial repayment must use a same-currency Account, though it may differ from the opening Account. Forgiveness closes the remaining balance without pretending that money moved. See [Money debts](money-debts.md) for the complete behavior.
 

@@ -21,6 +21,9 @@ class UpdateMoneyTransactionRequest extends FormRequest
             'destination_account_id' => ['nullable', 'integer'],
             'category_id' => ['nullable', 'integer'],
             'subcategory_id' => ['nullable', 'integer'],
+            'merchant' => ['nullable', 'string', 'max:120'],
+            'tags' => ['sometimes', 'array', 'max:10'],
+            'tags.*' => ['required', 'string', 'max:50', 'distinct:ignore_case'],
             'date' => ['required', 'date_format:Y-m-d'],
             'note' => ['nullable', 'string', 'max:1000'],
         ];

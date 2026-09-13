@@ -188,7 +188,7 @@ class MoneyDebtTest extends TestCase
         ])->assertSessionHasErrors('person_id');
     }
 
-    public function test_version_two_archive_round_trips_debt_people_movements_and_settlements(): void
+    public function test_current_archive_round_trips_debt_people_movements_and_settlements(): void
     {
         $source = User::factory()->create(['calendar_started_on' => '2026-09-01', 'timezone' => 'UTC']);
         Season::query()->create(['user_id' => $source->id, 'season_number' => 1, 'start_date' => '2026-09-01', 'end_date' => '2026-09-30', 'season_points' => 0]);
@@ -204,7 +204,7 @@ class MoneyDebtTest extends TestCase
             app(RestoreAccountArchive::class)->execute($target, $validated, new AccountRestoreRequest(freshInstall: true));
             $restoredDebt = $target->moneyDebts()->with(['person', 'openingTransaction', 'settlements.transaction'])->sole();
 
-            $this->assertSame(2, $validated->manifest['archive_format_version']);
+            $this->assertSame(3, $validated->manifest['archive_format_version']);
             $this->assertSame('Sara', $restoredDebt->person->name);
             $this->assertSame(15000, $restoredDebt->remainingAmountMinor());
             $this->assertSame($target->id, $restoredDebt->openingTransaction->user_id);

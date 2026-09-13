@@ -89,14 +89,16 @@ class MoneyPresetPackTest extends TestCase
     {
         $user = $this->moneyUser();
         app(SynchronizeUserSeasons::class)->execute($user)->update(['introduced_at' => now()]);
-        $this->actingAs($user)->get('/money/categories')
+        $this->actingAs($user)->get('/money/organization?section=categories')
             ->assertOk()
             ->assertInertia(fn ($page) => $page
-                ->component('money/categories/Index')
+                ->component('money/organization/Index')
+                ->where('initialSection', 'categories')
                 ->where('presetPack.version', 1)
                 ->where('presetPack.categoryCount', 20)
                 ->where('presetPack.subcategoryCount', 80)
                 ->has('presetPack.categories', 20));
+        $this->get('/money/categories')->assertRedirect('/money/organization?section=categories');
 
         $this->actingAs($user)->post('/money/presets/install')->assertRedirect();
         $this->assertSame(1, $user->refresh()->money_preset_pack_version);

@@ -2,7 +2,7 @@ import type { ReactNode } from 'react';
 
 import { MoneySectionNav } from './MoneySectionNav';
 
-type MoneySection = 'overview' | 'history' | 'debts' | 'subscriptions' | 'categories' | 'statistics';
+type MoneySection = 'overview' | 'history' | 'debts' | 'subscriptions' | 'organization' | 'statistics';
 
 interface MoneyPageHeaderProps {
     active: MoneySection;

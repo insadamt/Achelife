@@ -86,7 +86,7 @@ class AccountArchiveSecurityTest extends TestCase
         });
         $this->expectInvalid($future, 'materially in the future');
 
-        $newer = $this->mutateManifest($valid, fn (array &$manifest) => $manifest['archive_format_version'] = 3, resign: false);
+        $newer = $this->mutateManifest($valid, fn (array &$manifest) => $manifest['archive_format_version'] = 4, resign: false);
         $this->expectInvalid($newer, 'Update Achelife first');
 
         $older = $this->mutateManifest($valid, fn (array &$manifest) => $manifest['archive_format_version'] = 0, resign: false);
@@ -104,16 +104,29 @@ class AccountArchiveSecurityTest extends TestCase
             $manifest = json_decode($entries['manifest.json'], true, 512, JSON_THROW_ON_ERROR);
             $manifest['archive_format_version'] = 1;
 
-            foreach (['money_debts', 'money_debt_settlements'] as $table) {
+            foreach (['money_merchants', 'money_tags', 'money_transaction_tags', 'money_debts', 'money_debt_settlements'] as $table) {
                 unset($entries["tables/{$table}.ndjson"], $manifest['table_counts'][$table]);
             }
 
             unset($manifest['module_counts']['debts']);
             $manifest['files'] = array_values(array_filter(
                 $manifest['files'],
-                fn (string $file): bool => ! in_array($file, ['tables/money_debts.ndjson', 'tables/money_debt_settlements.ndjson'], true),
+                fn (string $file): bool => ! in_array($file, [
+                    'tables/money_merchants.ndjson',
+                    'tables/money_tags.ndjson',
+                    'tables/money_transaction_tags.ndjson',
+                    'tables/money_debts.ndjson',
+                    'tables/money_debt_settlements.ndjson',
+                ], true),
             ));
             $entries['manifest.json'] = $this->encodeJson($manifest);
+            $transactionRows = array_map(function (string $line): string {
+                $transaction = json_decode($line, true, 512, JSON_THROW_ON_ERROR);
+                unset($transaction['merchant_id']);
+
+                return trim($this->jsonLine($transaction));
+            }, array_values(array_filter(explode("\n", $entries['tables/money_transactions.ndjson']))));
+            $entries['tables/money_transactions.ndjson'] = $transactionRows === [] ? '' : implode("\n", $transactionRows)."\n";
             $legacyRows = array_map(function (string $line): string {
                 $habit = json_decode($line, true, 512, JSON_THROW_ON_ERROR);
                 unset($habit['icon']);
@@ -136,6 +149,55 @@ class AccountArchiveSecurityTest extends TestCase
         );
 
         $this->assertSame('check', $target->habits()->sole()->icon->value);
+    }
+
+    public function test_restores_format_two_archives_without_merchants_and_tags(): void
+    {
+        CarbonImmutable::setTestNow('2026-09-15 12:00:00');
+        $source = User::factory()->create();
+        $this->buildCompletePortableGraph($source);
+        $currentArchive = app(AccountArchiveExporter::class)->export($source);
+        $this->temporaryArchives[] = $currentArchive;
+        $legacyArchive = $this->mutate($currentArchive, function (array &$entries): void {
+            $manifest = json_decode($entries['manifest.json'], true, 512, JSON_THROW_ON_ERROR);
+            $manifest['archive_format_version'] = 2;
+
+            foreach (['money_merchants', 'money_tags', 'money_transaction_tags'] as $table) {
+                unset($entries["tables/{$table}.ndjson"], $manifest['table_counts'][$table]);
+            }
+
+            $manifest['files'] = array_values(array_filter(
+                $manifest['files'],
+                fn (string $file): bool => ! in_array($file, [
+                    'tables/money_merchants.ndjson',
+                    'tables/money_tags.ndjson',
+                    'tables/money_transaction_tags.ndjson',
+                ], true),
+            ));
+            $entries['manifest.json'] = $this->encodeJson($manifest);
+            $transactionRows = array_map(function (string $line): string {
+                $transaction = json_decode($line, true, 512, JSON_THROW_ON_ERROR);
+                unset($transaction['merchant_id']);
+
+                return trim($this->jsonLine($transaction));
+            }, array_values(array_filter(explode("\n", $entries['tables/money_transactions.ndjson']))));
+            $entries['tables/money_transactions.ndjson'] = implode("\n", $transactionRows)."\n";
+        }, resign: true);
+        $target = User::factory()->create([
+            'onboarding_step' => 'path',
+            'onboarding_completed_at' => null,
+        ]);
+
+        $validated = app(AccountArchiveValidator::class)->validate($legacyArchive);
+        app(RestoreAccountArchive::class)->execute(
+            $target,
+            $validated,
+            new AccountRestoreRequest(freshInstall: true),
+        );
+
+        $this->assertSame(2, $validated->manifest['archive_format_version']);
+        $this->assertSame(0, $target->moneyMerchants()->count());
+        $this->assertSame(0, $target->moneyTags()->count());
     }
 
     public function test_rejects_oversized_entries_and_excessive_expanded_archives(): void

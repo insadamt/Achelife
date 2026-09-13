@@ -1,5 +1,5 @@
 import { Link, router, useForm } from '@inertiajs/react';
-import { ArrowDownLeft, ArrowRightLeft, ArrowUpRight, ChevronRight, Pencil, Plus, Trash2 } from 'lucide-react';
+import { ArrowDownLeft, ArrowRightLeft, ArrowUpRight, ChevronRight, Pencil, Plus, Store, Trash2 } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import type { FormEvent } from 'react';
 
@@ -9,8 +9,10 @@ import { MoneyCategoryIcon } from './MoneyCategoryIcon';
 import { MoneyCategoryPickerDialog } from './MoneyCategoryPickerDialog';
 import { MoneyConfirmationDialog } from './MoneyConfirmationDialog';
 import { MoneyDrawer } from './MoneyDrawer';
+import { MoneyMetadataFields } from './MoneyMetadataFields';
+import { MoneyMerchantPickerDialog } from './MoneyMerchantPickerDialog';
 import { formatMinorUnits, formatMoneyDate, minorUnitsInput, transactionTitle } from './moneyPresentation';
-import type { MoneyAccountData, MoneyCategoryData, MoneyTransactionData, MoneyTransactionType } from './types';
+import type { MoneyAccountData, MoneyCategoryData, MoneyMerchantOptionData, MoneyTagData, MoneyTransactionData, MoneyTransactionType } from './types';
 
 interface TransactionPayload {
     type: MoneyTransactionType;
@@ -20,6 +22,8 @@ interface TransactionPayload {
     destination_account_id: number | '';
     category_id: number | '';
     subcategory_id: number | '';
+    merchant: string;
+    tags: string[];
     date: string;
     note: string;
 }
@@ -77,6 +81,8 @@ function TransactionTypeControl({ onChange, value }: { onChange: (type: MoneyTra
 export function TransactionDrawer({
     accounts,
     categories,
+    merchants,
+    tags,
     today,
     transaction = null,
     initialType = null,
@@ -85,6 +91,8 @@ export function TransactionDrawer({
 }: {
     accounts: MoneyAccountData[];
     categories: MoneyCategoryData[];
+    merchants: MoneyMerchantOptionData[];
+    tags: MoneyTagData[];
     today: string;
     transaction?: MoneyTransactionData | null;
     initialType?: MoneyTransactionType | null;
@@ -94,6 +102,7 @@ export function TransactionDrawer({
     const [editing, setEditing] = useState(transaction === null);
     const [deleteConfirmationOpen, setDeleteConfirmationOpen] = useState(false);
     const [categoryPickerOpen, setCategoryPickerOpen] = useState(false);
+    const [merchantPickerOpen, setMerchantPickerOpen] = useState(false);
     const accountsWithHistory = useMemo(() => accountOptions(accounts, transaction), [accounts, transaction]);
     const form = useForm<TransactionPayload>({
         type: transaction?.type ?? initialType ?? 'expense',
@@ -103,6 +112,8 @@ export function TransactionDrawer({
         destination_account_id: transaction?.destinationAccount?.id ?? '',
         category_id: transaction?.category?.id ?? '',
         subcategory_id: transaction?.subcategory?.id ?? '',
+        merchant: transaction?.merchant?.name ?? '',
+        tags: transaction?.tags.map((tag) => tag.name) ?? [],
         date: transaction?.date ?? today,
         note: transaction?.note ?? '',
     });
@@ -121,7 +132,7 @@ export function TransactionDrawer({
     const selectedSubcategory = subcategories.find((subcategory) => subcategory.id === Number(form.data.subcategory_id));
 
     function chooseType(nextType: MoneyTransactionType) {
-        form.setData({ ...form.data, type: nextType, destination_account_id: '', category_id: '', subcategory_id: '' });
+        form.setData({ ...form.data, type: nextType, destination_account_id: '', category_id: '', subcategory_id: '', merchant: '', tags: [] });
     }
 
     function chooseAccount(accountId: number) {
@@ -136,6 +147,8 @@ export function TransactionDrawer({
             fee: type === 'transfer' ? data.fee : '0.00',
             category_id: type === 'transfer' ? null : data.category_id,
             subcategory_id: type === 'transfer' || data.subcategory_id === '' ? null : data.subcategory_id,
+            merchant: type === 'transfer' ? null : data.merchant,
+            tags: type === 'transfer' ? [] : data.tags,
         }));
 
         if (transaction) form.put(`/money/transactions/${transaction.id}`, { preserveScroll: true, onSuccess: onClose });
@@ -176,6 +189,8 @@ export function TransactionDrawer({
                                 </>
                             )}
                             {transaction.note && <div className="py-3"><dt className="text-muted">Note</dt><dd className="mt-1 whitespace-pre-wrap font-semibold">{transaction.note}</dd></div>}
+                            {transaction.merchant && <div className="py-3"><dt className="text-muted">Merchant</dt><dd className="mt-1 font-semibold">{transaction.merchant.name}</dd></div>}
+                            {transaction.tags.length > 0 && <div className="py-3"><dt className="text-muted">Tags</dt><dd className="mt-2 flex flex-wrap gap-2">{transaction.tags.map((tag) => <span className="rounded-full border px-2.5 py-1 text-xs font-bold" key={tag.id} style={tag.color ? { borderColor: `${tag.color}66`, color: tag.color } : undefined}>{tag.name}</span>)}</dd></div>}
                             {transaction.subscriptionOccurrence && <div className="py-3"><dt className="text-muted">Subscription</dt><dd className="mt-1 font-semibold">{transaction.subscriptionOccurrence.subscriptionName} · occurrence #{transaction.subscriptionOccurrence.id}</dd></div>}
                             {transaction.debtMovement && <div className="py-3"><dt className="text-muted">Debt movement</dt><dd className="mt-1 font-semibold">Principal linked to {transaction.debtMovement.personName}. Manage it from Debts.</dd></div>}
                         </dl>
@@ -290,11 +305,41 @@ export function TransactionDrawer({
                         </div>
                         {relevantCategories.length === 0 && (
                             <p className="rounded-2xl border border-warning/25 bg-warning/8 px-4 py-3 text-sm text-secondary">
-                                No active {type} Categories are available. <Link className="font-bold text-accent-ink hover:underline" href="/money/categories">Create one in Categories</Link> before recording this transaction.
+                                No active {type} Categories are available. <Link className="font-bold text-accent-ink hover:underline" href="/money/organization?section=categories">Create one in Organization</Link> before recording this transaction.
                             </p>
                         )}
                     </div>
                 )}
+
+                {type !== 'transfer' && (
+                    <div>
+                        <p className="text-sm font-semibold text-secondary">Merchant (optional)</p>
+                        <button
+                            aria-invalid={Boolean(form.errors.merchant)}
+                            className={classNames('focus-ring mt-2 flex min-h-16 w-full items-center gap-3 rounded-2xl border bg-app px-3 text-left transition-colors hover:bg-surface-hover', form.errors.merchant ? 'border-danger' : 'border-border-strong')}
+                            onClick={() => setMerchantPickerOpen(true)}
+                            type="button"
+                        >
+                            <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-[color-mix(in_srgb,var(--money-accent)_12%,transparent)] text-accent-ink"><Store aria-hidden="true" size={19} /></span>
+                            <span className="min-w-0 flex-1">
+                                <span className={classNames('block truncate text-sm font-bold', !form.data.merchant && 'text-muted')}>{form.data.merchant || 'Choose Merchant'}</span>
+                                <span className="mt-0.5 block text-xs text-muted">{form.data.merchant ? 'Merchant selected' : 'No Merchant'}</span>
+                            </span>
+                            <ChevronRight aria-hidden="true" className="shrink-0 text-muted" size={18} />
+                        </button>
+                        {form.errors.merchant && <p className="mt-2 text-sm font-medium text-danger">{form.errors.merchant}</p>}
+                        {merchants.every((merchant) => merchant.archivedAt != null) && (
+                            <p className="mt-2 text-xs text-muted">No active Merchants. <Link className="font-bold text-accent-ink hover:underline" href="/money/organization?section=merchants">Add one in Organization</Link>.</p>
+                        )}
+                    </div>
+                )}
+
+                {type !== 'transfer' && <MoneyMetadataFields
+                    onTagsChange={(nextTags) => form.setData('tags', nextTags)}
+                    tagError={form.errors.tags}
+                    tags={tags}
+                    value={form.data.tags}
+                />}
 
                 <div className="rounded-2xl border border-border-subtle bg-surface p-4">
                     <p className="mb-4 text-xs font-bold tracking-[0.15em] text-muted uppercase">Details</p>
@@ -323,6 +368,16 @@ export function TransactionDrawer({
                 open
                 selectedCategoryId={form.data.category_id}
                 selectedSubcategoryId={form.data.subcategory_id}
+            />}
+            {merchantPickerOpen && <MoneyMerchantPickerDialog
+                merchants={merchants}
+                onClose={() => setMerchantPickerOpen(false)}
+                onSelect={(merchant) => {
+                    form.setData('merchant', merchant);
+                    setMerchantPickerOpen(false);
+                }}
+                open
+                selectedName={form.data.merchant}
             />}
         </MoneyDrawer>
     );

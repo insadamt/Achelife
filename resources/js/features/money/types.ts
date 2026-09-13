@@ -39,6 +39,29 @@ export interface MoneyTransactionAccountData {
     archived: boolean;
 }
 
+export interface MoneyMerchantOptionData {
+    id: number;
+    name: string;
+    archivedAt?: string | null;
+}
+
+export interface MoneyMerchantData extends MoneyMerchantOptionData {
+    archivedAt: string | null;
+    hasHistory: boolean;
+}
+
+export interface MoneyTagData {
+    id: number;
+    name: string;
+    color: string | null;
+    archivedAt?: string | null;
+}
+
+export interface MoneyTagManagementData extends MoneyTagData {
+    archivedAt: string | null;
+    hasHistory: boolean;
+}
+
 export interface MoneyTransactionData {
     id: number;
     type: MoneyTransactionType;
@@ -53,6 +76,8 @@ export interface MoneyTransactionData {
     destinationAccount: MoneyTransactionAccountData | null;
     category: { id: number; name: string; archived: boolean } | null;
     subcategory: { id: number; name: string; archived: boolean } | null;
+    merchant: MoneyMerchantOptionData | null;
+    tags: MoneyTagData[];
     createdAt: string;
     subscriptionOccurrence: { id: number; subscriptionId: number; subscriptionName: string } | null;
     debtMovement: { debtId: number; kind: 'opening' | 'repayment'; direction: MoneyDebtDirection; personName: string } | null;

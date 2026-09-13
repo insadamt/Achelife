@@ -170,6 +170,8 @@ class ArchiveSemanticValidator
         } elseif ($table === 'money_transactions') {
             $this->transactions[(int) $row['id']] = $row;
             $this->validateTransferFee($row);
+        } elseif ($table === 'money_transaction_tags' && $this->transactions[(int) $row['transaction_id']]['type'] === 'transfer') {
+            throw new InvalidAccountArchive('A Transfer cannot contain Tags.');
         } elseif ($table === 'money_debts') {
             $this->validateMoneyDebt($row);
         } elseif ($table === 'money_debt_settlements') {
@@ -210,7 +212,7 @@ class ArchiveSemanticValidator
         if ((int) $row['amount_minor'] < 1
             || $fee < 0
             || ($row['type'] !== 'transfer' && $fee !== 0)
-            || ($row['type'] === 'transfer' && ($row['destination_account_id'] === null || $row['category_id'] !== null || $row['subcategory_id'] !== null))
+            || ($row['type'] === 'transfer' && ($row['destination_account_id'] === null || $row['category_id'] !== null || $row['subcategory_id'] !== null || ($row['merchant_id'] ?? null) !== null))
             || ($row['type'] !== 'transfer' && $row['destination_account_id'] !== null)) {
             throw new InvalidAccountArchive('A Money transaction contains an invalid Transfer fee.');
         }

@@ -134,6 +134,18 @@ class User extends Authenticatable
         return $this->hasMany(MoneySubcategory::class);
     }
 
+    /** @return HasMany<MoneyMerchant, $this> */
+    public function moneyMerchants(): HasMany
+    {
+        return $this->hasMany(MoneyMerchant::class);
+    }
+
+    /** @return HasMany<MoneyTag, $this> */
+    public function moneyTags(): HasMany
+    {
+        return $this->hasMany(MoneyTag::class);
+    }
+
     /** @return HasMany<MoneyTransaction, $this> */
     public function moneyTransactions(): HasMany
     {

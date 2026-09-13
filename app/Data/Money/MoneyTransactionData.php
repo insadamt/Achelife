@@ -17,5 +17,8 @@ readonly class MoneyTransactionData
         public CarbonImmutable $date,
         public ?string $note,
         public int $feeMinor = 0,
+        public ?string $merchantName = null,
+        /** @var list<string> */
+        public array $tagNames = [],
     ) {}
 }

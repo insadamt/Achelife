@@ -4,6 +4,8 @@ namespace App\Support\Money;
 
 use App\Models\MoneyAccount;
 use App\Models\MoneyCategory;
+use App\Models\MoneyMerchant;
+use App\Models\MoneyTag;
 use App\Models\MoneyTransaction;
 
 class MoneyViewDataFactory
@@ -55,6 +57,29 @@ class MoneyViewDataFactory
     }
 
     /** @return array<string, mixed> */
+    public function merchant(MoneyMerchant $merchant): array
+    {
+        return [
+            'id' => $merchant->id,
+            'name' => $merchant->name,
+            'archivedAt' => $merchant->archived_at?->toIso8601String(),
+            'hasHistory' => ($merchant->transactions_count ?? $merchant->transactions()->count()) > 0,
+        ];
+    }
+
+    /** @return array<string, mixed> */
+    public function tag(MoneyTag $tag): array
+    {
+        return [
+            'id' => $tag->id,
+            'name' => $tag->name,
+            'color' => $tag->color,
+            'archivedAt' => $tag->archived_at?->toIso8601String(),
+            'hasHistory' => ($tag->transactions_count ?? $tag->transactions()->count()) > 0,
+        ];
+    }
+
+    /** @return array<string, mixed> */
     public function transaction(MoneyTransaction $transaction): array
     {
         return [
@@ -87,6 +112,17 @@ class MoneyViewDataFactory
                 'name' => $transaction->subcategory->name,
                 'archived' => $transaction->subcategory->archived_at !== null,
             ] : null,
+            'merchant' => $transaction->merchant ? [
+                'id' => $transaction->merchant->id,
+                'name' => $transaction->merchant->name,
+                'archivedAt' => $transaction->merchant->archived_at?->toIso8601String(),
+            ] : null,
+            'tags' => $transaction->tags->map(fn ($tag): array => [
+                'id' => $tag->id,
+                'name' => $tag->name,
+                'color' => $tag->color,
+                'archivedAt' => $tag->archived_at?->toIso8601String(),
+            ])->values(),
             'createdAt' => $transaction->created_at->toIso8601String(),
             'subscriptionOccurrence' => $transaction->subscriptionOccurrence ? [
                 'id' => $transaction->subscriptionOccurrence->id,

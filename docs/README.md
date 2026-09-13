@@ -8,6 +8,8 @@
 
 [Money debts](money-debts.md) — payable and receivable agreements, repayments, Account effects, statistics, and portability.
 
+[Money merchants and tags](v1.1.0/phase-19-money-merchants-and-tags.md) — reusable transaction Merchants, colored Tags, History filters, and portability.
+
 ## Run your instance
 
 [Self-hosting](../SELF_HOSTING.md) — install, update, back up, restore, and troubleshoot.

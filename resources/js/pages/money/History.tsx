@@ -8,7 +8,7 @@ import { ActivityList } from '../../features/money/ActivityList';
 import { MoneyDrawer } from '../../features/money/MoneyDrawer';
 import { MoneyPageHeader } from '../../features/money/MoneyPageHeader';
 import { TransactionDrawer } from '../../features/money/TransactionDrawer';
-import type { MoneyAccountData, MoneyCategoryData, MoneyTransactionData, MoneyTransactionType } from '../../features/money/types';
+import type { MoneyAccountData, MoneyCategoryData, MoneyMerchantData, MoneyTagData, MoneyTransactionData, MoneyTransactionType } from '../../features/money/types';
 
 interface PaginatedTransactions {
     data: MoneyTransactionData[];
@@ -22,21 +22,25 @@ interface PaginatedTransactions {
 }
 
 interface RawAccount { id: number; name: string; currency: string; archived_at: string | null }
-interface HistoryFilters { type?: MoneyTransactionType | 'debt'; currency?: string; account?: string | number; category?: string | number; subcategory?: string | number; from?: string; to?: string; search?: string }
-interface EditableHistoryFilters { type: string; currency: string; account: string; category: string; subcategory: string; from: string; to: string; search: string }
-interface HistoryProps { today: string; transactions: PaginatedTransactions; accounts: RawAccount[]; categories: MoneyCategoryData[]; filters: HistoryFilters }
+interface HistoryFilters { type?: MoneyTransactionType | 'debt'; currency?: string; account?: string | number; category?: string | number; subcategory?: string | number; merchant?: string | number; tag?: string | number; from?: string; to?: string; search?: string }
+interface EditableHistoryFilters { type: string; currency: string; account: string; category: string; subcategory: string; merchant: string; tag: string; from: string; to: string; search: string }
+interface HistoryProps { today: string; transactions: PaginatedTransactions; accounts: RawAccount[]; categories: MoneyCategoryData[]; merchants: MoneyMerchantData[]; tags: MoneyTagData[]; filters: HistoryFilters }
 
 function FilterFields({
     accounts,
     categories,
     filters,
+    merchants,
     onChange,
+    tags,
     today,
 }: {
     accounts: RawAccount[];
     categories: MoneyCategoryData[];
     filters: EditableHistoryFilters;
+    merchants: MoneyMerchantData[];
     onChange: (filters: EditableHistoryFilters) => void;
+    tags: MoneyTagData[];
     today: string;
 }) {
     const selectedCategory = categories.find((category) => category.id === Number(filters.category));
@@ -51,6 +55,8 @@ function FilterFields({
             <SelectField label="Account" onChange={(event) => onChange({ ...filters, account: event.target.value })} options={[{ label: 'All Accounts', value: '' }, ...scopedAccounts.map((account) => ({ label: `${account.name}${account.archived_at ? ' · Archived' : ''}`, value: String(account.id) }))]} value={filters.account} />
             <SelectField label="Category" onChange={(event) => onChange({ ...filters, category: event.target.value, subcategory: '' })} options={[{ label: 'All Categories', value: '' }, ...categories.map((category) => ({ label: `${category.name}${category.archivedAt ? ' · Archived' : ''}`, value: String(category.id) }))]} value={filters.category} />
             <SelectField disabled={!selectedCategory} label="Subcategory" onChange={(event) => onChange({ ...filters, subcategory: event.target.value })} options={[{ label: selectedCategory ? 'All Subcategories' : 'Choose a Category first', value: '' }, ...subcategories.map((subcategory) => ({ label: subcategory.name, value: String(subcategory.id) }))]} value={filters.subcategory} />
+            <SelectField label="Merchant" onChange={(event) => onChange({ ...filters, merchant: event.target.value })} options={[{ label: 'All Merchants', value: '' }, ...merchants.map((merchant) => ({ label: merchant.name, value: String(merchant.id) }))]} value={filters.merchant} />
+            <SelectField label="Tag" onChange={(event) => onChange({ ...filters, tag: event.target.value })} options={[{ label: 'All Tags', value: '' }, ...tags.map((tag) => ({ label: tag.name, value: String(tag.id) }))]} value={filters.tag} />
             <Field label="From" max={today} onChange={(event) => onChange({ ...filters, from: event.target.value })} type="date" value={filters.from} />
             <Field label="To" max={today} onChange={(event) => onChange({ ...filters, to: event.target.value })} type="date" value={filters.to} />
         </>
@@ -62,12 +68,16 @@ function appliedFilterLabels(props: HistoryProps): string[] {
     const account = props.accounts.find((item) => item.id === Number(props.filters.account));
     const category = props.categories.find((item) => item.id === Number(props.filters.category));
     const subcategory = category?.subcategories.find((item) => item.id === Number(props.filters.subcategory));
+    const merchant = props.merchants.find((item) => item.id === Number(props.filters.merchant));
+    const tag = props.tags.find((item) => item.id === Number(props.filters.tag));
 
     if (props.filters.type) labels.push(props.filters.type);
     if (props.filters.currency) labels.push(props.filters.currency);
     if (account) labels.push(account.name);
     if (category) labels.push(category.name);
     if (subcategory) labels.push(subcategory.name);
+    if (merchant) labels.push(merchant.name);
+    if (tag) labels.push(`#${tag.name}`);
     if (props.filters.from) labels.push(`From ${props.filters.from}`);
     if (props.filters.to) labels.push(`To ${props.filters.to}`);
 
@@ -81,6 +91,8 @@ export default function MoneyHistory(props: HistoryProps) {
         account: String(props.filters.account ?? ''),
         category: String(props.filters.category ?? ''),
         subcategory: String(props.filters.subcategory ?? ''),
+        merchant: String(props.filters.merchant ?? ''),
+        tag: String(props.filters.tag ?? ''),
         from: props.filters.from ?? '',
         to: props.filters.to ?? '',
         search: props.filters.search ?? '',
@@ -109,6 +121,8 @@ export default function MoneyHistory(props: HistoryProps) {
             account: filters.account,
             category: filters.category,
             subcategory: filters.subcategory,
+            merchant: filters.merchant,
+            tag: filters.tag,
             from: filters.from,
             to: filters.to,
             search: filters.search,
@@ -116,7 +130,7 @@ export default function MoneyHistory(props: HistoryProps) {
     }
 
     function clearFilters() {
-        const clearedFilters = { type: '', currency: '', account: '', category: '', subcategory: '', from: '', to: '', search: '' };
+        const clearedFilters = { type: '', currency: '', account: '', category: '', subcategory: '', merchant: '', tag: '', from: '', to: '', search: '' };
         setFilters(clearedFilters);
         router.get('/money/history', {}, { preserveState: true, replace: true, onSuccess: () => setFiltersOpen(false) });
     }
@@ -130,7 +144,7 @@ export default function MoneyHistory(props: HistoryProps) {
                 <form className="flex flex-col gap-3 lg:grid lg:grid-cols-[minmax(14rem,2fr)_repeat(5,minmax(7rem,1fr))_auto] lg:items-end" onSubmit={applyFilters}>
                     <div className="relative">
                         <Search aria-hidden="true" className="pointer-events-none absolute top-[2.8rem] left-4 text-muted" size={18} />
-                        <Field className="pl-11" label="Search" onChange={(event) => setFilters({ ...filters, search: event.target.value })} placeholder="Notes, categories, or People" value={filters.search} />
+                        <Field className="pl-11" label="Search" onChange={(event) => setFilters({ ...filters, search: event.target.value })} placeholder="Notes, categories, Merchants, or Tags" value={filters.search} />
                     </div>
                     <div className="hidden lg:contents">
                         <SelectField label="Type" onChange={(event) => setFilters({ ...filters, type: event.target.value })} options={[{ label: 'All types', value: '' }, { label: 'Income', value: 'income' }, { label: 'Expense', value: 'expense' }, { label: 'Transfer', value: 'transfer' }, { label: 'Debt', value: 'debt' }]} value={filters.type} />
@@ -146,7 +160,9 @@ export default function MoneyHistory(props: HistoryProps) {
                         </Button>
                     </div>
                 </form>
-                <div className="mt-4 hidden grid-cols-2 gap-4 border-t border-border-subtle pt-4 lg:grid xl:grid-cols-[1fr_1fr_auto]">
+                <div className="mt-4 hidden grid-cols-2 gap-4 border-t border-border-subtle pt-4 lg:grid xl:grid-cols-[1fr_1fr_1fr_1fr_auto]">
+                    <SelectField label="Merchant" onChange={(event) => setFilters({ ...filters, merchant: event.target.value })} options={[{ label: 'All Merchants', value: '' }, ...props.merchants.map((merchant) => ({ label: merchant.name, value: String(merchant.id) }))]} value={filters.merchant} />
+                    <SelectField label="Tag" onChange={(event) => setFilters({ ...filters, tag: event.target.value })} options={[{ label: 'All Tags', value: '' }, ...props.tags.map((tag) => ({ label: tag.name, value: String(tag.id) }))]} value={filters.tag} />
                     <Field label="From" max={props.today} onChange={(event) => setFilters({ ...filters, from: event.target.value })} type="date" value={filters.from} />
                     <Field label="To" max={props.today} onChange={(event) => setFilters({ ...filters, to: event.target.value })} type="date" value={filters.to} />
                     <div className="flex items-end"><Button onClick={clearFilters} variant="ghost"><X aria-hidden="true" size={15} />Clear all</Button></div>
@@ -181,14 +197,14 @@ export default function MoneyHistory(props: HistoryProps) {
 
             <MoneyDrawer onClose={() => setFiltersOpen(false)} open={filtersOpen} title="Filter history">
                 <form className="space-y-5" onSubmit={applyFilters}>
-                    <FilterFields accounts={props.accounts} categories={props.categories} filters={filters} onChange={setFilters} today={props.today} />
+                    <FilterFields accounts={props.accounts} categories={props.categories} filters={filters} merchants={props.merchants} onChange={setFilters} tags={props.tags} today={props.today} />
                     <div className="flex gap-2 pt-2">
                         <Button className="flex-1" type="submit"><SlidersHorizontal aria-hidden="true" size={16} />Apply filters</Button>
                         <Button onClick={clearFilters} variant="ghost"><X aria-hidden="true" size={15} />Clear</Button>
                     </div>
                 </form>
             </MoneyDrawer>
-            {selected && <TransactionDrawer accounts={drawerAccounts} categories={props.categories} onClose={() => setSelected(null)} today={props.today} transaction={selected} />}
+            {selected && <TransactionDrawer accounts={drawerAccounts} categories={props.categories} merchants={props.merchants} onClose={() => setSelected(null)} tags={props.tags} today={props.today} transaction={selected} />}
         </div>
     );
 }

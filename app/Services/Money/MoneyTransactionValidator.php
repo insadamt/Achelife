@@ -12,6 +12,7 @@ use App\Models\MoneySubcategory;
 use App\Models\MoneyTransaction;
 use App\Models\User;
 use App\Services\Calendar\UserCalendar;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
 class MoneyTransactionValidator
@@ -37,6 +38,8 @@ class MoneyTransactionValidator
             $this->fail('date', 'Future Money transactions are not available in Phase 6.');
         }
 
+        $this->validateMetadata($data);
+
         $account = $this->account($user, $data->accountId, 'account_id');
         $this->requireActiveUnlessUnchanged($account, $existing?->account_id ?? $retained?->accountId, 'account_id');
 
@@ -55,8 +58,8 @@ class MoneyTransactionValidator
         ?MoneyTransaction $existing,
         ?MoneySelectionSnapshot $retained,
     ): array {
-        if ($data->categoryId !== null || $data->subcategoryId !== null) {
-            $this->fail('category_id', 'Transfers do not use Categories or Subcategories.');
+        if ($data->categoryId !== null || $data->subcategoryId !== null || $data->merchantName !== null || $data->tagNames !== []) {
+            $this->fail('category_id', 'Transfers do not use Categories, Subcategories, Merchants, or Tags.');
         }
 
         if ($data->destinationAccountId === null) {
@@ -121,6 +124,27 @@ class MoneyTransactionValidator
         }
 
         return ['account' => $account, 'destination' => null, 'category' => $category, 'subcategory' => $subcategory];
+    }
+
+    private function validateMetadata(MoneyTransactionData $data): void
+    {
+        if ($data->merchantName !== null && mb_strlen(trim($data->merchantName)) > 120) {
+            $this->fail('merchant', 'The Merchant name may not exceed 120 characters.');
+        }
+
+        if (count($data->tagNames) > 10) {
+            $this->fail('tags', 'A transaction may have at most 10 Tags.');
+        }
+
+        $normalizedTags = [];
+        foreach ($data->tagNames as $name) {
+            $normalized = Str::lower(preg_replace('/\s+/u', ' ', trim($name)) ?? trim($name));
+            if ($normalized === '' || mb_strlen(trim($name)) > 50 || isset($normalizedTags[$normalized])) {
+                $this->fail('tags', 'Tags must be unique names between 1 and 50 characters.');
+            }
+
+            $normalizedTags[$normalized] = true;
+        }
     }
 
     private function account(User $user, int $id, string $field): MoneyAccount

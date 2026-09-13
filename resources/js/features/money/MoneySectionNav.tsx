@@ -1,16 +1,16 @@
 import { Link } from '@inertiajs/react';
-import { BarChart3, CalendarClock, HandCoins, LayoutDashboard, ReceiptText, Tags } from 'lucide-react';
+import { BarChart3, CalendarClock, HandCoins, LayoutDashboard, ReceiptText, Shapes } from 'lucide-react';
 
 import { classNames } from '../../components/ui/classNames';
 
-type MoneySection = 'overview' | 'history' | 'debts' | 'subscriptions' | 'categories' | 'statistics';
+type MoneySection = 'overview' | 'history' | 'debts' | 'subscriptions' | 'organization' | 'statistics';
 
 const sections: Array<{ href: string; icon: typeof LayoutDashboard; label: string; value: MoneySection }> = [
     { href: '/money', icon: LayoutDashboard, label: 'Overview', value: 'overview' },
     { href: '/money/history', icon: ReceiptText, label: 'History', value: 'history' },
     { href: '/money/debts', icon: HandCoins, label: 'Debts', value: 'debts' },
     { href: '/money/subscriptions', icon: CalendarClock, label: 'Subscriptions', value: 'subscriptions' },
-    { href: '/money/categories', icon: Tags, label: 'Categories', value: 'categories' },
+    { href: '/money/organization', icon: Shapes, label: 'Organization', value: 'organization' },
     { href: '/money/statistics', icon: BarChart3, label: 'Statistics', value: 'statistics' },
 ];
 

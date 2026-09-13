@@ -6,7 +6,7 @@ Achelife account portability copies or migrates one user-owned snapshot between 
 
 Every archive contains private Diary writing, People notes, Money balances, transactions, Transfer fees, and Subscription history. Treat an archive like a password vault: transfer it through a trusted channel, retain only the copies that are needed, and store it encrypted when the surrounding storage is not already protected.
 
-## Archive format version 1
+## Archive format versions
 
 Exports use the filename suffix `.achelife.zip`. The ZIP contains:
 
@@ -14,11 +14,11 @@ Exports use the filename suffix `.achelife.zip`. The ZIP contains:
 - `checksums.json`;
 - one NDJSON file per portable table under `tables/`.
 
-`archive_format_version` is independent from `source_application_version`. Format version 1 is frozen around the Phase 11–14 schema. A newer format is rejected with “Update Achelife first.” An older format is accepted only when a named adapter is registered; there is no implicit best-effort import.
+`archive_format_version` is independent from `source_application_version`. Format version 1 is frozen around the Phase 11–14 schema, version 2 adds Money Debts, and version 3 adds Money Merchants and Tags. A newer format is rejected with “Update Achelife first.” An older format is accepted only when an explicit compatibility path is registered; there is no implicit best-effort import.
 
 The manifest records UTC creation time, the source-local creation date, application and format versions, saved timezone, immutable calendar start, long-term rollover preference, latest Season number/dates/Rank/SP/finalization state, exact table counts, module counts, and the declared file list. `checksums.json` contains a SHA-256 digest for the manifest and every NDJSON file.
 
-The dependency order is account profile; Seasons and intermissions; Task series, exclusions, Tasks, subtasks, and reschedules; Habits, definition versions, occurrences, and settings; People, Diary entries, mentions, and settings; Laws and Violations; Objectives; Money Accounts, Categories, Subcategories, Subscriptions, transactions, occurrences, and settings. Transfer `fee_minor`, stable preset keys, occurrence selection and payment-mode snapshots, linked transactions, skipped/paid state, automatic retry blocks, closeout reflection, and `recap_seen_at` are retained exactly.
+The dependency order is account profile; Seasons and intermissions; Task series, exclusions, Tasks, subtasks, and reschedules; Habits, definition versions, occurrences, and settings; People, Diary entries, mentions, and settings; Laws and Violations; Objectives; Money Accounts, Categories, Subcategories, Merchants, Tags, Subscriptions, transactions, transaction-Tag links, occurrences, Debts, settlements, and settings. Transfer `fee_minor`, stable preset keys, Merchant and Tag relationships, occurrence selection and payment-mode snapshots, linked transactions, skipped/paid state, automatic retry blocks, closeout reflection, and `recap_seen_at` are retained exactly when their archive format supports them.
 
 The safe profile row includes only domain identity and calendar settings. Email, password hash, email verification state, remember token, password-reset tokens, sessions, cache, queues, application keys, environment configuration, and server secrets are excluded.
 

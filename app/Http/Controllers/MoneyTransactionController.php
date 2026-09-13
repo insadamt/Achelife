@@ -52,6 +52,8 @@ class MoneyTransactionController extends Controller
             date: CarbonImmutable::parse($validated['date']),
             note: $validated['note'] ?? null,
             feeMinor: $amount->toMinorUnits($validated['fee'] ?? '0'),
+            merchantName: isset($validated['merchant']) && trim($validated['merchant']) !== '' ? $validated['merchant'] : null,
+            tagNames: $validated['tags'] ?? [],
         );
     }
 }

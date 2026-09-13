@@ -12,13 +12,15 @@ import { MoneyDrawer } from '../../../features/money/MoneyDrawer';
 import { MoneyQuickActions } from '../../../features/money/MoneyQuickActions';
 import { TransactionDrawer } from '../../../features/money/TransactionDrawer';
 import { formatMinorUnits } from '../../../features/money/moneyPresentation';
-import type { MoneyAccountData, MoneyCategoryData, MoneyTransactionData, MoneyTransactionType } from '../../../features/money/types';
+import type { MoneyAccountData, MoneyCategoryData, MoneyMerchantOptionData, MoneyTagData, MoneyTransactionData, MoneyTransactionType } from '../../../features/money/types';
 
 interface AccountShowProps {
     today: string;
     account: MoneyAccountData;
     accounts: MoneyAccountData[];
     categories: MoneyCategoryData[];
+    merchants: MoneyMerchantOptionData[];
+    tags: MoneyTagData[];
     transactions: MoneyTransactionData[];
 }
 
@@ -130,8 +132,8 @@ export default function AccountShow(props: AccountShowProps) {
             />
 
             {editingAccount && <AccountFormDrawer account={props.account} onClose={() => setEditingAccount(false)} />}
-            {creatingType && <TransactionDrawer accounts={props.accounts} categories={props.categories} initialAccountId={props.account.id} initialType={creatingType} onClose={() => setCreatingType(null)} today={props.today} />}
-            {selectedTransaction && <TransactionDrawer accounts={props.accounts} categories={props.categories} initialAccountId={props.account.id} onClose={() => setSelectedTransaction(null)} today={props.today} transaction={selectedTransaction} />}
+            {creatingType && <TransactionDrawer accounts={props.accounts} categories={props.categories} initialAccountId={props.account.id} initialType={creatingType} merchants={props.merchants} onClose={() => setCreatingType(null)} tags={props.tags} today={props.today} />}
+            {selectedTransaction && <TransactionDrawer accounts={props.accounts} categories={props.categories} initialAccountId={props.account.id} merchants={props.merchants} onClose={() => setSelectedTransaction(null)} tags={props.tags} today={props.today} transaction={selectedTransaction} />}
         </div>
     );
 }

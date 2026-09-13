@@ -6,9 +6,10 @@ use App\Enums\MoneyTransactionType;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
-#[Fillable(['user_id', 'type', 'amount_minor', 'fee_minor', 'account_id', 'destination_account_id', 'category_id', 'subcategory_id', 'transaction_date', 'note'])]
+#[Fillable(['user_id', 'type', 'amount_minor', 'fee_minor', 'account_id', 'destination_account_id', 'category_id', 'subcategory_id', 'merchant_id', 'transaction_date', 'note'])]
 class MoneyTransaction extends Model
 {
     /** @return BelongsTo<User, $this> */
@@ -39,6 +40,19 @@ class MoneyTransaction extends Model
     public function subcategory(): BelongsTo
     {
         return $this->belongsTo(MoneySubcategory::class, 'subcategory_id');
+    }
+
+    /** @return BelongsTo<MoneyMerchant, $this> */
+    public function merchant(): BelongsTo
+    {
+        return $this->belongsTo(MoneyMerchant::class, 'merchant_id');
+    }
+
+    /** @return BelongsToMany<MoneyTag, $this> */
+    public function tags(): BelongsToMany
+    {
+        return $this->belongsToMany(MoneyTag::class, 'money_transaction_tags', 'transaction_id', 'tag_id')
+            ->withTimestamps();
     }
 
     /** @return HasOne<MoneySubscriptionOccurrence, $this> */

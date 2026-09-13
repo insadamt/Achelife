@@ -12,13 +12,15 @@ import { MoneyFloatingActionMenu } from '../../features/money/MoneyFloatingActio
 import { MoneyPageHeader } from '../../features/money/MoneyPageHeader';
 import { MoneySubscriptionSummary } from '../../features/money/MoneySubscriptionSummary';
 import { TransactionDrawer } from '../../features/money/TransactionDrawer';
-import type { MoneyAccountData, MoneyCategoryData, MoneySubscriptionOccurrenceData, MoneyTransactionData, MoneyTransactionType } from '../../features/money/types';
+import type { MoneyAccountData, MoneyCategoryData, MoneyMerchantOptionData, MoneySubscriptionOccurrenceData, MoneyTagData, MoneyTransactionData, MoneyTransactionType } from '../../features/money/types';
 
 interface MoneyIndexProps {
     today: string;
     accounts: MoneyAccountData[];
     totalsByCurrency: Record<string, number>;
     categories: MoneyCategoryData[];
+    merchants: MoneyMerchantOptionData[];
+    tags: MoneyTagData[];
     recentTransactions: MoneyTransactionData[];
     dueSubscriptions: MoneySubscriptionOccurrenceData[];
     upcomingSubscriptions: MoneySubscriptionOccurrenceData[];
@@ -83,8 +85,8 @@ export default function MoneyIndex(props: MoneyIndexProps) {
             </section>
 
             {accountFormOpen && <AccountFormDrawer onClose={() => setAccountFormOpen(false)} />}
-            {creatingType && <TransactionDrawer accounts={props.accounts} categories={props.categories} initialType={creatingType} onClose={() => setCreatingType(null)} today={props.today} />}
-            {selectedTransaction && <TransactionDrawer accounts={props.accounts} categories={props.categories} onClose={() => setSelectedTransaction(null)} today={props.today} transaction={selectedTransaction} />}
+            {creatingType && <TransactionDrawer accounts={props.accounts} categories={props.categories} initialType={creatingType} merchants={props.merchants} onClose={() => setCreatingType(null)} tags={props.tags} today={props.today} />}
+            {selectedTransaction && <TransactionDrawer accounts={props.accounts} categories={props.categories} merchants={props.merchants} onClose={() => setSelectedTransaction(null)} tags={props.tags} today={props.today} transaction={selectedTransaction} />}
             {!accountFormOpen && !creatingType && !selectedTransaction && <MoneyFloatingActionMenu actions={[
                 { icon: ArrowDownLeft, label: 'Income', onSelect: () => setCreatingType('income'), tone: 'income' },
                 { icon: ArrowUpRight, label: 'Expense', onSelect: () => setCreatingType('expense'), tone: 'expense' },

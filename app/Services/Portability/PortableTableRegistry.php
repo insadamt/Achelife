@@ -36,8 +36,20 @@ class PortableTableRegistry
             $this->table('money_accounts', 'money', ['id', 'user_id', 'name', 'currency', 'initial_balance_minor', 'theme_index', 'visual_identifier', 'archived_at', 'created_at', 'updated_at']),
             $this->table('money_categories', 'money', ['id', 'user_id', 'type', 'name', 'preset_key', 'archived_at', 'created_at', 'updated_at']),
             $this->table('money_subcategories', 'money', ['id', 'user_id', 'category_id', 'name', 'preset_key', 'archived_at', 'created_at', 'updated_at'], ['category_id' => 'money_categories']),
+            ...($formatVersion >= 3 ? [
+                $this->table('money_merchants', 'money', ['id', 'user_id', 'name', 'normalized_name', 'archived_at', 'created_at', 'updated_at']),
+                $this->table('money_tags', 'money', ['id', 'user_id', 'name', 'normalized_name', 'color', 'archived_at', 'created_at', 'updated_at']),
+            ] : []),
             $this->table('money_subscriptions', 'subscriptions', ['id', 'user_id', 'name', 'amount_minor', 'account_id', 'category_id', 'subcategory_id', 'note', 'starts_on', 'materialize_from', 'ends_on', 'recurrence', 'payment_mode', 'status', 'anchor_day', 'paused_at', 'ended_at', 'created_at', 'updated_at'], ['account_id' => 'money_accounts', 'category_id' => 'money_categories', 'subcategory_id' => 'money_subcategories']),
-            $this->table('money_transactions', 'money', ['id', 'user_id', 'type', 'amount_minor', 'fee_minor', 'account_id', 'destination_account_id', 'category_id', 'subcategory_id', 'transaction_date', 'note', 'created_at', 'updated_at'], ['account_id' => 'money_accounts', 'destination_account_id' => 'money_accounts', 'category_id' => 'money_categories', 'subcategory_id' => 'money_subcategories']),
+            $this->table(
+                'money_transactions',
+                'money',
+                ['id', 'user_id', 'type', 'amount_minor', 'fee_minor', 'account_id', 'destination_account_id', 'category_id', 'subcategory_id', ...($formatVersion >= 3 ? ['merchant_id'] : []), 'transaction_date', 'note', 'created_at', 'updated_at'],
+                ['account_id' => 'money_accounts', 'destination_account_id' => 'money_accounts', 'category_id' => 'money_categories', 'subcategory_id' => 'money_subcategories', ...($formatVersion >= 3 ? ['merchant_id' => 'money_merchants'] : [])],
+            ),
+            ...($formatVersion >= 3 ? [
+                $this->table('money_transaction_tags', 'money', ['id', 'user_id', 'transaction_id', 'tag_id', 'created_at', 'updated_at'], ['transaction_id' => 'money_transactions', 'tag_id' => 'money_tags']),
+            ] : []),
             ...($formatVersion >= 2 ? [
                 $this->table('money_debts', 'debts', ['id', 'user_id', 'person_id', 'direction', 'original_amount_minor', 'currency', 'opened_on', 'due_on', 'note', 'opening_transaction_id', 'created_at', 'updated_at'], ['person_id' => 'people', 'opening_transaction_id' => 'money_transactions']),
                 $this->table('money_debt_settlements', 'debts', ['id', 'user_id', 'debt_id', 'type', 'amount_minor', 'settled_on', 'note', 'transaction_id', 'created_at', 'updated_at'], ['debt_id' => 'money_debts', 'transaction_id' => 'money_transactions']),
