@@ -83,6 +83,7 @@ export function SubtaskEditor({ subtasks, onChange, onToggleCompletion, error }:
                 <label className="sr-only" htmlFor={addInputId}>Add a subtask</label>
                 <input
                     autoComplete="off"
+                    autoFocus
                     aria-describedby={draftError ? draftErrorId : undefined}
                     aria-invalid={Boolean(draftError)}
                     className="min-h-10 min-w-0 flex-1 bg-transparent px-1 text-sm font-semibold text-foreground outline-none placeholder:text-muted"

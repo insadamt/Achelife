@@ -7,9 +7,9 @@ import { Button, Dialog, Drawer } from '../../components/ui';
 import { classNames } from '../../components/ui/classNames';
 import { StartFocusButton } from '../focus/StartFocusButton';
 import { formatCompletionDate, formatTaskDateLong } from './taskPresentation';
-import { TaskEditorDialog } from './TaskEditorDialog';
+import { TaskEditorPanel } from './TaskEditorPanel';
 import { TaskFocusHistory } from './TaskFocusHistory';
-import type { TaskEditor } from './TaskEditorDialog';
+import type { TaskEditorTarget } from './TaskEditorPanel';
 import type { TaskExplorerViewData, TaskViewData } from './types';
 
 type DeleteAction = 'occurrence' | 'future' | null;
@@ -22,10 +22,15 @@ interface TaskDetailsDrawerProps {
 }
 
 export function TaskDetailsDrawer({ task, explorer, today, onClose }: TaskDetailsDrawerProps) {
-    const [editor, setEditor] = useState<TaskEditor | null>(null);
+    const [editor, setEditor] = useState<TaskEditorTarget | null>(null);
     const [menuOpen, setMenuOpen] = useState(false);
     const [deleteAction, setDeleteAction] = useState<DeleteAction>(null);
     const completed = task.state === 'completed';
+    const fieldEditor = editor?.kind === 'focus-session' ? null : editor?.kind;
+    const focusSessionTarget = editor?.kind === 'focus-session' ? editor.target : null;
+    const selectedFocusSessionId = focusSessionTarget === null || focusSessionTarget.action === 'create'
+        ? null
+        : focusSessionTarget.session.id;
 
     function closeTopLayer() {
         if (deleteAction) {
@@ -54,16 +59,19 @@ export function TaskDetailsDrawer({ task, explorer, today, onClose }: TaskDetail
     }
 
     return (
-        <Drawer onClose={closeTopLayer} open title="Task">
-            <div className="relative">
+        <Drawer onClose={closeTopLayer} open size={editor ? 'large' : 'default'} title={editor ? 'Task workspace' : 'Task'}>
+            <div className={classNames(editor && 'lg:grid lg:grid-cols-[minmax(20rem,0.82fr)_minmax(22rem,1.18fr)] lg:items-start')}>
+                <div className={classNames('relative min-w-0', editor && 'hidden lg:block lg:pr-6')}>
                 <div className="flex items-start gap-3">
                     <button
+                        aria-pressed={fieldEditor === 'title'}
                         className={classNames(
-                            'focus-ring min-w-0 flex-1 rounded-xl text-left',
+                            'focus-ring min-w-0 flex-1 rounded-xl px-2 py-1 text-left transition-colors',
                             task.canEdit ? 'hover:text-accent-ink' : 'cursor-default',
+                            fieldEditor === 'title' && 'bg-[color-mix(in_srgb,var(--module-accent)_12%,transparent)] text-accent-ink',
                         )}
                         disabled={!task.canEdit}
-                        onClick={() => setEditor('title')}
+                        onClick={() => setEditor({ kind: 'title' })}
                         type="button"
                     >
                         <span className={classNames('block text-2xl font-bold tracking-[-0.03em]', completed && 'text-secondary line-through')}>{task.title}</span>
@@ -98,23 +106,24 @@ export function TaskDetailsDrawer({ task, explorer, today, onClose }: TaskDetail
                 <div className="mt-7 space-y-3">
                     {!completed && <StartFocusButton taskId={task.id} taskTitle={task.title} />}
 
-                    <DetailSection editable={task.canEdit} icon={<FolderKanban size={19} />} label="Project" onClick={() => setEditor('organization')}>
+                    <DetailSection active={fieldEditor === 'organization'} editable={task.canEdit} icon={<FolderKanban size={19} />} label="Project" onClick={() => setEditor({ kind: 'organization' })}>
                         {task.projectName ?? 'Inbox'}
                     </DetailSection>
 
-                    <DetailSection editable={task.canEdit} icon={<CalendarDays size={19} />} label="Schedule" onClick={() => setEditor('schedule')}>
+                    <DetailSection active={fieldEditor === 'schedule'} editable={task.canEdit} icon={<CalendarDays size={19} />} label="Planning" onClick={() => setEditor({ kind: 'schedule' })}>
                         <span>{formatTaskDateLong(task.scheduledDate)}</span>
+                        <span aria-hidden="true" className="text-border-strong">•</span>
+                        <span className="inline-flex items-center gap-1.5">
+                            <Star aria-hidden="true" fill={task.important ? 'currentColor' : 'none'} size={14} />
+                            {task.important ? 'Important' : 'Not important'}
+                        </span>
+                        <span className="inline-flex basis-full items-center gap-1.5 text-muted">
+                            <Repeat2 aria-hidden="true" size={14} />
+                            {task.recurrence?.label ?? 'Does not repeat'}
+                        </span>
                     </DetailSection>
 
-                    <DetailSection editable={task.canEdit} icon={<Star fill={task.important ? 'currentColor' : 'none'} size={19} />} label="Importance" onClick={() => setEditor('schedule')}>
-                        {task.important ? 'Important' : 'Not important'}
-                    </DetailSection>
-
-                    <DetailSection editable={task.canEdit} icon={<Repeat2 size={19} />} label="Recurrence" onClick={() => setEditor('schedule')}>
-                        {task.recurrence?.label ?? 'Does not repeat'}
-                    </DetailSection>
-
-                    <DetailSection editable={task.canEdit} icon={<ListChecks size={20} />} label="Checklist" onClick={() => setEditor('checklist')}>
+                    <DetailSection active={fieldEditor === 'checklist'} editable={task.canEdit} icon={<ListChecks size={20} />} label="Checklist" onClick={() => setEditor({ kind: 'checklist' })}>
                         {task.totalSubtasks === 0 ? 'None' : (
                             <span className="block w-full space-y-1.5">
                                 <span className="flex items-center justify-between gap-3">
@@ -134,7 +143,7 @@ export function TaskDetailsDrawer({ task, explorer, today, onClose }: TaskDetail
                         )}
                     </DetailSection>
 
-                    <DetailSection editable={task.canEdit} icon={<StickyNote size={19} />} label="Notes" onClick={() => setEditor('notes')}>
+                    <DetailSection active={fieldEditor === 'notes'} editable={task.canEdit} icon={<StickyNote size={19} />} label="Notes" onClick={() => setEditor({ kind: 'notes' })}>
                         <span className="whitespace-pre-wrap">{task.notes || 'None'}</span>
                     </DetailSection>
 
@@ -165,7 +174,14 @@ export function TaskDetailsDrawer({ task, explorer, today, onClose }: TaskDetail
                     </details>
                 )}
 
-                <TaskFocusHistory task={task} />
+                <TaskFocusHistory
+                    activeSessionId={selectedFocusSessionId}
+                    addingSession={focusSessionTarget?.action === 'create'}
+                    onAddSession={() => setEditor({ kind: 'focus-session', target: { action: 'create' } })}
+                    onDeleteSession={(session) => setEditor({ kind: 'focus-session', target: { action: 'delete', session } })}
+                    onEditSession={(session) => setEditor({ kind: 'focus-session', target: { action: 'edit', session } })}
+                    task={task}
+                />
 
                 {task.completionLocked && (
                     <p className="icon-text mt-5 flex items-start gap-2 rounded-2xl border border-border-subtle bg-app p-4 text-sm leading-6 text-muted">
@@ -173,9 +189,10 @@ export function TaskDetailsDrawer({ task, explorer, today, onClose }: TaskDetail
                         Locked with its completed Season.
                     </p>
                 )}
-            </div>
+                </div>
 
-            {editor && <TaskEditorDialog editor={editor} explorer={explorer} key={`${task.id}-${editor}`} onClose={() => setEditor(null)} task={task} today={today} />}
+                {editor && <TaskEditorPanel editor={editor} explorer={explorer} key={taskEditorKey(task.id, editor)} onClose={() => setEditor(null)} task={task} today={today} />}
+            </div>
 
             <Dialog onClose={() => setDeleteAction(null)} open={deleteAction !== null} title={deleteAction === 'future' ? 'Stop future occurrences?' : task.recurrence ? 'Delete this occurrence?' : 'Delete task?'}>
                 <p className="text-sm leading-6 text-secondary">
@@ -192,7 +209,15 @@ export function TaskDetailsDrawer({ task, explorer, today, onClose }: TaskDetail
     );
 }
 
-function DetailSection({ children, editable, icon, label, onClick }: {
+function taskEditorKey(taskId: number, editor: TaskEditorTarget): string {
+    if (editor.kind !== 'focus-session') return `${taskId}-${editor.kind}`;
+    if (editor.target.action === 'create') return `${taskId}-focus-create`;
+
+    return `${taskId}-focus-${editor.target.action}-${editor.target.session.id}`;
+}
+
+function DetailSection({ active = false, children, editable, icon, label, onClick }: {
+    active?: boolean;
     children: ReactNode;
     editable: boolean;
     icon: ReactNode;
@@ -211,7 +236,15 @@ function DetailSection({ children, editable, icon, label, onClick }: {
     );
 
     return editable ? (
-        <button className="focus-ring flex min-h-18 w-full items-center gap-3 rounded-2xl border border-border-subtle bg-app p-3 text-left hover:border-border-strong" onClick={onClick} type="button">
+        <button
+            aria-pressed={active}
+            className={classNames(
+                'focus-ring flex min-h-18 w-full items-center gap-3 rounded-2xl border bg-app p-3 text-left transition-[border-color,background-color,box-shadow] hover:border-border-strong',
+                active && 'border-[var(--module-accent)] bg-[color-mix(in_srgb,var(--module-accent)_8%,var(--app-background))] shadow-[0_0_0_2px_color-mix(in_srgb,var(--module-accent)_12%,transparent)]',
+            )}
+            onClick={onClick}
+            type="button"
+        >
             {content}
         </button>
     ) : (

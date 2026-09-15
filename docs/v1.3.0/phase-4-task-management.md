@@ -8,7 +8,7 @@ Complete the core Task-management experience before adding Focus Time.
 
 - Add plain-text notes to appropriate create and edit flows.
 - Keep notes out of compact Task rows.
-- Extend the existing drawer with title, Project, schedule, importance, recurrence, subtasks, notes, and rescheduling history.
+- Extend the existing drawer with title, Project, schedule, importance, recurrence, subtasks, notes, and rescheduling history. Editing remains inside that drawer: desktop widens into a native divided details-and-editor workspace, while smaller screens switch between details and editing without layering a second modal. The summary pane owns the navigation controls; the editor pane uses the drawer background and divider rather than a floating card treatment.
 - Keep completed Task immutability rules unless an explicitly approved existing behavior says otherwise.
 - Apply recurring Project and notes edits to the selected occurrence and future occurrences only.
 

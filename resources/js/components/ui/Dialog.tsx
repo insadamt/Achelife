@@ -121,7 +121,7 @@ export function Dialog({
         >
             <div
                 className={classNames(
-                    'border border-border-strong bg-elevated shadow-2xl',
+                    'border border-border-strong bg-elevated shadow-2xl transition-[width] duration-300',
                     placement === 'center'
                         ? classNames(
                             'w-full rounded-[var(--radius-panel)] p-5 sm:p-6',
@@ -131,7 +131,10 @@ export function Dialog({
                         )
                         : placement === 'right-card'
                             ? 'h-full w-[min(94vw,30rem)] overflow-y-auto border-y-0 border-r-0 p-5 sm:h-[min(92vh,54rem)] sm:rounded-[var(--radius-panel)] sm:border'
-                            : 'h-full w-[min(94vw,28rem)] overflow-y-auto border-y-0 border-r-0 p-5',
+                            : classNames(
+                                'h-full overflow-y-auto border-y-0 border-r-0 p-5',
+                                size === 'large' ? 'w-[min(96vw,60rem)]' : 'w-[min(94vw,28rem)]',
+                            ),
                 )}
                 ref={dialogRef}
             >

@@ -12,7 +12,7 @@ Show:
 - Completed Focus Session history in user-local time
 - Start Focus when this Task does not own the active timer; active controls remain in the global Dynamic Island
 
-History displays local date, visible start/end range, and actual focused duration. A timer session containing pauses may have a wider wall-clock range than its focused duration.
+History displays local date, visible start/end range, and actual focused duration. A timer session containing pauses may have a wider wall-clock range than its focused duration. Add, edit, and delete actions open in the Task drawer's native editor pane beside the history on larger screens, or replace the summary pane on smaller screens; Focus history does not layer another modal over the Task drawer.
 
 ## Manual sessions
 

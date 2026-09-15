@@ -8,11 +8,12 @@ interface DrawerProps {
     title: string;
     description?: string;
     desktopCard?: boolean;
+    size?: 'default' | 'large';
 }
 
-export function Drawer({ open, onClose, title, description, desktopCard = false, children }: PropsWithChildren<DrawerProps>) {
+export function Drawer({ open, onClose, title, description, desktopCard = false, size = 'default', children }: PropsWithChildren<DrawerProps>) {
     return (
-        <Dialog description={description} onClose={onClose} open={open} placement={desktopCard ? 'right-card' : 'right'} title={title}>
+        <Dialog description={description} onClose={onClose} open={open} placement={desktopCard ? 'right-card' : 'right'} size={size} title={title}>
             {children}
         </Dialog>
     );
