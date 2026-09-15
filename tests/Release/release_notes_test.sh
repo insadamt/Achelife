@@ -56,6 +56,23 @@ grep -Fq '## Changed' "$temporary_directory/v1.2-release-notes.md"
 grep -Fq 'Unified Categories, Merchants, and Tags' "$temporary_directory/v1.2-release-notes.md"
 grep -Fq 'preserving format versions 1 and 2 imports' "$temporary_directory/v1.2-release-notes.md"
 
+cat >"$temporary_directory/v1.3-image-digests.txt" <<EOF
+APP_IMAGE=ghcr.io/insadamt/achelife:1.3.0-rc.1@${digest}
+WEB_IMAGE=ghcr.io/insadamt/achelife-web:1.3.0-rc.1@${digest}
+EOF
+
+sh "$repository_root/scripts/release/write-rc-notes.sh" \
+    1.3.0-rc.1 \
+    "$temporary_directory/v1.3-image-digests.txt" \
+    "$temporary_directory/v1.3-release-notes.md"
+
+grep -Fq 'Achelife v1.3.0 improves Tasks' "$temporary_directory/v1.3-release-notes.md"
+grep -Fq '## Added' "$temporary_directory/v1.3-release-notes.md"
+grep -Fq '## Changed' "$temporary_directory/v1.3-release-notes.md"
+grep -Fq 'Added Folders, Projects, and an Inbox' "$temporary_directory/v1.3-release-notes.md"
+grep -Fq 'persistent global timer' "$temporary_directory/v1.3-release-notes.md"
+grep -Fq 'preserving explicit imports for formats 1 through 4' "$temporary_directory/v1.3-release-notes.md"
+
 if sh "$repository_root/scripts/release/write-rc-notes.sh" \
     1.0.0 \
     "$temporary_directory/image-digests.txt" \
