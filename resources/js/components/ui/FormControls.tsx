@@ -1,5 +1,5 @@
 import { useId } from 'react';
-import type { InputHTMLAttributes, SelectHTMLAttributes } from 'react';
+import type { InputHTMLAttributes, ReactNode, SelectHTMLAttributes } from 'react';
 
 import { classNames } from './classNames';
 
@@ -15,7 +15,8 @@ interface SelectOption {
 
 interface SelectFieldProps extends SelectHTMLAttributes<HTMLSelectElement> {
     label: string;
-    options: SelectOption[];
+    options?: SelectOption[];
+    children?: ReactNode;
     error?: string;
 }
 
@@ -68,7 +69,7 @@ export function Field({ label, error, className, id, ...props }: FieldProps) {
     );
 }
 
-export function SelectField({ label, options, error, className, id, ...props }: SelectFieldProps) {
+export function SelectField({ label, options, children, error, className, id, ...props }: SelectFieldProps) {
     const generatedId = useId();
     const selectId = id ?? generatedId;
     const errorId = `${selectId}-error`;
@@ -83,7 +84,7 @@ export function SelectField({ label, options, error, className, id, ...props }: 
                 id={selectId}
                 {...props}
             >
-                {options.map((option) => (
+                {children ?? options?.map((option) => (
                     <option key={option.value} value={option.value}>
                         {option.label}
                     </option>

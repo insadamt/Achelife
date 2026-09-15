@@ -1,5 +1,6 @@
 import type { RecordedViolationFlashData } from '../features/constitution/types';
 import type { ProgressPanelData } from '../features/progress/types';
+import type { FocusSessionData } from '../features/focus/types';
 
 export interface AuthenticatedUser {
     id: number;
@@ -16,5 +17,6 @@ export interface SharedPageProps {
         constitutionViolation: RecordedViolationFlashData | null;
     };
     progressPanel: ProgressPanelData | null;
+    activeFocusSession: FocusSessionData | null;
     [key: string]: unknown;
 }

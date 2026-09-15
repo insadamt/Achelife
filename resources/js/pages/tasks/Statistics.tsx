@@ -3,7 +3,7 @@ import { ArrowLeft } from 'lucide-react';
 import type { CSSProperties } from 'react';
 
 import { TaskStatisticsPanel } from '../../features/tasks/TaskStatisticsPanel';
-import type { TaskStatisticsData } from '../../features/tasks/TaskStatisticsPanel';
+import type { TaskStatisticsData } from '../../features/tasks/taskStatisticsTypes';
 
 export default function TaskStatisticsPage({ statistics }: { statistics: TaskStatisticsData }) {
     return (

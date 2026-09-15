@@ -13,6 +13,17 @@ class ArchiveRowAdapter
             $row['icon'] = 'check';
         }
 
+        if ($formatVersion <= 3 && $table === 'task_series') {
+            $row['task_project_id'] = null;
+            $row['notes'] = null;
+        }
+
+        if ($formatVersion <= 3 && $table === 'tasks') {
+            $row['task_project_id'] = null;
+            $row['notes'] = null;
+            $row['position'] = max(0, ((int) $row['id']) - 1);
+        }
+
         return $row;
     }
 }

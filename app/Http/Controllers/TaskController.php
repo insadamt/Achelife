@@ -8,11 +8,15 @@ use App\Actions\Tasks\DeleteTaskOccurrence;
 use App\Actions\Tasks\SynchronizeRecurringTaskOccurrences;
 use App\Actions\Tasks\UpdateTask;
 use App\Data\Tasks\TaskData;
+use App\Data\Tasks\TaskSearchData;
 use App\Http\Requests\StoreTaskRequest;
 use App\Http\Requests\UpdateTaskRequest;
 use App\Models\Task;
 use App\Services\Calendar\UserCalendar;
+use App\Support\Tasks\TaskExplorerViewDataFactory;
+use App\Support\Tasks\TaskSearchViewDataFactory;
 use App\Support\Tasks\TaskViewDataFactory;
+use App\Support\Tasks\TaskWorkspaceViewDataFactory;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -26,14 +30,35 @@ class TaskController extends Controller
         SynchronizeRecurringTaskOccurrences $synchronizeOccurrences,
         ResolveUserSeasonCycle $resolveUserSeasonCycle,
         TaskViewDataFactory $viewDataFactory,
+        TaskExplorerViewDataFactory $explorerViewDataFactory,
+        TaskWorkspaceViewDataFactory $workspaceViewDataFactory,
+        TaskSearchViewDataFactory $searchViewDataFactory,
         UserCalendar $calendar,
     ): Response {
         $today = $calendar->today($request->user());
         $synchronizeOccurrences->execute($request->user(), $today);
         $cycle = $resolveUserSeasonCycle->execute($request->user(), $today);
         $currentSeasonId = $cycle->activeSeason?->id;
-        $relations = ['series', 'subtasks', 'reschedules', 'rewardSeason'];
-        $tasks = $request->user()->tasks();
+        $searchFilters = TaskSearchData::fromRequest($request, $request->user());
+        $workspace = $workspaceViewDataFactory->make(
+            $request->user(),
+            $request->string('view')->toString(),
+            $request->integer('project') ?: null,
+            $request->integer('folder') ?: null,
+            $request->string('task_view')->toString(),
+            $today,
+            $currentSeasonId,
+        );
+        $relations = ['series', 'subtasks', 'reschedules', 'rewardSeason', 'project', 'user', 'completedFocusSessions.intervals'];
+        $tasks = $request->user()->tasks()
+            ->when(
+                $workspace['view'] === 'project',
+                fn ($query) => $query->where('task_project_id', $workspace['projectId']),
+            )
+            ->when(
+                $workspace['view'] === 'inbox',
+                fn ($query) => $query->whereNull('task_project_id'),
+            );
         $visibleRecurringTaskIds = (clone $tasks)
             ->whereNotNull('task_series_id')
             ->whereNull('completed_at')
@@ -89,6 +114,15 @@ class TaskController extends Controller
             'overdueTasks' => $overdueTasks,
             'completedTasks' => $completedTasks,
             'intermission' => $cycle->activeSeason === null,
+            'explorer' => $explorerViewDataFactory->make($request->user()),
+            'searchFilters' => $searchFilters->toArray(),
+            'searchResults' => $searchViewDataFactory->make(
+                $request->user(),
+                $searchFilters,
+                $today,
+                $currentSeasonId,
+            ),
+            'workspace' => $workspace,
         ]);
     }
 

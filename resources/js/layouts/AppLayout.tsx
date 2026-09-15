@@ -1,5 +1,6 @@
 import { Link, usePage } from '@inertiajs/react';
-import { useState } from 'react';
+import { Timer } from 'lucide-react';
+import { useCallback, useState } from 'react';
 import type { PropsWithChildren } from 'react';
 
 import { BrandMark } from '../components/BrandMark';
@@ -7,6 +8,8 @@ import { ThemeToggle } from '../components/ThemeToggle';
 import { Drawer, Icon } from '../components/ui';
 import type { IconName } from '../components/ui';
 import { ProgressNotch } from '../features/progress/ProgressNotch';
+import { DynamicIsland } from '../features/focus/DynamicIsland';
+import { FocusTimerProvider, useFocusTimer } from '../features/focus/FocusTimerContext';
 import type { SharedPageProps } from '../types';
 import { ThemeProvider } from '../theme/ThemeProvider';
 
@@ -100,7 +103,11 @@ function AppShell({ children }: PropsWithChildren) {
     const page = usePage<SharedPageProps>();
     const { auth } = page.props;
     const [mobileNavigationOpen, setMobileNavigationOpen] = useState(false);
+    const [mobileFocusVisibleForSessionId, setMobileFocusVisibleForSessionId] = useState<number | null>(null);
     const user = auth.user;
+    const focus = useFocusTimer();
+    const mobileFocusVisible = focus.session?.id === mobileFocusVisibleForSessionId;
+    const dismissMobileFocus = useCallback(() => setMobileFocusVisibleForSessionId(null), []);
 
     return (
         <div className="min-h-screen bg-app text-foreground">
@@ -129,6 +136,18 @@ function AppShell({ children }: PropsWithChildren) {
                 <BrandMark />
                 {user && (
                     <div className="flex items-center gap-2">
+                        {focus.session && (
+                            <button
+                                aria-expanded={mobileFocusVisible}
+                                aria-label={`${mobileFocusVisible ? 'Hide' : 'Show'} Focus timer for ${focus.session.taskTitle}`}
+                                className="focus-ring relative grid size-10 place-items-center rounded-xl text-secondary transition-colors hover:bg-surface-hover hover:text-foreground"
+                                onClick={() => setMobileFocusVisibleForSessionId((sessionId) => sessionId === focus.session?.id ? null : focus.session?.id ?? null)}
+                                type="button"
+                            >
+                                <Timer aria-hidden="true" size={19} />
+                                <span className="absolute top-1.5 right-1.5 size-2 rounded-full bg-[var(--task-accent)]" aria-hidden="true" />
+                            </button>
+                        )}
                         <ThemeToggle className="size-10 rounded-xl" />
                         <span className="grid size-9 place-items-center rounded-xl bg-elevated text-sm font-bold">{user.name.charAt(0).toUpperCase()}</span>
                     </div>
@@ -179,6 +198,11 @@ function AppShell({ children }: PropsWithChildren) {
             </Drawer>
 
             {page.props.progressPanel && <ProgressNotch data={page.props.progressPanel} />}
+            <DynamicIsland
+                key={focus.session ? `session-${focus.session.id}` : focus.event ? `event-${focus.event.id}` : 'inactive'}
+                mobileVisible={mobileFocusVisible}
+                onMobileDismiss={dismissMobileFocus}
+            />
         </div>
     );
 }
@@ -186,7 +210,9 @@ function AppShell({ children }: PropsWithChildren) {
 export default function AppLayout({ children }: PropsWithChildren) {
     return (
         <ThemeProvider>
-            <AppShell>{children}</AppShell>
+            <FocusTimerProvider>
+                <AppShell>{children}</AppShell>
+            </FocusTimerProvider>
         </ThemeProvider>
     );
 }

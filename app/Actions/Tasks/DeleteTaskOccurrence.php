@@ -3,11 +3,14 @@
 namespace App\Actions\Tasks;
 
 use App\Models\Task;
+use App\Services\Tasks\TaskPositionService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 class DeleteTaskOccurrence
 {
+    public function __construct(private readonly TaskPositionService $positions) {}
+
     public function execute(Task $task): void
     {
         DB::transaction(function () use ($task): void {
@@ -23,7 +26,10 @@ class DeleteTaskOccurrence
                 ]);
             }
 
+            $user = $lockedTask->user()->firstOrFail();
+            $projectId = $lockedTask->task_project_id;
             $lockedTask->delete();
+            $this->positions->normalizeTasks($user, $projectId);
         });
     }
 }

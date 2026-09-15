@@ -19,6 +19,7 @@ class CompleteTask
         private readonly TaskRewardCalculator $rewardCalculator,
         private readonly SynchronizeRecurringTaskOccurrences $synchronizeOccurrences,
         private readonly UserCalendar $userCalendar,
+        private readonly TransitionTaskFocusSession $focusSessions,
     ) {}
 
     public function execute(User $user, Task $task, ?CarbonImmutable $completedAt = null): Task
@@ -41,6 +42,8 @@ class CompleteTask
             if ($lockedTask->subtasks->contains(fn ($subtask) => $subtask->completed_at === null)) {
                 throw ValidationException::withMessages(['task' => 'Complete every subtask before completing the parent Task.']);
             }
+
+            $this->focusSessions->stopActiveForTask($lockedTask, $completionTime);
 
             $reward = $this->rewardCalculator->calculate(
                 $lockedTask->important,

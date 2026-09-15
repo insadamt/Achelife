@@ -86,7 +86,7 @@ class AccountArchiveSecurityTest extends TestCase
         });
         $this->expectInvalid($future, 'materially in the future');
 
-        $newer = $this->mutateManifest($valid, fn (array &$manifest) => $manifest['archive_format_version'] = 4, resign: false);
+        $newer = $this->mutateManifest($valid, fn (array &$manifest) => $manifest['archive_format_version'] = 6, resign: false);
         $this->expectInvalid($newer, 'Update Achelife first');
 
         $older = $this->mutateManifest($valid, fn (array &$manifest) => $manifest['archive_format_version'] = 0, resign: false);
@@ -104,7 +104,7 @@ class AccountArchiveSecurityTest extends TestCase
             $manifest = json_decode($entries['manifest.json'], true, 512, JSON_THROW_ON_ERROR);
             $manifest['archive_format_version'] = 1;
 
-            foreach (['money_merchants', 'money_tags', 'money_transaction_tags', 'money_debts', 'money_debt_settlements'] as $table) {
+            foreach (['task_folders', 'task_projects', 'task_focus_sessions', 'task_focus_intervals', 'money_merchants', 'money_tags', 'money_transaction_tags', 'money_debts', 'money_debt_settlements'] as $table) {
                 unset($entries["tables/{$table}.ndjson"], $manifest['table_counts'][$table]);
             }
 
@@ -117,6 +117,10 @@ class AccountArchiveSecurityTest extends TestCase
                     'tables/money_transaction_tags.ndjson',
                     'tables/money_debts.ndjson',
                     'tables/money_debt_settlements.ndjson',
+                    'tables/task_folders.ndjson',
+                    'tables/task_projects.ndjson',
+                    'tables/task_focus_sessions.ndjson',
+                    'tables/task_focus_intervals.ndjson',
                 ], true),
             ));
             $entries['manifest.json'] = $this->encodeJson($manifest);
@@ -162,7 +166,7 @@ class AccountArchiveSecurityTest extends TestCase
             $manifest = json_decode($entries['manifest.json'], true, 512, JSON_THROW_ON_ERROR);
             $manifest['archive_format_version'] = 2;
 
-            foreach (['money_merchants', 'money_tags', 'money_transaction_tags'] as $table) {
+            foreach (['task_folders', 'task_projects', 'task_focus_sessions', 'task_focus_intervals', 'money_merchants', 'money_tags', 'money_transaction_tags'] as $table) {
                 unset($entries["tables/{$table}.ndjson"], $manifest['table_counts'][$table]);
             }
 
@@ -172,6 +176,10 @@ class AccountArchiveSecurityTest extends TestCase
                     'tables/money_merchants.ndjson',
                     'tables/money_tags.ndjson',
                     'tables/money_transaction_tags.ndjson',
+                    'tables/task_folders.ndjson',
+                    'tables/task_projects.ndjson',
+                    'tables/task_focus_sessions.ndjson',
+                    'tables/task_focus_intervals.ndjson',
                 ], true),
             ));
             $entries['manifest.json'] = $this->encodeJson($manifest);
@@ -198,6 +206,49 @@ class AccountArchiveSecurityTest extends TestCase
         $this->assertSame(2, $validated->manifest['archive_format_version']);
         $this->assertSame(0, $target->moneyMerchants()->count());
         $this->assertSame(0, $target->moneyTags()->count());
+    }
+
+    public function test_restores_format_three_tasks_into_inbox_with_safe_organization_defaults(): void
+    {
+        CarbonImmutable::setTestNow('2026-08-15 12:00:00');
+        $source = User::factory()->create(['timezone' => 'UTC', 'calendar_started_on' => '2026-08-01']);
+        Season::query()->create(['user_id' => $source->id, 'season_number' => 1, 'start_date' => '2026-08-01', 'end_date' => '2026-08-30', 'season_points' => 0]);
+        $sourceTask = $source->tasks()->create([
+            'title' => 'Legacy Task',
+            'notes' => 'Not part of format 3',
+            'position' => 8,
+            'scheduled_date' => '2026-08-15',
+            'important' => false,
+        ]);
+        $currentArchive = app(AccountArchiveExporter::class)->export($source);
+        $this->temporaryArchives[] = $currentArchive;
+        $legacyArchive = $this->mutate($currentArchive, function (array &$entries): void {
+            $manifest = json_decode($entries['manifest.json'], true, 512, JSON_THROW_ON_ERROR);
+            $manifest['archive_format_version'] = 3;
+
+            foreach (['task_folders', 'task_projects', 'task_focus_sessions', 'task_focus_intervals'] as $table) {
+                unset($entries["tables/{$table}.ndjson"], $manifest['table_counts'][$table]);
+            }
+
+            $manifest['files'] = array_values(array_filter(
+                $manifest['files'],
+                fn (string $file): bool => ! in_array($file, ['tables/task_folders.ndjson', 'tables/task_projects.ndjson', 'tables/task_focus_sessions.ndjson', 'tables/task_focus_intervals.ndjson'], true),
+            ));
+            $task = json_decode(trim($entries['tables/tasks.ndjson']), true, 512, JSON_THROW_ON_ERROR);
+            unset($task['task_project_id'], $task['notes'], $task['position']);
+            $entries['tables/tasks.ndjson'] = $this->jsonLine($task);
+            $entries['manifest.json'] = $this->encodeJson($manifest);
+        }, resign: true);
+        $target = User::factory()->create(['onboarding_step' => 'path', 'onboarding_completed_at' => null]);
+
+        $validated = app(AccountArchiveValidator::class)->validate($legacyArchive);
+        app(RestoreAccountArchive::class)->execute($target, $validated, new AccountRestoreRequest(freshInstall: true));
+
+        $restoredTask = $target->tasks()->where('title', 'Legacy Task')->sole();
+        $this->assertSame(3, $validated->manifest['archive_format_version']);
+        $this->assertNull($restoredTask->task_project_id);
+        $this->assertNull($restoredTask->notes);
+        $this->assertSame(max(0, $sourceTask->id - 1), $restoredTask->position);
     }
 
     public function test_rejects_oversized_entries_and_excessive_expanded_archives(): void

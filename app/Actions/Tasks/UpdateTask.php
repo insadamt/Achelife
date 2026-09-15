@@ -5,15 +5,16 @@ namespace App\Actions\Tasks;
 use App\Data\Tasks\SubtaskData;
 use App\Data\Tasks\TaskData;
 use App\Models\Task;
-use App\Services\Calendar\UserCalendar;
+use App\Models\User;
+use App\Services\Tasks\TaskPositionService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 class UpdateTask
 {
     public function __construct(
-        private readonly SynchronizeRecurringTaskOccurrences $synchronizeOccurrences,
-        private readonly UserCalendar $userCalendar,
+        private readonly RegenerateRecurringTaskOccurrences $regenerateOccurrences,
+        private readonly TaskPositionService $positions,
     ) {}
 
     public function execute(Task $task, TaskData $data): Task
@@ -21,6 +22,10 @@ class UpdateTask
         return DB::transaction(function () use ($task, $data): Task {
             $lockedTask = Task::query()->with(['series', 'subtasks'])->lockForUpdate()->findOrFail($task->id);
             $this->ensureEditable($lockedTask, $data);
+            $user = $lockedTask->user()->firstOrFail();
+            $this->ensureProjectBelongsToUser($user, $data);
+            $previousProjectId = $lockedTask->task_project_id;
+            $projectChanged = $data->projectProvided && $previousProjectId !== $data->projectId;
 
             if (! $lockedTask->scheduled_date->isSameDay($data->scheduledDate)) {
                 $lockedTask->reschedules()->create([
@@ -34,12 +39,20 @@ class UpdateTask
                 'title' => $data->title,
                 'scheduled_date' => $data->scheduledDate,
                 'important' => $data->important,
+                ...($data->projectProvided ? ['task_project_id' => $data->projectId] : []),
+                ...($data->notesProvided ? ['notes' => $data->notes] : []),
+                ...($projectChanged ? ['position' => $this->positions->nextTaskPosition($user, $data->projectId)] : []),
                 ...($lockedTask->series === null ? [] : [
                     'recurrence_type_snapshot' => $data->recurrenceType,
                     'recurrence_weekdays_snapshot' => $data->weekdays,
                 ]),
             ]);
             $this->synchronizeSubtasks($lockedTask, $data->subtasks);
+
+            if ($projectChanged) {
+                $this->positions->normalizeTasks($user, $previousProjectId);
+                $this->positions->normalizeTasks($user, $data->projectId);
+            }
 
             if ($lockedTask->series !== null) {
                 $this->updateRecurringTemplateForward($lockedTask, $data);
@@ -97,17 +110,20 @@ class UpdateTask
             'recurrence_type' => $data->recurrenceType,
             'weekdays' => $data->weekdays,
             'subtask_template' => array_map(fn ($subtask) => $subtask->title, $data->subtasks),
+            ...($data->projectProvided ? ['task_project_id' => $data->projectId] : []),
+            ...($data->notesProvided ? ['notes' => $data->notes] : []),
             'materialized_through' => $occurrenceAnchor,
         ]);
 
-        $series->tasks()
-            ->where('occurrence_date', '>', $occurrenceAnchor)
-            ->whereNull('completed_at')
-            ->delete();
+        $this->regenerateOccurrences->execute($task);
+    }
 
-        $this->synchronizeOccurrences->synchronizeSeries(
-            $series->refresh(),
-            $this->userCalendar->today($task->user()->firstOrFail()),
-        );
+    private function ensureProjectBelongsToUser(User $user, TaskData $data): void
+    {
+        if ($data->projectProvided
+            && $data->projectId !== null
+            && ! $user->taskProjects()->whereKey($data->projectId)->exists()) {
+            throw ValidationException::withMessages(['task_project_id' => 'The selected Project is invalid.']);
+        }
     }
 }

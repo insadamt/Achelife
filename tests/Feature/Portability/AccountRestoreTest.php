@@ -147,6 +147,10 @@ class AccountRestoreTest extends TestCase
         $this->assertTrue(Hash::check('correct-password', $target->password));
         $this->assertSame(1, $target->seasons()->count());
         $this->assertSame(1, $target->tasks()->count());
+        $restoredTask = $target->tasks()->sole();
+        $this->assertSame(8, $restoredTask->earned_sp);
+        $this->assertSame('on_time', $restoredTask->completion_timing->value);
+        $this->assertSame($target->seasons()->sole()->id, $restoredTask->reward_season_id);
         $this->assertSame(1, $target->habits()->count());
         $this->assertSame(1, $target->diaryEntries()->count());
         $this->assertSame(1, $target->people()->count());

@@ -12,7 +12,11 @@ use Carbon\CarbonImmutable;
 
 class TaskStatistics
 {
-    public function __construct(private readonly UserCalendar $calendar, private readonly StatisticsPeriodResolver $periods) {}
+    public function __construct(
+        private readonly UserCalendar $calendar,
+        private readonly StatisticsPeriodResolver $periods,
+        private readonly TaskFocusStatistics $focusStatistics,
+    ) {}
 
     public function summarize(User $user, SeasonCycleResult $cycle, string $filter, ?string $selectionValue = null): array
     {
@@ -53,6 +57,7 @@ class TaskStatistics
             'current' => $this->finalizeTotals($current),
             'previous' => $previous === null ? null : $this->finalizeTotals($previous),
             'trend' => $this->buildTrend($period, $dailyActivity, $today),
+            'focus' => $this->focusStatistics->summarize($user, $period, $today),
         ];
     }
 

@@ -26,9 +26,11 @@ During an intermission, seasonal progression pauses. Money and historical record
 
 ## Tasks
 
-Create one-time or recurring Tasks with dates, subtasks, and importance. Complete or reschedule them as needed; completion history keeps its original reward attribution.
+Create one-time or recurring Tasks with dates, subtasks, and importance. A checklist can contain as many steps as needed; press Enter to add each step or paste multiple lines to add a complete checklist at once. Complete or reschedule Tasks as needed; completion history keeps its original reward attribution.
 
-Open **Tasks → Statistics** for the separate statistics page. Statistics show completed Tasks, earned SP, on-time completion, important completions, and a line chart of completion activity. Filter by this Season, month, year, or all time. Current periods compare with the full previous period; all time has no delta. See [Task statistics](task-statistics.md) for metric definitions.
+Open a Task to start Focus Time or review its completed Focus Sessions. The global timer continues from server time while you navigate, reload, or close the browser, and can be paused, resumed, or stopped from the Dynamic Island. Task details show completed Focus Time in your saved timezone. Use **Add time** to record a completed session manually, or edit and delete a completed session when its time needs correction. Manual ranges cannot overlap other Focus intervals and may be no longer than 24 hours.
+
+Open **Tasks → Statistics** for the separate statistics page. Completion analytics show completed Tasks, earned SP, on-time completion, important completions, and completion activity. Focus analytics add completed Focus Time, session counts and averages, longest session, daily activity, a local-day heatmap, Project totals, and most-focused Tasks. Filter both sections by Season, month, year, or all time. Current periods compare with the full previous period; all time has no delta. See [Task statistics](task-statistics.md) for exact metric definitions.
 
 ## Habits
 

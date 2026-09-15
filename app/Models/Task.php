@@ -12,7 +12,10 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 #[Fillable([
     'user_id',
     'task_series_id',
+    'task_project_id',
     'title',
+    'notes',
+    'position',
     'scheduled_date',
     'occurrence_date',
     'important',
@@ -38,6 +41,12 @@ class Task extends Model
         return $this->belongsTo(TaskSeries::class, 'task_series_id');
     }
 
+    /** @return BelongsTo<TaskProject, $this> */
+    public function project(): BelongsTo
+    {
+        return $this->belongsTo(TaskProject::class, 'task_project_id');
+    }
+
     /** @return HasMany<Subtask, $this> */
     public function subtasks(): HasMany
     {
@@ -48,6 +57,21 @@ class Task extends Model
     public function reschedules(): HasMany
     {
         return $this->hasMany(TaskReschedule::class)->orderBy('rescheduled_at');
+    }
+
+    /** @return HasMany<TaskFocusSession, $this> */
+    public function focusSessions(): HasMany
+    {
+        return $this->hasMany(TaskFocusSession::class);
+    }
+
+    /** @return HasMany<TaskFocusSession, $this> */
+    public function completedFocusSessions(): HasMany
+    {
+        return $this->hasMany(TaskFocusSession::class)
+            ->where('state', 'completed')
+            ->orderByDesc('ended_at')
+            ->orderByDesc('id');
     }
 
     /** @return BelongsTo<Season, $this> */
@@ -63,6 +87,7 @@ class Task extends Model
             'scheduled_date' => 'immutable_date',
             'occurrence_date' => 'immutable_date',
             'important' => 'boolean',
+            'position' => 'integer',
             'recurrence_type_snapshot' => TaskRecurrenceType::class,
             'recurrence_weekdays_snapshot' => 'array',
             'completed_at' => 'immutable_datetime',

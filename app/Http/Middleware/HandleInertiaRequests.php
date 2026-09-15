@@ -2,8 +2,10 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\User;
 use App\Services\Calendar\UserCalendar;
 use App\Support\Progress\ProgressPanelViewDataFactory;
+use App\Support\Tasks\TaskFocusSessionViewDataFactory;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -14,6 +16,7 @@ class HandleInertiaRequests extends Middleware
     public function __construct(
         private readonly ProgressPanelViewDataFactory $progressPanelViewDataFactory,
         private readonly UserCalendar $calendar,
+        private readonly TaskFocusSessionViewDataFactory $focusSessionViewDataFactory,
     ) {}
 
     /**
@@ -39,6 +42,22 @@ class HandleInertiaRequests extends Middleware
             'progressPanel' => fn () => $user === null || $user->onboarding_completed_at === null
                 ? null
                 : $this->progressPanelViewDataFactory->make($user, $this->calendar->today($user)),
+            'activeFocusSession' => fn () => $this->activeFocusSession($user),
         ];
+    }
+
+    /** @return array<string, mixed>|null */
+    private function activeFocusSession(?User $user): ?array
+    {
+        if ($user === null) {
+            return null;
+        }
+
+        $session = $user->taskFocusSessions()
+            ->where('active_marker', 1)
+            ->with(['task.project', 'intervals'])
+            ->first();
+
+        return $session === null ? null : $this->focusSessionViewDataFactory->make($session);
     }
 }

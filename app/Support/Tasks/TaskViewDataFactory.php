@@ -10,7 +10,10 @@ use Carbon\CarbonImmutable;
 
 class TaskViewDataFactory
 {
-    public function __construct(private readonly TaskRewardCalculator $rewardCalculator) {}
+    public function __construct(
+        private readonly TaskRewardCalculator $rewardCalculator,
+        private readonly TaskFocusHistoryViewDataFactory $focusHistoryViewDataFactory,
+    ) {}
 
     /** @return array<string, mixed> */
     public function make(Task $task, CarbonImmutable $today, ?int $currentSeasonId): array
@@ -26,6 +29,10 @@ class TaskViewDataFactory
         return [
             'id' => $task->id,
             'title' => $task->title,
+            'notes' => $task->notes,
+            'taskProjectId' => $task->task_project_id,
+            'projectName' => $task->project?->name,
+            'position' => $task->position,
             'scheduledDate' => $task->scheduled_date->toDateString(),
             'originalScheduledDate' => $task->reschedules->first()?->from_date->toDateString(),
             'important' => $task->important,
@@ -57,6 +64,7 @@ class TaskViewDataFactory
                 'toDate' => $reschedule->to_date->toDateString(),
                 'rescheduledAt' => $reschedule->rescheduled_at->toIso8601String(),
             ])->values(),
+            'focus' => $this->focusHistoryViewDataFactory->make($task),
         ];
     }
 

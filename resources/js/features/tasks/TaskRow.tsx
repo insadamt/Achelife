@@ -1,18 +1,24 @@
 import { router } from '@inertiajs/react';
-import { CalendarDays, Check, ListChecks, Repeat2, Star } from 'lucide-react';
+import { CalendarDays, Check, FolderKanban, GripVertical, ListChecks, Repeat2, Star } from 'lucide-react';
+import type { DragEvent } from 'react';
 import { useState } from 'react';
 
 import { classNames } from '../../components/ui/classNames';
+import { StartFocusButton } from '../focus/StartFocusButton';
 import { ExpandableTaskChecklist } from './ExpandableTaskChecklist';
 import { formatTaskDate } from './taskPresentation';
 import type { TaskViewData } from './types';
 
-export function TaskRow({ task, onOpen, onCompleted }: {
+export function TaskRow({ task, onOpen, onCompleted, onDropTask, reorderable = false, showState = false }: {
     task: TaskViewData;
     onOpen: () => void;
     onCompleted?: (task: TaskViewData) => void;
+    onDropTask?: (draggedTaskId: number, position: number) => void;
+    reorderable?: boolean;
+    showState?: boolean;
 }) {
     const [processing, setProcessing] = useState(false);
+    const [dropActive, setDropActive] = useState(false);
     const completed = task.state === 'completed';
 
     function toggleCompletion() {
@@ -43,11 +49,26 @@ export function TaskRow({ task, onOpen, onCompleted }: {
           : `Open ${task.title} to finish its checklist`;
 
     return (
-        <article className={classNames(
+        <article
+            className={classNames(
             'overflow-hidden rounded-2xl border bg-surface transition-[border-color,background-color] hover:border-border-strong hover:bg-surface-hover/30',
             completed ? 'border-border-subtle' : 'border-border-strong/70',
-        )}>
+            dropActive && 'border-[var(--module-accent)] bg-surface-hover ring-2 ring-[var(--module-accent)]/30',
+            )}
+            draggable={reorderable}
+            onDragOver={reorderable ? (event: DragEvent) => event.preventDefault() : undefined}
+            onDragEnter={reorderable ? () => setDropActive(true) : undefined}
+            onDragLeave={reorderable ? () => setDropActive(false) : undefined}
+            onDragStart={reorderable ? (event: DragEvent) => event.dataTransfer.setData('application/x-achelife-task', JSON.stringify({ id: task.id, parentId: task.taskProjectId })) : undefined}
+            onDrop={reorderable ? (event: DragEvent) => {
+                event.preventDefault();
+                setDropActive(false);
+                const payload = event.dataTransfer.getData('application/x-achelife-task');
+                if (payload) onDropTask?.((JSON.parse(payload) as { id: number }).id, task.position);
+            } : undefined}
+        >
             <div className="flex items-center gap-3 p-3 sm:p-4">
+                {reorderable && <GripVertical aria-label="Drag to reorder" className="hidden shrink-0 cursor-grab text-muted sm:block" size={17} />}
                 <button
                 aria-label={completionLabel}
                 className={classNames(
@@ -81,8 +102,12 @@ export function TaskRow({ task, onOpen, onCompleted }: {
                         {formatTaskDate(task.scheduledDate)}
                     </span>
                     {task.recurrence && <span aria-label={task.recurrence.label} className="inline-flex items-center" title={task.recurrence.label}><Repeat2 size={13} /></span>}
+                    {task.projectName && <span className="icon-text inline-flex items-center gap-1"><FolderKanban aria-hidden="true" size={13} />{task.projectName}</span>}
+                    {showState && <span>{task.state === 'completed' ? 'Completed' : task.state === 'overdue' ? 'Overdue' : 'Open'}</span>}
                 </span>
                 </button>
+
+                {!completed && <StartFocusButton compact taskId={task.id} taskTitle={task.title} />}
 
                 <span className={classNames(
                     'shrink-0 rounded-full bg-elevated px-2.5 py-1 text-sm font-bold',

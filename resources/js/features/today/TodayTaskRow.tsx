@@ -3,6 +3,7 @@ import { AlertTriangle, Check } from 'lucide-react';
 import { useState } from 'react';
 
 import { classNames } from '../../components/ui/classNames';
+import { StartFocusButton } from '../focus/StartFocusButton';
 import { ExpandableTaskChecklist } from '../tasks/ExpandableTaskChecklist';
 import type { TaskViewData } from '../tasks/types';
 
@@ -45,6 +46,7 @@ export function TodayTaskRow({ task }: { task: TaskViewData }) {
                     </div>
                 </div>
                 {task.state === 'overdue' && <span className="icon-text flex shrink-0 items-center gap-1.5 text-xs font-bold text-warning"><AlertTriangle aria-hidden="true" size={14} /><span>Overdue</span></span>}
+                {!completed && <StartFocusButton compact taskId={task.id} taskTitle={task.title} />}
                 {completed && task.earnedSp !== null && <span className="shrink-0 text-xs font-bold text-accent-ink">+{task.earnedSp} SP</span>}
             </div>
             <ExpandableTaskChecklist compact task={task} />

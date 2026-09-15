@@ -204,7 +204,7 @@ class MoneyDebtTest extends TestCase
             app(RestoreAccountArchive::class)->execute($target, $validated, new AccountRestoreRequest(freshInstall: true));
             $restoredDebt = $target->moneyDebts()->with(['person', 'openingTransaction', 'settlements.transaction'])->sole();
 
-            $this->assertSame(3, $validated->manifest['archive_format_version']);
+            $this->assertSame(5, $validated->manifest['archive_format_version']);
             $this->assertSame('Sara', $restoredDebt->person->name);
             $this->assertSame(15000, $restoredDebt->remainingAmountMinor());
             $this->assertSame($target->id, $restoredDebt->openingTransaction->user_id);

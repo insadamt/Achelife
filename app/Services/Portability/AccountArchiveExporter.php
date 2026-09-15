@@ -10,7 +10,7 @@ use ZipArchive;
 
 class AccountArchiveExporter
 {
-    public const FORMAT_VERSION = 3;
+    public const FORMAT_VERSION = 5;
 
     public function __construct(
         private readonly PortableTableRegistry $tableRegistry,
@@ -67,6 +67,7 @@ class AccountArchiveExporter
             $tableCounts = [];
             $moduleCounts = [];
             $tablePaths = [];
+            $createdAt = CarbonImmutable::now('UTC');
 
             foreach ($this->tableRegistry->definitions() as $definition) {
                 $localPath = $workingDirectory.'/'.$definition->name.'.ndjson';
@@ -83,6 +84,7 @@ class AccountArchiveExporter
 
                     foreach ($this->tableRegistry->queryForUser($definition, $lockedUser->id, $ownedIds)->orderBy($orderColumn)->cursor() as $row) {
                         $attributes = (array) $row;
+                        $attributes = $this->snapshotFocusState($definition->name, $attributes, $createdAt);
                         $attributes = $this->normalizeDateOnlyValues($attributes);
                         $this->writeNdjsonRow($handle, $attributes);
                         $count++;
@@ -101,7 +103,6 @@ class AccountArchiveExporter
             }
 
             $latestSeason = $lockedUser->seasons()->latest('season_number')->first();
-            $createdAt = CarbonImmutable::now('UTC');
 
             return [
                 'manifest' => [
@@ -214,6 +215,33 @@ class AccountArchiveExporter
             if ($isDateColumn && is_string($value) && preg_match('/^\d{4}-\d{2}-\d{2}/', $value) === 1) {
                 $row[$column] = substr($value, 0, 10);
             }
+        }
+
+        return $row;
+    }
+
+    /** @param array<string, mixed> $row
+     * @return array<string, mixed>
+     */
+    private function snapshotFocusState(string $table, array $row, CarbonImmutable $createdAt): array
+    {
+        if ($table === 'task_focus_sessions' && $row['state'] === 'running') {
+            $intervalStartedAt = DB::table('task_focus_intervals')
+                ->where('task_focus_session_id', $row['id'])
+                ->whereNull('ended_at')
+                ->value('started_at');
+
+            if ($intervalStartedAt === null) {
+                throw new RuntimeException('A running Focus Session is missing its open interval.');
+            }
+
+            $row['state'] = 'paused';
+            $row['accumulated_seconds'] = (int) $row['accumulated_seconds']
+                + (int) CarbonImmutable::parse($intervalStartedAt, 'UTC')->diffInSeconds($createdAt);
+        }
+
+        if ($table === 'task_focus_intervals' && $row['ended_at'] === null) {
+            $row['ended_at'] = $createdAt->format('Y-m-d H:i:s');
         }
 
         return $row;

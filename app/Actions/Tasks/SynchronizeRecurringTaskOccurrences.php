@@ -7,12 +7,16 @@ use App\Enums\TaskRecurrenceType;
 use App\Models\Task;
 use App\Models\TaskSeries;
 use App\Models\User;
+use App\Services\Tasks\TaskPositionService;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
 
 class SynchronizeRecurringTaskOccurrences
 {
-    public function __construct(private readonly ResolveUserSeasonCycle $resolveUserSeasonCycle) {}
+    public function __construct(
+        private readonly ResolveUserSeasonCycle $resolveUserSeasonCycle,
+        private readonly TaskPositionService $positions,
+    ) {}
 
     public function execute(User $user, CarbonImmutable $today): void
     {
@@ -54,7 +58,13 @@ class SynchronizeRecurringTaskOccurrences
 
                 $task = $lockedSeries->tasks()->create([
                     'user_id' => $lockedSeries->user_id,
+                    'task_project_id' => $lockedSeries->task_project_id,
                     'title' => $lockedSeries->title,
+                    'notes' => $lockedSeries->notes,
+                    'position' => $this->positions->nextTaskPosition(
+                        $lockedSeries->user()->firstOrFail(),
+                        $lockedSeries->task_project_id,
+                    ),
                     'scheduled_date' => $nextOccurrenceDate,
                     'occurrence_date' => $nextOccurrenceDate,
                     'important' => $lockedSeries->important,
@@ -115,11 +125,16 @@ class SynchronizeRecurringTaskOccurrences
             return;
         }
 
-        $user->tasks()
+        $tasksToDelete = $user->tasks()
             ->whereNotNull('task_series_id')
             ->whereNull('completed_at')
-            ->whereDate('occurrence_date', '>=', $startedOn)
-            ->delete();
+            ->whereDate('occurrence_date', '>=', $startedOn);
+        $projectIds = $tasksToDelete->pluck('task_project_id')->unique();
+        $tasksToDelete->delete();
+
+        foreach ($projectIds as $projectId) {
+            $this->positions->normalizeTasks($user, $projectId === null ? null : (int) $projectId);
+        }
     }
 
     private function isEligibleDate(TaskSeries $series, CarbonImmutable $date): bool

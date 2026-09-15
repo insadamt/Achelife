@@ -15,6 +15,10 @@ readonly class TaskData
         public ?TaskRecurrenceType $recurrenceType,
         public array $weekdays,
         public array $subtasks,
+        public ?int $projectId = null,
+        public ?string $notes = null,
+        public bool $projectProvided = false,
+        public bool $notesProvided = false,
     ) {}
 
     /** @param array<string, mixed> $validated */
@@ -35,6 +39,10 @@ readonly class TaskData
                 ),
                 $validated['subtasks'] ?? [],
             ),
+            projectId: isset($validated['task_project_id']) ? (int) $validated['task_project_id'] : null,
+            notes: $validated['notes'] ?? null,
+            projectProvided: array_key_exists('task_project_id', $validated),
+            notesProvided: array_key_exists('notes', $validated),
         );
     }
 }

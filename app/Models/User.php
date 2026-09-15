@@ -62,6 +62,24 @@ class User extends Authenticatable
         return $this->hasMany(TaskSeries::class);
     }
 
+    /** @return HasMany<TaskFolder, $this> */
+    public function taskFolders(): HasMany
+    {
+        return $this->hasMany(TaskFolder::class);
+    }
+
+    /** @return HasMany<TaskProject, $this> */
+    public function taskProjects(): HasMany
+    {
+        return $this->hasMany(TaskProject::class);
+    }
+
+    /** @return HasMany<TaskFocusSession, $this> */
+    public function taskFocusSessions(): HasMany
+    {
+        return $this->hasMany(TaskFocusSession::class);
+    }
+
     /** @return HasMany<Habit, $this> */
     public function habits(): HasMany
     {

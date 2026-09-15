@@ -76,7 +76,7 @@ class TodayViewDataFactory
     /** @return array{today: Collection<int, array<string, mixed>>, overdue: Collection<int, array<string, mixed>>, overdueCount: int} */
     private function tasks(User $user, Season $season, CarbonImmutable $today): array
     {
-        $relations = ['series', 'subtasks', 'reschedules', 'rewardSeason'];
+        $relations = ['series', 'subtasks', 'reschedules', 'rewardSeason', 'user', 'completedFocusSessions.intervals'];
         $baseQuery = $user->tasks();
         $visibleRecurringTaskIds = (clone $baseQuery)
             ->whereNotNull('task_series_id')

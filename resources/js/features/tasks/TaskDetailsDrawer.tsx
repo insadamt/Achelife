@@ -1,24 +1,27 @@
 import { router } from '@inertiajs/react';
-import { CalendarDays, Check, ChevronRight, ListChecks, LockKeyhole, MoreHorizontal, Repeat2, Star } from 'lucide-react';
+import { CalendarDays, Check, ChevronRight, FolderKanban, ListChecks, LockKeyhole, MoreHorizontal, Repeat2, Star, StickyNote } from 'lucide-react';
 import { useState } from 'react';
 import type { ReactNode } from 'react';
 
 import { Button, Dialog, Drawer } from '../../components/ui';
 import { classNames } from '../../components/ui/classNames';
+import { StartFocusButton } from '../focus/StartFocusButton';
 import { formatCompletionDate, formatTaskDateLong } from './taskPresentation';
 import { TaskEditorDialog } from './TaskEditorDialog';
+import { TaskFocusHistory } from './TaskFocusHistory';
 import type { TaskEditor } from './TaskEditorDialog';
-import type { TaskViewData } from './types';
+import type { TaskExplorerViewData, TaskViewData } from './types';
 
 type DeleteAction = 'occurrence' | 'future' | null;
 
 interface TaskDetailsDrawerProps {
     task: TaskViewData;
+    explorer: TaskExplorerViewData;
     today: string;
     onClose: () => void;
 }
 
-export function TaskDetailsDrawer({ task, today, onClose }: TaskDetailsDrawerProps) {
+export function TaskDetailsDrawer({ task, explorer, today, onClose }: TaskDetailsDrawerProps) {
     const [editor, setEditor] = useState<TaskEditor | null>(null);
     const [menuOpen, setMenuOpen] = useState(false);
     const [deleteAction, setDeleteAction] = useState<DeleteAction>(null);
@@ -93,14 +96,46 @@ export function TaskDetailsDrawer({ task, today, onClose }: TaskDetailsDrawerPro
                 )}
 
                 <div className="mt-7 space-y-3">
+                    {!completed && <StartFocusButton taskId={task.id} taskTitle={task.title} />}
+
+                    <DetailSection editable={task.canEdit} icon={<FolderKanban size={19} />} label="Project" onClick={() => setEditor('organization')}>
+                        {task.projectName ?? 'Inbox'}
+                    </DetailSection>
+
                     <DetailSection editable={task.canEdit} icon={<CalendarDays size={19} />} label="Schedule" onClick={() => setEditor('schedule')}>
                         <span>{formatTaskDateLong(task.scheduledDate)}</span>
-                        {task.important && <Star aria-label="Important" className="text-warning" fill="currentColor" size={14} />}
-                        {task.recurrence && <span className="icon-text inline-flex items-center gap-1"><Repeat2 size={14} />{task.recurrence.label}</span>}
+                    </DetailSection>
+
+                    <DetailSection editable={task.canEdit} icon={<Star fill={task.important ? 'currentColor' : 'none'} size={19} />} label="Importance" onClick={() => setEditor('schedule')}>
+                        {task.important ? 'Important' : 'Not important'}
+                    </DetailSection>
+
+                    <DetailSection editable={task.canEdit} icon={<Repeat2 size={19} />} label="Recurrence" onClick={() => setEditor('schedule')}>
+                        {task.recurrence?.label ?? 'Does not repeat'}
                     </DetailSection>
 
                     <DetailSection editable={task.canEdit} icon={<ListChecks size={20} />} label="Checklist" onClick={() => setEditor('checklist')}>
-                        {task.totalSubtasks > 0 ? `${task.completedSubtasks} of ${task.totalSubtasks} completed` : 'None'}
+                        {task.totalSubtasks === 0 ? 'None' : (
+                            <span className="block w-full space-y-1.5">
+                                <span className="flex items-center justify-between gap-3">
+                                    <span>{task.completedSubtasks} of {task.totalSubtasks} completed</span>
+                                    <span aria-hidden="true" className="h-1.5 w-16 overflow-hidden rounded-full bg-border-subtle">
+                                        <span className="block h-full rounded-full bg-[var(--task-accent)]" style={{ width: `${(task.completedSubtasks / task.totalSubtasks) * 100}%` }} />
+                                    </span>
+                                </span>
+                                <span className="block max-h-48 space-y-1.5 overflow-y-auto pr-1">
+                                    {task.subtasks.map((subtask) => (
+                                        <span className={classNames('block font-medium', subtask.completed && 'text-muted line-through')} key={subtask.id}>
+                                            {subtask.completed ? '✓' : '○'} {subtask.title}
+                                        </span>
+                                    ))}
+                                </span>
+                            </span>
+                        )}
+                    </DetailSection>
+
+                    <DetailSection editable={task.canEdit} icon={<StickyNote size={19} />} label="Notes" onClick={() => setEditor('notes')}>
+                        <span className="whitespace-pre-wrap">{task.notes || 'None'}</span>
                     </DetailSection>
 
                     <div className="rounded-2xl border border-border-subtle bg-app p-4">
@@ -130,6 +165,8 @@ export function TaskDetailsDrawer({ task, today, onClose }: TaskDetailsDrawerPro
                     </details>
                 )}
 
+                <TaskFocusHistory task={task} />
+
                 {task.completionLocked && (
                     <p className="icon-text mt-5 flex items-start gap-2 rounded-2xl border border-border-subtle bg-app p-4 text-sm leading-6 text-muted">
                         <LockKeyhole className="mt-0.5 shrink-0" size={16} />
@@ -138,7 +175,7 @@ export function TaskDetailsDrawer({ task, today, onClose }: TaskDetailsDrawerPro
                 )}
             </div>
 
-            {editor && <TaskEditorDialog editor={editor} key={`${task.id}-${editor}`} onClose={() => setEditor(null)} task={task} today={today} />}
+            {editor && <TaskEditorDialog editor={editor} explorer={explorer} key={`${task.id}-${editor}`} onClose={() => setEditor(null)} task={task} today={today} />}
 
             <Dialog onClose={() => setDeleteAction(null)} open={deleteAction !== null} title={deleteAction === 'future' ? 'Stop future occurrences?' : task.recurrence ? 'Delete this occurrence?' : 'Delete task?'}>
                 <p className="text-sm leading-6 text-secondary">

@@ -4,27 +4,8 @@ import { useState } from 'react';
 
 import { Surface } from '../../components/ui';
 import { TaskCompletionLineChart } from './TaskCompletionLineChart';
-
-interface Totals {
-    completed: number;
-    sp: number;
-    important: number;
-    onTime: number | null;
-}
-
-export interface TaskStatisticsData {
-    filter: 'season' | 'month' | 'year' | 'all';
-    label: string;
-    comparisonLabel: string | null;
-    selector: {
-        value: string | null;
-        previousValue: string | null;
-        nextValue: string | null;
-    };
-    current: Totals;
-    previous: Totals | null;
-    trend: { unit: 'day' | 'month' | 'year'; buckets: { date: string; label: string; count: number; sp: number }[] };
-}
+import { TaskFocusStatisticsPanel } from './TaskFocusStatisticsPanel';
+import type { TaskStatisticsData } from './taskStatisticsTypes';
 
 const filters = [['season', 'Season'], ['month', 'Month'], ['year', 'Year'], ['all', 'All time']] as const;
 const metrics = [
@@ -135,6 +116,8 @@ export function TaskStatisticsPanel({ statistics }: { statistics: TaskStatistics
                     ? <div className="grid min-h-64 place-items-center rounded-2xl border border-dashed border-border-strong bg-app/35 px-5 text-center"><div><CheckCheck aria-hidden="true" className="mx-auto text-muted" size={28} /><p className="mt-3 font-bold">No completions yet</p><p className="mt-1 text-sm text-muted">Completed tasks will form your activity line here.</p></div></div>
                     : <TaskCompletionLineChart buckets={statistics.trend.buckets} metric={chartMetric} unit={statistics.trend.unit} />}
             </Surface>
+
+            <TaskFocusStatisticsPanel compare={statistics.filter !== 'all'} focus={statistics.focus} />
         </section>
     );
 }

@@ -1,5 +1,5 @@
 import { useForm } from '@inertiajs/react';
-import { ArrowUp, CalendarDays, ListChecks, Plus, Repeat2, Star } from 'lucide-react';
+import { ArrowUp, CalendarDays, FolderKanban, ListChecks, Plus, Repeat2, Star, StickyNote } from 'lucide-react';
 import { useCallback, useState } from 'react';
 import type { FormEvent, ReactNode } from 'react';
 
@@ -8,16 +8,23 @@ import { classNames } from '../../components/ui/classNames';
 import { formatTaskDate, projectedReward } from './taskPresentation';
 import { RecurrenceControls } from './RecurrenceControls';
 import { SubtaskEditor } from './SubtaskEditor';
-import type { TaskFormData } from './types';
+import type { TaskExplorerViewData, TaskFormData } from './types';
 
-type ComposerDialog = 'date' | 'recurrence' | 'subtasks' | null;
+type ComposerDialog = 'date' | 'notes' | 'recurrence' | 'subtasks' | null;
 
-export function TaskComposer({ today }: { today: string }) {
+export function TaskComposer({ explorer, initialProjectId, showProjectControl = true, today }: {
+    explorer: TaskExplorerViewData;
+    initialProjectId: number | null;
+    showProjectControl?: boolean;
+    today: string;
+}) {
     const [expanded, setExpanded] = useState(false);
     const [dialog, setDialog] = useState<ComposerDialog>(null);
     const closeDialog = useCallback(() => setDialog(null), []);
     const form = useForm<TaskFormData>({
         title: '',
+        task_project_id: initialProjectId,
+        notes: '',
         scheduled_date: today,
         important: false,
         recurrence_type: null,
@@ -94,6 +101,29 @@ export function TaskComposer({ today }: { today: string }) {
                             <ListChecks size={18} />
                             {form.data.subtasks.length > 0 && <span>{form.data.subtasks.length}</span>}
                         </ComposerControl>
+                        <ComposerControl active={Boolean(form.data.notes.trim())} label="Notes" onClick={() => setDialog('notes')}>
+                            <StickyNote size={17} />
+                        </ComposerControl>
+                        {showProjectControl && (
+                            <label className="focus-within:focus-ring icon-text flex min-h-10 items-center gap-1.5 rounded-full px-3 text-xs font-bold text-muted hover:bg-surface-hover hover:text-foreground">
+                                <FolderKanban aria-hidden="true" size={17} />
+                                <span className="sr-only">Project</span>
+                                <select
+                                    aria-label="Project"
+                                    className="max-w-36 bg-transparent font-bold outline-none"
+                                    onChange={(event) => form.setData('task_project_id', event.target.value ? Number(event.target.value) : null)}
+                                    value={form.data.task_project_id ?? ''}
+                                >
+                                    <option value="">Inbox</option>
+                                    {explorer.rootProjects.map((project) => <option key={project.id} value={project.id}>{project.name}</option>)}
+                                    {explorer.folders.map((folder) => (
+                                        <optgroup key={folder.id} label={folder.name}>
+                                            {folder.projects.map((project) => <option key={project.id} value={project.id}>{project.name}</option>)}
+                                        </optgroup>
+                                    ))}
+                                </select>
+                            </label>
+                        )}
                         {hasTitle && <span className="ml-auto px-2 text-sm font-bold text-accent-ink">+{reward.points} SP</span>}
                     </div>
                 )}
@@ -101,6 +131,7 @@ export function TaskComposer({ today }: { today: string }) {
                 {form.errors.title && <p className="px-3 pt-2 text-sm font-semibold text-danger">{form.errors.title}</p>}
                 {form.errors.scheduled_date && <p className="px-3 pt-2 text-sm font-semibold text-danger">{form.errors.scheduled_date}</p>}
                 {form.errors.weekdays && <p className="px-3 pt-2 text-sm font-semibold text-danger">Choose at least one weekday.</p>}
+                {form.errors.notes && <p className="px-3 pt-2 text-sm font-semibold text-danger">{form.errors.notes}</p>}
             </form>
 
             <Dialog onClose={closeDialog} open={dialog === 'date'} title="Schedule">
@@ -118,8 +149,30 @@ export function TaskComposer({ today }: { today: string }) {
                 <Button className="mt-6" fullWidth onClick={closeDialog}>Done</Button>
             </Dialog>
 
-            <Dialog onClose={closeDialog} open={dialog === 'subtasks'} title="Subtasks">
-                <SubtaskEditor onChange={(subtasks) => form.setData('subtasks', subtasks)} subtasks={form.data.subtasks} />
+            <Dialog description="Add as many steps as you need, then arrange them in the order you want to work." onClose={closeDialog} open={dialog === 'subtasks'} size="large" title="Plan the checklist">
+                <SubtaskEditor
+                    error={form.errors.subtasks}
+                    onChange={(subtasks) => {
+                        form.setData('subtasks', subtasks);
+                        form.clearErrors('subtasks');
+                    }}
+                    subtasks={form.data.subtasks}
+                />
+                <Button className="mt-6" fullWidth onClick={closeDialog}>Done</Button>
+            </Dialog>
+
+            <Dialog onClose={closeDialog} open={dialog === 'notes'} title="Notes">
+                <label className="text-sm font-semibold text-secondary">
+                    Notes
+                    <textarea
+                        autoFocus
+                        className="focus-ring mt-2 min-h-40 w-full resize-y rounded-2xl border border-border-strong bg-app px-4 py-3 text-base text-foreground placeholder:text-muted"
+                        maxLength={10000}
+                        onChange={(event) => form.setData('notes', event.target.value)}
+                        placeholder="Add context, links, or next steps…"
+                        value={form.data.notes}
+                    />
+                </label>
                 <Button className="mt-6" fullWidth onClick={closeDialog}>Done</Button>
             </Dialog>
         </section>

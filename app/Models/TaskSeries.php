@@ -10,7 +10,9 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 #[Fillable([
     'user_id',
+    'task_project_id',
     'title',
+    'notes',
     'important',
     'recurrence_type',
     'weekdays',
@@ -27,6 +29,12 @@ class TaskSeries extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    /** @return BelongsTo<TaskProject, $this> */
+    public function project(): BelongsTo
+    {
+        return $this->belongsTo(TaskProject::class, 'task_project_id');
     }
 
     /** @return HasMany<Task, $this> */

@@ -11,6 +11,7 @@ interface DialogProps {
     title: string;
     description?: string;
     placement?: 'center' | 'right' | 'right-card';
+    size?: 'default' | 'large';
 }
 
 const focusableSelector =
@@ -23,6 +24,7 @@ export function Dialog({
     title,
     description,
     placement = 'center',
+    size = 'default',
     children,
 }: PropsWithChildren<DialogProps>) {
     const dialogRef = useRef<HTMLDivElement>(null);
@@ -43,7 +45,8 @@ export function Dialog({
         document.body.style.overflow = 'hidden';
 
         window.requestAnimationFrame(() => {
-            dialog?.querySelector<HTMLElement>(focusableSelector)?.focus();
+            const preferredFocusTarget = dialog?.querySelector<HTMLElement>('[data-dialog-autofocus], [autofocus]');
+            (preferredFocusTarget ?? dialog?.querySelector<HTMLElement>(focusableSelector))?.focus();
         });
 
         function handleKeyDown(event: KeyboardEvent) {
@@ -120,7 +123,12 @@ export function Dialog({
                 className={classNames(
                     'border border-border-strong bg-elevated shadow-2xl',
                     placement === 'center'
-                        ? 'w-full max-w-md rounded-[var(--radius-panel)] p-5 sm:p-6'
+                        ? classNames(
+                            'w-full rounded-[var(--radius-panel)] p-5 sm:p-6',
+                            size === 'large'
+                                ? 'max-h-[calc(100dvh-2rem)] max-w-2xl overflow-y-auto'
+                                : 'max-w-md',
+                        )
                         : placement === 'right-card'
                             ? 'h-full w-[min(94vw,30rem)] overflow-y-auto border-y-0 border-r-0 p-5 sm:h-[min(92vh,54rem)] sm:rounded-[var(--radius-panel)] sm:border'
                             : 'h-full w-[min(94vw,28rem)] overflow-y-auto border-y-0 border-r-0 p-5',

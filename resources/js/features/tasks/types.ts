@@ -19,9 +19,30 @@ export interface TaskReschedule {
     rescheduledAt: string;
 }
 
+export interface TaskFocusHistorySession {
+    id: number;
+    source: 'timer' | 'manual';
+    startedAt: string;
+    endedAt: string;
+    localStartedAt: string;
+    localEndedAt: string;
+    durationSeconds: number;
+    intervalCount: number;
+}
+
+export interface TaskFocusHistory {
+    timezone: string;
+    totalSeconds: number;
+    sessions: TaskFocusHistorySession[];
+}
+
 export interface TaskViewData {
     id: number;
     title: string;
+    notes: string | null;
+    taskProjectId: number | null;
+    projectName: string | null;
+    position: number;
     scheduledDate: string;
     originalScheduledDate: string | null;
     important: boolean;
@@ -43,6 +64,7 @@ export interface TaskViewData {
     totalSubtasks: number;
     canComplete: boolean;
     rescheduleHistory: TaskReschedule[];
+    focus: TaskFocusHistory;
 }
 
 export interface EditableSubtask {
@@ -53,11 +75,54 @@ export interface EditableSubtask {
 
 export interface TaskFormData {
     title: string;
+    task_project_id?: number | null;
+    notes: string;
     scheduled_date: string;
     important: boolean;
     recurrence_type: RecurrenceType | null;
     weekdays: number[];
     subtasks: EditableSubtask[];
+}
+
+export interface TaskSearchFilters {
+    search: string;
+    status: 'all' | 'incomplete' | 'completed';
+    taskProject: string;
+    important: 'all' | 'yes' | 'no';
+}
+
+export interface TaskProjectViewData {
+    id: number;
+    name: string;
+    position: number;
+    openTaskCount: number;
+}
+
+export interface TaskFolderViewData {
+    id: number;
+    name: string;
+    position: number;
+    projectCount: number;
+    openTaskCount: number;
+    projects: TaskProjectViewData[];
+}
+
+export interface TaskExplorerViewData {
+    folders: TaskFolderViewData[];
+    rootProjects: TaskProjectViewData[];
+    inboxCount: number;
+}
+
+export type TaskWorkspaceView = 'files' | 'folder' | 'today' | 'inbox' | 'upcoming' | 'overdue' | 'completed' | 'project';
+export type ProjectTaskView = 'today' | 'overdue' | 'upcoming' | 'completed';
+
+export interface TaskWorkspaceViewData {
+    view: TaskWorkspaceView;
+    taskView: ProjectTaskView;
+    projectId: number | null;
+    folderId: number | null;
+    label: string;
+    manualTasks: TaskViewData[] | null;
 }
 
 export interface PaginationLink {

@@ -47,7 +47,7 @@ During the same active reward Season, `MarkTaskIncomplete` subtracts exactly the
 
 ## Interface
 
-`/tasks` uses a sticky conversational composer rather than an add-button workflow. It begins as one input and expands on focus to expose icon-led date, Important, recurrence, and subtask controls. Title and Enter/Create are sufficient. Projected SP appears only after a non-empty title and updates immediately.
+`/tasks` uses a sticky conversational composer rather than an add-button workflow. It begins as one input and expands on focus to expose icon-led date, Important, recurrence, and subtask controls. Title and Enter/Create are sufficient. Projected SP appears only after a non-empty title and updates immediately. The checklist editor has no fixed item-count ceiling, supports Enter-to-add and multi-line paste, and preserves explicit ordering through drag or accessible move controls.
 
 Four focused tabs organize the timeline into Today, Overdue, Upcoming, and Completed. Today owns only incomplete Tasks scheduled for the current date; every completed Task belongs to Completed so records never appear in two tabs. Overdue uses bounded pagination, while Completed appends bounded chunks with a Load more action. Upcoming shows every one-time future Task and only the next pending occurrence from each recurring series. Rows keep completion, title, date, importance, projected or earned SP, and conditional recurrence or checklist indicators visible. A Task with subtasks exposes an inline expandable checklist so its existing items can be completed without opening the details sheet.
 

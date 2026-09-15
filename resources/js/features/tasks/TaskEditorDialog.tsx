@@ -2,23 +2,26 @@ import { router, useForm } from '@inertiajs/react';
 import { Star } from 'lucide-react';
 import type { FormEvent } from 'react';
 
-import { Button, Dialog, Field } from '../../components/ui';
+import { Button, Dialog, Field, SelectField } from '../../components/ui';
 import { classNames } from '../../components/ui/classNames';
 import { projectedReward } from './taskPresentation';
 import { RecurrenceControls } from './RecurrenceControls';
 import { SubtaskEditor } from './SubtaskEditor';
-import type { EditableSubtask, TaskFormData, TaskViewData } from './types';
+import type { EditableSubtask, TaskExplorerViewData, TaskFormData, TaskViewData } from './types';
 
-export type TaskEditor = 'title' | 'schedule' | 'checklist';
+export type TaskEditor = 'title' | 'schedule' | 'checklist' | 'organization' | 'notes';
 
-export function TaskEditorDialog({ editor, onClose, task, today }: {
+export function TaskEditorDialog({ editor, explorer, onClose, task, today }: {
     editor: TaskEditor;
+    explorer: TaskExplorerViewData;
     onClose: () => void;
     task: TaskViewData;
     today: string;
 }) {
     const form = useForm<TaskFormData>({
         title: task.title,
+        task_project_id: task.taskProjectId,
+        notes: task.notes ?? '',
         scheduled_date: task.scheduledDate,
         important: task.important,
         recurrence_type: task.recurrence?.type ?? null,
@@ -58,7 +61,13 @@ export function TaskEditorDialog({ editor, onClose, task, today }: {
     }
 
     return (
-        <Dialog onClose={onClose} open title={editorTitles[editor]}>
+        <Dialog
+            description={editor === 'checklist' ? 'Add, complete, remove, or reorder every step in this Task.' : undefined}
+            onClose={onClose}
+            open
+            size={editor === 'checklist' ? 'large' : 'default'}
+            title={editorTitles[editor]}
+        >
             <form onSubmit={save}>
                 {editor === 'title' && (
                     <Field autoFocus error={form.errors.title} label="Title" onChange={(event) => form.setData('title', event.target.value)} required value={form.data.title} />
@@ -97,10 +106,41 @@ export function TaskEditorDialog({ editor, onClose, task, today }: {
 
                 {editor === 'checklist' && (
                     <SubtaskEditor
-                        onChange={(subtasks) => form.setData('subtasks', subtasks)}
+                        error={form.errors.subtasks}
+                        onChange={(subtasks) => {
+                            form.setData('subtasks', subtasks);
+                            form.clearErrors('subtasks');
+                        }}
                         onToggleCompletion={toggleSubtask}
                         subtasks={form.data.subtasks}
                     />
+                )}
+
+                {editor === 'organization' && (
+                    <SelectField error={form.errors.task_project_id} label="Project" onChange={(event) => form.setData('task_project_id', event.target.value ? Number(event.target.value) : null)} value={form.data.task_project_id ?? ''}>
+                        <option value="">Inbox</option>
+                        {explorer.rootProjects.map((project) => <option key={project.id} value={project.id}>{project.name}</option>)}
+                        {explorer.folders.map((folder) => (
+                            <optgroup key={folder.id} label={folder.name}>
+                                {folder.projects.map((project) => <option key={project.id} value={project.id}>{project.name}</option>)}
+                            </optgroup>
+                        ))}
+                    </SelectField>
+                )}
+
+                {editor === 'notes' && (
+                    <label className="text-sm font-semibold text-secondary">
+                        Notes
+                        <textarea
+                            autoFocus
+                            className="focus-ring mt-2 min-h-48 w-full resize-y rounded-2xl border border-border-strong bg-app px-4 py-3 text-base text-foreground placeholder:text-muted"
+                            maxLength={10000}
+                            onChange={(event) => form.setData('notes', event.target.value)}
+                            placeholder="Add context, links, or next steps…"
+                            value={form.data.notes}
+                        />
+                        {form.errors.notes && <span className="mt-2 block text-sm font-semibold text-danger">{form.errors.notes}</span>}
+                    </label>
                 )}
 
                 <Button className="mt-6" disabled={form.processing || !form.data.title.trim()} fullWidth type="submit">
@@ -115,4 +155,6 @@ const editorTitles: Record<TaskEditor, string> = {
     title: 'Edit title',
     schedule: 'Edit schedule',
     checklist: 'Edit checklist',
+    organization: 'Move Task',
+    notes: 'Edit notes',
 };
