@@ -4,12 +4,29 @@ namespace App\Support\Tasks;
 
 use App\Enums\TaskFocusSessionState;
 use App\Models\TaskFocusSession;
+use App\Models\User;
 use App\Services\Tasks\TaskFocusSessionTimer;
 use Carbon\CarbonImmutable;
 
 class TaskFocusSessionViewDataFactory
 {
     public function __construct(private readonly TaskFocusSessionTimer $timer) {}
+
+    /** @return list<array<string, mixed>> */
+    public function openForUser(User $user): array
+    {
+        $at = CarbonImmutable::now('UTC');
+
+        return $user->taskFocusSessions()
+            ->where('active_marker', 1)
+            ->with(['user', 'task.project', 'intervals'])
+            ->orderByRaw("CASE WHEN state = 'running' THEN 0 ELSE 1 END")
+            ->orderByDesc('updated_at')
+            ->orderByDesc('id')
+            ->get()
+            ->map(fn (TaskFocusSession $session): array => $this->make($session, $at))
+            ->all();
+    }
 
     /** @return array<string, mixed> */
     public function make(TaskFocusSession $session, ?CarbonImmutable $at = null): array

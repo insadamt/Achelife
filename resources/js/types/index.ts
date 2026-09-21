@@ -18,5 +18,6 @@ export interface SharedPageProps {
     };
     progressPanel: ProgressPanelData | null;
     activeFocusSession: FocusSessionData | null;
+    openFocusSessions: FocusSessionData[];
     [key: string]: unknown;
 }

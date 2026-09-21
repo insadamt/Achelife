@@ -78,8 +78,8 @@ export function SubscriptionOccurrenceDrawer({
                     <form className="mt-6 space-y-5" onSubmit={pay}>
                         <div>
                             <label className="text-sm font-semibold text-secondary" htmlFor="subscription-payment-amount">Payment amount</label>
-                            <div className="mt-2 flex items-center rounded-2xl border border-border-strong bg-app focus-within:border-[var(--money-accent)]">
-                                <input className="focus-ring min-w-0 flex-1 bg-transparent px-4 py-3 text-xl font-bold tabular-nums" id="subscription-payment-amount" inputMode="decimal" onChange={(event) => form.setData('amount', event.target.value)} required value={form.data.amount} />
+                            <div className="focus-field-shell mt-2 flex items-center rounded-2xl border border-border-strong bg-app">
+                                <input className="min-w-0 flex-1 bg-transparent px-4 py-3 text-xl font-bold tabular-nums outline-none" id="subscription-payment-amount" inputMode="decimal" onChange={(event) => form.setData('amount', event.target.value)} required value={form.data.amount} />
                                 <span className="pr-4 text-sm font-bold text-accent-ink">{selectedAccount?.currency ?? occurrence.currency}</span>
                             </div>
                             {form.errors.amount && <p className="mt-2 text-sm text-danger">{form.errors.amount}</p>}

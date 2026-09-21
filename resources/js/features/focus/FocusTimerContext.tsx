@@ -3,43 +3,47 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState } 
 import type { PropsWithChildren } from 'react';
 
 import type { SharedPageProps } from '../../types';
-import { FocusRequestError, startFocusSession, transitionFocusSession } from './focusApi';
+import { FocusRequestError, switchFocusSession, transitionFocusSession } from './focusApi';
 import type { FocusIslandEvent, FocusSessionData } from './types';
 
 interface FocusTimerContextValue {
     session: FocusSessionData | null;
+    sessions: FocusSessionData[];
     event: FocusIslandEvent | null;
     elapsedSeconds: number;
     processing: boolean;
     announcement: string;
-    start: (taskId: number, taskTitle: string) => Promise<void>;
+    error: string;
+    switchTo: (taskId: number, taskTitle: string) => Promise<void>;
     pause: () => Promise<void>;
-    resume: () => Promise<void>;
-    stop: () => Promise<void>;
+    stopSession: (sessionId: number) => Promise<void>;
 }
 
 const FocusTimerContext = createContext<FocusTimerContextValue | null>(null);
 
 export function FocusTimerProvider({ children }: PropsWithChildren) {
-    const sharedSession = usePage<SharedPageProps>().props.activeFocusSession;
-    const [session, setSession] = useState<FocusSessionData | null>(sharedSession);
+    const sharedSessions = usePage<SharedPageProps>().props.openFocusSessions;
+    const [sessions, setSessions] = useState<FocusSessionData[]>(sharedSessions);
     const [event, setEvent] = useState<FocusIslandEvent | null>(null);
     const [processing, setProcessing] = useState(false);
     const [announcement, setAnnouncement] = useState('');
+    const [error, setError] = useState('');
     const [clockTick, setClockTick] = useState(() => Date.now());
     const [responseReceivedAt, setResponseReceivedAt] = useState(() => Date.now());
+    const session = sessions[0] ?? null;
 
-    const acceptSession = useCallback((nextSession: FocusSessionData | null) => {
+    const acceptSessions = useCallback((nextSessions: FocusSessionData[]) => {
         setResponseReceivedAt(Date.now());
         setClockTick(Date.now());
-        setSession(nextSession?.active ? nextSession : null);
+        setSessions(nextSessions);
     }, []);
 
     useEffect(() => router.on('navigate', (navigation) => {
-        const nextSession = (navigation.detail.page.props as unknown as SharedPageProps).activeFocusSession;
+        const nextSessions = (navigation.detail.page.props as unknown as SharedPageProps).openFocusSessions;
         setEvent(null);
-        acceptSession(nextSession);
-    }), [acceptSession]);
+        setError('');
+        acceptSessions(nextSessions);
+    }), [acceptSessions]);
 
     useEffect(() => {
         if (!session?.running) return;
@@ -53,65 +57,91 @@ export function FocusTimerProvider({ children }: PropsWithChildren) {
         return () => window.clearTimeout(timer);
     }, [event]);
 
-    const runControl = useCallback(async (control: 'pause' | 'resume' | 'stop') => {
-        if (!session || processing) return;
-        setProcessing(true);
-        try {
-            const updated = await transitionFocusSession(session.id, control);
-            if (control === 'stop') {
-                setEvent({
-                    type: 'focus-saved',
-                    id: updated.id,
-                    taskTitle: updated.taskTitle,
-                    durationSeconds: updated.elapsedSeconds,
-                });
-                setSession(null);
-                setAnnouncement(`Focus saved for ${formatSpokenDuration(updated.elapsedSeconds)}.`);
-                return;
-            }
-            acceptSession(updated);
-            setAnnouncement(`Focus ${control === 'pause' ? 'paused' : 'resumed'} for ${updated.taskTitle}.`);
-        } catch (error) {
-            setAnnouncement(focusErrorMessage(error));
-        } finally {
-            setProcessing(false);
-        }
-    }, [acceptSession, processing, session]);
+    useEffect(() => {
+        if (!error) return;
+        const timer = window.setTimeout(() => setError(''), 6000);
+        return () => window.clearTimeout(timer);
+    }, [error]);
 
-    const start = useCallback(async (taskId: number, taskTitle: string) => {
+    const switchTo = useCallback(async (taskId: number, taskTitle: string) => {
         if (processing) return;
-        if (session) {
-            setAnnouncement(session.taskId === taskId
-                ? `Focus is already ${session.state} for ${session.taskTitle}.`
-                : `Focus is active for ${session.taskTitle}. Stop it before starting ${taskTitle}.`);
+        if (session?.running && session.taskId === taskId) {
+            setAnnouncement(`Focus is already running for ${taskTitle}.`);
             return;
         }
+
         setProcessing(true);
         try {
-            const started = await startFocusSession(taskId);
+            const result = await switchFocusSession(taskId);
+            acceptSessions(result.sessions);
             setEvent(null);
-            acceptSession(started);
-            setAnnouncement(`Focus started for ${started.taskTitle}.`);
+            setError('');
+            setAnnouncement(`Focus is now running for ${result.session.taskTitle}.`);
         } catch (error) {
-            if (error instanceof FocusRequestError && error.activeSession) acceptSession(error.activeSession);
-            setAnnouncement(focusErrorMessage(error));
+            if (error instanceof FocusRequestError && error.sessions) acceptSessions(error.sessions);
+            const message = focusErrorMessage(error);
+            setError(message);
+            setAnnouncement(message);
         } finally {
             setProcessing(false);
         }
-    }, [acceptSession, processing, session]);
+    }, [acceptSessions, processing, session]);
+
+    const pause = useCallback(async () => {
+        if (!session?.running || processing) return;
+        setProcessing(true);
+        try {
+            const result = await transitionFocusSession(session.id, 'pause');
+            acceptSessions(result.sessions);
+            setError('');
+            setAnnouncement(`Focus paused for ${result.session.taskTitle}.`);
+        } catch (error) {
+            if (error instanceof FocusRequestError && error.sessions) acceptSessions(error.sessions);
+            const message = focusErrorMessage(error);
+            setError(message);
+            setAnnouncement(message);
+        } finally {
+            setProcessing(false);
+        }
+    }, [acceptSessions, processing, session]);
+
+    const stopSession = useCallback(async (sessionId: number) => {
+        if (processing) return;
+        setProcessing(true);
+        try {
+            const result = await transitionFocusSession(sessionId, 'stop');
+            acceptSessions(result.sessions);
+            setError('');
+            setEvent({
+                type: 'focus-saved',
+                id: result.session.id,
+                taskTitle: result.session.taskTitle,
+                durationSeconds: result.session.elapsedSeconds,
+            });
+            setAnnouncement(`Focus saved for ${result.session.taskTitle}: ${formatSpokenDuration(result.session.elapsedSeconds)}.`);
+        } catch (error) {
+            if (error instanceof FocusRequestError && error.sessions) acceptSessions(error.sessions);
+            const message = focusErrorMessage(error);
+            setError(message);
+            setAnnouncement(message);
+        } finally {
+            setProcessing(false);
+        }
+    }, [acceptSessions, processing]);
 
     const elapsedSeconds = session === null ? 0 : currentElapsedSeconds(session, clockTick, responseReceivedAt);
     const value = useMemo<FocusTimerContextValue>(() => ({
         session,
+        sessions,
         event,
         elapsedSeconds,
         processing,
         announcement,
-        start,
-        pause: () => runControl('pause'),
-        resume: () => runControl('resume'),
-        stop: () => runControl('stop'),
-    }), [announcement, elapsedSeconds, event, processing, runControl, session, start]);
+        error,
+        switchTo,
+        pause,
+        stopSession,
+    }), [announcement, elapsedSeconds, error, event, pause, processing, session, sessions, stopSession, switchTo]);
 
     return <FocusTimerContext.Provider value={value}>{children}</FocusTimerContext.Provider>;
 }

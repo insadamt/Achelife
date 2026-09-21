@@ -53,7 +53,7 @@ class TaskOrganizationPortabilityTest extends TestCase
             $restoredProject = $target->taskProjects()->sole();
             $restoredTask = $target->tasks()->where('title', 'Ship Phase 1')->sole();
             $restoredSeries = $target->taskSeries()->sole();
-            $this->assertSame(5, $archive->manifest['archive_format_version']);
+        $this->assertSame(6, $archive->manifest['archive_format_version']);
             $this->assertNotSame($folder->id, $restoredFolder->id);
             $this->assertSame($restoredFolder->id, $restoredProject->task_folder_id);
             $this->assertSame($restoredProject->id, $restoredTask->task_project_id);

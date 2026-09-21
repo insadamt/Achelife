@@ -1,12 +1,16 @@
-import { Check, CirclePause, Pause, Play, Square, Timer } from 'lucide-react';
+import { Check, CirclePause, Pause, Play, Plus, Square, Timer } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 import { classNames } from '../../components/ui/classNames';
+import { FocusTaskFinder } from './FocusTaskFinder';
 import { useFocusTimer } from './FocusTimerContext';
 
 export function DynamicIsland({ mobileVisible, onMobileDismiss }: { mobileVisible: boolean; onMobileDismiss: () => void }) {
     const focus = useFocusTimer();
     const [controlsExpanded, setControlsExpanded] = useState(false);
+    const [findingTask, setFindingTask] = useState(false);
+    const runningSession = focus.sessions.find((session) => session.running);
+    const pausedSessions = focus.sessions.filter((session) => !session.running);
 
     useEffect(() => {
         if (!mobileVisible || controlsExpanded) return;
@@ -14,7 +18,9 @@ export function DynamicIsland({ mobileVisible, onMobileDismiss }: { mobileVisibl
         return () => window.clearTimeout(timer);
     }, [controlsExpanded, mobileVisible, onMobileDismiss]);
 
-    if (focus.event?.type === 'focus-saved') {
+    if (!focus.session && !focus.event) return <p aria-live="polite" className="sr-only">{focus.announcement}</p>;
+
+    if (!focus.session && focus.event) {
         return (
             <div className="focus-island-enter fixed top-18 left-1/2 z-50 flex max-w-[calc(100vw-2rem)] -translate-x-1/2 items-center gap-3 rounded-full border border-success/35 bg-elevated px-4 py-3 text-sm font-bold shadow-2xl md:top-4" role="status">
                 <Check aria-hidden="true" className="text-success" size={18} />
@@ -23,54 +29,85 @@ export function DynamicIsland({ mobileVisible, onMobileDismiss }: { mobileVisibl
         );
     }
 
-    if (!focus.session) return <p aria-live="polite" className="sr-only">{focus.announcement}</p>;
-
-    const stateLabel = focus.session.running ? 'Running' : 'Paused';
+    const primaryTitle = runningSession?.taskTitle ?? (pausedSessions.length === 1 ? pausedSessions[0]?.taskTitle : `${pausedSessions.length} Tasks paused`);
+    const stateLabel = runningSession ? 'Running' : 'All paused';
 
     return (
         <div className={classNames(
             'focus-island-enter fixed top-18 left-1/2 z-50 w-[min(30rem,calc(100vw-2rem))] -translate-x-1/2 rounded-[1.5rem] border border-border-strong bg-elevated/96 p-2 shadow-2xl backdrop-blur-md md:top-4',
             !mobileVisible && 'max-md:hidden',
-        )} aria-label={`${stateLabel} Focus for ${focus.session.taskTitle}, ${formatFocusClock(focus.elapsedSeconds)}`} role="region">
+        )} aria-label={`Focus ${stateLabel.toLowerCase()}, ${primaryTitle}`} role="region">
             <button
                 aria-expanded={controlsExpanded}
-                aria-label={`${controlsExpanded ? 'Hide' : 'Show'} Focus controls for ${focus.session.taskTitle}`}
+                aria-label={`${controlsExpanded ? 'Hide' : 'Show'} Focus controls. ${stateLabel}: ${primaryTitle}`}
                 className="focus-ring flex min-h-12 w-full items-center justify-center gap-3 rounded-[1.1rem] px-2 text-left hover:bg-surface-hover"
                 onClick={() => setControlsExpanded((expanded) => !expanded)}
                 type="button"
             >
-                <span className={classNames('grid size-9 shrink-0 place-items-center rounded-full', focus.session.running ? 'bg-[var(--task-accent)] text-accent-foreground' : 'bg-surface-hover text-warning')}>
-                    {focus.session.running ? <Timer aria-hidden="true" size={17} /> : <CirclePause aria-hidden="true" size={17} />}
+                <span className={classNames('grid size-9 shrink-0 place-items-center rounded-full', runningSession ? 'bg-[var(--task-accent)] text-accent-foreground' : 'bg-surface-hover text-warning')}>
+                    {runningSession ? <Timer aria-hidden="true" size={17} /> : <CirclePause aria-hidden="true" size={17} />}
                 </span>
                 <span className="min-w-0 flex-1">
-                    <span className="block truncate text-sm font-bold">{focus.session.taskTitle}</span>
+                    <span className="block truncate text-sm font-bold">{primaryTitle}</span>
                     <span className="block text-[0.6875rem] font-bold tracking-[0.1em] text-muted uppercase">{stateLabel}</span>
                 </span>
-                <time className="shrink-0 font-mono text-lg font-bold tabular-nums" dateTime={`PT${focus.elapsedSeconds}S`}>
+                {runningSession && <time className="shrink-0 font-mono text-lg font-bold tabular-nums" dateTime={`PT${focus.elapsedSeconds}S`}>
                     {formatFocusClock(focus.elapsedSeconds)}
-                </time>
+                </time>}
             </button>
 
-            <div className={classNames('grid-cols-2 gap-2 px-2 pt-2 pb-1', controlsExpanded ? 'grid' : 'hidden')}>
+            {controlsExpanded && <div className="max-h-[min(70vh,32rem)] space-y-3 overflow-y-auto px-2 pt-3 pb-1">
+                {runningSession && <div className="grid grid-cols-2 gap-2">
+                    <button
+                        className="focus-ring icon-text flex min-h-11 items-center justify-center gap-2 rounded-full bg-surface-hover px-4 text-sm font-bold hover:brightness-110 disabled:opacity-55"
+                        disabled={focus.processing}
+                        onClick={focus.pause}
+                        type="button"
+                    ><Pause aria-hidden="true" size={16} />Pause</button>
+                    <button
+                        className="focus-ring icon-text flex min-h-11 items-center justify-center gap-2 rounded-full bg-danger/12 px-4 text-sm font-bold text-danger hover:bg-danger/20 disabled:opacity-55"
+                        disabled={focus.processing}
+                        onClick={() => focus.stopSession(runningSession.id)}
+                        type="button"
+                    ><Square aria-hidden="true" fill="currentColor" size={14} />Finish focus</button>
+                </div>}
+
+                {pausedSessions.length > 0 && <section aria-label="Paused Focus Tasks" className="space-y-1">
+                    <h2 className="px-2 text-xs font-bold text-muted uppercase">{runningSession ? 'Switch to' : 'Paused Tasks'}</h2>
+                    {pausedSessions.map((pausedSession) => <div className="flex min-h-12 items-center gap-2 rounded-xl bg-surface-hover/60 px-2" key={pausedSession.id}>
+                        <CirclePause aria-hidden="true" className="shrink-0 text-warning" size={16} />
+                        <span className="min-w-0 flex-1">
+                            <span className="block truncate text-sm font-semibold">{pausedSession.taskTitle}</span>
+                            <span className="block font-mono text-xs text-muted">{formatFocusClock(pausedSession.elapsedSeconds)}</span>
+                        </span>
+                        <button
+                            aria-label={`Resume Focus for ${pausedSession.taskTitle}`}
+                            className="focus-ring grid size-10 shrink-0 place-items-center rounded-full hover:bg-elevated disabled:opacity-55"
+                            disabled={focus.processing}
+                            onClick={() => focus.switchTo(pausedSession.taskId, pausedSession.taskTitle)}
+                            title="Resume Focus"
+                            type="button"
+                        ><Play aria-hidden="true" fill="currentColor" size={16} /></button>
+                        <button
+                            aria-label={`Finish Focus for ${pausedSession.taskTitle}`}
+                            className="focus-ring grid size-10 shrink-0 place-items-center rounded-full text-danger hover:bg-danger/12 disabled:opacity-55"
+                            disabled={focus.processing}
+                            onClick={() => focus.stopSession(pausedSession.id)}
+                            title="Finish Focus"
+                            type="button"
+                        ><Square aria-hidden="true" fill="currentColor" size={13} /></button>
+                    </div>)}
+                </section>}
+
                 <button
-                    className="focus-ring icon-text flex min-h-11 items-center justify-center gap-2 rounded-full bg-surface-hover px-4 text-sm font-bold hover:brightness-110 disabled:cursor-wait disabled:opacity-55"
-                    disabled={focus.processing}
-                    onClick={focus.session.running ? focus.pause : focus.resume}
+                    aria-expanded={findingTask}
+                    className="focus-ring flex min-h-11 w-full items-center justify-center gap-2 rounded-xl border border-border-strong text-sm font-bold hover:bg-surface-hover"
+                    onClick={() => setFindingTask((open) => !open)}
                     type="button"
-                >
-                    {focus.session.running ? <Pause aria-hidden="true" size={16} /> : <Play aria-hidden="true" size={16} />}
-                    {focus.session.running ? 'Pause' : 'Resume'}
-                </button>
-                <button
-                    className="focus-ring icon-text flex min-h-11 items-center justify-center gap-2 rounded-full bg-danger/12 px-4 text-sm font-bold text-danger hover:bg-danger/20 disabled:cursor-wait disabled:opacity-55"
-                    disabled={focus.processing}
-                    onClick={focus.stop}
-                    type="button"
-                >
-                    <Square aria-hidden="true" fill="currentColor" size={14} />
-                    Stop
-                </button>
-            </div>
+                ><Plus aria-hidden="true" size={16} />Find another Task</button>
+                {findingTask && <FocusTaskFinder onSelected={() => setFindingTask(false)} />}
+                {focus.event && <p className="text-center text-xs font-semibold text-success" role="status">Focus saved · {formatFocusDuration(focus.event.durationSeconds)}</p>}
+            </div>}
             <p aria-live="polite" className="sr-only">{focus.announcement}</p>
         </div>
     );

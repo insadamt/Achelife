@@ -22,6 +22,16 @@ class ArchiveTaskFocusValidator
 
     private int $activeSessions = 0;
 
+    /** @var array<int, true> */
+    private array $openTaskIds = [];
+
+    private int $formatVersion = 5;
+
+    public function useFormatVersion(int $formatVersion): void
+    {
+        $this->formatVersion = $formatVersion;
+    }
+
     /** @param array<string, mixed> $row */
     public function validate(string $table, array $row): void
     {
@@ -52,6 +62,7 @@ class ArchiveTaskFocusValidator
         $this->latestIntervalEnds = [];
         $this->intervalCounts = [];
         $this->activeSessions = 0;
+        $this->openTaskIds = [];
     }
 
     /** @param array<string, mixed> $row */
@@ -73,8 +84,17 @@ class ArchiveTaskFocusValidator
             throw new InvalidAccountArchive('A Focus Session has inconsistent state.');
         }
 
-        if ($active && (++$this->activeSessions > 1 || (int) $row['active_marker'] !== 1)) {
-            throw new InvalidAccountArchive('An archive cannot contain more than one active Focus Session.');
+        if ($active) {
+            $this->activeSessions++;
+            $taskId = (int) $row['task_id'];
+
+            if ((int) $row['active_marker'] !== 1
+                || ($this->formatVersion <= 5 && $this->activeSessions > 1)
+                || isset($this->openTaskIds[$taskId])) {
+                throw new InvalidAccountArchive('An archive contains conflicting open Focus Sessions.');
+            }
+
+            $this->openTaskIds[$taskId] = true;
         }
 
         $id = (int) $row['id'];

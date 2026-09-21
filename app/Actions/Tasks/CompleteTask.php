@@ -28,10 +28,10 @@ class CompleteTask
             throw new AuthorizationException;
         }
 
-        $completionTime = $completedAt ?? CarbonImmutable::now();
-        $completionDate = $this->userCalendar->dateOf($user, $completionTime);
-
-        return DB::transaction(function () use ($user, $task, $completionTime, $completionDate): Task {
+        return DB::transaction(function () use ($user, $task, $completedAt): Task {
+            User::query()->lockForUpdate()->findOrFail($user->id);
+            $completionTime = $completedAt ?? CarbonImmutable::now();
+            $completionDate = $this->userCalendar->dateOf($user, $completionTime);
             $rewardSeason = $this->synchronizeUserSeasons->execute($user, $completionDate);
             $lockedTask = Task::query()->with('subtasks')->lockForUpdate()->findOrFail($task->id);
 
@@ -68,6 +68,6 @@ class CompleteTask
             }
 
             return $lockedTask->refresh()->load('rewardSeason');
-        });
+        }, 3);
     }
 }

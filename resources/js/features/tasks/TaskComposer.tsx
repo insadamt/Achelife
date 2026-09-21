@@ -67,7 +67,7 @@ export function TaskComposer({ explorer, initialProjectId, showProjectControl = 
                     <label className="sr-only" htmlFor="quick-task-title">Add a task</label>
                     <input
                         autoComplete="off"
-                        className="focus-ring min-h-12 min-w-0 flex-1 bg-transparent px-1 text-lg font-semibold text-foreground placeholder:text-muted"
+                        className="focus-ring min-h-12 min-w-0 flex-1 rounded-lg bg-transparent px-1 text-lg font-semibold text-foreground placeholder:text-muted"
                         id="quick-task-title"
                         onChange={(event) => form.setData('title', event.target.value)}
                         onFocus={() => setExpanded(true)}
@@ -105,7 +105,7 @@ export function TaskComposer({ explorer, initialProjectId, showProjectControl = 
                             <StickyNote size={17} />
                         </ComposerControl>
                         {showProjectControl && (
-                            <label className="focus-within:focus-ring icon-text flex min-h-10 items-center gap-1.5 rounded-full px-3 text-xs font-bold text-muted hover:bg-surface-hover hover:text-foreground">
+                            <label className="focus-field-shell icon-text flex min-h-10 items-center gap-1.5 rounded-full border border-transparent px-3 text-xs font-bold text-muted hover:bg-surface-hover hover:text-foreground">
                                 <FolderKanban aria-hidden="true" size={17} />
                                 <span className="sr-only">Project</span>
                                 <select

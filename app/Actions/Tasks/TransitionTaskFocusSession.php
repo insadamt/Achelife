@@ -4,6 +4,7 @@ namespace App\Actions\Tasks;
 
 use App\Enums\TaskFocusSessionState;
 use App\Enums\TaskFocusTransition;
+use App\Exceptions\ActiveTaskFocusSessionExists;
 use App\Models\Task;
 use App\Models\TaskFocusSession;
 use App\Models\User;
@@ -27,10 +28,9 @@ class TransitionTaskFocusSession
             throw new AuthorizationException;
         }
 
-        $transitionedAt = ($transitionedAt ?? CarbonImmutable::now('UTC'))->utc();
-
         return DB::transaction(function () use ($user, $session, $transition, $transitionedAt): TaskFocusSession {
             User::query()->lockForUpdate()->findOrFail($user->id);
+            $transitionedAt = ($transitionedAt ?? CarbonImmutable::now('UTC'))->utc();
             Task::query()->lockForUpdate()->findOrFail($session->task_id);
             $lockedSession = TaskFocusSession::query()->lockForUpdate()->findOrFail($session->id);
 
@@ -66,6 +66,7 @@ class TransitionTaskFocusSession
         $session->update([
             'accumulated_seconds' => $session->accumulated_seconds + $this->timer->closeOpenInterval($session, $at),
             'state' => TaskFocusSessionState::Paused,
+            'running_marker' => null,
         ]);
 
         return $this->loadResult($session);
@@ -85,8 +86,18 @@ class TransitionTaskFocusSession
             throw ValidationException::withMessages(['focus' => 'The paused Focus Session has an open interval.']);
         }
 
+        $runningSession = $session->user->taskFocusSessions()
+            ->where('running_marker', 1)
+            ->where('id', '!=', $session->id)
+            ->lockForUpdate()
+            ->first();
+
+        if ($runningSession !== null) {
+            throw new ActiveTaskFocusSessionExists($runningSession);
+        }
+
         $session->intervals()->create(['started_at' => $at]);
-        $session->update(['state' => TaskFocusSessionState::Running]);
+        $session->update(['state' => TaskFocusSessionState::Running, 'running_marker' => 1]);
 
         return $this->loadResult($session);
     }
@@ -111,6 +122,7 @@ class TransitionTaskFocusSession
             'state' => TaskFocusSessionState::Completed,
             'ended_at' => $at,
             'active_marker' => null,
+            'running_marker' => null,
         ]);
 
         return $this->loadResult($session);

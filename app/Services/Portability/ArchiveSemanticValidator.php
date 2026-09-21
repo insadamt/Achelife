@@ -57,6 +57,7 @@ class ArchiveSemanticValidator
     public function validate(string $archivePath, array $manifest): void
     {
         $this->reset();
+        $this->taskFocusValidator->useFormatVersion((int) $manifest['archive_format_version']);
         $originalUserId = (int) data_get($manifest, 'user.original_id');
         $this->manifestUser = $manifest['user'];
 

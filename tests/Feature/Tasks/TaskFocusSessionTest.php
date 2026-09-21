@@ -56,7 +56,7 @@ class TaskFocusSessionTest extends TestCase
         $this->assertSame('2026-09-13T20:10:00+00:00', $repeatedStop->intervals[1]->started_at->toIso8601String());
     }
 
-    public function test_single_active_boundary_and_conflict_response_identify_existing_task(): void
+    public function test_legacy_start_conflicts_and_database_allows_only_one_running_session(): void
     {
         $user = User::factory()->create();
         $firstTask = $this->task($user, 'First');
@@ -81,9 +81,10 @@ class TaskFocusSessionTest extends TestCase
         $user->taskFocusSessions()->create([
             'task_id' => $secondTask->id,
             'started_at' => now(),
-            'state' => 'paused',
+            'state' => 'running',
             'source' => 'timer',
             'active_marker' => 1,
+            'running_marker' => 1,
         ]);
     }
 

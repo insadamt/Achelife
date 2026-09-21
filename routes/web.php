@@ -122,6 +122,8 @@ Route::middleware('auth')->group(function (): void {
         Route::put('/seasons/hold', [SeasonCycleController::class, 'hold'])->name('seasons.hold');
         Route::post('/tasks', [TaskController::class, 'store'])->name('tasks.store');
         Route::post('/tasks/{task}/focus-sessions', [TaskFocusSessionController::class, 'store'])->name('tasks.focus-sessions.store');
+        Route::get('/focus-task-options', [TaskFocusSessionController::class, 'taskOptions'])->name('focus-task-options');
+        Route::post('/tasks/{task}/focus-sessions/switch', [TaskFocusSessionController::class, 'switchToTask'])->name('tasks.focus-sessions.switch');
         Route::post('/tasks/{task}/focus-sessions/manual', [TaskFocusSessionController::class, 'storeManual'])->name('tasks.focus-sessions.manual.store');
         Route::post('/task-focus-sessions/{session}/pause', [TaskFocusSessionController::class, 'pause'])->name('task-focus-sessions.pause');
         Route::post('/task-focus-sessions/{session}/resume', [TaskFocusSessionController::class, 'resume'])->name('task-focus-sessions.resume');

@@ -2,7 +2,6 @@
 
 namespace App\Http\Middleware;
 
-use App\Models\User;
 use App\Services\Calendar\UserCalendar;
 use App\Support\Progress\ProgressPanelViewDataFactory;
 use App\Support\Tasks\TaskFocusSessionViewDataFactory;
@@ -25,6 +24,10 @@ class HandleInertiaRequests extends Middleware
     public function share(Request $request): array
     {
         $user = $request->user();
+        $openFocusSessions = null;
+        $loadOpenFocusSessions = function () use ($user, &$openFocusSessions): array {
+            return $openFocusSessions ??= ($user === null ? [] : $this->focusSessionViewDataFactory->openForUser($user));
+        };
 
         return [
             ...parent::share($request),
@@ -42,22 +45,8 @@ class HandleInertiaRequests extends Middleware
             'progressPanel' => fn () => $user === null || $user->onboarding_completed_at === null
                 ? null
                 : $this->progressPanelViewDataFactory->make($user, $this->calendar->today($user)),
-            'activeFocusSession' => fn () => $this->activeFocusSession($user),
+            'activeFocusSession' => fn () => $loadOpenFocusSessions()[0] ?? null,
+            'openFocusSessions' => $loadOpenFocusSessions,
         ];
-    }
-
-    /** @return array<string, mixed>|null */
-    private function activeFocusSession(?User $user): ?array
-    {
-        if ($user === null) {
-            return null;
-        }
-
-        $session = $user->taskFocusSessions()
-            ->where('active_marker', 1)
-            ->with(['task.project', 'intervals'])
-            ->first();
-
-        return $session === null ? null : $this->focusSessionViewDataFactory->make($session);
     }
 }

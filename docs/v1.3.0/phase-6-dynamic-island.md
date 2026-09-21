@@ -60,3 +60,5 @@ Build a small event/state abstraction that can accept future event types, but im
 A timer can be started from a Task, remains accurate across the application and browser reloads, and is globally controllable without parallel timers or per-second network traffic.
 
 Completed on 2026-09-14. See [Phase 6 completion](phase-6-completion-2026-09-14.md).
+
+The RC.1 second-Task conflict behavior is superseded by [Phase 10 Focus Task switching](phase-10-focus-task-switching.md).

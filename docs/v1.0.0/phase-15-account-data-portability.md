@@ -14,7 +14,7 @@ Exports use the filename suffix `.achelife.zip`. The ZIP contains:
 - `checksums.json`;
 - one NDJSON file per portable table under `tables/`.
 
-`archive_format_version` is independent from `source_application_version`. Format version 1 is frozen around the Phase 11–14 schema, version 2 adds Money Debts, version 3 adds Money Merchants and Tags, version 4 adds Task Folders, Projects, notes, and ordering, and version 5 adds Task Focus Sessions and intervals. A newer format is rejected with “Update Achelife first.” An older format is accepted only when an explicit compatibility path is registered; there is no implicit best-effort import.
+`archive_format_version` is independent from `source_application_version`. Format version 1 is frozen around the Phase 11–14 schema, version 2 adds Money Debts, version 3 adds Money Merchants and Tags, version 4 adds Task Folders, Projects, notes, and ordering, version 5 adds Task Focus Sessions and intervals, and version 6 permits several paused Task Focus Sessions. A newer format is rejected with “Update Achelife first.” An older format is accepted only when an explicit compatibility path is registered; there is no implicit best-effort import.
 
 The manifest records UTC creation time, the source-local creation date, application and format versions, saved timezone, immutable calendar start, long-term rollover preference, latest Season number/dates/Rank/SP/finalization state, exact table counts, module counts, and the declared file list. `checksums.json` contains a SHA-256 digest for the manifest and every NDJSON file.
 
@@ -75,6 +75,8 @@ Format 1 archives created before Habit icons were introduced remain supported. A
 Phase 18 later advances new exports to format version 2 for Money Debts. The frozen format-1 table list remains explicitly readable; see [Money debts](../money-debts.md#portability-and-compatibility).
 
 Achelife v1.3.0 Phase 5 advances new exports to format version 5 for Task Focus Sessions and intervals. Formats 1 through 4 remain explicitly readable and restore with no Focus data. A running session is snapshotted through the archive creation timestamp without changing the source, then restored as paused so transfer downtime never increases its duration.
+
+The Focus Task switching update advances new exports to format 6 without changing the Focus row shape. Format 5 imports retain the RC.1 one-active-session rule; format 6 permits one paused session per Task. Running sessions still export as paused snapshots, so no transferred session accumulates downtime.
 
 Phase 16 adds a separate `achelife-full-*.tar.gz` operational backup. It contains the complete SQLite volume, application key, manager configuration, recorded image digests, and persistent application storage for server recovery and update rollback. It must never be uploaded to the `.achelife.zip` import interface. Conversely, a `.achelife.zip` profile snapshot excludes infrastructure secrets and is not sufficient as the only pre-migration rollback point.
 

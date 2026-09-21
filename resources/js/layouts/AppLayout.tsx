@@ -6,6 +6,7 @@ import type { PropsWithChildren } from 'react';
 import { BrandMark } from '../components/BrandMark';
 import { ThemeToggle } from '../components/ThemeToggle';
 import { Drawer, Icon } from '../components/ui';
+import { classNames } from '../components/ui/classNames';
 import type { IconName } from '../components/ui';
 import { ProgressNotch } from '../features/progress/ProgressNotch';
 import { DynamicIsland } from '../features/focus/DynamicIsland';
@@ -103,11 +104,10 @@ function AppShell({ children }: PropsWithChildren) {
     const page = usePage<SharedPageProps>();
     const { auth } = page.props;
     const [mobileNavigationOpen, setMobileNavigationOpen] = useState(false);
-    const [mobileFocusVisibleForSessionId, setMobileFocusVisibleForSessionId] = useState<number | null>(null);
+    const [mobileFocusVisible, setMobileFocusVisible] = useState(false);
     const user = auth.user;
     const focus = useFocusTimer();
-    const mobileFocusVisible = focus.session?.id === mobileFocusVisibleForSessionId;
-    const dismissMobileFocus = useCallback(() => setMobileFocusVisibleForSessionId(null), []);
+    const dismissMobileFocus = useCallback(() => setMobileFocusVisible(false), []);
 
     return (
         <div className="min-h-screen bg-app text-foreground">
@@ -139,13 +139,13 @@ function AppShell({ children }: PropsWithChildren) {
                         {focus.session && (
                             <button
                                 aria-expanded={mobileFocusVisible}
-                                aria-label={`${mobileFocusVisible ? 'Hide' : 'Show'} Focus timer for ${focus.session.taskTitle}`}
+                                aria-label={`${mobileFocusVisible ? 'Hide' : 'Show'} Focus Tasks`}
                                 className="focus-ring relative grid size-10 place-items-center rounded-xl text-secondary transition-colors hover:bg-surface-hover hover:text-foreground"
-                                onClick={() => setMobileFocusVisibleForSessionId((sessionId) => sessionId === focus.session?.id ? null : focus.session?.id ?? null)}
+                                onClick={() => setMobileFocusVisible((visible) => !visible)}
                                 type="button"
                             >
                                 <Timer aria-hidden="true" size={19} />
-                                <span className="absolute top-1.5 right-1.5 size-2 rounded-full bg-[var(--task-accent)]" aria-hidden="true" />
+                                <span className={classNames('absolute top-1.5 right-1.5 size-2 rounded-full', focus.session.running ? 'bg-[var(--task-accent)]' : 'bg-warning')} aria-hidden="true" />
                             </button>
                         )}
                         <ThemeToggle className="size-10 rounded-xl" />
@@ -199,10 +199,12 @@ function AppShell({ children }: PropsWithChildren) {
 
             {page.props.progressPanel && <ProgressNotch data={page.props.progressPanel} />}
             <DynamicIsland
-                key={focus.session ? `session-${focus.session.id}` : focus.event ? `event-${focus.event.id}` : 'inactive'}
                 mobileVisible={mobileFocusVisible}
                 onMobileDismiss={dismissMobileFocus}
             />
+            {focus.error && <div className="fixed top-[8.5rem] left-1/2 z-[60] w-[min(30rem,calc(100vw-2rem))] -translate-x-1/2 rounded-xl border border-danger/30 bg-elevated p-3 text-sm font-semibold text-danger shadow-xl md:top-20" role="alert">
+                {focus.error}
+            </div>}
         </div>
     );
 }

@@ -9,8 +9,9 @@ export function StartFocusButton({ compact = false, taskId, taskTitle }: {
     taskTitle: string;
 }) {
     const focus = useFocusTimer();
-    const activeForTask = focus.session?.taskId === taskId;
-    const label = activeForTask ? `Focus ${focus.session?.state}` : 'Start Focus';
+    const openSession = focus.sessions.find((session) => session.taskId === taskId);
+    const runningForTask = openSession?.running ?? false;
+    const label = runningForTask ? 'Focus running' : openSession ? 'Resume Focus' : focus.session?.running ? 'Switch Focus' : 'Start Focus';
 
     return (
         <button
@@ -18,10 +19,10 @@ export function StartFocusButton({ compact = false, taskId, taskTitle }: {
             className={classNames(
                 'focus-ring icon-text inline-flex shrink-0 items-center justify-center gap-2 rounded-full font-bold transition-colors disabled:cursor-wait disabled:opacity-55',
                 compact ? 'size-10 text-muted hover:bg-surface-hover hover:text-foreground' : 'min-h-11 border border-border-strong bg-elevated px-4 text-sm text-foreground hover:bg-surface-hover',
-                activeForTask && 'text-accent-ink',
+                openSession && 'text-accent-ink',
             )}
-            disabled={focus.processing || activeForTask}
-            onClick={() => focus.start(taskId, taskTitle)}
+            disabled={focus.processing || runningForTask}
+            onClick={() => focus.switchTo(taskId, taskTitle)}
             title={label}
             type="button"
         >

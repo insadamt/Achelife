@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-#[Fillable(['user_id', 'task_id', 'started_at', 'ended_at', 'accumulated_seconds', 'state', 'source', 'active_marker'])]
+#[Fillable(['user_id', 'task_id', 'started_at', 'ended_at', 'accumulated_seconds', 'state', 'source', 'active_marker', 'running_marker'])]
 class TaskFocusSession extends Model
 {
     /** @return BelongsTo<User, $this> */
@@ -39,6 +39,7 @@ class TaskFocusSession extends Model
             'state' => TaskFocusSessionState::class,
             'source' => TaskFocusSessionSource::class,
             'active_marker' => 'integer',
+            'running_marker' => 'integer',
         ];
     }
 }

@@ -18,7 +18,8 @@ The release remains Task-focused. Focus Time is informational and never awards S
 - Deleting a Project moves its Tasks to Inbox and clears the Project from affected recurring templates.
 - Focus statistics follow a Task's current Project. Moving the Task moves its historical Focus totals to the new Project.
 - Deleting a Task deletes all Focus Sessions and intervals belonging to it.
-- A user may have only one active Focus Session. Paused sessions remain active.
+- A user may keep one open Focus Session per Task, with any number paused and only one running counter across all Tasks.
+- Switching Tasks pauses the running session and starts or resumes the selected Task at the same server timestamp. Completing a Task finishes its open Focus Session.
 - A running timer measures server time even while the browser is closed. Reloading reconstructs it from persisted timestamps.
 - Focus duration is split precisely across user-local day, month, and Season boundaries.
 - Manual and edited Focus Sessions cannot overlap another Focus interval owned by the user.
@@ -47,6 +48,7 @@ The release remains Task-focused. Focus Time is informational and never awards S
 8. [Phase 7 — Focus history and manual management](phase-7-focus-history.md)
 9. [Phase 8 — Expanded Task statistics](phase-8-statistics.md)
 10. [Phase 9 — Upgrade, release, and final hardening](phase-9-hardening.md)
+11. [Phase 10 — Focus Task switching after RC.1](phase-10-focus-task-switching.md)
 
 ## Implementation protocol
 
@@ -76,4 +78,3 @@ npm run build
 Use the nearest available development port from 8000 through 8009 for UI verification. Do not modify an installed Docker instance unless explicitly requested.
 
 Because v1.3.0 changes persistent data, the finished release must pass the internal RC process before any stable promotion.
-

@@ -15,7 +15,7 @@ Verify v1.3.0 as a safe real-world upgrade, complete its documentation, and prep
 
 ## Archive verification
 
-- Test the current archive format round trip with Folders, Projects, recurring templates, Task assignments, notes, ordering, completed sessions, paused sessions, and intervals.
+- Test archive format 6 round trips with Folders, Projects, recurring templates, Task assignments, notes, ordering, completed sessions, multiple paused sessions, and intervals.
 - Test every older archive format through its frozen explicit adapter.
 - Confirm old archives restore all Tasks to Inbox with no notes or Focus Sessions.
 - Confirm checksums, table counts, relationship validation, preview, remapping, and restore catch-up remain intact.
@@ -38,6 +38,7 @@ Focus:
 
 - [ ] Start, pause, resume, stop, manual, edit, and delete
 - [ ] One active timer under concurrency
+- [ ] Switch between running and paused Tasks with only one running counter, including across tabs and reloads
 - [ ] Navigation, reload, closed-tab continuation, and saved feedback
 - [ ] Precise interval allocation and zero SP influence
 
@@ -100,4 +101,3 @@ Because v1.3.0 changes migrations, persistent data, upgrades, and account archiv
 ## Exit criteria
 
 Every acceptance item, upgrade path, archive adapter, interface state, document, and release gate passes with recorded evidence. Report the exact validation results and suggest the release-preparation commit message before stopping.
-

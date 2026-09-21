@@ -221,11 +221,11 @@ export function TransactionDrawer({
 
                 <div>
                     <label className="text-sm font-semibold text-secondary" htmlFor="money-amount">{type === 'transfer' ? 'Destination receives' : 'Amount'}</label>
-                    <div className={classNames('mt-2 flex items-center rounded-2xl border bg-app transition-colors focus-within:border-[var(--money-accent)]', form.errors.amount ? 'border-danger' : 'border-border-strong')}>
+                    <div className={classNames('focus-field-shell mt-2 flex items-center rounded-2xl border bg-app transition-colors', form.errors.amount ? 'border-danger' : 'border-border-strong')}>
                         <input
                             aria-invalid={Boolean(form.errors.amount)}
                             autoFocus={!transaction}
-                            className="focus-ring min-w-0 flex-1 bg-transparent px-4 py-4 text-3xl font-bold tracking-[-0.04em] text-foreground tabular-nums placeholder:text-muted"
+                            className="min-w-0 flex-1 bg-transparent px-4 py-4 text-3xl font-bold tracking-[-0.04em] text-foreground tabular-nums outline-none placeholder:text-muted"
                             id="money-amount"
                             inputMode="decimal"
                             onChange={(event) => form.setData('amount', event.target.value)}
@@ -259,10 +259,10 @@ export function TransactionDrawer({
                         />
                         <div>
                             <label className="text-sm font-semibold text-secondary" htmlFor="money-fee">Transfer fee</label>
-                            <div className={classNames('mt-2 flex items-center rounded-2xl border bg-app transition-colors focus-within:border-[var(--money-accent)]', form.errors.fee ? 'border-danger' : 'border-border-strong')}>
+                            <div className={classNames('focus-field-shell mt-2 flex items-center rounded-2xl border bg-app transition-colors', form.errors.fee ? 'border-danger' : 'border-border-strong')}>
                                 <input
                                     aria-invalid={Boolean(form.errors.fee)}
-                                    className="focus-ring min-w-0 flex-1 bg-transparent px-4 py-3 text-lg font-bold text-foreground tabular-nums"
+                                    className="min-w-0 flex-1 bg-transparent px-4 py-3 text-lg font-bold text-foreground tabular-nums outline-none"
                                     id="money-fee"
                                     inputMode="decimal"
                                     onChange={(event) => form.setData('fee', event.target.value)}

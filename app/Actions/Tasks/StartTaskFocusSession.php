@@ -22,18 +22,22 @@ class StartTaskFocusSession
             throw new AuthorizationException;
         }
 
-        $startedAt = ($startedAt ?? CarbonImmutable::now('UTC'))->utc();
-
         try {
             return DB::transaction(function () use ($user, $task, $startedAt): TaskFocusSession {
                 User::query()->lockForUpdate()->findOrFail($user->id);
+                $startedAt = ($startedAt ?? CarbonImmutable::now('UTC'))->utc();
                 $lockedTask = Task::query()->lockForUpdate()->findOrFail($task->id);
 
                 if ($lockedTask->completed_at !== null) {
                     throw ValidationException::withMessages(['focus' => 'Completed Tasks cannot start a Focus Session.']);
                 }
 
-                $activeSession = $user->taskFocusSessions()->where('active_marker', 1)->lockForUpdate()->first();
+                $activeSession = $user->taskFocusSessions()
+                    ->where('active_marker', 1)
+                    ->orderByRaw("CASE WHEN state = 'running' THEN 0 ELSE 1 END")
+                    ->orderByDesc('updated_at')
+                    ->lockForUpdate()
+                    ->first();
 
                 if ($activeSession !== null) {
                     throw new ActiveTaskFocusSessionExists($activeSession);
@@ -46,13 +50,18 @@ class StartTaskFocusSession
                     'state' => TaskFocusSessionState::Running,
                     'source' => TaskFocusSessionSource::Timer,
                     'active_marker' => 1,
+                    'running_marker' => 1,
                 ]);
                 $session->intervals()->create(['started_at' => $startedAt]);
 
                 return $session->load(['task.project', 'intervals']);
             }, 3);
         } catch (QueryException $exception) {
-            $activeSession = $user->taskFocusSessions()->where('active_marker', 1)->first();
+            $activeSession = $user->taskFocusSessions()
+                ->where('active_marker', 1)
+                ->orderByRaw("CASE WHEN state = 'running' THEN 0 ELSE 1 END")
+                ->orderByDesc('updated_at')
+                ->first();
 
             if ($activeSession !== null) {
                 throw new ActiveTaskFocusSessionExists($activeSession->load(['task.project', 'intervals']));

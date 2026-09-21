@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Actions\Tasks\CreateManualTaskFocusSession;
 use App\Actions\Tasks\DeleteCompletedTaskFocusSession;
 use App\Actions\Tasks\StartTaskFocusSession;
+use App\Actions\Tasks\SwitchTaskFocusSession;
 use App\Actions\Tasks\TransitionTaskFocusSession;
 use App\Actions\Tasks\UpdateCompletedTaskFocusSession;
 use App\Data\Tasks\ManualFocusSessionData;
@@ -20,6 +21,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Validation\ValidationException;
 
 class TaskFocusSessionController extends Controller
 {
@@ -35,10 +37,50 @@ class TaskFocusSessionController extends Controller
             return response()->json([
                 'message' => $exception->getMessage(),
                 'activeSession' => $viewDataFactory->make($exception->session),
+                'sessions' => $viewDataFactory->openForUser($request->user()),
             ], 409);
         }
 
-        return response()->json(['session' => $viewDataFactory->make($session)], 201);
+        return response()->json([
+            'session' => $viewDataFactory->make($session),
+            'sessions' => $viewDataFactory->openForUser($request->user()),
+        ], 201);
+    }
+
+    public function switchToTask(Request $request, Task $task, SwitchTaskFocusSession $switch, TaskFocusSessionViewDataFactory $viewDataFactory): JsonResponse
+    {
+        $session = $switch->execute($request->user(), $task);
+
+        return response()->json([
+            'session' => $viewDataFactory->make($session),
+            'sessions' => $viewDataFactory->openForUser($request->user()),
+        ]);
+    }
+
+    public function taskOptions(Request $request): JsonResponse
+    {
+        $search = trim((string) $request->query('q', ''));
+
+        if (mb_strlen($search) > 100) {
+            throw ValidationException::withMessages(['q' => 'Search must be at most 100 characters.']);
+        }
+
+        $tasks = $request->user()->tasks()
+            ->whereNull('completed_at')
+            ->whereDoesntHave('focusSessions', fn ($query) => $query->where('active_marker', 1))
+            ->when($search !== '', fn ($query) => $query->where('title', 'like', '%'.$search.'%'))
+            ->with('project')
+            ->orderByDesc('updated_at')
+            ->limit(10)
+            ->get()
+            ->map(fn (Task $task): array => [
+                'id' => $task->id,
+                'title' => $task->title,
+                'projectName' => $task->project?->name,
+                'scheduledDate' => $task->scheduled_date->toDateString(),
+            ]);
+
+        return response()->json(['tasks' => $tasks]);
     }
 
     public function pause(Request $request, TaskFocusSession $session, TransitionTaskFocusSession $transition, TaskFocusSessionViewDataFactory $viewDataFactory): JsonResponse
@@ -93,9 +135,20 @@ class TaskFocusSessionController extends Controller
         TransitionTaskFocusSession $transition,
         TaskFocusSessionViewDataFactory $viewDataFactory,
     ): JsonResponse {
-        $updatedSession = $transition->execute($request->user(), $session, $requestedTransition);
+        try {
+            $updatedSession = $transition->execute($request->user(), $session, $requestedTransition);
+        } catch (ActiveTaskFocusSessionExists $exception) {
+            return response()->json([
+                'message' => $exception->getMessage(),
+                'activeSession' => $viewDataFactory->make($exception->session),
+                'sessions' => $viewDataFactory->openForUser($request->user()),
+            ], 409);
+        }
 
-        return response()->json(['session' => $viewDataFactory->make($updatedSession)]);
+        return response()->json([
+            'session' => $viewDataFactory->make($updatedSession),
+            'sessions' => $viewDataFactory->openForUser($request->user()),
+        ]);
     }
 
     private function manualData(

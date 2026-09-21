@@ -369,7 +369,7 @@ export const DiaryEditor = forwardRef<DiaryEditorHandle, DiaryEditorProps>(funct
                     <button className={`focus-ring rounded-full border px-4 py-2 text-sm font-semibold hover:bg-surface-hover ${hasEnoughCharacters && !mood ? 'border-warning text-warning' : 'border-border-strong'}`} onClick={() => setMoodOpen(true)} type="button">
                         {mood ? `Mood: ${titleCase(mood)}` : 'Choose mood'}
                     </button>
-                    <label className={`rounded-full border px-3 py-2 text-sm font-semibold ${hasEnoughCharacters && !languageCode ? 'border-warning text-warning' : 'border-border-strong'}`}>
+                    <label className={`focus-field-shell rounded-full border px-3 py-2 text-sm font-semibold ${hasEnoughCharacters && !languageCode ? 'border-warning text-warning' : 'border-border-strong'}`}>
                         <span className="sr-only">Diary language</span>
                         <select className="bg-transparent text-foreground outline-none" onChange={(event) => setLanguageCode(event.target.value)} value={languageCode}>
                             <option className="bg-elevated" value="">Choose language</option>

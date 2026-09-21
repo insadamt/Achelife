@@ -46,7 +46,7 @@ class TaskFocusPortabilityTest extends TestCase
 
         $restoredCompleted = $target->taskFocusSessions()->whereHas('task', fn ($query) => $query->where('title', 'Completed Focus'))->with('intervals')->sole();
         $restoredPaused = $target->taskFocusSessions()->whereHas('task', fn ($query) => $query->where('title', 'Running Focus'))->with('intervals')->sole();
-        $this->assertSame(5, $archive->manifest['archive_format_version']);
+        $this->assertSame(6, $archive->manifest['archive_format_version']);
         $this->assertSame(TaskFocusSessionState::Completed, $restoredCompleted->state);
         $this->assertSame(300, $restoredCompleted->accumulated_seconds);
         $this->assertSame(TaskFocusSessionState::Paused, $restoredPaused->state);
@@ -76,6 +76,29 @@ class TaskFocusPortabilityTest extends TestCase
         $this->assertSame('Legacy Task', $target->tasks()->sole()->title);
         $this->assertDatabaseCount('task_focus_sessions', 0);
         $this->assertDatabaseCount('task_focus_intervals', 0);
+    }
+
+    public function test_format_five_archive_restores_its_original_single_paused_session_shape(): void
+    {
+        CarbonImmutable::setTestNow('2026-09-13 14:00:00');
+        $source = $this->portableUser();
+        $session = app(StartTaskFocusSession::class)->execute($source, $this->task($source, 'RC One Focus'), CarbonImmutable::parse('2026-09-13 12:00:00'));
+        app(TransitionTaskFocusSession::class)->execute($source, $session, TaskFocusTransition::Pause, CarbonImmutable::parse('2026-09-13 12:02:00'));
+        $currentPath = app(AccountArchiveExporter::class)->export($source);
+        $this->temporaryArchives[] = $currentPath;
+        $formatFivePath = $this->rewriteArchive($currentPath, function (array &$entries): void {
+            $manifest = json_decode($entries['manifest.json'], true, 512, JSON_THROW_ON_ERROR);
+            $manifest['archive_format_version'] = 5;
+            $entries['manifest.json'] = json_encode($manifest, JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE)."\n";
+        });
+        $target = User::factory()->create(['onboarding_step' => 'path', 'onboarding_completed_at' => null]);
+
+        $archive = app(AccountArchiveValidator::class)->validate($formatFivePath);
+        app(RestoreAccountArchive::class)->execute($target, $archive, new AccountRestoreRequest(freshInstall: true));
+
+        $this->assertSame(5, $archive->manifest['archive_format_version']);
+        $this->assertSame(TaskFocusSessionState::Paused, $target->taskFocusSessions()->sole()->state);
+        $this->assertSame(120, $target->taskFocusSessions()->sole()->accumulated_seconds);
     }
 
     public function test_paused_focus_session_restores_its_exact_persisted_duration(): void
