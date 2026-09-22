@@ -1,6 +1,6 @@
 import { Link, usePage } from '@inertiajs/react';
 import { Timer } from 'lucide-react';
-import { useCallback, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import type { PropsWithChildren } from 'react';
 
 import { BrandMark } from '../components/BrandMark';
@@ -105,6 +105,7 @@ function AppShell({ children }: PropsWithChildren) {
     const { auth } = page.props;
     const [mobileNavigationOpen, setMobileNavigationOpen] = useState(false);
     const [mobileFocusVisible, setMobileFocusVisible] = useState(false);
+    const mobileFocusTriggerRef = useRef<HTMLButtonElement>(null);
     const user = auth.user;
     const focus = useFocusTimer();
     const dismissMobileFocus = useCallback(() => setMobileFocusVisible(false), []);
@@ -142,6 +143,7 @@ function AppShell({ children }: PropsWithChildren) {
                                 aria-label={`${mobileFocusVisible ? 'Hide' : 'Show'} Focus Tasks`}
                                 className="focus-ring relative grid size-10 place-items-center rounded-xl text-secondary transition-colors hover:bg-surface-hover hover:text-foreground"
                                 onClick={() => setMobileFocusVisible((visible) => !visible)}
+                                ref={mobileFocusTriggerRef}
                                 type="button"
                             >
                                 <Timer aria-hidden="true" size={19} />
@@ -200,6 +202,7 @@ function AppShell({ children }: PropsWithChildren) {
             {page.props.progressPanel && <ProgressNotch data={page.props.progressPanel} />}
             <DynamicIsland
                 mobileVisible={mobileFocusVisible}
+                mobileTriggerRef={mobileFocusTriggerRef}
                 onMobileDismiss={dismissMobileFocus}
             />
             {focus.error && <div className="fixed top-[8.5rem] left-1/2 z-[60] w-[min(30rem,calc(100vw-2rem))] -translate-x-1/2 rounded-xl border border-danger/30 bg-elevated p-3 text-sm font-semibold text-danger shadow-xl md:top-20" role="alert">

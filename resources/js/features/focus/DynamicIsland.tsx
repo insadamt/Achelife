@@ -1,12 +1,18 @@
 import { Check, CirclePause, Pause, Play, Plus, Square, Timer } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import type { RefObject } from 'react';
 
 import { classNames } from '../../components/ui/classNames';
 import { FocusTaskFinder } from './FocusTaskFinder';
 import { useFocusTimer } from './FocusTimerContext';
 
-export function DynamicIsland({ mobileVisible, onMobileDismiss }: { mobileVisible: boolean; onMobileDismiss: () => void }) {
+export function DynamicIsland({ mobileVisible, mobileTriggerRef, onMobileDismiss }: {
+    mobileVisible: boolean;
+    mobileTriggerRef: RefObject<HTMLButtonElement | null>;
+    onMobileDismiss: () => void;
+}) {
     const focus = useFocusTimer();
+    const islandRef = useRef<HTMLDivElement>(null);
     const [controlsExpanded, setControlsExpanded] = useState(false);
     const [findingTask, setFindingTask] = useState(false);
     const runningSession = focus.sessions.find((session) => session.running);
@@ -17,6 +23,21 @@ export function DynamicIsland({ mobileVisible, onMobileDismiss }: { mobileVisibl
         const timer = window.setTimeout(onMobileDismiss, 3500);
         return () => window.clearTimeout(timer);
     }, [controlsExpanded, mobileVisible, onMobileDismiss]);
+
+    useEffect(() => {
+        if (!controlsExpanded && !mobileVisible) return;
+
+        const closeOnOutsideClick = (event: MouseEvent) => {
+            if (!(event.target instanceof Node) || islandRef.current?.contains(event.target)) return;
+
+            setControlsExpanded(false);
+            setFindingTask(false);
+            if (mobileVisible && !mobileTriggerRef.current?.contains(event.target)) onMobileDismiss();
+        };
+
+        document.addEventListener('click', closeOnOutsideClick, true);
+        return () => document.removeEventListener('click', closeOnOutsideClick, true);
+    }, [controlsExpanded, mobileVisible, mobileTriggerRef, onMobileDismiss]);
 
     if (!focus.session && !focus.event) return <p aria-live="polite" className="sr-only">{focus.announcement}</p>;
 
@@ -36,7 +57,7 @@ export function DynamicIsland({ mobileVisible, onMobileDismiss }: { mobileVisibl
         <div className={classNames(
             'focus-island-enter fixed top-18 left-1/2 z-50 w-[min(30rem,calc(100vw-2rem))] -translate-x-1/2 rounded-[1.5rem] border border-border-strong bg-elevated/96 p-2 shadow-2xl backdrop-blur-md md:top-4',
             !mobileVisible && 'max-md:hidden',
-        )} aria-label={`Focus ${stateLabel.toLowerCase()}, ${primaryTitle}`} role="region">
+        )} aria-label={`Focus ${stateLabel.toLowerCase()}, ${primaryTitle}`} ref={islandRef} role="region">
             <button
                 aria-expanded={controlsExpanded}
                 aria-label={`${controlsExpanded ? 'Hide' : 'Show'} Focus controls. ${stateLabel}: ${primaryTitle}`}
