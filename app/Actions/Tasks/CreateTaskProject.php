@@ -5,12 +5,13 @@ namespace App\Actions\Tasks;
 use App\Data\Tasks\TaskProjectData;
 use App\Models\TaskProject;
 use App\Models\User;
+use App\Services\Tasks\TaskProjectColorService;
 use App\Services\Tasks\TaskPositionService;
 use Illuminate\Validation\ValidationException;
 
 class CreateTaskProject
 {
-    public function __construct(private readonly TaskPositionService $positions) {}
+    public function __construct(private readonly TaskPositionService $positions, private readonly TaskProjectColorService $colors) {}
 
     public function execute(User $user, TaskProjectData $data): TaskProject
     {
@@ -19,7 +20,7 @@ class CreateTaskProject
         return $user->taskProjects()->create([
             'task_folder_id' => $data->folderId,
             'name' => $data->name,
-            'color' => $data->color,
+            'color' => $this->colors->uniqueColor($user, $data->color),
             'position' => $this->positions->nextProjectPosition($user, $data->folderId),
         ]);
     }

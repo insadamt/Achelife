@@ -4,6 +4,7 @@ import { Surface } from '../../components/ui';
 import { TaskFocusHeatmap } from './TaskFocusHeatmap';
 import { TaskFocusLineChart } from './TaskFocusLineChart';
 import { TaskFocusMetricCards } from './TaskFocusMetricCards';
+import { TaskFocusProjectDonut } from './TaskFocusProjectDonut';
 import { TaskFocusRankings } from './TaskFocusRankings';
 import type { TaskFocusStatisticsData } from './taskStatisticsTypes';
 
@@ -18,6 +19,7 @@ export function TaskFocusStatisticsPanel({ focus, compare }: { focus: TaskFocusS
             </Surface>
             <TaskFocusHeatmap heatmap={focus.heatmap} />
         </div>
+        <TaskFocusProjectDonut focus={focus} />
         <TaskFocusRankings focus={focus} />
     </section>;
 }

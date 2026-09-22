@@ -32,6 +32,7 @@ class TaskViewDataFactory
             'notes' => $task->notes,
             'taskProjectId' => $task->task_project_id,
             'projectName' => $task->project?->name,
+            'projectColor' => $task->project?->color,
             'position' => $task->position,
             'scheduledDate' => $task->scheduled_date->toDateString(),
             'originalScheduledDate' => $task->reschedules->first()?->from_date->toDateString(),

@@ -46,6 +46,7 @@ use App\Http\Controllers\SingleUserSetupController;
 use App\Http\Controllers\StopTaskSeriesController;
 use App\Http\Controllers\SubtaskCompletionController;
 use App\Http\Controllers\TaskCompletionController;
+use App\Http\Controllers\TaskCalendarController;
 use App\Http\Controllers\TaskController;
 use App\Http\Controllers\TaskFocusSessionController;
 use App\Http\Controllers\TaskFolderController;
@@ -86,6 +87,7 @@ Route::middleware('auth')->group(function (): void {
             Route::get('/seasons/ranks', SeasonRankGuideController::class)->name('seasons.ranks');
             Route::get('/seasons/{season}/insights', SeasonInsightsController::class)->name('seasons.insights');
             Route::get('/tasks', [TaskController::class, 'index'])->name('tasks.index');
+            Route::get('/tasks/calendar', [TaskCalendarController::class, 'index'])->name('tasks.calendar');
             Route::get('/tasks/statistics', TaskStatisticsController::class)->name('tasks.statistics');
             Route::get('/habits', [HabitController::class, 'index'])->name('habits.index');
             Route::get('/habits/{habit}/statistics', HabitStatisticsController::class)->name('habits.statistics');
@@ -121,6 +123,7 @@ Route::middleware('auth')->group(function (): void {
         Route::post('/seasons/start', [SeasonCycleController::class, 'start'])->name('seasons.start');
         Route::put('/seasons/hold', [SeasonCycleController::class, 'hold'])->name('seasons.hold');
         Route::post('/tasks', [TaskController::class, 'store'])->name('tasks.store');
+        Route::put('/tasks/{task}/reschedule', [TaskCalendarController::class, 'reschedule'])->name('tasks.reschedule');
         Route::post('/tasks/{task}/focus-sessions', [TaskFocusSessionController::class, 'store'])->name('tasks.focus-sessions.store');
         Route::get('/focus-task-options', [TaskFocusSessionController::class, 'taskOptions'])->name('focus-task-options');
         Route::post('/tasks/{task}/focus-sessions/switch', [TaskFocusSessionController::class, 'switchToTask'])->name('tasks.focus-sessions.switch');

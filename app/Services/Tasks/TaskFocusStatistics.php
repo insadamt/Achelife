@@ -52,6 +52,7 @@ class TaskFocusStatistics
                 'tasks.title as task_title',
                 'tasks.task_project_id as project_id',
                 'projects.name as project_name',
+                'projects.color as project_color',
             ]);
 
         $queryStart = $period->previousStart ?? $period->start;
@@ -110,6 +111,7 @@ class TaskFocusStatistics
         $data['projectSeconds'][$projectKey] ??= [
             'id' => $interval->project_id === null ? null : (int) $interval->project_id,
             'name' => $interval->project_name ?? 'Inbox',
+            'color' => $interval->project_color,
             'seconds' => 0,
         ];
         $data['projectSeconds'][$projectKey]['seconds'] += $seconds;

@@ -42,6 +42,7 @@ export interface TaskViewData {
     notes: string | null;
     taskProjectId: number | null;
     projectName: string | null;
+    projectColor: string | null;
     position: number;
     scheduledDate: string;
     originalScheduledDate: string | null;

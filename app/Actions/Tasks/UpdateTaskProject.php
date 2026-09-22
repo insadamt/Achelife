@@ -5,6 +5,7 @@ namespace App\Actions\Tasks;
 use App\Data\Tasks\TaskProjectData;
 use App\Models\TaskProject;
 use App\Models\User;
+use App\Services\Tasks\TaskProjectColorService;
 use App\Services\Tasks\TaskPositionService;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Support\Facades\DB;
@@ -12,7 +13,7 @@ use Illuminate\Validation\ValidationException;
 
 class UpdateTaskProject
 {
-    public function __construct(private readonly TaskPositionService $positions) {}
+    public function __construct(private readonly TaskPositionService $positions, private readonly TaskProjectColorService $colors) {}
 
     public function execute(User $user, TaskProject $project, TaskProjectData $data): TaskProject
     {
@@ -28,7 +29,7 @@ class UpdateTaskProject
 
             $lockedProject->update([
                 'name' => $data->name,
-                'color' => $data->color,
+                'color' => $this->colors->uniqueColor($user, $data->color, $lockedProject->id),
                 'task_folder_id' => $data->folderId,
                 ...($folderChanged ? ['position' => $this->positions->nextProjectPosition($user, $data->folderId)] : []),
             ]);

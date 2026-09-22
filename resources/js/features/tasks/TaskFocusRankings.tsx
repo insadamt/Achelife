@@ -1,4 +1,4 @@
-import { FolderKanban, ListTodo } from 'lucide-react';
+import { ListTodo } from 'lucide-react';
 
 import { Surface } from '../../components/ui';
 import { formatFocusDuration } from './taskStatisticsPresentation';
@@ -22,11 +22,7 @@ function Ranking({ items, empty }: { items: RankedItem[]; empty: string }) {
 }
 
 export function TaskFocusRankings({ focus }: { focus: TaskFocusStatisticsData }) {
-    const projects = focus.projects.map((project) => ({ key: project.id === null ? 'inbox' : String(project.id), label: project.name, seconds: project.seconds }));
     const tasks = focus.tasks.map((task) => ({ key: String(task.id), label: task.title, seconds: task.seconds }));
 
-    return <div className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-5 lg:grid-cols-2">
-        <Surface className="min-w-0 rounded-3xl p-4 sm:p-6"><h3 className="flex items-center gap-2 text-lg font-bold"><FolderKanban aria-hidden="true" className="text-accent-ink" size={18} />Focus by Project</h3><p className="mt-1 text-sm text-muted">Historical Focus follows each Task’s current location.</p><Ranking empty="No Project Focus in this period." items={projects} /></Surface>
-        <Surface className="min-w-0 rounded-3xl p-4 sm:p-6"><h3 className="flex items-center gap-2 text-lg font-bold"><ListTodo aria-hidden="true" className="text-accent-ink" size={18} />Most-focused Tasks</h3><p className="mt-1 text-sm text-muted">Your top Tasks by completed Focus Time.</p><Ranking empty="No focused Tasks in this period." items={tasks} /></Surface>
-    </div>;
+    return <Surface className="min-w-0 rounded-3xl p-4 sm:p-6"><h3 className="flex items-center gap-2 text-lg font-bold"><ListTodo aria-hidden="true" className="text-accent-ink" size={18} />Most-focused Tasks</h3><p className="mt-1 text-sm text-muted">Your top Tasks by completed Focus Time.</p><Ranking empty="No focused Tasks in this period." items={tasks} /></Surface>;
 }

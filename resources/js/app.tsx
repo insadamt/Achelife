@@ -9,6 +9,15 @@ const applicationName = import.meta.env.VITE_APP_NAME || 'Achelife';
 
 createInertiaApp({
     title: (title) => (title ? `${title} - ${applicationName}` : applicationName),
+    defaults: {
+        visitOptions: (_href, options) => ({
+            ...options,
+            headers: {
+                ...options.headers,
+                'X-Achelife-Current-Url': `${window.location.pathname}${window.location.search}`,
+            },
+        }),
+    },
     layout: (pageName) => {
         if (pageName.startsWith('setup/')) return AuthLayout;
         if (pageName === 'seasons/Introduction' || pageName.startsWith('onboarding/')) return IntroductionLayout;

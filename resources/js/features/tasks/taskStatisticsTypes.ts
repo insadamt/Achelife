@@ -25,7 +25,7 @@ export interface TaskFocusStatisticsData {
         endDate: string;
         days: { date: string; seconds: number }[];
     };
-    projects: { id: number | null; name: string; seconds: number }[];
+    projects: { id: number | null; name: string; color: string | null; seconds: number }[];
     tasks: { id: number; title: string; seconds: number }[];
 }
 

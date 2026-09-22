@@ -1,14 +1,15 @@
 import { Link } from '@inertiajs/react';
-import { ChartColumn, ListTodo } from 'lucide-react';
+import { CalendarDays, ChartColumn, ListTodo } from 'lucide-react';
 
 import { classNames } from '../../components/ui/classNames';
 
 const sections = [
     { href: '/tasks', icon: ListTodo, label: 'Tasks', value: 'tasks' },
+    { href: '/tasks/calendar', icon: CalendarDays, label: 'Calendar', value: 'calendar' },
     { href: '/tasks/statistics', icon: ChartColumn, label: 'Statistics', value: 'statistics' },
 ] as const;
 
-export function TaskSectionNav({ active }: { active: 'tasks' | 'statistics' }) {
+export function TaskSectionNav({ active }: { active: 'tasks' | 'calendar' | 'statistics' }) {
     return (
         <nav aria-label="Task sections" className="flex max-w-full flex-wrap gap-1 rounded-2xl border border-border-subtle bg-surface p-1">
             {sections.map(({ href, icon: Icon, label, value }) => (

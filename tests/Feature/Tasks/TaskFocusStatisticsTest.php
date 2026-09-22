@@ -29,7 +29,7 @@ class TaskFocusStatisticsTest extends TestCase
     {
         CarbonImmutable::setTestNow('2026-09-15 18:00:00');
         $user = User::factory()->create(['timezone' => 'America/New_York', 'created_at' => '2026-01-01']);
-        $project = $user->taskProjects()->create(['name' => 'Writing', 'position' => 0]);
+        $project = $user->taskProjects()->create(['name' => 'Writing', 'color' => '#F59E0B', 'position' => 0]);
         $task = $this->task($user, 'Chapter draft', $project);
 
         $this->focusSession($user, $task, [
@@ -54,7 +54,7 @@ class TaskFocusStatisticsTest extends TestCase
         $this->assertSame(1800, $focus['heatmap']['days'][13]['seconds']);
         $this->assertSame(10800, $focus['heatmap']['days'][14]['seconds']);
         $this->assertSame(12600, array_sum(array_column($focus['trend']['buckets'], 'seconds')));
-        $this->assertSame([['id' => $project->id, 'name' => 'Writing', 'seconds' => 12600]], $focus['projects']);
+        $this->assertSame([['id' => $project->id, 'name' => 'Writing', 'color' => '#F59E0B', 'seconds' => 12600]], $focus['projects']);
         $this->assertSame([['id' => $task->id, 'title' => 'Chapter draft', 'seconds' => 12600]], $focus['tasks']);
     }
 
@@ -110,7 +110,7 @@ class TaskFocusStatisticsTest extends TestCase
 
         app(DeleteTaskProject::class)->execute($user, $project->refresh());
         $inbox = $this->statistics($user, 'month')['focus'];
-        $this->assertSame([['id' => null, 'name' => 'Inbox', 'seconds' => 10800]], $inbox['projects']);
+        $this->assertSame([['id' => null, 'name' => 'Inbox', 'color' => null, 'seconds' => 10800]], $inbox['projects']);
 
         $projectTask->refresh()->delete();
         $afterDeletion = $this->statistics($user, 'month')['focus'];
