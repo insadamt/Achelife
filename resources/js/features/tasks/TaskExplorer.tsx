@@ -1,10 +1,9 @@
 import { Link, router } from '@inertiajs/react';
-import { ArrowDown, ArrowUp, CalendarDays, CheckCircle2, ChevronDown, ChevronRight, Clock3, Folder, FolderKanban, Folders, GripVertical, Inbox, Move, TriangleAlert } from 'lucide-react';
+import { ArrowDown, ArrowUp, CalendarDays, CheckCircle2, ChevronDown, ChevronRight, Clock3, Folder, FolderKanban, Folders, GripVertical, Inbox, TriangleAlert } from 'lucide-react';
 import { useState } from 'react';
 import type { DragEvent, ReactNode } from 'react';
 
 import { classNames } from '../../components/ui/classNames';
-import { TaskProjectMoveDialog } from './TaskProjectMoveDialog';
 import { taskNavigationHref } from './taskNavigation';
 import type { TaskExplorerViewData, TaskProjectViewData, TaskSearchFilters, TaskWorkspaceViewData, TaskWorkspaceView } from './types';
 
@@ -22,7 +21,6 @@ export function TaskExplorer({ explorer, onAnnounce, onNavigate, searchFilters, 
         const saved = window.localStorage.getItem('task-explorer-collapsed-folders');
         return saved ? JSON.parse(saved) as number[] : [];
     });
-    const [movingProject, setMovingProject] = useState<{ project: TaskProjectViewData; folderId: number | null } | null>(null);
     const [dropTarget, setDropTarget] = useState<string | null>(null);
     const smartViews: { view: Exclude<TaskWorkspaceView, 'folder' | 'project'>; label: string; icon: ReactNode; count?: number }[] = [
         { view: 'files', label: 'Files', icon: <Folders size={17} /> },
@@ -127,7 +125,7 @@ export function TaskExplorer({ explorer, onAnnounce, onNavigate, searchFilters, 
                                 {!collapsed && (
                                     <div className="ml-5 space-y-1 border-l border-border-subtle pl-2">
                                         {folder.projects.map((project) => (
-                                            <ProjectLink folderId={folder.id} key={project.id} onAnnounce={onAnnounce} onMove={() => setMovingProject({ project, folderId: folder.id })} onNavigate={onNavigate} project={project} searchFilters={searchFilters} selected={workspace.view === 'project' && workspace.projectId === project.id} />
+                                            <ProjectLink folderId={folder.id} key={project.id} onAnnounce={onAnnounce} onNavigate={onNavigate} project={project} searchFilters={searchFilters} selected={workspace.view === 'project' && workspace.projectId === project.id} />
                                         ))}
                                         {folder.projects.length === 0 && <p className="px-3 py-2 text-xs text-muted">Drop Projects here</p>}
                                     </div>
@@ -145,21 +143,19 @@ export function TaskExplorer({ explorer, onAnnounce, onNavigate, searchFilters, 
                 <p className="px-2 text-xs font-bold tracking-[0.14em] text-muted uppercase">Root Projects</p>
                 <div className="mt-2 space-y-1">
                     {explorer.rootProjects.map((project) => (
-                        <ProjectLink folderId={null} key={project.id} onAnnounce={onAnnounce} onMove={() => setMovingProject({ project, folderId: null })} onNavigate={onNavigate} project={project} searchFilters={searchFilters} selected={workspace.view === 'project' && workspace.projectId === project.id} />
+                        <ProjectLink folderId={null} key={project.id} onAnnounce={onAnnounce} onNavigate={onNavigate} project={project} searchFilters={searchFilters} selected={workspace.view === 'project' && workspace.projectId === project.id} />
                     ))}
                     {explorer.rootProjects.length === 0 && <p className="px-3 py-2 text-xs text-muted">No root Projects</p>}
                 </div>
             </div>
 
-            {movingProject && <TaskProjectMoveDialog explorer={explorer} folderId={movingProject.folderId} onClose={() => setMovingProject(null)} onMoved={onAnnounce} project={movingProject.project} />}
         </nav>
     );
 }
 
-function ProjectLink({ folderId, onAnnounce, onMove, onNavigate, project, searchFilters, selected }: {
+function ProjectLink({ folderId, onAnnounce, onNavigate, project, searchFilters, selected }: {
     folderId: number | null;
     onAnnounce: (message: string) => void;
-    onMove: () => void;
     onNavigate?: () => void;
     project: TaskProjectViewData;
     searchFilters: TaskSearchFilters;
@@ -187,7 +183,6 @@ function ProjectLink({ folderId, onAnnounce, onMove, onNavigate, project, search
         >
             <GripVertical aria-hidden="true" className="cursor-grab text-muted opacity-0 group-hover:opacity-100" size={14} />
             <ExplorerLink active={selected} count={project.openTaskCount} href={taskNavigationHref('project', searchFilters, { projectId: project.id })} icon={<FolderKanban size={16} />} onClick={onNavigate}>{project.name}</ExplorerLink>
-            <button aria-label={`Move ${project.name}`} className="focus-ring grid size-9 shrink-0 place-items-center rounded-lg text-muted opacity-0 hover:bg-surface-hover hover:text-foreground group-focus-within:opacity-100 group-hover:opacity-100" onClick={onMove} type="button"><Move size={14} /></button>
         </div>
     );
 }

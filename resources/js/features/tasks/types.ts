@@ -94,6 +94,7 @@ export interface TaskSearchFilters {
 export interface TaskProjectViewData {
     id: number;
     name: string;
+    color: string | null;
     position: number;
     openTaskCount: number;
 }
@@ -101,6 +102,7 @@ export interface TaskProjectViewData {
 export interface TaskFolderViewData {
     id: number;
     name: string;
+    color: string | null;
     position: number;
     projectCount: number;
     openTaskCount: number;
@@ -111,6 +113,8 @@ export interface TaskExplorerViewData {
     folders: TaskFolderViewData[];
     rootProjects: TaskProjectViewData[];
     inboxCount: number;
+    archivedFolders: TaskFolderViewData[];
+    archivedProjects: TaskProjectViewData[];
 }
 
 export type TaskWorkspaceView = 'files' | 'folder' | 'today' | 'inbox' | 'upcoming' | 'overdue' | 'completed' | 'project';

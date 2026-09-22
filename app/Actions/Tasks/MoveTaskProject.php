@@ -48,7 +48,7 @@ class MoveTaskProject
 
     private function lockOwnedDestinationFolder(User $user, ?int $folderId): void
     {
-        if ($folderId !== null && $user->taskFolders()->lockForUpdate()->find($folderId) === null) {
+        if ($folderId !== null && $user->taskFolders()->whereNull('archived_at')->lockForUpdate()->find($folderId) === null) {
             throw ValidationException::withMessages(['task_folder_id' => 'The selected Folder is invalid.']);
         }
     }

@@ -28,6 +28,7 @@ class UpdateTaskProject
 
             $lockedProject->update([
                 'name' => $data->name,
+                'color' => $data->color,
                 'task_folder_id' => $data->folderId,
                 ...($folderChanged ? ['position' => $this->positions->nextProjectPosition($user, $data->folderId)] : []),
             ]);
@@ -43,7 +44,7 @@ class UpdateTaskProject
 
     private function ensureFolderBelongsToUser(User $user, ?int $folderId): void
     {
-        if ($folderId !== null && ! $user->taskFolders()->whereKey($folderId)->exists()) {
+        if ($folderId !== null && ! $user->taskFolders()->whereKey($folderId)->whereNull('archived_at')->exists()) {
             throw ValidationException::withMessages(['task_folder_id' => 'The selected Folder is invalid.']);
         }
     }

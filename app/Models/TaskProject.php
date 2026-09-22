@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-#[Fillable(['user_id', 'task_folder_id', 'name', 'position'])]
+#[Fillable(['user_id', 'task_folder_id', 'name', 'color', 'position', 'archived_at'])]
 class TaskProject extends Model
 {
     /** @return BelongsTo<User, $this> */
@@ -32,5 +32,10 @@ class TaskProject extends Model
     public function taskSeries(): HasMany
     {
         return $this->hasMany(TaskSeries::class);
+    }
+
+    protected function casts(): array
+    {
+        return ['archived_at' => 'immutable_datetime'];
     }
 }

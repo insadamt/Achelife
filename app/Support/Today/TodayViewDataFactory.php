@@ -77,7 +77,7 @@ class TodayViewDataFactory
     private function tasks(User $user, Season $season, CarbonImmutable $today): array
     {
         $relations = ['series', 'subtasks', 'reschedules', 'rewardSeason', 'user', 'completedFocusSessions.intervals'];
-        $baseQuery = $user->tasks();
+        $baseQuery = $user->tasks()->visibleInWorkspace();
         $visibleRecurringTaskIds = (clone $baseQuery)
             ->whereNotNull('task_series_id')
             ->whereNull('completed_at')

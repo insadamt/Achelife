@@ -66,7 +66,7 @@ class MoveTask
 
     private function lockOwnedDestinationProject(User $user, ?int $projectId): void
     {
-        if ($projectId !== null && $user->taskProjects()->lockForUpdate()->find($projectId) === null) {
+        if ($projectId !== null && $user->taskProjects()->whereNull('archived_at')->lockForUpdate()->find($projectId) === null) {
             throw ValidationException::withMessages(['task_project_id' => 'The selected Project is invalid.']);
         }
     }

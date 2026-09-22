@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Builder;
 
 #[Fillable([
     'user_id',
@@ -78,6 +79,18 @@ class Task extends Model
     public function rewardSeason(): BelongsTo
     {
         return $this->belongsTo(Season::class, 'reward_season_id');
+    }
+
+    /** @param Builder<Task> $query */
+    public function scopeVisibleInWorkspace(Builder $query): void
+    {
+        $query->where(function (Builder $query): void {
+            $query->whereNull('task_project_id')->orWhereHas('project', function (Builder $query): void {
+                $query->whereNull('archived_at')->where(function (Builder $query): void {
+                    $query->whereNull('task_folder_id')->orWhereHas('folder', fn (Builder $query) => $query->whereNull('archived_at'));
+                });
+            });
+        });
     }
 
     /** @return array<string, string> */

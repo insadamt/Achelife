@@ -31,20 +31,26 @@ class TaskOrganizationTest extends TestCase
     {
         $user = User::factory()->create();
 
-        $this->actingAs($user)->post('/task-folders', ['name' => 'Work'])->assertRedirect();
+        $this->actingAs($user)->post('/task-folders', ['name' => 'Work', 'color' => '#7C3AED'])->assertRedirect();
         $folder = $user->taskFolders()->sole();
         $this->post('/task-projects', ['name' => 'Inbox cleanup', 'task_folder_id' => null])->assertRedirect();
-        $this->post('/task-projects', ['name' => 'Launch', 'task_folder_id' => $folder->id])->assertRedirect();
+        $this->post('/task-projects', ['name' => 'Launch', 'task_folder_id' => $folder->id, 'color' => '#059669'])->assertRedirect();
         $project = $folder->projects()->sole();
 
-        $this->put("/task-folders/{$folder->id}", ['name' => 'Career'])->assertRedirect();
-        $this->put("/task-projects/{$project->id}", ['name' => 'Release'])->assertRedirect();
+        $this->put("/task-folders/{$folder->id}", ['name' => 'Career', 'color' => '#DB2777'])->assertRedirect();
+        $this->put("/task-projects/{$project->id}", ['name' => 'Release', 'color' => '#D97706'])->assertRedirect();
         $this->put("/task-projects/{$project->id}/move", ['task_folder_id' => null, 'position' => 1])->assertRedirect();
 
         $this->assertSame('Career', $folder->refresh()->name);
+        $this->assertSame('#DB2777', $folder->color);
         $this->assertSame('Release', $project->refresh()->name);
+        $this->assertSame('#D97706', $project->color);
         $this->assertNull($project->task_folder_id);
         $this->assertSame([0, 1], $user->taskProjects()->whereNull('task_folder_id')->orderBy('position')->pluck('position')->all());
+
+        $this->put("/task-projects/{$project->id}", ['name' => 'Release notes'])->assertRedirect();
+
+        $this->assertSame('#D97706', $project->refresh()->color);
     }
 
     public function test_folder_deletion_reroots_projects_without_deleting_them(): void

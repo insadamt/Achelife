@@ -1,6 +1,6 @@
 import type { HabitViewData } from '../habits/types';
 import type { SeasonViewData } from '../seasons/types';
-import type { TaskViewData } from '../tasks/types';
+import type { TaskExplorerViewData, TaskViewData } from '../tasks/types';
 import type { MoneySubscriptionOccurrenceData } from '../money/types';
 
 export interface TodayProgressData {
@@ -42,6 +42,7 @@ export interface TodayPageProps {
     currentSeason: SeasonViewData & { id: number; day: number; state: 'current' };
     dailyProgress: TodayProgressData;
     tasks: TodayTaskData;
+    explorer: TaskExplorerViewData;
     habits: {
         required: HabitViewData[];
         flexible: HabitViewData[];

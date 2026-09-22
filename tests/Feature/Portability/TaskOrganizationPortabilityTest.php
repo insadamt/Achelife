@@ -28,8 +28,8 @@ class TaskOrganizationPortabilityTest extends TestCase
         CarbonImmutable::setTestNow('2026-09-13 12:00:00');
         $source = User::factory()->create(['timezone' => 'UTC', 'calendar_started_on' => '2026-09-01']);
         Season::query()->create(['user_id' => $source->id, 'season_number' => 1, 'start_date' => '2026-09-01', 'end_date' => '2026-09-30', 'season_points' => 0]);
-        $folder = app(CreateTaskFolder::class)->execute($source, new TaskFolderData('Work'));
-        $project = app(CreateTaskProject::class)->execute($source, new TaskProjectData('Release', $folder->id));
+        $folder = app(CreateTaskFolder::class)->execute($source, new TaskFolderData('Work', '#7C3AED'));
+        $project = app(CreateTaskProject::class)->execute($source, new TaskProjectData('Release', $folder->id, '#059669'));
         $task = app(CreateTask::class)->execute($source, new TaskData(
             title: 'Ship Phase 1',
             scheduledDate: CarbonImmutable::parse('2026-09-13'),
@@ -53,14 +53,16 @@ class TaskOrganizationPortabilityTest extends TestCase
             $restoredProject = $target->taskProjects()->sole();
             $restoredTask = $target->tasks()->where('title', 'Ship Phase 1')->sole();
             $restoredSeries = $target->taskSeries()->sole();
-        $this->assertSame(6, $archive->manifest['archive_format_version']);
+        $this->assertSame(8, $archive->manifest['archive_format_version']);
             $this->assertNotSame($folder->id, $restoredFolder->id);
             $this->assertSame($restoredFolder->id, $restoredProject->task_folder_id);
-            $this->assertSame($restoredProject->id, $restoredTask->task_project_id);
+            $this->assertSame('#7C3AED', $restoredFolder->color);
+            $this->assertSame('#059669', $restoredProject->color);
+        $this->assertSame($restoredProject->id, $restoredTask->task_project_id);
             $this->assertSame($restoredProject->id, $restoredSeries->task_project_id);
             $this->assertSame('Preserve these notes.', $restoredTask->notes);
             $this->assertSame('Preserve these notes.', $restoredSeries->notes);
-            $this->assertSame($task->position, $restoredTask->position);
+        $this->assertSame($task->position, $restoredTask->position);
         } finally {
             @unlink($path);
         }

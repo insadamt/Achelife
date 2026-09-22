@@ -133,11 +133,15 @@ Route::middleware('auth')->group(function (): void {
         Route::post('/task-folders', [TaskFolderController::class, 'store'])->name('task-folders.store');
         Route::put('/task-folders/order', TaskFolderOrderController::class)->name('task-folders.order');
         Route::put('/task-folders/{folder}', [TaskFolderController::class, 'update'])->name('task-folders.update');
+        Route::post('/task-folders/{folder}/archive', [TaskFolderController::class, 'archive'])->name('task-folders.archive');
+        Route::post('/task-folders/{folder}/reactivate', [TaskFolderController::class, 'reactivate'])->name('task-folders.reactivate');
         Route::delete('/task-folders/{folder}', [TaskFolderController::class, 'destroy'])->name('task-folders.destroy');
         Route::post('/task-projects', [TaskProjectController::class, 'store'])->name('task-projects.store');
         Route::put('/task-projects/order', TaskProjectOrderController::class)->name('task-projects.order');
         Route::put('/task-projects/{project}/move', TaskProjectMovementController::class)->name('task-projects.move');
         Route::put('/task-projects/{project}', [TaskProjectController::class, 'update'])->name('task-projects.update');
+        Route::post('/task-projects/{project}/archive', [TaskProjectController::class, 'archive'])->name('task-projects.archive');
+        Route::post('/task-projects/{project}/reactivate', [TaskProjectController::class, 'reactivate'])->name('task-projects.reactivate');
         Route::delete('/task-projects/{project}', [TaskProjectController::class, 'destroy'])->name('task-projects.destroy');
         Route::put('/tasks/order', TaskOrderController::class)->name('tasks.order');
         Route::put('/tasks/{task}/move', TaskMovementController::class)->name('tasks.move');

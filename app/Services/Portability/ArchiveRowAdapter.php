@@ -24,6 +24,14 @@ class ArchiveRowAdapter
             $row['position'] = max(0, ((int) $row['id']) - 1);
         }
 
+        if ($formatVersion <= 6 && in_array($table, ['task_folders', 'task_projects'], true)) {
+            $row['archived_at'] = null;
+        }
+
+        if ($formatVersion <= 7 && in_array($table, ['task_folders', 'task_projects'], true)) {
+            $row['color'] = null;
+        }
+
         return $row;
     }
 }

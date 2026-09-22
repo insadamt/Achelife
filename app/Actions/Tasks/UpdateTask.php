@@ -122,7 +122,7 @@ class UpdateTask
     {
         if ($data->projectProvided
             && $data->projectId !== null
-            && ! $user->taskProjects()->whereKey($data->projectId)->exists()) {
+            && ! $user->taskProjects()->whereKey($data->projectId)->whereNull('archived_at')->exists()) {
             throw ValidationException::withMessages(['task_project_id' => 'The selected Project is invalid.']);
         }
     }

@@ -86,7 +86,7 @@ class AccountArchiveSecurityTest extends TestCase
         });
         $this->expectInvalid($future, 'materially in the future');
 
-        $newer = $this->mutateManifest($valid, fn (array &$manifest) => $manifest['archive_format_version'] = 7, resign: false);
+        $newer = $this->mutateManifest($valid, fn (array &$manifest) => $manifest['archive_format_version'] = 9, resign: false);
         $this->expectInvalid($newer, 'Update Achelife first');
 
         $older = $this->mutateManifest($valid, fn (array &$manifest) => $manifest['archive_format_version'] = 0, resign: false);

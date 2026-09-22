@@ -19,13 +19,14 @@ class CreateTaskProject
         return $user->taskProjects()->create([
             'task_folder_id' => $data->folderId,
             'name' => $data->name,
+            'color' => $data->color,
             'position' => $this->positions->nextProjectPosition($user, $data->folderId),
         ]);
     }
 
     private function ensureFolderBelongsToUser(User $user, ?int $folderId): void
     {
-        if ($folderId !== null && ! $user->taskFolders()->whereKey($folderId)->exists()) {
+        if ($folderId !== null && ! $user->taskFolders()->whereKey($folderId)->whereNull('archived_at')->exists()) {
             throw ValidationException::withMessages(['task_folder_id' => 'The selected Folder is invalid.']);
         }
     }

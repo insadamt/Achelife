@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Actions\Tasks\CreateTaskProject;
 use App\Actions\Tasks\DeleteTaskProject;
+use App\Actions\Tasks\ArchiveTaskProject;
+use App\Actions\Tasks\ReactivateTaskProject;
 use App\Actions\Tasks\UpdateTaskProject;
 use App\Data\Tasks\TaskProjectData;
 use App\Http\Requests\StoreTaskProjectRequest;
@@ -27,6 +29,7 @@ class TaskProjectController extends Controller
         $update->execute($request->user(), $project, new TaskProjectData(
             name: $request->validated('name'),
             folderId: $project->task_folder_id,
+            color: $request->has('color') ? $request->validated('color') : $project->color,
         ));
 
         return back();
@@ -46,6 +49,23 @@ class TaskProjectController extends Controller
         return new TaskProjectData(
             name: $validated['name'],
             folderId: isset($validated['task_folder_id']) ? (int) $validated['task_folder_id'] : null,
+            color: $validated['color'] ?? null,
         );
+    }
+
+    public function archive(Request $request, TaskProject $project, ArchiveTaskProject $archive): RedirectResponse
+    {
+        Gate::authorize('update', $project);
+        $archive->execute($request->user(), $project);
+
+        return back();
+    }
+
+    public function reactivate(Request $request, TaskProject $project, ReactivateTaskProject $reactivate): RedirectResponse
+    {
+        Gate::authorize('update', $project);
+        $reactivate->execute($request->user(), $project);
+
+        return back();
     }
 }

@@ -27,10 +27,12 @@ class TaskWorkspaceViewDataFactory
             ? $requestedView
             : ($requestedView === '' ? 'files' : 'today');
         $folder = $view === 'folder' && $requestedFolderId !== null
-            ? $user->taskFolders()->find($requestedFolderId)
+            ? $user->taskFolders()->whereNull('archived_at')->find($requestedFolderId)
             : null;
         $project = $view === 'project' && $requestedProjectId !== null
-            ? $user->taskProjects()->with('folder')->find($requestedProjectId)
+            ? $user->taskProjects()->whereNull('archived_at')->with('folder')->where(function ($query): void {
+                $query->whereNull('task_folder_id')->orWhereHas('folder', fn ($query) => $query->whereNull('archived_at'));
+            })->find($requestedProjectId)
             : null;
 
         if ($view === 'folder' && ! $folder instanceof TaskFolder) {
@@ -64,7 +66,7 @@ class TaskWorkspaceViewDataFactory
             return null;
         }
 
-        return $user->tasks()
+        return $user->tasks()->visibleInWorkspace()
             ->with(['series', 'subtasks', 'reschedules', 'rewardSeason', 'project', 'user', 'completedFocusSessions.intervals'])
             ->whereNull('completed_at')
             ->when(

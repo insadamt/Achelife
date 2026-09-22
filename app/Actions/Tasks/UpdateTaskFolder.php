@@ -15,7 +15,7 @@ class UpdateTaskFolder
             throw new AuthorizationException;
         }
 
-        $folder->update(['name' => $data->name]);
+        $folder->update(['name' => $data->name, 'color' => $data->color]);
 
         return $folder->refresh();
     }

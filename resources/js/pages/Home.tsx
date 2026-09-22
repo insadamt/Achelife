@@ -10,6 +10,7 @@ import type { TodayTab } from '../features/today/TodayTabSwitcher';
 import { TodayTaskList } from '../features/today/TodayTaskList';
 import type { TodayPageProps } from '../features/today/types';
 import { MoneySubscriptionSummary } from '../features/money/MoneySubscriptionSummary';
+import { TaskDetailsDrawer } from '../features/tasks/TaskDetailsDrawer';
 
 const todayStyle = { '--module-accent': 'var(--accent)' } as CSSProperties;
 const activeTabStorageKey = 'achelife.today.active-tab';
@@ -35,7 +36,9 @@ function initialTab(): TodayTab {
 export default function Home(props: TodayPageProps) {
     const [activeTab, setActiveTab] = useState<TodayTab>(initialTab);
     const [settingsOpen, setSettingsOpen] = useState(false);
+    const [selectedTaskId, setSelectedTaskId] = useState<number | null>(null);
     const habitCount = props.habits.required.length + props.habits.flexible.length;
+    const selectedTask = [...props.tasks.today, ...props.tasks.overdue].find((task) => task.id === selectedTaskId) ?? null;
 
     function selectTab(tab: TodayTab) {
         setActiveTab(tab);
@@ -79,13 +82,13 @@ export default function Home(props: TodayPageProps) {
                 tabIndex={0}
             >
                 {activeTab === 'tasks'
-                    ? <TodayTaskList headingId="today-mobile-task-list-title" overdue={props.tasks.overdue} overdueCount={props.tasks.overdueCount} tasks={props.tasks.today} />
+                    ? <TodayTaskList headingId="today-mobile-task-list-title" onOpen={setSelectedTaskId} overdue={props.tasks.overdue} overdueCount={props.tasks.overdueCount} tasks={props.tasks.today} />
                     : <TodayHabitSection flexible={props.habits.flexible} headingId="today-mobile-habit-list-title" required={props.habits.required} />}
             </main>
 
             <main className="hidden items-start gap-6 pb-8 md:grid md:grid-cols-2">
                 <div className="min-h-[18rem] rounded-[2rem] border border-border-subtle bg-surface/45 p-5 shadow-[var(--shadow-panel)] lg:p-6">
-                    <TodayTaskList headingId="today-desktop-task-list-title" overdue={props.tasks.overdue} overdueCount={props.tasks.overdueCount} tasks={props.tasks.today} />
+                    <TodayTaskList headingId="today-desktop-task-list-title" onOpen={setSelectedTaskId} overdue={props.tasks.overdue} overdueCount={props.tasks.overdueCount} tasks={props.tasks.today} />
                 </div>
                 <div className="min-h-[18rem] rounded-[2rem] border border-border-subtle bg-surface/45 p-5 shadow-[var(--shadow-panel)] lg:p-6">
                     <TodayHabitSection flexible={props.habits.flexible} headingId="today-desktop-habit-list-title" required={props.habits.required} />
@@ -93,6 +96,7 @@ export default function Home(props: TodayPageProps) {
             </main>
 
             {settingsOpen && <TodaySettingsDialog onClose={() => setSettingsOpen(false)} settings={props.settings} />}
+            {selectedTask && <TaskDetailsDrawer explorer={props.explorer} key={selectedTask.id} onClose={() => setSelectedTaskId(null)} task={selectedTask} today={props.today} />}
         </div>
     );
 }

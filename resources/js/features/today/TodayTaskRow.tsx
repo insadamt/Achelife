@@ -7,7 +7,7 @@ import { StartFocusButton } from '../focus/StartFocusButton';
 import { ExpandableTaskChecklist } from '../tasks/ExpandableTaskChecklist';
 import type { TaskViewData } from '../tasks/types';
 
-export function TodayTaskRow({ task }: { task: TaskViewData }) {
+export function TodayTaskRow({ task, onOpen }: { task: TaskViewData; onOpen: () => void }) {
     const [processing, setProcessing] = useState(false);
     const completed = task.state === 'completed';
     const canToggle = completed ? task.canUncomplete : task.canComplete;
@@ -39,12 +39,12 @@ export function TodayTaskRow({ task }: { task: TaskViewData }) {
             >
                 {completed && <Check aria-hidden="true" size={18} strokeWidth={3} />}
                 </button>
-                <div className="min-w-0 flex-1">
+                <button className="focus-ring min-w-0 flex-1 rounded-xl py-1 text-left" onClick={onOpen} type="button">
                     <div className="flex items-center gap-2">
                         <p className={classNames('truncate text-base font-bold', completed && 'line-through')}>{task.title}</p>
                         {task.important && <span aria-label="Important" className="size-1.5 shrink-0 rounded-full bg-warning" title="Important" />}
                     </div>
-                </div>
+                </button>
                 {task.state === 'overdue' && <span className="icon-text flex shrink-0 items-center gap-1.5 text-xs font-bold text-warning"><AlertTriangle aria-hidden="true" size={14} /><span>Overdue</span></span>}
                 {!completed && <StartFocusButton compact taskId={task.id} taskTitle={task.title} />}
                 {completed && task.earnedSp !== null && <span className="shrink-0 text-xs font-bold text-accent-ink">+{task.earnedSp} SP</span>}

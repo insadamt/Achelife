@@ -23,7 +23,7 @@ class TaskSearchViewDataFactory
             return null;
         }
 
-        return $user->tasks()
+        return $user->tasks()->visibleInWorkspace()
             ->with(['series', 'subtasks', 'reschedules', 'rewardSeason', 'project', 'user', 'completedFocusSessions.intervals'])
             ->when($filters->query !== '', function ($query) use ($filters): void {
                 $pattern = '%'.$this->escapeLikePattern(mb_strtolower($filters->query)).'%';

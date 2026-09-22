@@ -9,9 +9,10 @@ interface TodayTaskListProps {
     overdue: TaskViewData[];
     overdueCount: number;
     headingId: string;
+    onOpen: (taskId: number) => void;
 }
 
-export function TodayTaskList({ tasks, overdue, overdueCount, headingId }: TodayTaskListProps) {
+export function TodayTaskList({ tasks, overdue, overdueCount, headingId, onOpen }: TodayTaskListProps) {
     const pendingTasks = tasks.filter((task) => task.state !== 'completed');
     const completedTasks = tasks.filter((task) => task.state === 'completed');
 
@@ -29,7 +30,7 @@ export function TodayTaskList({ tasks, overdue, overdueCount, headingId }: Today
                         <span className="text-xs font-semibold text-muted">{overdueCount}</span>
                     </div>
                     <div className="overflow-hidden rounded-2xl border border-warning/25 bg-warning/5 px-4">
-                        {overdue.map((task) => <TodayTaskRow key={task.id} task={task} />)}
+                        {overdue.map((task) => <TodayTaskRow key={task.id} onOpen={() => onOpen(task.id)} task={task} />)}
                         {overdueCount > overdue.length && (
                             <Link className="focus-ring block border-t border-border-subtle py-3 text-center text-xs font-bold text-warning" href="/tasks">
                                 +{overdueCount - overdue.length} more
@@ -42,7 +43,7 @@ export function TodayTaskList({ tasks, overdue, overdueCount, headingId }: Today
             <h3 className="mb-2 text-xs font-bold tracking-[0.14em] text-muted uppercase">Today</h3>
             <div className="overflow-hidden rounded-2xl border border-border-subtle bg-surface px-4">
                 {pendingTasks.length > 0
-                    ? pendingTasks.map((task) => <TodayTaskRow key={task.id} task={task} />)
+                    ? pendingTasks.map((task) => <TodayTaskRow key={task.id} onOpen={() => onOpen(task.id)} task={task} />)
                     : <p className="py-6 text-sm text-muted">No tasks.</p>}
             </div>
 
@@ -56,7 +57,7 @@ export function TodayTaskList({ tasks, overdue, overdueCount, headingId }: Today
                         </span>
                     </summary>
                     <div className="border-t border-border-subtle px-4">
-                        {completedTasks.map((task) => <TodayTaskRow key={task.id} task={task} />)}
+                        {completedTasks.map((task) => <TodayTaskRow key={task.id} onOpen={() => onOpen(task.id)} task={task} />)}
                     </div>
                 </details>
             )}

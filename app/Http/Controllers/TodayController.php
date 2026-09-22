@@ -11,6 +11,7 @@ use App\Support\Money\MoneySubscriptionViewDataFactory;
 use App\Support\Seasons\SeasonCloseoutViewDataFactory;
 use App\Support\Seasons\SeasonCycleViewDataFactory;
 use App\Support\Seasons\SeasonViewDataFactory;
+use App\Support\Tasks\TaskExplorerViewDataFactory;
 use App\Support\Today\TodayViewDataFactory;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -28,6 +29,7 @@ class TodayController extends Controller
         SynchronizeMoneySubscriptions $synchronizeMoneySubscriptions,
         MoneySubscriptionViewDataFactory $subscriptionViewDataFactory,
         SeasonCloseoutViewDataFactory $closeoutViewDataFactory,
+        TaskExplorerViewDataFactory $taskExplorerViewDataFactory,
     ): Response {
         $user = $request->user();
         $today = $calendar->today($user);
@@ -53,6 +55,7 @@ class TodayController extends Controller
 
         return Inertia::render('Home', [
             ...$viewDataFactory->make($user, $today),
+            'explorer' => $taskExplorerViewDataFactory->make($user),
             'manualSubscriptionPayments' => $manualPayments,
         ]);
     }

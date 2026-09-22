@@ -50,7 +50,7 @@ class TaskController extends Controller
             $currentSeasonId,
         );
         $relations = ['series', 'subtasks', 'reschedules', 'rewardSeason', 'project', 'user', 'completedFocusSessions.intervals'];
-        $tasks = $request->user()->tasks()
+        $tasks = $request->user()->tasks()->visibleInWorkspace()
             ->when(
                 $workspace['view'] === 'project',
                 fn ($query) => $query->where('task_project_id', $workspace['projectId']),

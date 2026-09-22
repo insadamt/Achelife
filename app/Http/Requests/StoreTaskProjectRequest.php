@@ -17,6 +17,7 @@ class StoreTaskProjectRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string', 'max:120'],
+            'color' => ['nullable', 'regex:/^#[0-9A-Fa-f]{6}$/'],
             'task_folder_id' => [
                 'nullable',
                 'integer',

@@ -18,8 +18,8 @@ class PortableTableRegistry
             $this->table('seasons', 'seasons', ['id', 'user_id', 'season_number', 'start_date', 'end_date', 'season_points', 'rank', 'introduced_at', 'finalized_at', 'reflection', 'recap_seen_at', 'created_at', 'updated_at']),
             $this->table('season_intermissions', 'seasons', ['id', 'user_id', 'after_season_id', 'reason', 'started_on', 'ended_before', 'created_at', 'updated_at'], ['after_season_id' => 'seasons']),
             ...($formatVersion >= 4 ? [
-                $this->table('task_folders', 'tasks', ['id', 'user_id', 'name', 'position', 'created_at', 'updated_at']),
-                $this->table('task_projects', 'tasks', ['id', 'user_id', 'task_folder_id', 'name', 'position', 'created_at', 'updated_at'], ['task_folder_id' => 'task_folders']),
+                $this->table('task_folders', 'tasks', ['id', 'user_id', 'name', ...($formatVersion >= 8 ? ['color'] : []), 'position', 'archived_at', 'created_at', 'updated_at']),
+                $this->table('task_projects', 'tasks', ['id', 'user_id', 'task_folder_id', 'name', ...($formatVersion >= 8 ? ['color'] : []), 'position', 'archived_at', 'created_at', 'updated_at'], ['task_folder_id' => 'task_folders']),
             ] : []),
             $this->table(
                 'task_series',

@@ -17,6 +17,9 @@ class UpdateTaskFolderRequest extends FormRequest
     /** @return array<string, mixed> */
     public function rules(): array
     {
-        return ['name' => ['required', 'string', 'max:120']];
+        return [
+            'name' => ['required', 'string', 'max:120'],
+            'color' => ['nullable', 'regex:/^#[0-9A-Fa-f]{6}$/'],
+        ];
     }
 }

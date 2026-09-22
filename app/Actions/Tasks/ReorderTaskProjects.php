@@ -18,6 +18,7 @@ class ReorderTaskProjects
         DB::transaction(function () use ($user, $folderId, $orderedIds): void {
             $this->lockOwnedFolder($user, $folderId);
             $projects = $user->taskProjects()
+                ->whereNull('archived_at')
                 ->when($folderId === null, fn (Builder $query) => $query->whereNull('task_folder_id'))
                 ->when($folderId !== null, fn (Builder $query) => $query->where('task_folder_id', $folderId))
                 ->lockForUpdate()
@@ -31,7 +32,7 @@ class ReorderTaskProjects
 
     private function lockOwnedFolder(User $user, ?int $folderId): void
     {
-        if ($folderId !== null && $user->taskFolders()->lockForUpdate()->find($folderId) === null) {
+        if ($folderId !== null && $user->taskFolders()->whereNull('archived_at')->lockForUpdate()->find($folderId) === null) {
             throw ValidationException::withMessages(['task_folder_id' => 'The selected Folder is invalid.']);
         }
     }

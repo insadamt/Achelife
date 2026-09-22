@@ -66,7 +66,7 @@ class CreateTask
 
     private function ensureProjectBelongsToUser(User $user, ?int $projectId): void
     {
-        if ($projectId !== null && ! $user->taskProjects()->whereKey($projectId)->exists()) {
+        if ($projectId !== null && ! $user->taskProjects()->whereKey($projectId)->whereNull('archived_at')->exists()) {
             throw ValidationException::withMessages(['task_project_id' => 'The selected Project is invalid.']);
         }
     }

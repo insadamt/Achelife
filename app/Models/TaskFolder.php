@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-#[Fillable(['user_id', 'name', 'position'])]
+#[Fillable(['user_id', 'name', 'color', 'position', 'archived_at'])]
 class TaskFolder extends Model
 {
     /** @return BelongsTo<User, $this> */
@@ -20,5 +20,10 @@ class TaskFolder extends Model
     public function projects(): HasMany
     {
         return $this->hasMany(TaskProject::class)->orderBy('position')->orderBy('id');
+    }
+
+    protected function casts(): array
+    {
+        return ['archived_at' => 'immutable_datetime'];
     }
 }

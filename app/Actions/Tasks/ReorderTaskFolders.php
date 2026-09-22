@@ -15,6 +15,7 @@ class ReorderTaskFolders
     {
         DB::transaction(function () use ($user, $orderedIds): void {
             $folders = $user->taskFolders()
+                ->whereNull('archived_at')
                 ->lockForUpdate()
                 ->orderBy('position')
                 ->orderBy('id')

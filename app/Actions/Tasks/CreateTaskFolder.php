@@ -15,6 +15,7 @@ class CreateTaskFolder
     {
         return $user->taskFolders()->create([
             'name' => $data->name,
+            'color' => $data->color,
             'position' => $this->positions->nextFolderPosition($user),
         ]);
     }
