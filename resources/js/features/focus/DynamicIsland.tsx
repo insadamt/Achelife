@@ -58,24 +58,33 @@ export function DynamicIsland({ mobileVisible, mobileTriggerRef, onMobileDismiss
             'focus-island-enter fixed top-18 left-1/2 z-50 w-[min(30rem,calc(100vw-2rem))] -translate-x-1/2 rounded-[1.5rem] border border-border-strong bg-elevated/96 p-2 shadow-2xl backdrop-blur-md md:top-4',
             !mobileVisible && 'max-md:hidden',
         )} aria-label={`Focus ${stateLabel.toLowerCase()}, ${primaryTitle}`} ref={islandRef} role="region">
-            <button
-                aria-expanded={controlsExpanded}
-                aria-label={`${controlsExpanded ? 'Hide' : 'Show'} Focus controls. ${stateLabel}: ${primaryTitle}`}
-                className="focus-ring flex min-h-12 w-full items-center justify-center gap-3 rounded-[1.1rem] px-2 text-left hover:bg-surface-hover"
-                onClick={() => setControlsExpanded((expanded) => !expanded)}
-                type="button"
-            >
-                <span className={classNames('grid size-9 shrink-0 place-items-center rounded-full', runningSession ? 'bg-[var(--task-accent)] text-accent-foreground' : 'bg-surface-hover text-warning')}>
-                    {runningSession ? <Timer aria-hidden="true" size={17} /> : <CirclePause aria-hidden="true" size={17} />}
-                </span>
-                <span className="min-w-0 flex-1">
-                    <span className="block truncate text-sm font-bold">{primaryTitle}</span>
-                    <span className="block text-[0.6875rem] font-bold tracking-[0.1em] text-muted uppercase">{stateLabel}</span>
-                </span>
-                {runningSession && <time className="shrink-0 font-mono text-lg font-bold tabular-nums" dateTime={`PT${focus.elapsedSeconds}S`}>
-                    {formatFocusClock(focus.elapsedSeconds)}
-                </time>}
-            </button>
+            <div className="flex items-center gap-1">
+                <button
+                    aria-expanded={controlsExpanded}
+                    aria-label={`${controlsExpanded ? 'Hide' : 'Show'} Focus controls. ${stateLabel}: ${primaryTitle}`}
+                    className="focus-ring flex min-h-12 min-w-0 flex-1 items-center justify-center gap-3 rounded-[1.1rem] px-2 text-left hover:bg-surface-hover"
+                    onClick={() => setControlsExpanded((expanded) => !expanded)}
+                    type="button"
+                >
+                    <span className={classNames('grid size-9 shrink-0 place-items-center rounded-full', runningSession ? 'bg-[var(--task-accent)] text-accent-foreground' : 'bg-surface-hover text-warning')}>
+                        {runningSession ? <Timer aria-hidden="true" size={17} /> : <CirclePause aria-hidden="true" size={17} />}
+                    </span>
+                    <span className="min-w-0 flex-1">
+                        <span className="block truncate text-sm font-bold">{primaryTitle}</span>
+                        <span className="block text-[0.6875rem] font-bold tracking-[0.1em] text-muted uppercase">{stateLabel}</span>
+                    </span>
+                    {runningSession && <time className="shrink-0 font-mono text-lg font-bold tabular-nums" dateTime={`PT${focus.elapsedSeconds}S`}>
+                        {formatFocusClock(focus.elapsedSeconds)}
+                    </time>}
+                </button>
+                {runningSession && <button
+                    aria-label="Find another Focus Task"
+                    className="focus-ring grid size-11 shrink-0 place-items-center rounded-full text-accent-ink hover:bg-surface-hover"
+                    onClick={() => { setControlsExpanded(true); setFindingTask(true); }}
+                    title="Find another Task"
+                    type="button"
+                ><Plus aria-hidden="true" size={19} /></button>}
+            </div>
 
             {controlsExpanded && <div className="max-h-[min(70vh,32rem)] space-y-3 overflow-y-auto px-2 pt-3 pb-1">
                 {runningSession && <div className="grid grid-cols-2 gap-2">
