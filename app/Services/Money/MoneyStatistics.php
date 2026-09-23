@@ -19,6 +19,8 @@ class MoneyStatistics
     public function __construct(
         private readonly UserCalendar $calendar,
         private readonly StatisticsPeriodResolver $periods,
+        private readonly MoneyAccountPeriodBalances $accountBalances,
+        private readonly MoneyDebtStatistics $debtStatistics,
     ) {}
 
     /** @return array<string, mixed> */
@@ -43,10 +45,15 @@ class MoneyStatistics
         $scopedAccounts = $selectedAccount ? collect([$selectedAccount]) : $currencyAccounts;
         $transactions = $this->transactions($user, $scopedAccounts, $period);
         $feeProjection = $this->feeProjection($user);
-        $current = $this->summarizePeriod($user, $scopedAccounts, $transactions, $period->start, $period->end, $today, $feeProjection);
+        $current = $this->summarizePeriod($user, $scopedAccounts, $transactions, $period->start, $period->end, $today, $feeProjection, $currency, $selectedAccount?->id);
         $previous = $period->previousStart === null
             ? null
-            : $this->summarizePeriod($user, $scopedAccounts, $transactions, $period->previousStart, $period->previousEnd, $today, $feeProjection);
+            : $this->summarizePeriod($user, $scopedAccounts, $transactions, $period->previousStart, $period->previousEnd, $today, $feeProjection, $currency, $selectedAccount?->id);
+
+        $this->accountBalances->apply($current, $this->accountBalances->forPeriod($user, $scopedAccounts, $period->start, $period->end));
+        if ($previous !== null) {
+            $this->accountBalances->apply($previous, $this->accountBalances->forPeriod($user, $scopedAccounts, $period->previousStart, $period->previousEnd));
+        }
 
         return [
             'filter' => $filter,
@@ -90,7 +97,7 @@ class MoneyStatistics
                 ->whereIn('account_id', $accountIds)
                 ->orWhereIn('destination_account_id', $accountIds))
             ->whereDate('transaction_date', '<=', $period->end)
-            ->with(['category:id,name', 'subcategory:id,name', 'subscriptionOccurrence:id,transaction_id', 'openedDebt:id,opening_transaction_id', 'debtSettlement:id,transaction_id']);
+            ->with(['category:id,name,color', 'subcategory:id,name', 'subscriptionOccurrence:id,transaction_id', 'openedDebt:id,opening_transaction_id', 'debtSettlement:id,transaction_id']);
         $queryStart = $period->previousStart ?? $period->start;
 
         if ($queryStart !== null) {
@@ -113,6 +120,8 @@ class MoneyStatistics
         CarbonImmutable $end,
         CarbonImmutable $today,
         array $feeProjection,
+        ?string $currency,
+        ?int $accountId,
     ): array {
         $summary = $this->emptySummary($accounts);
 
@@ -130,11 +139,12 @@ class MoneyStatistics
             $summary['totalIncomeMinor'] += $account->initial_balance_minor;
             $summary['daily'][$openingDate->toDateString()] ??= $this->emptyDailyTotal();
             $summary['daily'][$openingDate->toDateString()]['openingBalanceMinor'] += $account->initial_balance_minor;
-            $summary['accounts'][$account->id]['moneyInMinor'] += $account->initial_balance_minor;
+            $summary['accounts'][$account->id]['openingBalanceMinor'] += $account->initial_balance_minor;
             $summary['incomeBreakdown']['opening-balances'] ??= [
                 'key' => 'opening-balances',
                 'categoryId' => null,
                 'name' => 'Opening balances',
+                'color' => '#64748B',
                 'amountMinor' => 0,
                 'subcategories' => [],
             ];
@@ -165,6 +175,8 @@ class MoneyStatistics
             };
         }
 
+        $summary['debt'] = $this->debtStatistics->summarize($user, $currency, $accountId, $start, $end, $today);
+
         return $this->finalizeSummary($summary, $start, $end, $today);
     }
 
@@ -188,7 +200,7 @@ class MoneyStatistics
         $summary['recordedIncomeMinor'] += $transaction->amount_minor;
         $summary['totalIncomeMinor'] += $transaction->amount_minor;
         $summary['daily'][$date]['incomeMinor'] += $transaction->amount_minor;
-        $summary['accounts'][$transaction->account_id]['moneyInMinor'] += $transaction->amount_minor;
+        $summary['accounts'][$transaction->account_id]['incomeMinor'] += $transaction->amount_minor;
         $this->addBreakdown($summary['incomeBreakdown'], $transaction, $transaction->amount_minor, 'Uncategorized income');
     }
 
@@ -235,6 +247,7 @@ class MoneyStatistics
             'key' => $key,
             'categoryId' => $transaction->category_id,
             'name' => $transaction->category?->name ?? $fallback,
+            'color' => $transaction->category?->color ?? '#94A3B8',
             'amountMinor' => 0,
             'subcategories' => [],
         ];
@@ -261,6 +274,7 @@ class MoneyStatistics
             'key' => $projection['categoryKey'],
             'categoryId' => $projection['categoryId'],
             'name' => $projection['categoryName'],
+            'color' => $projection['color'],
             'amountMinor' => 0,
             'subcategories' => [
                 $projection['subcategoryKey'] => [
@@ -293,6 +307,7 @@ class MoneyStatistics
             'categoryKey' => $category ? "category:{$category->id}" : 'transfer-fees',
             'categoryId' => $category?->id,
             'categoryName' => $category?->name ?? 'Financial',
+            'color' => $category?->color ?? '#64748B',
             'subcategoryKey' => $subcategory ? "subcategory:{$subcategory->id}" : 'bank-fees',
             'subcategoryId' => $subcategory?->id,
             'subcategoryName' => $subcategory?->name ?? 'Bank Fees',
@@ -321,11 +336,15 @@ class MoneyStatistics
             'highestSpendingDay' => null,
             'incomeBreakdown' => [],
             'spendingBreakdown' => [],
+            'debt' => [],
             'accounts' => $accounts->mapWithKeys(fn (MoneyAccount $account): array => [$account->id => [
                 'id' => $account->id,
                 'name' => $account->name,
                 'archived' => $account->archived_at !== null,
-                'moneyInMinor' => 0,
+                'incomeMinor' => 0,
+                'openingBalanceMinor' => 0,
+                'periodOpeningBalanceMinor' => 0,
+                'closingBalanceMinor' => 0,
                 'spendingMinor' => 0,
                 'transferredInMinor' => 0,
                 'transferredOutMinor' => 0,
@@ -367,7 +386,7 @@ class MoneyStatistics
         $summary['spendingBreakdown'] = $this->finalizeBreakdown($summary['spendingBreakdown']);
 
         foreach ($summary['accounts'] as &$account) {
-            $account['netMovementMinor'] = $account['moneyInMinor'] - $account['spendingMinor']
+            $account['netMovementMinor'] = $account['openingBalanceMinor'] + $account['incomeMinor'] - $account['spendingMinor']
                 + $account['transferredInMinor'] - $account['transferredOutMinor']
                 + $account['debtInMinor'] - $account['debtOutMinor'];
         }

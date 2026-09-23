@@ -48,7 +48,7 @@ export function SubscriptionCard({
             <Surface className="overflow-hidden" elevated>
                 <button className="focus-ring group w-full p-4 text-left sm:p-5" onClick={() => setDetailsOpen(true)} type="button">
                     <span className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3">
-                        <MoneyCategoryIcon className="size-10" name={subscription.category.name} />
+                        <MoneyCategoryIcon className="size-10" color={subscription.category.color} name={subscription.category.name} />
                         <span className="min-w-0">
                             <span className="flex min-w-0 items-center gap-2">
                                 <span className="truncate font-bold">{subscription.name}</span>

@@ -38,6 +38,7 @@ class MoneyViewDataFactory
         return [
             'id' => $category->id,
             'name' => $category->name,
+            'color' => $category->color,
             'type' => $category->type->value,
             'presetKey' => $category->preset_key,
             'archivedAt' => $category->archived_at?->toIso8601String(),
@@ -105,6 +106,7 @@ class MoneyViewDataFactory
             'category' => $transaction->category ? [
                 'id' => $transaction->category->id,
                 'name' => $transaction->category->name,
+                'color' => $transaction->category->color,
                 'archived' => $transaction->category->archived_at !== null,
             ] : null,
             'subcategory' => $transaction->subcategory ? [

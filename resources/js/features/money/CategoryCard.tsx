@@ -70,7 +70,7 @@ export function CategoryCard({ category, onAddSubcategory }: { category: MoneyCa
             <Surface className={archived ? 'p-5 opacity-75' : 'p-5'} elevated>
                 <div className="flex items-start justify-between gap-4">
                     <div className="flex min-w-0 items-center gap-3">
-                        <MoneyCategoryIcon className="size-10" name={category.name} presetKey={category.presetKey} />
+                        <MoneyCategoryIcon className="size-10" color={category.color} name={category.name} presetKey={category.presetKey} />
                         <div className="min-w-0">
                         <div className="flex flex-wrap items-center gap-2">
                             <h3 className="truncate text-lg font-bold">{category.name}</h3>
@@ -108,7 +108,7 @@ export function CategoryCard({ category, onAddSubcategory }: { category: MoneyCa
             {actionTarget && (
                 <MoneyDrawer onClose={() => setActionTarget(null)} open title={`${actionTarget.kind === 'category' ? 'Category' : 'Subcategory'} actions`}>
                     <div className="space-y-3">
-                        <Button fullWidth onClick={editName} variant="secondary"><Pencil aria-hidden="true" size={16} />Rename</Button>
+                        <Button fullWidth onClick={editName} variant="secondary"><Pencil aria-hidden="true" size={16} />{actionTarget.kind === 'category' ? 'Edit' : 'Rename'}</Button>
                         <Button fullWidth onClick={archiveOrReactivate} variant="ghost">
                             {actionTarget.item.archivedAt ? <RotateCcw aria-hidden="true" size={16} /> : <Archive aria-hidden="true" size={16} />}
                             {actionTarget.item.archivedAt ? 'Reactivate' : 'Archive'}

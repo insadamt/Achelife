@@ -99,7 +99,7 @@ export function MoneyCategoryPickerDialog({
                             onClick={() => chooseCategory(category)}
                             type="button"
                         >
-                            <MoneyCategoryIcon className="size-10" name={category.name} presetKey={category.presetKey} />
+                            <MoneyCategoryIcon className="size-10" color={category.color} name={category.name} presetKey={category.presetKey} />
                             <span className="min-w-0"><span className="block truncate text-sm font-bold">{category.name}</span><span className="mt-0.5 block text-xs text-muted">{category.subcategories.length} {category.subcategories.length === 1 ? 'option' : 'options'}</span></span>
                         </button>
                     ))}

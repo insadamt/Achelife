@@ -52,7 +52,7 @@ class PortableTableRegistry
             $this->table('violations', 'constitution', ['id', 'user_id', 'law_id', 'season_id', 'violation_date', 'severity_snapshot', 'base_penalty_snapshot', 'sequence_number', 'penalty_sp', 'created_at', 'updated_at'], ['law_id' => 'laws', 'season_id' => 'seasons']),
             $this->table('objectives', 'objectives', ['id', 'user_id', 'season_id', 'title', 'creation_order', 'completed_at', 'earned_sp', 'deleted_at', 'created_at', 'updated_at'], ['season_id' => 'seasons']),
             $this->table('money_accounts', 'money', ['id', 'user_id', 'name', 'currency', 'initial_balance_minor', 'theme_index', 'visual_identifier', 'archived_at', 'created_at', 'updated_at']),
-            $this->table('money_categories', 'money', ['id', 'user_id', 'type', 'name', 'preset_key', 'archived_at', 'created_at', 'updated_at']),
+            $this->table('money_categories', 'money', ['id', 'user_id', 'type', 'name', 'color', 'preset_key', 'archived_at', 'created_at', 'updated_at']),
             $this->table('money_subcategories', 'money', ['id', 'user_id', 'category_id', 'name', 'preset_key', 'archived_at', 'created_at', 'updated_at'], ['category_id' => 'money_categories']),
             ...($formatVersion >= 3 ? [
                 $this->table('money_merchants', 'money', ['id', 'user_id', 'name', 'normalized_name', 'archived_at', 'created_at', 'updated_at']),

@@ -18,7 +18,7 @@ class MoneyCategoryController extends Controller
 {
     public function store(StoreMoneyCategoryRequest $request, CreateMoneyCategory $create): RedirectResponse
     {
-        $create->execute($request->user(), $request->validated('name'), MoneyCategoryType::from($request->validated('type')));
+        $create->execute($request->user(), $request->validated('name'), MoneyCategoryType::from($request->validated('type')), $request->validated('color'));
 
         return back();
     }
@@ -26,7 +26,7 @@ class MoneyCategoryController extends Controller
     public function update(UpdateMoneyCategoryRequest $request, MoneyCategory $category, UpdateMoneyCategory $update): RedirectResponse
     {
         Gate::authorize('update', $category);
-        $update->execute($category, $request->validated('name'));
+        $update->execute($category, $request->validated('name'), $request->validated('color'));
 
         return back();
     }

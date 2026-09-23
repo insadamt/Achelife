@@ -40,12 +40,14 @@ Transaction History includes tracked Debt movements, supports a Debt type filter
 
 Borrowing, lending, principal repayment, and principal receipt do not change recorded Income, Spending, net cash flow, savings rate, spending breakdowns, or no-spend days. Account activity exposes Debt money in and Debt money out, and Account net movement includes both so it continues to reconcile with the authoritative Account balance. Interest and fees are outside this version and may later be recorded as ordinary Income or Expenses.
 
+Money Statistics repeats the current payable, receivable, and overdue positions in a separate Debt snapshot. It also reports borrowing, lending, repayment, collection, and forgiveness for its selected period. An Account filter narrows cash movements only; the outstanding position remains currency-wide because one agreement may move through more than one Account.
+
 Debts remain global, work during Season intermissions, and never affect SP, Rank, or Daily Progress. The Debts page keeps currency positions and overdue attention visible before its filtered agreement list. Each agreement is one compact ledger row prioritizing Person, direction, remaining amount, due state, and repayment progress. Selecting the row opens a detail drawer containing repayment, forgiveness, settlement history, and deletion controls. A fixed Add control opens the Debt composer.
 
 ## Portability and compatibility
 
 Archive format version 2 adds `money_debts` and `money_debt_settlements` after People, Accounts, and Transactions in dependency order. It preserves opening and repayment transaction links exactly and validates direction, currency, amounts, dates, settlement totals, Account currency, and exclusive protected links before import.
 
-Format version 1 remains explicitly supported. Its frozen table list restores with no Debt records, and its pre-icon Habit adapter still supplies the original `check` default when required. New exports use format version 2.
+Format version 1 remains explicitly supported. Its frozen table list restores with no Debt records, and its pre-icon Habit adapter still supplies the original `check` default when required. New exports use the current archive format.
 
 The version-2 archive reader continues to accept early internal Debt records whose movement link is absent. They remain readable for backward compatibility, are labeled as legacy records, and do not make the no-Account option available for new activity.

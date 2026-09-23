@@ -1,4 +1,5 @@
 import { ArrowDownLeft, ArrowRightLeft, ArrowUpRight, HandCoins } from 'lucide-react';
+import type { CSSProperties } from 'react';
 
 import { formatMinorUnits, transactionSignedAmount, transactionTitle } from './moneyPresentation';
 import type { MoneyTransactionData } from './types';
@@ -8,10 +9,11 @@ export function ActivityItem({ transaction, contextAccountId, onClick }: { trans
     const currency = transaction.account.currency;
     const globalTransfer = transaction.type === 'transfer' && contextAccountId === undefined;
     const TransactionIcon = transaction.debtMovement ? HandCoins : transaction.type === 'income' ? ArrowDownLeft : transaction.type === 'expense' ? ArrowUpRight : ArrowRightLeft;
+    const categoryColor = transaction.category?.color ?? null;
 
     return (
         <button className="focus-ring flex w-full items-center gap-4 rounded-2xl px-3 py-3 text-left transition-colors hover:bg-surface-hover" onClick={onClick} type="button">
-            <span className={`grid size-11 shrink-0 place-items-center rounded-2xl ${transaction.type === 'income' ? 'bg-success/10 text-success' : transaction.type === 'expense' ? 'bg-danger/10 text-danger' : 'bg-[color-mix(in_srgb,var(--money-accent)_12%,transparent)] text-accent-ink'}`}>
+            <span className={`grid size-11 shrink-0 place-items-center rounded-2xl ${categoryColor ? 'bg-[color-mix(in_srgb,var(--category-color)_12%,transparent)] text-[var(--category-color)]' : transaction.type === 'income' ? 'bg-success/10 text-success' : transaction.type === 'expense' ? 'bg-danger/10 text-danger' : 'bg-[color-mix(in_srgb,var(--money-accent)_12%,transparent)] text-accent-ink'}`} style={categoryColor ? { '--category-color': categoryColor } as CSSProperties : undefined}>
                 <TransactionIcon aria-hidden="true" size={19} />
             </span>
             <span className="min-w-0 flex-1">

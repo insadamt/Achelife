@@ -25,6 +25,7 @@ export interface MoneySubcategoryData {
 export interface MoneyCategoryData {
     id: number;
     name: string;
+    color: string | null;
     type: MoneyCategoryType;
     presetKey: string | null;
     archivedAt: string | null;
@@ -74,7 +75,7 @@ export interface MoneyTransactionData {
     note: string | null;
     account: MoneyTransactionAccountData;
     destinationAccount: MoneyTransactionAccountData | null;
-    category: { id: number; name: string; archived: boolean } | null;
+    category: { id: number; name: string; color: string | null; archived: boolean } | null;
     subcategory: { id: number; name: string; archived: boolean } | null;
     merchant: MoneyMerchantOptionData | null;
     tags: MoneyTagData[];
@@ -134,6 +135,7 @@ export type MoneySubscriptionOccurrenceStatus = 'due' | 'paid' | 'skipped';
 export interface MoneySubscriptionSelectionData {
     id: number;
     name: string;
+    color?: string | null;
     archived: boolean;
 }
 

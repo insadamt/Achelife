@@ -4,15 +4,16 @@ import { useState } from 'react';
 import type { ReactNode } from 'react';
 
 import { classNames } from '../../components/ui/classNames';
-import { calendarHref, monthLabel, shiftMonth, shiftWeek, weekLabel } from './taskCalendar';
+import { calendarHref, monthLabel, shiftDays, shiftMonth, shiftWeek, threeDayLabel, weekLabel } from './taskCalendar';
 import type { CalendarProject, CalendarView } from './taskCalendar';
 
-export function TaskCalendarControls({ includeInbox, month, onFiltersChange, projectIds, projects, today, view, weekStart }: {
+export function TaskCalendarControls({ includeInbox, month, onFiltersChange, projectIds, projects, threeDayStart, today, view, weekStart }: {
     includeInbox: boolean;
     month: string;
     onFiltersChange: (projectIds: number[], includeInbox: boolean) => void;
     projectIds: number[];
     projects: CalendarProject[];
+    threeDayStart: string;
     today: string;
     view: CalendarView;
     weekStart: string;
@@ -20,9 +21,9 @@ export function TaskCalendarControls({ includeInbox, month, onFiltersChange, pro
     const [filterOpen, setFilterOpen] = useState(false);
     const activeCount = projectIds.length + (includeInbox ? 1 : 0);
     const allSelected = projectIds.length === projects.length && includeInbox;
-    const previousAnchor = view === 'week' ? shiftWeek(weekStart, -1) : shiftMonth(month, -1);
-    const nextAnchor = view === 'week' ? shiftWeek(weekStart, 1) : shiftMonth(month, 1);
-    const periodLabel = view === 'week' ? weekLabel(weekStart) : monthLabel(month);
+    const previousAnchor = view === 'week' ? shiftWeek(weekStart, -1) : view === 'three_day' ? shiftDays(threeDayStart, -3) : shiftMonth(month, -1);
+    const nextAnchor = view === 'week' ? shiftWeek(weekStart, 1) : view === 'three_day' ? shiftDays(threeDayStart, 3) : shiftMonth(month, 1);
+    const periodLabel = view === 'week' ? weekLabel(weekStart) : view === 'three_day' ? threeDayLabel(threeDayStart) : monthLabel(month);
 
     return (
         <div className="mt-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border-subtle bg-surface p-2 sm:p-3">
@@ -35,8 +36,9 @@ export function TaskCalendarControls({ includeInbox, month, onFiltersChange, pro
                 <div className="flex rounded-xl bg-app p-1 text-xs font-bold">
                     <Link aria-current={view === 'month' ? 'page' : undefined} className={classNames('focus-ring rounded-lg px-2.5 py-2', view === 'month' ? 'bg-elevated text-foreground shadow-sm' : 'text-muted hover:text-foreground')} href={calendarHref('month', today.slice(0, 7), today, projectIds, includeInbox)}>Month</Link>
                     <Link aria-current={view === 'week' ? 'page' : undefined} className={classNames('focus-ring rounded-lg px-2.5 py-2', view === 'week' ? 'bg-elevated text-foreground shadow-sm' : 'text-muted hover:text-foreground')} href={calendarHref('week', today, today, projectIds, includeInbox)}>Week</Link>
+                    <Link aria-current={view === 'three_day' ? 'page' : undefined} className={classNames('focus-ring rounded-lg px-2.5 py-2', view === 'three_day' ? 'bg-elevated text-foreground shadow-sm' : 'text-muted hover:text-foreground')} href={calendarHref('three_day', today, today, projectIds, includeInbox)}>Three days</Link>
                 </div>
-                <Link className="focus-ring inline-flex min-h-11 items-center gap-2 rounded-xl px-3 text-sm font-bold text-secondary hover:bg-surface-hover hover:text-foreground" href={calendarHref(view, view === 'week' ? today : today.slice(0, 7), today, projectIds, includeInbox)}><CalendarDays size={16} />Today</Link>
+                <Link className="focus-ring inline-flex min-h-11 items-center gap-2 rounded-xl px-3 text-sm font-bold text-secondary hover:bg-surface-hover hover:text-foreground" href={calendarHref(view, view === 'week' || view === 'three_day' ? today : today.slice(0, 7), today, projectIds, includeInbox)}><CalendarDays size={16} />Today</Link>
                 <div className="relative">
                     <button aria-expanded={filterOpen} className={classNames('focus-ring inline-flex min-h-11 items-center gap-2 rounded-xl border px-3 text-sm font-bold', filterOpen ? 'border-[var(--module-accent)] bg-[color-mix(in_srgb,var(--module-accent)_10%,transparent)] text-foreground' : 'border-border-subtle text-secondary hover:bg-surface-hover hover:text-foreground')} onClick={() => setFilterOpen((open) => !open)} type="button"><Filter size={16} />Projects {!allSelected && <span className="rounded-full bg-elevated px-1.5 py-0.5 text-xs">{activeCount}</span>}</button>
                     {filterOpen && <div className="absolute right-0 z-20 mt-2 w-72 rounded-2xl border border-border-strong bg-elevated p-2 shadow-2xl">

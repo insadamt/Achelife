@@ -4,6 +4,7 @@ export interface MoneyStatisticsBreakdownItem {
     key: string;
     categoryId: number | null;
     name: string;
+    color: string;
     amountMinor: number;
     includesProjectedFees?: boolean;
     subcategories: Array<{
@@ -18,13 +19,22 @@ export interface MoneyAccountActivity {
     id: number;
     name: string;
     archived: boolean;
-    moneyInMinor: number;
+    incomeMinor: number;
+    openingBalanceMinor: number;
+    periodOpeningBalanceMinor: number;
+    closingBalanceMinor: number;
     spendingMinor: number;
     transferredInMinor: number;
     transferredOutMinor: number;
     debtInMinor: number;
     debtOutMinor: number;
     netMovementMinor: number;
+}
+
+export interface MoneyDebtSummary {
+    positionIsCurrencyWide: boolean;
+    position: { payableMinor: number; receivableMinor: number; overdueMinor: number; overdueCount: number };
+    activity: { borrowedMinor: number; lentMinor: number; repaidMinor: number; collectedMinor: number; payableForgivenMinor: number; receivableForgivenMinor: number };
 }
 
 export interface MoneyStatisticsSummary {
@@ -45,6 +55,7 @@ export interface MoneyStatisticsSummary {
     incomeBreakdown: MoneyStatisticsBreakdownItem[];
     spendingBreakdown: MoneyStatisticsBreakdownItem[];
     accounts: MoneyAccountActivity[];
+    debt: MoneyDebtSummary;
 }
 
 export interface MoneyTrendBucket {

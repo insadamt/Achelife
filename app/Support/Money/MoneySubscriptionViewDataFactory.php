@@ -5,6 +5,7 @@ namespace App\Support\Money;
 use App\Enums\MoneySubscriptionRecurrence;
 use App\Models\MoneySubscription;
 use App\Models\MoneySubscriptionOccurrence;
+use App\Models\MoneyCategory;
 use Carbon\CarbonImmutable;
 
 class MoneySubscriptionViewDataFactory
@@ -80,12 +81,13 @@ class MoneySubscriptionViewDataFactory
         };
     }
 
-    /** @return array{id: int, name: string, archived: bool} */
+    /** @return array{id: int, name: string, archived: bool, color?: string|null} */
     private function selection(object $selection): array
     {
         return [
             'id' => $selection->id,
             'name' => $selection->name,
+            ...($selection instanceof MoneyCategory ? ['color' => $selection->color] : []),
             'archived' => $selection->archived_at !== null,
         ];
     }

@@ -6,11 +6,11 @@ export interface CalendarProject {
     color: string | null;
 }
 
-export type CalendarView = 'month' | 'week';
+export type CalendarView = 'month' | 'week' | 'three_day';
 
 export function calendarHref(view: CalendarView, anchor: string, date: string, projectIds: number[], includeInbox: boolean): string {
     const parameters = new URLSearchParams({ view, date });
-    parameters.set(view === 'week' ? 'week' : 'month', anchor);
+    parameters.set(view === 'week' ? 'week' : view === 'three_day' ? 'three_day' : 'month', anchor);
     projectIds.forEach((projectId) => parameters.append('projects[]', String(projectId)));
     if (includeInbox) parameters.append('projects[]', 'inbox');
     return `/tasks/calendar?${parameters.toString()}`;
@@ -31,10 +31,24 @@ export function shiftWeek(weekStart: string, amount: number): string {
     return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
 }
 
+export function shiftDays(startDate: string, amount: number): string {
+    const date = new Date(`${startDate}T12:00:00`);
+    date.setDate(date.getDate() + amount);
+
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+}
+
 export function weekLabel(weekStart: string): string {
     const dates = weekDays(weekStart);
     const format = new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric' });
     return `${format.format(new Date(`${dates[0]}T12:00:00`))} – ${format.format(new Date(`${dates[6]}T12:00:00`))}`;
+}
+
+export function threeDayLabel(threeDayStart: string): string {
+    const dates = [threeDayStart, shiftDays(threeDayStart, 1), shiftDays(threeDayStart, 2)];
+    const format = new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+
+    return `${format.format(new Date(`${dates[0]}T12:00:00`))} – ${format.format(new Date(`${dates[2]}T12:00:00`))}`;
 }
 
 export function monthDays(month: string): string[] {

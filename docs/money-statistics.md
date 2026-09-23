@@ -26,14 +26,22 @@ Delta tone follows meaning: more income, net cash flow, savings, or no-spend day
 
 Category and Subcategory rows show amount, share of their total, amount delta, percentage delta, and share delta where applicable. Opening balances are an explicit Income source. Positive Transfer fees are projected as `Financial → Bank Fees`, matching History reporting, without creating another transaction or balance effect.
 
+Every Category has a saved color. It is used consistently in Money and the Statistics charts; Subcategories inherit their parent Category color. Opening balances, uncategorized activity, and projected Bank Fees use fixed neutral colors because they are system reporting entries rather than editable Categories.
+
 ## Charts and drill-through
 
 The activity chart switches between Income and Spending using the same single-line presentation as Task statistics. Income combines recorded Income and opening balances; point details expose that split. Net cash flow remains available in the summary metrics instead of adding another competing chart series. Season and Month use daily buckets, Year uses monthly buckets, and All time switches from monthly to yearly buckets after 36 months. Missing buckets are zero-filled and future dates are omitted. A comparison toggle overlays the selected metric from the preceding period where one exists.
 
-Category and Subcategory links open Transaction History with the selected dates, currency, Account, and categorization filters. History supports the same currency boundary so a drill-through cannot mix currencies.
+Distribution combines Spending by Category and Income sources in one interactive donut with a Spending / Income toggle. The eight largest entries receive slices and all remaining entries combine into Other. Chart slices and legend rows are keyboard-focusable; selecting one opens a detail panel with its exact amount, share, period change, expandable Subcategories, and Transaction History drill-through. Selecting Other lists every Category inside that grouping. History supports the same currency boundary so a drill-through cannot mix currencies.
+
+## Debt and Account movement
+
+Debt snapshot is separate from cash-flow metrics. It shows the selected currency's outstanding payable, receivable, and overdue positions, then reports borrowing, lending, repayments, collections, and forgiveness in the selected period. An Account filter narrows only period movements; outstanding positions remain currency-wide because an agreement can use more than one Account. Debt principal continues to be excluded from Income, Spending, net cash flow, savings rate, charts, and no-spend days.
+
+Account balance movement reports each scoped Account as a reconciliation: period opening balance, initial balance added during the period, Income, Spending, Transfers, and Debt cash movement produce the closing balance at the selected period end. It does not show today's balance when viewing a historical period.
 
 ## Supporting metrics
 
-The first Statistics view prioritizes income, spending, net cash flow, savings rate, the activity chart, and spending breakdown. Income sources, Account activity, average daily spending, no-spend days, Subscription spending, Transfer fees, transaction count, and the highest-spending day remain available under More insights. Average daily spending divides total spending by every elapsed calendar day in the selected range. For All time, the range begins on the first scoped opening balance or transaction date. A no-spend day has neither an Expense nor a positive Transfer fee. Its delta compares the share of elapsed days rather than raw counts, so a partial current period remains meaningful against a full previous period.
+The first Statistics view prioritizes income, spending, net cash flow, savings rate, the activity chart, and Distribution. Account activity, average daily spending, no-spend days, Subscription spending, Transfer fees, transaction count, and the highest-spending day remain available under More insights. Average daily spending divides total spending by every elapsed calendar day in the selected range. For All time, the range begins on the first scoped opening balance or transaction date. A no-spend day has neither an Expense nor a positive Transfer fee. Its delta compares the share of elapsed days rather than raw counts, so a partial current period remains meaningful against a full previous period.
 
 No additional statistics snapshots or cached balances are stored. Results are derived from Accounts and authoritative transaction rows.

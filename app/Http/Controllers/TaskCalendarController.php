@@ -24,11 +24,18 @@ class TaskCalendarController extends Controller
         $today = $calendar->today($user);
         $synchronizeOccurrences->execute($user, $today);
         $cycle = $resolveUserSeasonCycle->execute($user, $today);
-        $view = $request->string('view')->toString() === 'week' ? 'week' : 'month';
+        $view = match ($request->string('view')->toString()) {
+            'week', 'three_day' => $request->string('view')->toString(),
+            default => 'month',
+        };
         $monthStart = $this->monthStart($request->string('month')->toString(), $today);
         $weekStart = $this->weekStart($request->string('week')->toString(), $today);
-        $periodStart = $view === 'week' ? $weekStart : $monthStart;
-        $periodEnd = $view === 'week' ? $weekStart->addDays(6) : $monthStart->endOfMonth();
+        $threeDayStart = $this->threeDayStart($request->string('three_day')->toString(), $today);
+        [$periodStart, $periodEnd] = match ($view) {
+            'week' => [$weekStart, $weekStart->addDays(6)],
+            'three_day' => [$threeDayStart, $threeDayStart->addDays(2)],
+            default => [$monthStart, $monthStart->endOfMonth()],
+        };
         $projects = $user->taskProjects()->whereNull('archived_at')->where(function ($query): void {
             $query->whereNull('task_folder_id')->orWhereHas('folder', fn ($query) => $query->whereNull('archived_at'));
         })->orderBy('position')->get(['id', 'name', 'color']);
@@ -40,6 +47,7 @@ class TaskCalendarController extends Controller
             'view' => $view,
             'month' => $monthStart->format('Y-m'),
             'weekStart' => $weekStart->toDateString(),
+            'threeDayStart' => $threeDayStart->toDateString(),
             'selectedDate' => $selectedDate->toDateString(),
             'tasks' => $calendarViewDataFactory->make($user, $periodStart, $periodEnd, $projectIds, $includeInbox, $today, $cycle->activeSeason?->id),
             'projects' => $projects->map(fn ($project) => ['id' => $project->id, 'name' => $project->name, 'color' => $project->color])->values(),
@@ -67,16 +75,30 @@ class TaskCalendarController extends Controller
 
     private function weekStart(string $week, CarbonImmutable $today): CarbonImmutable
     {
-        $anchor = preg_match('/^\\d{4}-\\d{2}-\\d{2}$/', $week) === 1 ? CarbonImmutable::parse($week) : $today;
+        $anchor = $this->validDate($week) ?? $today;
 
         return $anchor->startOfWeek();
     }
 
+    private function threeDayStart(string $threeDay, CarbonImmutable $today): CarbonImmutable
+    {
+        return $this->validDate($threeDay) ?? $today;
+    }
+
     private function selectedDate(string $date, CarbonImmutable $monthStart, CarbonImmutable $monthEnd, CarbonImmutable $today): CarbonImmutable
     {
-        $candidate = preg_match('/^\\d{4}-\\d{2}-\\d{2}$/', $date) === 1 ? CarbonImmutable::parse($date) : $today;
+        $candidate = $this->validDate($date) ?? $today;
 
         return $candidate->betweenIncluded($monthStart, $monthEnd) ? $candidate : $monthStart;
+    }
+
+    private function validDate(string $date): ?CarbonImmutable
+    {
+        if (preg_match('/^\\d{4}-\\d{2}-\\d{2}$/', $date) !== 1) return null;
+
+        $candidate = CarbonImmutable::createFromFormat('!Y-m-d', $date);
+
+        return $candidate->format('Y-m-d') === $date ? $candidate : null;
     }
 
     /** @param list<int> $availableProjectIds

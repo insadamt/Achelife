@@ -5,12 +5,13 @@ namespace App\Actions\Money;
 use App\Data\Money\MoneyPresetInstallationResult;
 use App\Models\MoneyCategory;
 use App\Models\User;
+use App\Services\Money\MoneyCategoryColorService;
 use App\Support\Money\MoneyPresetPack;
 use Illuminate\Support\Facades\DB;
 
 class InstallMoneyPresetPack
 {
-    public function __construct(private readonly MoneyPresetPack $presetPack) {}
+    public function __construct(private readonly MoneyPresetPack $presetPack, private readonly MoneyCategoryColorService $colors) {}
 
     public function execute(User $user): MoneyPresetInstallationResult
     {
@@ -22,7 +23,7 @@ class InstallMoneyPresetPack
             foreach ($this->presetPack->definitions() as $definition) {
                 $category = $user->moneyCategories()->firstOrCreate(
                     ['preset_key' => $definition['key']],
-                    ['name' => $definition['name'], 'type' => $definition['type']],
+                    ['name' => $definition['name'], 'type' => $definition['type'], 'color' => $this->colors->uniqueColor($user, $definition['type'], null)],
                 );
                 $categoriesCreated += $category->wasRecentlyCreated ? 1 : 0;
                 $subcategoriesCreated += $this->installMissingSubcategories($category, $definition['subcategories']);

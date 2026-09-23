@@ -19,6 +19,7 @@ class StoreMoneyCategoryRequest extends FormRequest
         return [
             'name' => ['required', 'string', 'max:120'],
             'type' => ['required', Rule::enum(MoneyCategoryType::class)],
+            'color' => ['nullable', 'regex:/^#[0-9A-Fa-f]{6}$/'],
         ];
     }
 }

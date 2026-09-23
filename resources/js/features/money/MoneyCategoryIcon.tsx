@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { createElement } from 'react';
+import type { CSSProperties } from 'react';
 
 import { classNames } from '../../components/ui/classNames';
 
@@ -40,9 +41,9 @@ function resolveCategoryIcon(name: string, presetKey?: string | null): LucideIco
     return categoryIcons.find(({ terms }) => terms.some((term) => searchableValue.includes(term)))?.icon ?? Shapes;
 }
 
-export function MoneyCategoryIcon({ className, name, presetKey, size = 18 }: { className?: string; name: string; presetKey?: string | null; size?: number }) {
+export function MoneyCategoryIcon({ className, color, name, presetKey, size = 18 }: { className?: string; color?: string | null; name: string; presetKey?: string | null; size?: number }) {
     return (
-        <span className={classNames('grid shrink-0 place-items-center rounded-xl bg-[color-mix(in_srgb,var(--money-accent)_11%,transparent)] text-accent-ink', className)}>
+        <span className={classNames('grid shrink-0 place-items-center rounded-xl bg-[color-mix(in_srgb,var(--category-color)_11%,transparent)] text-[var(--category-color)]', className)} style={{ '--category-color': color ?? 'var(--money-accent)' } as CSSProperties}>
             {createElement(resolveCategoryIcon(name, presetKey), { 'aria-hidden': true, size })}
         </span>
     );

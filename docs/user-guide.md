@@ -28,7 +28,7 @@ During an intermission, seasonal progression pauses. Money and historical record
 
 Create one-time or recurring Tasks with dates, subtasks, and importance. A checklist can contain as many steps as needed; press Enter to add each step or paste multiple lines to add a complete checklist at once. Complete or reschedule Tasks as needed; completion history keeps its original reward attribution.
 
-Open **Tasks → Calendar** to plan open scheduled Tasks across every active Project and Inbox. Switch between Month and Week, focus a day, filter Projects, or drag a Task onto another date to reschedule that occurrence.
+Open **Tasks → Calendar** to plan open scheduled Tasks across every active Project and Inbox. Switch between Month, Week, and a rolling Three-day view, focus a day, filter Projects, or drag a Task onto another date to reschedule that occurrence.
 
 Use the **⋯** control on a Folder or Project in **Tasks → Files** to rename, choose its color, archive, or permanently delete it. Project colors are unique: if you choose a color already assigned to another Project, Achelife saves a different unused color for that Project. Archiving a Folder archives its Projects; archiving a Project hides its Tasks without deleting them. Restore either from **Archived Files**. Permanent Folder deletion moves its Projects to Files root, while permanent Project deletion moves its Tasks to Inbox.
 
@@ -56,11 +56,11 @@ Track Accounts, income, expenses, Transfers, fees, categories, recurring Subscri
 
 Open **Money → History** to search Merchant and Tag names or filter activity by a specific Merchant or Tag. Transfers do not use Merchants or Tags because both Accounts already identify the movement endpoints.
 
-Open **Money → Organization** to control Categories, Merchants, and Tags from one page. The three views let you manage Category presets and Subcategories, create or rename Merchants, and create or recolor Tags. Used Merchants and Tags cannot be deleted because that would damage history; archive them instead. Unused values can be deleted permanently.
+Open **Money → Organization** to control Categories, Merchants, and Tags from one page. The three views let you name and recolor Categories, manage Category presets and Subcategories, create or rename Merchants, and create or recolor Tags. Category colors follow the Category through pickers, activity, Subscriptions, History, and Statistics. Used values cannot be deleted because that would damage history; archive them instead. Unused values can be deleted permanently.
 
 Open **Money → Debts** to record money you borrowed or lent. Choose an existing Person or create one inline, then select the Account that received the borrowed money or funded the loan. Every partial repayment must use a same-currency Account, though it may differ from the opening Account. Forgiveness closes the remaining balance without pretending that money moved. See [Money debts](money-debts.md) for the complete behavior.
 
-Open **Money → Statistics** to compare income, opening balances, spending, net cash flow, savings rate, Categories, Account movement, fees, and Subscription spending. Filter by Season, Month, Year, currency, Account, or All time. Opening balances enter the period containing the Account creation date. See [Money statistics](money-statistics.md) for metric definitions and delta behavior.
+Open **Money → Statistics** to compare income, opening balances, spending, net cash flow, savings rate, Debt, Categories, Account balance movement, fees, and Subscription spending. One interactive Distribution donut switches between Spending and Income; selecting a segment opens its detailed Category breakdown and linked activity. Filter by Season, Month, Year, currency, Account, or All time. Opening balances enter the period containing the Account creation date. See [Money statistics](money-statistics.md) for metric definitions and delta behavior.
 
 **Manual Subscriptions** wait for you to pay or skip. **Automatic Subscriptions** record Expenses when due; they do not move money through a bank. Repeated synchronization does not duplicate payments.
 

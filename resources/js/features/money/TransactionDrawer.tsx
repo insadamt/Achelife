@@ -294,7 +294,7 @@ export function TransactionDrawer({
                                 onClick={() => setCategoryPickerOpen(true)}
                                 type="button"
                             >
-                                {selectedCategory ? <MoneyCategoryIcon className="size-10" name={selectedCategory.name} presetKey={selectedCategory.presetKey} /> : <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-surface-hover text-muted"><Plus aria-hidden="true" size={18} /></span>}
+                                {selectedCategory ? <MoneyCategoryIcon className="size-10" color={selectedCategory.color} name={selectedCategory.name} presetKey={selectedCategory.presetKey} /> : <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-surface-hover text-muted"><Plus aria-hidden="true" size={18} /></span>}
                                 <span className="min-w-0 flex-1">
                                     <span className={classNames('block text-sm font-bold', !selectedCategory && 'text-muted')}>{selectedCategory?.name ?? 'Choose Category'}</span>
                                     {selectedCategory && <span className="mt-0.5 block truncate text-xs text-muted">{selectedSubcategory?.name ?? 'No Subcategory'}</span>}
