@@ -1,6 +1,6 @@
 import { Check, CirclePause, Pause, Play, Plus, Square, Timer } from 'lucide-react';
 import gsap from 'gsap';
-import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import type { RefObject } from 'react';
 
 import { classNames } from '../../components/ui/classNames';
@@ -27,7 +27,6 @@ export function DynamicIsland({ mobileVisible, mobileTriggerRef, onMobileDismiss
     const [controlsMounted, setControlsMounted] = useState(false);
     const [findingTask, setFindingTask] = useState(false);
     const [reducedMotion, setReducedMotion] = useState(() => prefersReducedMotion());
-    const [savedFeedbackFading, setSavedFeedbackFading] = useState(false);
     const runningSession = focus.sessions.find((session) => session.running);
     const pausedSessions = focus.sessions.filter((session) => !session.running);
     const eventOnly = !focus.session && Boolean(focus.event);
@@ -37,6 +36,24 @@ export function DynamicIsland({ mobileVisible, mobileTriggerRef, onMobileDismiss
     const visualKey = eventOnly
         ? `saved-${focus.event?.id ?? ''}`
         : `${sessionStateKey}-${focus.event?.id ?? ''}-${controlsMounted}-${findingTask}`;
+
+    const closeControls = useCallback(() => {
+        if (!controlsMounted) return;
+
+        setControlsExpanded(false);
+        setFindingTask(false);
+        if (reducedMotion || !controlsRef.current) {
+            setControlsMounted(false);
+            return;
+        }
+
+        gsap.to(controlsRef.current, {
+            autoAlpha: 0,
+            duration: 0.14,
+            ease: 'power1.in',
+            onComplete: () => setControlsMounted(false),
+        });
+    }, [controlsMounted, reducedMotion]);
 
     useEffect(() => {
         const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -64,17 +81,15 @@ export function DynamicIsland({ mobileVisible, mobileTriggerRef, onMobileDismiss
 
         document.addEventListener('click', closeOnOutsideClick, true);
         return () => document.removeEventListener('click', closeOnOutsideClick, true);
-    }, [controlsExpanded, mobileVisible, mobileTriggerRef, onMobileDismiss]);
+    }, [closeControls, controlsExpanded, mobileVisible, mobileTriggerRef, onMobileDismiss]);
 
     useEffect(() => {
-        if (!eventOnly || !focus.event) {
-            setSavedFeedbackFading(false);
-            return;
-        }
-
-        const fadeTimer = window.setTimeout(() => setSavedFeedbackFading(true), 4550);
-        return () => window.clearTimeout(fadeTimer);
-    }, [eventOnly, focus.event]);
+        if (!eventOnly || !focus.event || reducedMotion || !surfaceRef.current) return;
+        const context = gsap.context(() => {
+            gsap.to(surfaceRef.current, { autoAlpha: 0, delay: 4.55, duration: 0.42, ease: 'power1.in' });
+        }, islandRef);
+        return () => context.revert();
+    }, [eventOnly, focus.event, reducedMotion]);
 
     useLayoutEffect(() => {
         const surface = surfaceRef.current;
@@ -179,35 +194,9 @@ export function DynamicIsland({ mobileVisible, mobileTriggerRef, onMobileDismiss
         return () => context.revert();
     }, [eventOnly, focus.event, reducedMotion]);
 
-    useEffect(() => {
-        if (!savedFeedbackFading || reducedMotion || !surfaceRef.current) return;
-        const context = gsap.context(() => {
-            gsap.to(surfaceRef.current, { autoAlpha: 0, duration: 0.42, ease: 'power1.in' });
-        }, islandRef);
-        return () => context.revert();
-    }, [reducedMotion, savedFeedbackFading]);
-
     function openControls() {
         setControlsMounted(true);
         setControlsExpanded(true);
-    }
-
-    function closeControls() {
-        if (!controlsMounted) return;
-
-        setControlsExpanded(false);
-        setFindingTask(false);
-        if (reducedMotion || !controlsRef.current) {
-            setControlsMounted(false);
-            return;
-        }
-
-        gsap.to(controlsRef.current, {
-            autoAlpha: 0,
-            duration: 0.14,
-            ease: 'power1.in',
-            onComplete: () => setControlsMounted(false),
-        });
     }
 
     if (!focus.session && !focus.event) return <p aria-live="polite" className="sr-only">{focus.announcement}</p>;

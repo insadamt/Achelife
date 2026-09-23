@@ -52,13 +52,13 @@ export function threeDayLabel(threeDayStart: string): string {
 }
 
 export function monthDays(month: string): string[] {
-    const [year, monthNumber] = month.split('-').map(Number);
+    const { year, monthNumber } = monthParts(month);
     const lastDay = new Date(year, monthNumber, 0).getDate();
     return Array.from({ length: lastDay }, (_, index) => `${month}-${String(index + 1).padStart(2, '0')}`);
 }
 
 export function calendarGridDates(month: string): Array<string | null> {
-    const [year, monthNumber] = month.split('-').map(Number);
+    const { year, monthNumber } = monthParts(month);
     const firstWeekday = new Date(year, monthNumber - 1, 1).getDay();
     const leading = (firstWeekday + 6) % 7;
     const dates = monthDays(month);
@@ -67,9 +67,13 @@ export function calendarGridDates(month: string): Array<string | null> {
 }
 
 export function shiftMonth(month: string, amount: number): string {
-    const [year, monthNumber] = month.split('-').map(Number);
+    const { year, monthNumber } = monthParts(month);
     const next = new Date(year, monthNumber - 1 + amount, 1);
     return `${next.getFullYear()}-${String(next.getMonth() + 1).padStart(2, '0')}`;
+}
+
+function monthParts(month: string): { year: number; monthNumber: number } {
+    return { year: Number(month.slice(0, 4)), monthNumber: Number(month.slice(5, 7)) };
 }
 
 export function monthLabel(month: string): string {
