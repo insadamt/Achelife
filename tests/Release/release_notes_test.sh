@@ -67,12 +67,14 @@ sh "$repository_root/scripts/release/write-rc-notes.sh" \
     "$temporary_directory/v1.3-release-notes.md"
 
 grep -Fq '# Achelife v1.3.0' "$temporary_directory/v1.3-release-notes.md"
-grep -Fq '### Tasks 2.0' "$temporary_directory/v1.3-release-notes.md"
-grep -Fq '### Task Planning Calendar' "$temporary_directory/v1.3-release-notes.md"
-grep -Fq 'persistent server-backed Focus timer' "$temporary_directory/v1.3-release-notes.md"
-grep -Fq '## Money Improvements' "$temporary_directory/v1.3-release-notes.md"
-grep -Fq 'archive format to **version 9**' "$temporary_directory/v1.3-release-notes.md"
-grep -Fq 'archive formats 1 through 8' "$temporary_directory/v1.3-release-notes.md"
+grep -Fq '## Added' "$temporary_directory/v1.3-release-notes.md"
+grep -Fq 'Folders, Projects, and Inbox' "$temporary_directory/v1.3-release-notes.md"
+grep -Fq 'Task Calendar' "$temporary_directory/v1.3-release-notes.md"
+grep -Fq 'Focus Time' "$temporary_directory/v1.3-release-notes.md"
+grep -Fq '## Changed' "$temporary_directory/v1.3-release-notes.md"
+grep -Fq '## Data & Compatibility' "$temporary_directory/v1.3-release-notes.md"
+grep -Fq 'archive format v9' "$temporary_directory/v1.3-release-notes.md"
+grep -Fq 'formats v1 through v8' "$temporary_directory/v1.3-release-notes.md"
 
 if sh "$repository_root/scripts/release/write-rc-notes.sh" \
     1.0.0 \
