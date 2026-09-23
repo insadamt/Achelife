@@ -6,11 +6,35 @@ export interface CalendarProject {
     color: string | null;
 }
 
-export function calendarHref(month: string, date: string, projectIds: number[], includeInbox: boolean): string {
-    const parameters = new URLSearchParams({ month, date });
+export type CalendarView = 'month' | 'week';
+
+export function calendarHref(view: CalendarView, anchor: string, date: string, projectIds: number[], includeInbox: boolean): string {
+    const parameters = new URLSearchParams({ view, date });
+    parameters.set(view === 'week' ? 'week' : 'month', anchor);
     projectIds.forEach((projectId) => parameters.append('projects[]', String(projectId)));
     if (includeInbox) parameters.append('projects[]', 'inbox');
     return `/tasks/calendar?${parameters.toString()}`;
+}
+
+export function weekDays(weekStart: string): string[] {
+    const anchor = new Date(`${weekStart}T12:00:00`);
+    return Array.from({ length: 7 }, (_, index) => {
+        const date = new Date(anchor);
+        date.setDate(anchor.getDate() + index);
+        return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+    });
+}
+
+export function shiftWeek(weekStart: string, amount: number): string {
+    const date = new Date(`${weekStart}T12:00:00`);
+    date.setDate(date.getDate() + amount * 7);
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+}
+
+export function weekLabel(weekStart: string): string {
+    const dates = weekDays(weekStart);
+    const format = new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric' });
+    return `${format.format(new Date(`${dates[0]}T12:00:00`))} – ${format.format(new Date(`${dates[6]}T12:00:00`))}`;
 }
 
 export function monthDays(month: string): string[] {

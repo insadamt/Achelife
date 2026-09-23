@@ -28,7 +28,7 @@ During an intermission, seasonal progression pauses. Money and historical record
 
 Create one-time or recurring Tasks with dates, subtasks, and importance. A checklist can contain as many steps as needed; press Enter to add each step or paste multiple lines to add a complete checklist at once. Complete or reschedule Tasks as needed; completion history keeps its original reward attribution.
 
-Open **Tasks → Calendar** to plan open scheduled Tasks across every active Project and Inbox. Choose the month, focus a day, filter Projects, or drag a Task onto another date to reschedule that occurrence.
+Open **Tasks → Calendar** to plan open scheduled Tasks across every active Project and Inbox. Switch between Month and Week, focus a day, filter Projects, or drag a Task onto another date to reschedule that occurrence.
 
 Use the **⋯** control on a Folder or Project in **Tasks → Files** to rename, choose its color, archive, or permanently delete it. Project colors are unique: if you choose a color already assigned to another Project, Achelife saves a different unused color for that Project. Archiving a Folder archives its Projects; archiving a Project hides its Tasks without deleting them. Restore either from **Archived Files**. Permanent Folder deletion moves its Projects to Files root, while permanent Project deletion moves its Tasks to Inbox.
 
