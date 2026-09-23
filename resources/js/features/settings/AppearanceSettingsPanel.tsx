@@ -28,7 +28,8 @@ export function AppearanceSettingsPanel() {
                     {resolvedTheme === 'dark' ? <Moon aria-hidden="true" size={22} /> : <Sun aria-hidden="true" size={22} />}
                 </span>
                 <div className="min-w-0 flex-1">
-                    <h2 className="text-xl font-bold">Appearance</h2>
+                    <p className="text-xs font-bold tracking-[0.14em] text-accent-ink uppercase">This device</p>
+                    <h2 className="mt-1 text-2xl font-bold tracking-[-0.03em]">Appearance</h2>
                     <p className="mt-1 text-sm leading-6 text-muted">Choose a theme for this device. System mode follows its display setting automatically.</p>
                 </div>
             </div>
@@ -63,7 +64,7 @@ export function AppearanceSettingsPanel() {
             </div>
 
             <p aria-live="polite" className="mt-4 text-xs font-semibold tracking-[0.08em] text-muted uppercase">
-                Using {resolvedTheme} mode on this device
+                Applied immediately: using {resolvedTheme} mode on this device
             </p>
         </section>
     );

@@ -1,13 +1,12 @@
-import { Head, useForm, usePage } from '@inertiajs/react';
-import { Clock3, LocateFixed, RefreshCw } from 'lucide-react';
-import type { FormEvent } from 'react';
-import { useMemo } from 'react';
+import { Head, usePage } from '@inertiajs/react';
+import { Archive, Palette } from 'lucide-react';
 
-import { Button, SelectField } from '../../components/ui';
-import { AccountSettingsPanel } from '../../features/settings/AccountSettingsPanel';
-import { AppearanceSettingsPanel } from '../../features/settings/AppearanceSettingsPanel';
 import { PortabilitySettingsPanel } from '../../features/portability/PortabilitySettingsPanel';
 import type { RestorePreview } from '../../features/portability/types';
+import { AccountSettingsPanel } from '../../features/settings/AccountSettingsPanel';
+import { AppearanceSettingsPanel } from '../../features/settings/AppearanceSettingsPanel';
+import { CalendarSettingsPanel } from '../../features/settings/CalendarSettingsPanel';
+import { isSettingsSection, SettingsNavigation } from '../../features/settings/SettingsNavigation';
 import type { SharedPageProps } from '../../types';
 
 interface TimezoneOption {
@@ -25,139 +24,40 @@ interface GeneralSettingsProps {
     timezones: TimezoneOption[];
 }
 
-function detectedTimezone(): string | null {
-    return Intl.DateTimeFormat().resolvedOptions().timeZone || null;
-}
+function selectedSection(url: string) {
+    const section = new URLSearchParams(url.split('?')[1] ?? '').get('section');
 
-function localDateKey(timezone: string): string {
-    const parts = new Intl.DateTimeFormat('en', {
-        day: '2-digit',
-        month: '2-digit',
-        timeZone: timezone,
-        year: 'numeric',
-    }).formatToParts(new Date());
-    const value = Object.fromEntries(parts.map((part) => [part.type, part.value]));
-
-    return `${value.year}-${value.month}-${value.day}`;
-}
-
-function localTimePreview(timezone: string): string {
-    return new Intl.DateTimeFormat(undefined, {
-        dateStyle: 'full',
-        timeStyle: 'long',
-        timeZone: timezone,
-    }).format(new Date());
+    return isSettingsSection(section) ? section : 'appearance';
 }
 
 export default function General({ settings, timezones, restorePreview }: GeneralSettingsProps) {
-    const { auth } = usePage<SharedPageProps>().props;
-    const browserTimezone = detectedTimezone();
-    const form = useForm({
-        timezone: settings.timezone,
-        season_rollover_preference: settings.seasonRolloverPreference,
-    });
-    const preview = useMemo(() => localTimePreview(form.data.timezone), [form.data.timezone]);
-    const changesCalendarDay = localDateKey(form.data.timezone) !== settings.today;
-    const detectedTimezoneAvailable = browserTimezone !== null && timezones.some((timezone) => timezone.value === browserTimezone);
-
-    function submit(event: FormEvent<HTMLFormElement>) {
-        event.preventDefault();
-        form.put('/settings/general', { preserveScroll: true });
-    }
+    const page = usePage<SharedPageProps>();
+    const section = selectedSection(page.url);
+    const { auth } = page.props;
+    const header = section === 'data'
+        ? { eyebrow: 'Private and portable', title: 'Account data', description: 'Create a complete archive or safely replace this account from a validated one.' }
+        : { eyebrow: 'Personalize Achelife', title: 'Settings', description: 'Tune the experience around your device, calendar, Seasons, and account data.' };
+    const HeaderIcon = section === 'data' ? Archive : Palette;
 
     return (
-        <div className="mx-auto max-w-3xl">
+        <div className="mx-auto max-w-6xl">
             <Head title="General Settings" />
 
-            <header>
-                <p className="text-xs font-bold tracking-[0.18em] text-accent-ink uppercase">Settings</p>
-                <h1 className="mt-2 text-4xl font-bold tracking-[-0.04em] sm:text-5xl">General</h1>
-                <p className="mt-3 max-w-2xl text-base leading-7 text-secondary">
-                    Choose when your Achelife calendar day begins and ends. Timestamps remain safely stored in UTC.
-                </p>
+            <header className="max-w-2xl">
+                <p className="text-xs font-bold tracking-[0.18em] text-accent-ink uppercase">{header.eyebrow}</p>
+                <div className="mt-2 flex items-center gap-3"><span className="grid size-10 place-items-center rounded-2xl bg-accent/10 text-accent-ink"><HeaderIcon aria-hidden="true" size={20} /></span><h1 className="text-4xl font-bold tracking-[-0.04em] sm:text-5xl">{header.title}</h1></div>
+                <p className="mt-3 text-base leading-7 text-secondary">{header.description}</p>
             </header>
 
-            <AppearanceSettingsPanel />
-
-            <form className="mt-8 rounded-[2rem] border border-border-subtle bg-surface p-5 shadow-[var(--shadow-panel)] sm:p-7" onSubmit={submit}>
-                <div className="flex items-start gap-4">
-                    <span className="grid size-11 shrink-0 place-items-center rounded-2xl bg-[color-mix(in_srgb,var(--accent)_12%,transparent)] text-accent-ink">
-                        <Clock3 aria-hidden="true" size={21} />
-                    </span>
-                    <div className="min-w-0 flex-1">
-                        <h2 className="text-xl font-bold">Time zone</h2>
-                        <p className="mt-1 text-sm leading-6 text-muted">Today, rewards, streaks, and Season boundaries use this calendar.</p>
-                    </div>
-                </div>
-
-                <div className="mt-6">
-                    <SelectField
-                        error={form.errors.timezone}
-                        label="Your time zone"
-                        onChange={(event) => form.setData('timezone', event.target.value)}
-                        options={timezones}
-                        value={form.data.timezone}
-                    />
-                </div>
-
-                {detectedTimezoneAvailable && browserTimezone !== form.data.timezone && (
-                    <Button className="mt-4" onClick={() => form.setData('timezone', browserTimezone)} size="small" type="button" variant="secondary">
-                        <LocateFixed aria-hidden="true" size={16} />
-                        Use detected time zone
-                    </Button>
-                )}
-
-                <div className="mt-6 rounded-2xl border border-border-subtle bg-app/55 p-4">
-                    <p className="text-xs font-bold tracking-[0.14em] text-muted uppercase">Local preview</p>
-                    <p className="mt-2 text-base font-semibold text-foreground">{preview}</p>
-                </div>
-
-                {changesCalendarDay && form.data.timezone !== settings.timezone && (
-                    <p className="mt-4 rounded-2xl border border-warning/35 bg-warning/10 px-4 py-3 text-sm leading-6 text-warning">
-                        Saving will move Achelife to a different calendar day immediately. Existing Seasons and history will not be rewritten.
-                    </p>
-                )}
-
-                <div className="mt-6 flex justify-end">
-                    <Button disabled={form.processing || !form.isDirty} type="submit">
-                        {form.processing ? 'Saving…' : 'Save settings'}
-                    </Button>
-                </div>
-            </form>
-
-            <section className="mt-6 rounded-[2rem] border border-border-subtle bg-surface p-5 shadow-[var(--shadow-panel)] sm:p-7">
-                <div className="flex items-start gap-4">
-                    <span className="grid size-11 shrink-0 place-items-center rounded-2xl bg-[color-mix(in_srgb,var(--season-accent)_12%,transparent)] text-accent-ink">
-                        <RefreshCw aria-hidden="true" size={21} />
-                    </span>
-                    <div className="min-w-0 flex-1">
-                        <h2 className="text-xl font-bold">Season rollover</h2>
-                        <p className="mt-1 text-sm leading-6 text-muted">Choose whether the next 30-day Season starts automatically or waits for you.</p>
-                    </div>
-                </div>
-
-                <div className="mt-6">
-                    <SelectField
-                        error={form.errors.season_rollover_preference}
-                        label="After Day 30"
-                        onChange={(event) => form.setData('season_rollover_preference', event.target.value as 'automatic' | 'manual')}
-                        options={[
-                            { value: 'automatic', label: 'Automatic — continue the next day' },
-                            { value: 'manual', label: 'Manual — wait until I start' },
-                        ]}
-                        value={form.data.season_rollover_preference}
-                    />
-                </div>
-
-                <div className="mt-6 flex justify-end">
-                    <Button disabled={form.processing || !form.isDirty} onClick={() => form.put('/settings/general', { preserveScroll: true })}>
-                        {form.processing ? 'Saving…' : 'Save settings'}
-                    </Button>
-                </div>
-            </section>
-
-            {auth.user && <AccountSettingsPanel name={auth.user.name} />}
-            <PortabilitySettingsPanel restorePreview={restorePreview} />
+            <div className="mt-8 grid gap-6 md:grid-cols-[15rem_minmax(0,1fr)] md:items-start">
+                <aside className="md:sticky md:top-6"><SettingsNavigation activeSection={section} /></aside>
+                <main aria-label="Selected settings" className="min-w-0">
+                    {section === 'appearance' && <AppearanceSettingsPanel />}
+                    {section === 'profile' && auth.user && <AccountSettingsPanel name={auth.user.name} />}
+                    {(section === 'calendar' || section === 'season') && <CalendarSettingsPanel settings={settings} timezones={timezones} />}
+                    {section === 'data' && <PortabilitySettingsPanel restorePreview={restorePreview} />}
+                </main>
+            </div>
         </div>
     );
 }
