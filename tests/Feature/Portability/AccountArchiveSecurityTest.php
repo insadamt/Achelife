@@ -86,7 +86,7 @@ class AccountArchiveSecurityTest extends TestCase
         });
         $this->expectInvalid($future, 'materially in the future');
 
-        $newer = $this->mutateManifest($valid, fn (array &$manifest) => $manifest['archive_format_version'] = 9, resign: false);
+        $newer = $this->mutateManifest($valid, fn (array &$manifest) => $manifest['archive_format_version'] = 10, resign: false);
         $this->expectInvalid($newer, 'Update Achelife first');
 
         $older = $this->mutateManifest($valid, fn (array &$manifest) => $manifest['archive_format_version'] = 0, resign: false);
@@ -249,6 +249,34 @@ class AccountArchiveSecurityTest extends TestCase
         $this->assertNull($restoredTask->task_project_id);
         $this->assertNull($restoredTask->notes);
         $this->assertSame(max(0, $sourceTask->id - 1), $restoredTask->position);
+    }
+
+    public function test_restores_format_eight_categories_without_saved_colors(): void
+    {
+        CarbonImmutable::setTestNow('2026-09-15 12:00:00');
+        $source = User::factory()->create();
+        $this->buildCompletePortableGraph($source);
+        $currentArchive = app(AccountArchiveExporter::class)->export($source);
+        $this->temporaryArchives[] = $currentArchive;
+        $legacyArchive = $this->mutate($currentArchive, function (array &$entries): void {
+            $manifest = json_decode($entries['manifest.json'], true, 512, JSON_THROW_ON_ERROR);
+            $manifest['archive_format_version'] = 8;
+            $entries['manifest.json'] = $this->encodeJson($manifest);
+            $categories = array_map(function (string $line): string {
+                $category = json_decode($line, true, 512, JSON_THROW_ON_ERROR);
+                unset($category['color']);
+
+                return trim($this->jsonLine($category));
+            }, array_values(array_filter(explode("\n", $entries['tables/money_categories.ndjson']))));
+            $entries['tables/money_categories.ndjson'] = implode("\n", $categories)."\n";
+        }, resign: true);
+        $target = User::factory()->create(['onboarding_step' => 'path', 'onboarding_completed_at' => null]);
+
+        $validated = app(AccountArchiveValidator::class)->validate($legacyArchive);
+        app(RestoreAccountArchive::class)->execute($target, $validated, new AccountRestoreRequest(freshInstall: true));
+
+        $this->assertSame(8, $validated->manifest['archive_format_version']);
+        $this->assertMatchesRegularExpression('/^#[A-F0-9]{6}$/', $target->moneyCategories()->sole()->color);
     }
 
     public function test_rejects_oversized_entries_and_excessive_expanded_archives(): void

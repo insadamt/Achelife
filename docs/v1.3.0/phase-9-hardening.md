@@ -15,7 +15,7 @@ Verify v1.3.0 as a safe real-world upgrade, complete its documentation, and prep
 
 ## Archive verification
 
-- Test archive format 6 round trips with Folders, Projects, recurring templates, Task assignments, notes, ordering, completed sessions, multiple paused sessions, and intervals.
+- Test archive format 9 round trips with Folder, Project, and Money Category colors; archived Folders and Projects; recurring templates; Task assignments; notes; ordering; completed sessions; multiple paused sessions; and intervals.
 - Test every older archive format through its frozen explicit adapter.
 - Confirm old archives restore all Tasks to Inbox with no notes or Focus Sessions.
 - Confirm checksums, table counts, relationship validation, preview, remapping, and restore catch-up remain intact.

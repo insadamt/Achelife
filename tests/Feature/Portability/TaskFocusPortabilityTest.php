@@ -46,7 +46,7 @@ class TaskFocusPortabilityTest extends TestCase
 
         $restoredCompleted = $target->taskFocusSessions()->whereHas('task', fn ($query) => $query->where('title', 'Completed Focus'))->with('intervals')->sole();
         $restoredPaused = $target->taskFocusSessions()->whereHas('task', fn ($query) => $query->where('title', 'Running Focus'))->with('intervals')->sole();
-        $this->assertSame(8, $archive->manifest['archive_format_version']);
+        $this->assertSame(9, $archive->manifest['archive_format_version']);
         $this->assertSame(TaskFocusSessionState::Completed, $restoredCompleted->state);
         $this->assertSame(300, $restoredCompleted->accumulated_seconds);
         $this->assertSame(TaskFocusSessionState::Paused, $restoredPaused->state);
