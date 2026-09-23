@@ -66,12 +66,13 @@ sh "$repository_root/scripts/release/write-rc-notes.sh" \
     "$temporary_directory/v1.3-image-digests.txt" \
     "$temporary_directory/v1.3-release-notes.md"
 
-grep -Fq 'Achelife v1.3.0 improves Tasks' "$temporary_directory/v1.3-release-notes.md"
-grep -Fq '## Added' "$temporary_directory/v1.3-release-notes.md"
-grep -Fq '## Changed' "$temporary_directory/v1.3-release-notes.md"
-grep -Fq 'Added Folders, Projects, and an Inbox' "$temporary_directory/v1.3-release-notes.md"
-grep -Fq 'persistent global timer' "$temporary_directory/v1.3-release-notes.md"
-grep -Fq 'preserving explicit imports for formats 1 through 4' "$temporary_directory/v1.3-release-notes.md"
+grep -Fq '# Achelife v1.3.0' "$temporary_directory/v1.3-release-notes.md"
+grep -Fq '### Tasks 2.0' "$temporary_directory/v1.3-release-notes.md"
+grep -Fq '### Task Planning Calendar' "$temporary_directory/v1.3-release-notes.md"
+grep -Fq 'persistent server-backed Focus timer' "$temporary_directory/v1.3-release-notes.md"
+grep -Fq '## Money Improvements' "$temporary_directory/v1.3-release-notes.md"
+grep -Fq 'archive format to **version 9**' "$temporary_directory/v1.3-release-notes.md"
+grep -Fq 'archive formats 1 through 8' "$temporary_directory/v1.3-release-notes.md"
 
 if sh "$repository_root/scripts/release/write-rc-notes.sh" \
     1.0.0 \
