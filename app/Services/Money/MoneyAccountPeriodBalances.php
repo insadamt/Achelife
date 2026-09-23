@@ -11,7 +11,7 @@ use Illuminate\Support\Collection;
 class MoneyAccountPeriodBalances
 {
     /** @param array<string, mixed> $summary
-     * @param array{opening: array<int, int>, closing: array<int, int>} $balances
+     * @param  array{opening: array<int, int>, closing: array<int, int>}  $balances
      */
     public function apply(array &$summary, array $balances): void
     {

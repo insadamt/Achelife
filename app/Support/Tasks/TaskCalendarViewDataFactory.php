@@ -12,7 +12,7 @@ class TaskCalendarViewDataFactory
     public function __construct(private readonly TaskViewDataFactory $taskViewDataFactory) {}
 
     /** @param list<int> $projectIds
-     *  @return Collection<int, array<string, mixed>>
+     * @return Collection<int, array<string, mixed>>
      */
     public function make(User $user, CarbonImmutable $monthStart, CarbonImmutable $monthEnd, array $projectIds, bool $includeInbox, CarbonImmutable $today, ?int $currentSeasonId): Collection
     {

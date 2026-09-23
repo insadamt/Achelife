@@ -94,7 +94,9 @@ class TaskCalendarController extends Controller
 
     private function validDate(string $date): ?CarbonImmutable
     {
-        if (preg_match('/^\\d{4}-\\d{2}-\\d{2}$/', $date) !== 1) return null;
+        if (preg_match('/^\\d{4}-\\d{2}-\\d{2}$/', $date) !== 1) {
+            return null;
+        }
 
         $candidate = CarbonImmutable::createFromFormat('!Y-m-d', $date);
 
@@ -102,12 +104,14 @@ class TaskCalendarController extends Controller
     }
 
     /** @param list<int> $availableProjectIds
-     *  @return array{list<int>, bool}
+     * @return array{list<int>, bool}
      */
     private function selectedLocations(Request $request, array $availableProjectIds): array
     {
         $requested = collect($request->input('projects', []))->map(fn ($value) => (string) $value);
-        if ($requested->isEmpty()) return [$availableProjectIds, true];
+        if ($requested->isEmpty()) {
+            return [$availableProjectIds, true];
+        }
 
         return [$requested->filter(fn ($value) => ctype_digit($value) && in_array((int) $value, $availableProjectIds, true))->map(fn ($value) => (int) $value)->values()->all(), $requested->contains('inbox')];
     }

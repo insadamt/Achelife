@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\Tasks\ArchiveTaskFolder;
 use App\Actions\Tasks\CreateTaskFolder;
 use App\Actions\Tasks\DeleteTaskFolder;
-use App\Actions\Tasks\ArchiveTaskFolder;
 use App\Actions\Tasks\ReactivateTaskFolder;
 use App\Actions\Tasks\UpdateTaskFolder;
 use App\Data\Tasks\TaskFolderData;

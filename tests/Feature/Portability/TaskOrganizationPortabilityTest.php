@@ -53,16 +53,16 @@ class TaskOrganizationPortabilityTest extends TestCase
             $restoredProject = $target->taskProjects()->sole();
             $restoredTask = $target->tasks()->where('title', 'Ship Phase 1')->sole();
             $restoredSeries = $target->taskSeries()->sole();
-        $this->assertSame(8, $archive->manifest['archive_format_version']);
+            $this->assertSame(8, $archive->manifest['archive_format_version']);
             $this->assertNotSame($folder->id, $restoredFolder->id);
             $this->assertSame($restoredFolder->id, $restoredProject->task_folder_id);
             $this->assertSame('#7C3AED', $restoredFolder->color);
             $this->assertSame('#059669', $restoredProject->color);
-        $this->assertSame($restoredProject->id, $restoredTask->task_project_id);
+            $this->assertSame($restoredProject->id, $restoredTask->task_project_id);
             $this->assertSame($restoredProject->id, $restoredSeries->task_project_id);
             $this->assertSame('Preserve these notes.', $restoredTask->notes);
             $this->assertSame('Preserve these notes.', $restoredSeries->notes);
-        $this->assertSame($task->position, $restoredTask->position);
+            $this->assertSame($task->position, $restoredTask->position);
         } finally {
             @unlink($path);
         }

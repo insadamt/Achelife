@@ -3,9 +3,9 @@
 namespace App\Support\Money;
 
 use App\Enums\MoneySubscriptionRecurrence;
+use App\Models\MoneyCategory;
 use App\Models\MoneySubscription;
 use App\Models\MoneySubscriptionOccurrence;
-use App\Models\MoneyCategory;
 use Carbon\CarbonImmutable;
 
 class MoneySubscriptionViewDataFactory

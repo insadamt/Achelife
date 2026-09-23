@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\Tasks\ArchiveTaskProject;
 use App\Actions\Tasks\CreateTaskProject;
 use App\Actions\Tasks\DeleteTaskProject;
-use App\Actions\Tasks\ArchiveTaskProject;
 use App\Actions\Tasks\ReactivateTaskProject;
 use App\Actions\Tasks\UpdateTaskProject;
 use App\Data\Tasks\TaskProjectData;
