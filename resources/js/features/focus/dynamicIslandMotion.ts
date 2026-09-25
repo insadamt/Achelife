@@ -28,33 +28,7 @@ export interface IslandTransitionOptions {
     nextBounds: DOMRect;
     outgoingControls: IslandControlsSnapshot | null;
     incomingControls: HTMLDivElement | null;
-    promotedSessionId: number | null;
     scope: HTMLDivElement | null;
-}
-
-function appendPromotedSessionOverlay(controlsSnapshot: HTMLDivElement | undefined, incoming: HTMLDivElement, sessionId: number | null): HTMLDivElement | null {
-    if (!controlsSnapshot || sessionId === null) return null;
-    const pausedRow = controlsSnapshot.querySelector<HTMLDivElement>(`[data-island-session-id="${sessionId}"]`);
-    const target = incoming.querySelector<HTMLButtonElement>('button');
-    if (!pausedRow || !target) return null;
-
-    const sourceBounds = pausedRow.getBoundingClientRect();
-    const movingRow = pausedRow.cloneNode(true) as HTMLDivElement;
-    movingRow.setAttribute('aria-hidden', 'true');
-    movingRow.inert = true;
-    Object.assign(movingRow.style, {
-        height: `${sourceBounds.height}px`,
-        left: `${sourceBounds.left}px`,
-        margin: '0',
-        pointerEvents: 'none',
-        position: 'fixed',
-        top: `${sourceBounds.top}px`,
-        width: `${sourceBounds.width}px`,
-        zIndex: '60',
-    });
-    document.body.appendChild(movingRow);
-    gsap.set(pausedRow, { autoAlpha: 0 });
-    return movingRow;
 }
 
 export function animateIslandEntrance(surface: HTMLDivElement, content: HTMLDivElement, icon: HTMLSpanElement, scope: HTMLDivElement | null) {
@@ -111,7 +85,6 @@ export function animateIslandTransition({
     nextBounds,
     outgoingControls,
     incomingControls,
-    promotedSessionId,
     scope,
 }: IslandTransitionOptions) {
     const outgoingSnapshot = outgoing.cloneNode(true) as HTMLDivElement;
@@ -125,7 +98,7 @@ export function animateIslandTransition({
         width: `${previousBounds.width - 16}px`,
         zIndex: '1',
     });
-    const controlsSnapshot = outgoingControls?.content.cloneNode(true) as HTMLDivElement | undefined;
+    const controlsSnapshot = incomingControls ? undefined : outgoingControls?.content.cloneNode(true) as HTMLDivElement | undefined;
     if (controlsSnapshot && outgoingControls) {
         controlsSnapshot.setAttribute('aria-hidden', 'true');
         controlsSnapshot.inert = true;
@@ -139,7 +112,6 @@ export function animateIslandTransition({
         });
     }
 
-    let promotedRow: HTMLDivElement | null = null;
     const context = gsap.context(() => {
         surface.appendChild(outgoingSnapshot);
         if (controlsSnapshot) {
@@ -147,39 +119,20 @@ export function animateIslandTransition({
             controlsSnapshot.scrollTop = outgoingControls?.scrollTop ?? 0;
         }
         gsap.set(surface, { height: previousBounds.height, overflow: 'hidden', width: previousBounds.width });
-        promotedRow = appendPromotedSessionOverlay(controlsSnapshot, incoming, promotedSessionId);
         gsap.set(incoming, { autoAlpha: 1 });
         gsap.set((['icon', 'copy', 'value', 'action'] as const).map((slot) => findMotionSlot(incoming, slot)).filter(Boolean), { autoAlpha: 0 });
-        if (incomingControls && controlsSnapshot) gsap.set(incomingControls, { autoAlpha: 0, y: 5 });
 
         const timeline = gsap.timeline({
             onComplete: () => {
                 gsap.set(surface, { clearProps: 'height,overflow,width' });
                 outgoingSnapshot.remove();
                 controlsSnapshot?.remove();
-                promotedRow?.remove();
             },
         });
-        timeline.to(surface, { height: nextBounds.height, width: nextBounds.width, duration: 0.34, ease: 'power2.inOut' }, 0);
-        if (controlsSnapshot) timeline.to(controlsSnapshot, { autoAlpha: 0, duration: 0.15, ease: 'power1.in', y: -4 }, 0);
-        if (incomingControls && controlsSnapshot) {
-            timeline.to(incomingControls, { autoAlpha: 1, duration: 0.2, ease: islandMotionEase, y: 0 }, 0.1);
+        timeline.to(surface, { height: nextBounds.height, width: nextBounds.width, duration: incomingControls ? 0.22 : 0.34, ease: 'power2.inOut' }, 0);
+        if (controlsSnapshot) {
+            timeline.to(controlsSnapshot, { autoAlpha: 0, duration: 0.15, ease: 'power1.in', y: -4 }, 0);
         }
-        if (promotedRow) {
-            const targetBounds = incoming.querySelector('button')?.getBoundingClientRect();
-            if (targetBounds) {
-                timeline.to(promotedRow, {
-                    height: targetBounds.height,
-                    left: targetBounds.left,
-                    top: targetBounds.top,
-                    width: targetBounds.width,
-                    duration: 0.34,
-                    ease: 'power2.inOut',
-                }, 0);
-                timeline.to(promotedRow, { autoAlpha: 0, duration: 0.11, ease: 'power1.in' }, 0.23);
-            }
-        }
-
         for (const slot of ['icon', 'copy', 'value', 'action'] as const) {
             const previousElement = findMotionSlot(outgoingSnapshot, slot);
             const nextElement = findMotionSlot(incoming, slot);
@@ -227,12 +180,38 @@ export function animateIslandTransition({
             context.revert();
             outgoingSnapshot.remove();
             controlsSnapshot?.remove();
-            promotedRow?.remove();
         },
     };
 }
 
-export function animateSavedFocusExit(surface: HTMLDivElement, content: HTMLDivElement, scope: HTMLDivElement | null) {
+export function animateRankPromotion(content: HTMLDivElement, scope: HTMLDivElement | null) {
+    const halo = content.querySelector<HTMLElement>('[data-island-rank-halo]');
+    const emblem = content.querySelector<SVGElement>('[data-island-rank-emblem]');
+
+    return gsap.context(() => {
+        const timeline = gsap.timeline({ delay: 0.9 });
+        if (halo) {
+            timeline.fromTo(halo, { autoAlpha: 0, scale: 0.65 }, {
+                autoAlpha: 0.65,
+                duration: 0.26,
+                ease: islandMotionEase,
+                scale: 1.5,
+            });
+            timeline.to(halo, { autoAlpha: 0, duration: 0.38, ease: 'power1.out', scale: 2 }, '>');
+        }
+        if (emblem) {
+            timeline.fromTo(emblem, { rotation: -8, scale: 0.82 }, {
+                duration: 0.34,
+                ease: 'back.out(1.7)',
+                rotation: 0,
+                scale: 1.12,
+            }, 0);
+            timeline.to(emblem, { duration: 0.28, ease: islandMotionEase, scale: 1 }, '>');
+        }
+    }, scope ?? undefined);
+}
+
+export function animateIslandNotificationExit(surface: HTMLDivElement, content: HTMLDivElement, scope: HTMLDivElement | null, delay = 2) {
     const copy = findMotionSlot(content, 'copy');
     const duration = findMotionSlot(content, 'value');
 
@@ -243,7 +222,7 @@ export function animateSavedFocusExit(surface: HTMLDivElement, content: HTMLDivE
         const durationDestination = duration
             ? surfaceCenter - horizontalCenter(duration) - (expandedWidth - circleSize) / 2
             : 0;
-        const timeline = gsap.timeline({ delay: 2 });
+        const timeline = gsap.timeline({ delay });
         if (copy) timeline.to(copy, { autoAlpha: 0, duration: 0.18, ease: 'power1.in', y: -3 }, 0);
         if (duration) {
             timeline.to(duration, { duration: 0.45, ease: 'power2.inOut', x: durationDestination }, 0);

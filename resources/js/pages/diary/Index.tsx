@@ -8,6 +8,7 @@ import { DiaryCalendar } from '../../features/diary/DiaryCalendar';
 import { DiaryEditor } from '../../features/diary/DiaryEditor';
 import type { DiaryEditorHandle } from '../../features/diary/DiaryEditor';
 import { DiaryPanels } from '../../features/diary/DiaryPanels';
+import { useSpGain } from '../../features/progress/SpGainContext';
 import { diaryDayLabel, diaryDayLabelClassName, formatDiaryDate, stateClassName, titleCase } from '../../features/diary/diaryPresentation';
 import type { DiaryCalendarData, DiaryDay, DiaryLanguage, DiaryPerson, DiarySaveResult, DiarySaveState, DiarySearchData, MoodCatalog } from '../../features/diary/types';
 
@@ -35,6 +36,8 @@ export default function DiaryIndex(props: DiaryPageProps) {
 
 function DiaryWorkspace(props: DiaryPageProps) {
     const editorRef = useRef<DiaryEditorHandle>(null);
+    const lastEarnedSpRef = useRef(props.selectedDay.earnedSp);
+    const { announceGain } = useSpGain();
     const [calendarOpen, setCalendarOpen] = useState(false);
     const [activePanel, setActivePanel] = useState<PanelName>(null);
     const [selectedPersonId, setSelectedPersonId] = useState<number | null>(null);
@@ -51,6 +54,9 @@ function DiaryWorkspace(props: DiaryPageProps) {
     };
 
     const handleSaved = useCallback((result: DiarySaveResult) => {
+        const gainedPoints = result.earnedSp - lastEarnedSpRef.current;
+        lastEarnedSpRef.current = result.earnedSp;
+        if (gainedPoints > 0) announceGain({ points: gainedPoints, seasonPoints: result.seasonPoints, earnedOn: result.date });
         setDay((current) => ({
             ...current,
             earnedSp: result.earnedSp,
@@ -64,7 +70,7 @@ function DiaryWorkspace(props: DiaryPageProps) {
             multiplier: result.multiplier,
             updatedAt: new Date().toISOString(),
         }));
-    }, []);
+    }, [announceGain]);
 
     const handleSaveStateChange = useCallback((state: DiarySaveState) => setSaveState(state), []);
 

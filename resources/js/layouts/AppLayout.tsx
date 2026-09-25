@@ -9,6 +9,7 @@ import { Drawer, Icon } from '../components/ui';
 import { classNames } from '../components/ui/classNames';
 import type { IconName } from '../components/ui';
 import { ProgressNotch } from '../features/progress/ProgressNotch';
+import { SpGainProvider, useSpGain } from '../features/progress/SpGainContext';
 import { DynamicIsland } from '../features/focus/DynamicIsland';
 import { FocusTimerProvider, useFocusTimer } from '../features/focus/FocusTimerContext';
 import type { SharedPageProps } from '../types';
@@ -108,15 +109,16 @@ function AppShell({ children }: PropsWithChildren) {
     const mobileFocusTriggerRef = useRef<HTMLButtonElement>(null);
     const user = auth.user;
     const focus = useFocusTimer();
+    const spGain = useSpGain();
     const dismissMobileFocus = useCallback(() => setMobileFocusVisible(false), []);
 
     useEffect(() => {
-        if (!focus.event || !focus.session || !window.matchMedia('(max-width: 767px)').matches) return;
+        if ((!focus.event && !spGain.event) || !focus.session || !window.matchMedia('(max-width: 767px)').matches) return;
         const frame = window.requestAnimationFrame(() => {
             setMobileFocusVisible(true);
         });
         return () => window.cancelAnimationFrame(frame);
-    }, [focus.event, focus.session]);
+    }, [focus.event, focus.session, spGain.event]);
 
     return (
         <div className="min-h-screen bg-app text-foreground">
@@ -209,9 +211,10 @@ function AppShell({ children }: PropsWithChildren) {
 
             {page.props.progressPanel && <ProgressNotch data={page.props.progressPanel} />}
             <DynamicIsland
-                mobileVisible={mobileFocusVisible || Boolean(focus.event && focus.session)}
+                mobileVisible={mobileFocusVisible || Boolean(focus.event && focus.session) || Boolean(spGain.event)}
                 mobileTriggerRef={mobileFocusTriggerRef}
                 onMobileDismiss={dismissMobileFocus}
+                spGain={spGain.event}
             />
             {focus.error && <div className="fixed top-[8.5rem] left-1/2 z-[60] w-[min(30rem,calc(100vw-2rem))] -translate-x-1/2 rounded-xl border border-danger/30 bg-elevated p-3 text-sm font-semibold text-danger shadow-xl md:top-20" role="alert">
                 {focus.error}
@@ -224,7 +227,9 @@ export default function AppLayout({ children }: PropsWithChildren) {
     return (
         <ThemeProvider>
             <FocusTimerProvider>
-                <AppShell>{children}</AppShell>
+                <SpGainProvider>
+                    <AppShell>{children}</AppShell>
+                </SpGainProvider>
             </FocusTimerProvider>
         </ThemeProvider>
     );

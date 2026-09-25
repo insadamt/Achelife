@@ -1,20 +1,24 @@
-import { Check, CirclePause, Pause, Play, Plus, Square, Timer } from 'lucide-react';
+import { Check, CirclePause, Pause, Play, Plus, Sparkles, Square, Timer } from 'lucide-react';
 import gsap from 'gsap';
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
-import type { RefObject } from 'react';
+import type { CSSProperties, RefObject } from 'react';
 
+import { RankEmblem } from '../../components/rank/RankEmblem';
+import { rankAccents } from '../../components/rank/rankPresentation';
 import { classNames } from '../../components/ui/classNames';
 import { FocusTaskFinder } from './FocusTaskFinder';
 import { useFocusTimer } from './FocusTimerContext';
-import { animateIslandEntrance, animateIslandTransition, animateSavedFocusExit, islandMotionEase } from './dynamicIslandMotion';
+import { animateIslandEntrance, animateIslandTransition, animateIslandNotificationExit, animateRankPromotion, islandMotionEase } from './dynamicIslandMotion';
 import type { IslandControlsSnapshot } from './dynamicIslandMotion';
+import type { SpGainEvent } from '../progress/SpGainContext';
 
 const motionEase = islandMotionEase;
 
-export function DynamicIsland({ mobileVisible, mobileTriggerRef, onMobileDismiss }: {
+export function DynamicIsland({ mobileVisible, mobileTriggerRef, onMobileDismiss, spGain }: {
     mobileVisible: boolean;
     mobileTriggerRef: RefObject<HTMLButtonElement | null>;
     onMobileDismiss: () => void;
+    spGain: SpGainEvent | null;
 }) {
     const focus = useFocusTimer();
     const islandRef = useRef<HTMLDivElement>(null);
@@ -22,10 +26,11 @@ export function DynamicIsland({ mobileVisible, mobileTriggerRef, onMobileDismiss
     const controlsRef = useRef<HTMLDivElement>(null);
     const compactContentRef = useRef<HTMLDivElement>(null);
     const savedContentRef = useRef<HTMLDivElement>(null);
+    const spContentRef = useRef<HTMLDivElement>(null);
     const entryIconRef = useRef<HTMLSpanElement>(null);
     const taskFinderRef = useRef<HTMLDivElement>(null);
     const previousSurfaceBounds = useRef<DOMRect | null>(null);
-    const previousVisibleMode = useRef<'timer' | 'saved' | null>(null);
+    const previousVisibleMode = useRef<'timer' | 'saved' | 'sp' | null>(null);
     const previousContentKey = useRef<string | null>(null);
     const previousContentSnapshot = useRef<HTMLDivElement | null>(null);
     const previousControlsSnapshot = useRef<IslandControlsSnapshot | null>(null);
@@ -39,16 +44,21 @@ export function DynamicIsland({ mobileVisible, mobileTriggerRef, onMobileDismiss
     const primarySession = runningSession ?? pausedSessions[0];
     const listedPausedSessions = runningSession ? pausedSessions : pausedSessions.slice(1);
     const showSavedEvent = Boolean(focus.event);
-    const dismissAfterSaving = !focus.session;
+    const showSpEvent = !showSavedEvent && spGain !== null;
+    const promotedRank = showSpEvent ? spGain?.promotedRank : null;
+    const showNotification = showSavedEvent || showSpEvent;
+    const dismissAfterNotification = !focus.session && !(showSavedEvent && spGain);
     const mobileVisibilityKey = typeof window !== 'undefined' && window.matchMedia('(max-width: 767px)').matches && mobileVisible;
     const primaryTitle = primarySession?.taskTitle ?? '';
     const primaryElapsedSeconds = runningSession ? focus.elapsedSeconds : primarySession?.elapsedSeconds ?? 0;
     const stateLabel = runningSession ? 'Running' : 'Paused';
-    const visibleMode = showSavedEvent ? 'saved' : 'timer';
+    const visibleMode = showSavedEvent ? 'saved' : showSpEvent ? 'sp' : 'timer';
     const contentKey = showSavedEvent
         ? `saved-${focus.event?.id ?? ''}`
+        : showSpEvent
+          ? `sp-${spGain?.id ?? ''}-${spGain?.points ?? ''}`
         : `timer-${primarySession?.id ?? ''}-${primaryTitle}-${stateLabel}`;
-    const visualKey = showSavedEvent ? contentKey : `${contentKey}-${controlsMounted}-${findingTask}-${pausedSessions.map((session) => session.id).join(',')}`;
+    const visualKey = showNotification ? contentKey : `${contentKey}-${controlsMounted}-${findingTask}-${pausedSessions.map((session) => session.id).join(',')}`;
 
     const closeControls = useCallback(() => {
         if (!controlsMounted) return;
@@ -80,17 +90,17 @@ export function DynamicIsland({ mobileVisible, mobileTriggerRef, onMobileDismiss
         if (!mobileVisible || controlsExpanded) return;
         const timer = window.setTimeout(onMobileDismiss, 3500);
         return () => window.clearTimeout(timer);
-    }, [controlsExpanded, focus.event, mobileVisible, onMobileDismiss]);
+    }, [controlsExpanded, focus.event, mobileVisible, onMobileDismiss, spGain?.id]);
 
     useEffect(() => {
-        if (!showSavedEvent) return;
+        if (!showNotification) return;
         const frame = window.requestAnimationFrame(() => {
             setControlsExpanded(false);
             setControlsMounted(false);
             setFindingTask(false);
         });
         return () => window.cancelAnimationFrame(frame);
-    }, [showSavedEvent]);
+    }, [showNotification]);
 
     useEffect(() => {
         if (!controlsExpanded && !mobileVisible) return;
@@ -107,10 +117,17 @@ export function DynamicIsland({ mobileVisible, mobileTriggerRef, onMobileDismiss
     }, [closeControls, controlsExpanded, mobileVisible, mobileTriggerRef, onMobileDismiss]);
 
     useLayoutEffect(() => {
-        if (!showSavedEvent || !dismissAfterSaving || reducedMotion || !surfaceRef.current || !savedContentRef.current) return;
-        const context = animateSavedFocusExit(surfaceRef.current, savedContentRef.current, islandRef.current);
+        const content = showSavedEvent ? savedContentRef.current : spContentRef.current;
+        if (!showNotification || !dismissAfterNotification || reducedMotion || !surfaceRef.current || !content) return;
+        const context = animateIslandNotificationExit(surfaceRef.current, content, islandRef.current, promotedRank ? 3.1 : 2);
         return () => context.revert();
-    }, [dismissAfterSaving, focus.event, reducedMotion, showSavedEvent]);
+    }, [dismissAfterNotification, focus.event, promotedRank, reducedMotion, showNotification, showSavedEvent, spGain]);
+
+    useLayoutEffect(() => {
+        if (!promotedRank || reducedMotion || !spContentRef.current) return;
+        const context = animateRankPromotion(spContentRef.current, islandRef.current);
+        return () => context.revert();
+    }, [promotedRank, reducedMotion, spGain?.id]);
 
     useLayoutEffect(() => {
         const surface = surfaceRef.current;
@@ -136,14 +153,14 @@ export function DynamicIsland({ mobileVisible, mobileTriggerRef, onMobileDismiss
         if (reducedMotion) return;
 
         if (enterFromCircle && nextBounds.height <= 90 && entryIconRef.current) {
-            const content = showSavedEvent ? savedContentRef.current : compactContentRef.current;
+            const content = showSavedEvent ? savedContentRef.current : showSpEvent ? spContentRef.current : compactContentRef.current;
             if (!content) return;
             const context = animateIslandEntrance(surface, content, entryIconRef.current, islandRef.current);
             return () => context.revert();
         }
 
         if (transitionContent) {
-            const incoming = showSavedEvent ? savedContentRef.current : compactContentRef.current;
+            const incoming = showSavedEvent ? savedContentRef.current : showSpEvent ? spContentRef.current : compactContentRef.current;
             const outgoing = previousContentSnapshot.current;
             if (incoming && outgoing && previousBounds) {
                 const context = animateIslandTransition({
@@ -154,7 +171,6 @@ export function DynamicIsland({ mobileVisible, mobileTriggerRef, onMobileDismiss
                     nextBounds,
                     outgoingControls: previousControlsSnapshot.current,
                     incomingControls: controlsRef.current,
-                    promotedSessionId: runningSession?.id ?? null,
                     scope: islandRef.current,
                 });
                 return () => context.revert();
@@ -179,10 +195,10 @@ export function DynamicIsland({ mobileVisible, mobileTriggerRef, onMobileDismiss
         }, islandRef);
 
         return () => context.revert();
-    }, [contentKey, mobileVisibilityKey, reducedMotion, runningSession?.id, showSavedEvent, visibleMode, visualKey]);
+    }, [contentKey, mobileVisibilityKey, reducedMotion, runningSession?.id, showSavedEvent, showSpEvent, visibleMode, visualKey]);
 
     useLayoutEffect(() => {
-        const content = showSavedEvent ? savedContentRef.current : compactContentRef.current;
+        const content = showSavedEvent ? savedContentRef.current : showSpEvent ? spContentRef.current : compactContentRef.current;
         previousContentSnapshot.current = createMotionSnapshot(content);
         const controls = controlsRef.current;
         const controlsContent = createMotionSnapshot(controls);
@@ -213,7 +229,7 @@ export function DynamicIsland({ mobileVisible, mobileTriggerRef, onMobileDismiss
     }, [controlsMounted, reducedMotion]);
 
     useEffect(() => {
-        if (reducedMotion || skipCompactFadeRef.current || !compactContentRef.current || showSavedEvent) return;
+        if (reducedMotion || skipCompactFadeRef.current || !compactContentRef.current || showNotification) return;
 
         const context = gsap.context(() => {
             gsap.fromTo(compactContentRef.current, { autoAlpha: 0, y: 3 }, {
@@ -224,7 +240,7 @@ export function DynamicIsland({ mobileVisible, mobileTriggerRef, onMobileDismiss
         }, compactContentRef);
 
         return () => context.revert();
-    }, [primaryTitle, reducedMotion, runningSession?.id, showSavedEvent, stateLabel]);
+    }, [primaryTitle, reducedMotion, runningSession?.id, showNotification, stateLabel]);
 
     useEffect(() => {
         if (!findingTask || reducedMotion || !taskFinderRef.current) return;
@@ -243,12 +259,12 @@ export function DynamicIsland({ mobileVisible, mobileTriggerRef, onMobileDismiss
         setControlsExpanded(true);
     }
 
-    if (!focus.session && !focus.event) return <p aria-live="polite" className="sr-only">{focus.announcement}</p>;
+    if (!focus.session && !focus.event && !spGain) return <p aria-live="polite" className="sr-only">{focus.announcement}</p>;
 
     return (
         <div className={classNames(
             'fixed top-18 left-1/2 z-50 w-[min(30rem,calc(100vw-2rem))] -translate-x-1/2 md:top-4',
-            !mobileVisible && !focus.event && 'max-md:hidden',
+            !mobileVisible && !showNotification && 'max-md:hidden',
         )} ref={islandRef}>
             <div
                 className={classNames(
@@ -256,12 +272,19 @@ export function DynamicIsland({ mobileVisible, mobileTriggerRef, onMobileDismiss
                     'relative rounded-[1.5rem] p-2',
                     showSavedEvent
                         ? 'w-[min(24rem,calc(100vw-2rem))] border-success/35'
+                        : showSpEvent ? promotedRank
+                            ? 'w-[min(24rem,calc(100vw-2rem))] border-[var(--rank-accent)]'
+                            : 'w-[min(24rem,calc(100vw-2rem))] border-success/35'
                         : controlsMounted ? 'w-full' : 'w-[min(24rem,calc(100vw-2rem))]',
                 )}
                 ref={surfaceRef}
+                style={promotedRank ? { '--rank-accent': rankAccents[promotedRank.tier] } as CSSProperties : undefined}
                 role="region"
                 aria-label={showSavedEvent && focus.event
                     ? `Focus saved for ${focus.event.taskTitle}, ${formatFocusDuration(focus.event.durationSeconds)}`
+                    : showSpEvent && spGain ? promotedRank
+                        ? `Promoted to ${promotedRank.displayName}, ${spGain.points} Season Points earned, ${spGain.seasonPoints} Season Points total`
+                        : `${spGain.points} Season Points earned, ${spGain.seasonPoints} Season Points total`
                     : `Focus ${stateLabel.toLowerCase()}, ${primaryTitle}`}
             >
                 {showSavedEvent && focus.event ? <div className="flex min-h-12 items-center gap-3 px-2" ref={savedContentRef}>
@@ -273,6 +296,18 @@ export function DynamicIsland({ mobileVisible, mobileTriggerRef, onMobileDismiss
                         <span className="block text-[0.6875rem] font-bold tracking-[0.1em] text-success uppercase">Focus saved</span>
                     </span>
                     <span className="shrink-0 font-mono text-lg font-bold tabular-nums" data-island-value>{formatFocusDuration(focus.event.durationSeconds)}</span>
+                </div> : showSpEvent && spGain ? <div className="flex min-h-12 items-center gap-3 px-2" ref={spContentRef}>
+                    <span className={classNames('relative grid size-9 shrink-0 place-items-center rounded-full', promotedRank ? 'bg-[color-mix(in_srgb,var(--rank-accent)_15%,transparent)]' : 'bg-success/15 text-success')} data-island-glyph={promotedRank ? `rank-${promotedRank.key}` : 'sp'} data-island-icon>
+                        {promotedRank ? <>
+                            <span aria-hidden="true" className="pointer-events-none absolute inset-0 rounded-full border border-[var(--rank-accent)] opacity-0" data-island-rank-halo />
+                            <RankEmblem className="size-8" data-island-rank-emblem rank={promotedRank} />
+                        </> : <Sparkles aria-hidden="true" size={18} />}
+                    </span>
+                    <span className="min-w-0 flex-1" data-island-copy>
+                        <span className="block truncate text-sm font-bold">{promotedRank ? promotedRank.displayName : 'SP earned'}</span>
+                        <span className={classNames('block text-[0.6875rem] font-bold tracking-[0.04em]', promotedRank ? 'text-[var(--rank-accent)]' : 'text-muted')}>{promotedRank ? 'Rank up' : 'Season total'} · {spGain.seasonPoints.toLocaleString()} SP</span>
+                    </span>
+                    <span className="shrink-0 font-mono text-lg font-bold tabular-nums text-success" data-island-value>{spGain.points > 0 ? `+${spGain.points.toLocaleString()} SP` : 'Rank up'}</span>
                 </div> : <div className="flex items-center gap-1" ref={compactContentRef}>
                         <button
                             aria-expanded={controlsExpanded}
@@ -302,7 +337,7 @@ export function DynamicIsland({ mobileVisible, mobileTriggerRef, onMobileDismiss
                         ><Plus aria-hidden="true" size={19} /></button>}
                     </div>}
 
-                    {!showSavedEvent && controlsMounted && <div className="max-h-[min(70vh,32rem)] space-y-4 overflow-y-auto px-2 pt-6 pb-1" ref={controlsRef}>
+                    {!showNotification && controlsMounted && <div className="max-h-[min(70vh,32rem)] space-y-4 overflow-y-auto px-2 pt-6 pb-1" ref={controlsRef}>
                         {primarySession && <div className="focus-island-control grid grid-cols-2 gap-2">
                             {runningSession ? <button
                                 className="focus-ring icon-text flex min-h-11 items-center justify-center gap-2 rounded-full bg-surface-hover px-4 text-sm font-bold hover:brightness-110 disabled:opacity-55"
@@ -325,7 +360,7 @@ export function DynamicIsland({ mobileVisible, mobileTriggerRef, onMobileDismiss
 
                         {listedPausedSessions.length > 0 && <section aria-label="Paused Focus Tasks" className="focus-island-control space-y-2">
                             <h2 className="px-2 text-xs font-bold text-muted uppercase">{runningSession ? 'Switch to' : 'Other paused tasks'}</h2>
-                            {listedPausedSessions.map((pausedSession) => <div className="flex min-h-14 items-center gap-2 rounded-xl border border-border-strong/60 bg-surface-hover/50 px-2 transition-colors hover:bg-surface-hover" data-island-session-id={pausedSession.id} key={pausedSession.id}>
+                            {listedPausedSessions.map((pausedSession) => <div className="flex min-h-14 items-center gap-2 rounded-xl border border-border-strong/60 bg-surface-hover/50 px-2 transition-colors hover:bg-surface-hover" key={pausedSession.id}>
                                 <span className="grid size-7 shrink-0 place-items-center rounded-full bg-warning/12 text-warning"><CirclePause aria-hidden="true" size={16} /></span>
                                 <span className="min-w-0 flex-1">
                                     <span className="block truncate text-sm font-semibold">{pausedSession.taskTitle}</span>
@@ -360,12 +395,13 @@ export function DynamicIsland({ mobileVisible, mobileTriggerRef, onMobileDismiss
                     </div>}
                 <span className={classNames(
                     'pointer-events-none invisible absolute top-1/2 left-1/2 grid size-9 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full',
-                    showSavedEvent ? 'bg-success/15 text-success' : runningSession ? 'bg-[var(--task-accent)] text-accent-foreground' : 'bg-surface-hover text-warning',
+                    showSavedEvent ? 'bg-success/15 text-success' : promotedRank ? 'bg-[color-mix(in_srgb,var(--rank-accent)_15%,transparent)]' : showSpEvent ? 'bg-success/15 text-success' : runningSession ? 'bg-[var(--task-accent)] text-accent-foreground' : 'bg-surface-hover text-warning',
                 )} ref={entryIconRef}>
-                    {showSavedEvent ? <Check aria-hidden="true" size={18} /> : runningSession ? <Timer aria-hidden="true" size={17} /> : <CirclePause aria-hidden="true" size={17} />}
+                    {showSavedEvent ? <Check aria-hidden="true" size={18} /> : promotedRank ? <RankEmblem className="size-8" rank={promotedRank} /> : showSpEvent ? <Sparkles aria-hidden="true" size={18} /> : runningSession ? <Timer aria-hidden="true" size={17} /> : <CirclePause aria-hidden="true" size={17} />}
                 </span>
             </div>
             <p aria-live="polite" className="sr-only">{focus.announcement}</p>
+            <p aria-live="polite" className="sr-only">{showSpEvent && spGain ? `${promotedRank ? `Promoted to ${promotedRank.displayName}. ` : ''}${spGain.points} Season Points earned. Season total ${spGain.seasonPoints} Season Points.` : ''}</p>
         </div>
     );
 }
