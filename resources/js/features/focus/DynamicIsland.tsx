@@ -36,16 +36,19 @@ export function DynamicIsland({ mobileVisible, mobileTriggerRef, onMobileDismiss
     const [reducedMotion, setReducedMotion] = useState(() => prefersReducedMotion());
     const runningSession = focus.sessions.find((session) => session.running);
     const pausedSessions = focus.sessions.filter((session) => !session.running);
+    const primarySession = runningSession ?? pausedSessions[0];
+    const listedPausedSessions = runningSession ? pausedSessions : pausedSessions.slice(1);
     const showSavedEvent = Boolean(focus.event);
     const dismissAfterSaving = !focus.session;
     const mobileVisibilityKey = typeof window !== 'undefined' && window.matchMedia('(max-width: 767px)').matches && mobileVisible;
-    const primaryTitle = runningSession?.taskTitle ?? (pausedSessions.length === 1 ? pausedSessions[0]?.taskTitle : `${pausedSessions.length} Tasks paused`);
-    const stateLabel = runningSession ? 'Running' : 'All paused';
+    const primaryTitle = primarySession?.taskTitle ?? '';
+    const primaryElapsedSeconds = runningSession ? focus.elapsedSeconds : primarySession?.elapsedSeconds ?? 0;
+    const stateLabel = runningSession ? 'Running' : 'Paused';
     const visibleMode = showSavedEvent ? 'saved' : 'timer';
     const contentKey = showSavedEvent
         ? `saved-${focus.event?.id ?? ''}`
-        : `timer-${runningSession?.id ?? ''}-${primaryTitle}-${stateLabel}`;
-    const visualKey = showSavedEvent ? contentKey : `${contentKey}-${controlsMounted}-${findingTask}`;
+        : `timer-${primarySession?.id ?? ''}-${primaryTitle}-${stateLabel}`;
+    const visualKey = showSavedEvent ? contentKey : `${contentKey}-${controlsMounted}-${findingTask}-${pausedSessions.map((session) => session.id).join(',')}`;
 
     const closeControls = useCallback(() => {
         if (!controlsMounted) return;
@@ -143,7 +146,17 @@ export function DynamicIsland({ mobileVisible, mobileTriggerRef, onMobileDismiss
             const incoming = showSavedEvent ? savedContentRef.current : compactContentRef.current;
             const outgoing = previousContentSnapshot.current;
             if (incoming && outgoing && previousBounds) {
-                const context = animateIslandTransition(surface, incoming, outgoing, previousBounds, nextBounds, previousControlsSnapshot.current, islandRef.current);
+                const context = animateIslandTransition({
+                    surface,
+                    incoming,
+                    outgoing,
+                    previousBounds,
+                    nextBounds,
+                    outgoingControls: previousControlsSnapshot.current,
+                    incomingControls: controlsRef.current,
+                    promotedSessionId: runningSession?.id ?? null,
+                    scope: islandRef.current,
+                });
                 return () => context.revert();
             }
         }
@@ -166,14 +179,16 @@ export function DynamicIsland({ mobileVisible, mobileTriggerRef, onMobileDismiss
         }, islandRef);
 
         return () => context.revert();
-    }, [contentKey, mobileVisibilityKey, reducedMotion, showSavedEvent, visibleMode, visualKey]);
+    }, [contentKey, mobileVisibilityKey, reducedMotion, runningSession?.id, showSavedEvent, visibleMode, visualKey]);
 
     useLayoutEffect(() => {
         const content = showSavedEvent ? savedContentRef.current : compactContentRef.current;
         previousContentSnapshot.current = createMotionSnapshot(content);
         const controls = controlsRef.current;
         const controlsContent = createMotionSnapshot(controls);
-        previousControlsSnapshot.current = controls && controlsContent ? { content: controlsContent, top: controls.offsetTop } : null;
+        previousControlsSnapshot.current = controls && controlsContent
+            ? { content: controlsContent, scrollTop: controls.scrollTop, top: controls.offsetTop }
+            : null;
     });
 
     useEffect(() => {
@@ -250,7 +265,7 @@ export function DynamicIsland({ mobileVisible, mobileTriggerRef, onMobileDismiss
                     : `Focus ${stateLabel.toLowerCase()}, ${primaryTitle}`}
             >
                 {showSavedEvent && focus.event ? <div className="flex min-h-12 items-center gap-3 px-2" ref={savedContentRef}>
-                    <span className="grid size-9 shrink-0 place-items-center rounded-full bg-success/15 text-success" data-island-icon>
+                    <span className="grid size-9 shrink-0 place-items-center rounded-full bg-success/15 text-success" data-island-glyph="saved" data-island-icon>
                         <Check aria-hidden="true" size={18} />
                     </span>
                     <span className="min-w-0 flex-1" data-island-copy>
@@ -266,15 +281,15 @@ export function DynamicIsland({ mobileVisible, mobileTriggerRef, onMobileDismiss
                             onClick={() => controlsMounted ? closeControls() : openControls()}
                             type="button"
                         >
-                            <span className={classNames('grid size-9 shrink-0 place-items-center rounded-full', runningSession ? 'bg-[var(--task-accent)] text-accent-foreground' : 'bg-surface-hover text-warning')} data-island-icon>
+                            <span className={classNames('grid size-9 shrink-0 place-items-center rounded-full', runningSession ? 'bg-[var(--task-accent)] text-accent-foreground' : 'bg-surface-hover text-warning')} data-island-glyph={runningSession ? 'timer' : 'paused'} data-island-icon>
                                 {runningSession ? <Timer aria-hidden="true" size={17} /> : <CirclePause aria-hidden="true" size={17} />}
                             </span>
                             <span className="min-w-0 flex-1" data-island-copy>
                                 <span className="block truncate text-sm font-bold">{primaryTitle}</span>
                                 <span className="block text-[0.6875rem] font-bold tracking-[0.1em] text-muted uppercase">{stateLabel}</span>
                             </span>
-                            {runningSession && <time className="shrink-0 font-mono text-lg font-bold tabular-nums" data-island-value dateTime={`PT${focus.elapsedSeconds}S`}>
-                                {formatFocusClock(focus.elapsedSeconds)}
+                            {primarySession && <time className="shrink-0 font-mono text-lg font-bold tabular-nums" data-island-value dateTime={`PT${primaryElapsedSeconds}S`}>
+                                {formatFocusClock(primaryElapsedSeconds)}
                             </time>}
                         </button>
                         {runningSession && <button
@@ -287,26 +302,31 @@ export function DynamicIsland({ mobileVisible, mobileTriggerRef, onMobileDismiss
                         ><Plus aria-hidden="true" size={19} /></button>}
                     </div>}
 
-                    {!showSavedEvent && controlsMounted && <div className="max-h-[min(70vh,32rem)] space-y-3 overflow-y-auto px-2 pt-3 pb-1" ref={controlsRef}>
-                        {runningSession && <div className="focus-island-control grid grid-cols-2 gap-2">
-                            <button
+                    {!showSavedEvent && controlsMounted && <div className="max-h-[min(70vh,32rem)] space-y-4 overflow-y-auto px-2 pt-6 pb-1" ref={controlsRef}>
+                        {primarySession && <div className="focus-island-control grid grid-cols-2 gap-2">
+                            {runningSession ? <button
                                 className="focus-ring icon-text flex min-h-11 items-center justify-center gap-2 rounded-full bg-surface-hover px-4 text-sm font-bold hover:brightness-110 disabled:opacity-55"
                                 disabled={focus.processing}
                                 onClick={focus.pause}
                                 type="button"
-                            ><Pause aria-hidden="true" size={16} />Pause</button>
+                            ><Pause aria-hidden="true" size={16} />Pause</button> : <button
+                                className="focus-ring icon-text flex min-h-11 items-center justify-center gap-2 rounded-full bg-warning/12 px-4 text-sm font-bold text-warning hover:bg-warning/20 disabled:opacity-55"
+                                disabled={focus.processing}
+                                onClick={() => focus.switchTo(primarySession.taskId, primarySession.taskTitle)}
+                                type="button"
+                            ><Play aria-hidden="true" fill="currentColor" size={15} />Resume</button>}
                             <button
                                 className="focus-ring icon-text flex min-h-11 items-center justify-center gap-2 rounded-full bg-danger/12 px-4 text-sm font-bold text-danger hover:bg-danger/20 disabled:opacity-55"
                                 disabled={focus.processing}
-                                onClick={() => focus.stopSession(runningSession.id)}
+                                onClick={() => focus.stopSession(primarySession.id)}
                                 type="button"
                             ><Square aria-hidden="true" fill="currentColor" size={14} />Finish focus</button>
                         </div>}
 
-                        {pausedSessions.length > 0 && <section aria-label="Paused Focus Tasks" className="focus-island-control space-y-1">
-                            <h2 className="px-2 text-xs font-bold text-muted uppercase">{runningSession ? 'Switch to' : 'Paused Tasks'}</h2>
-                            {pausedSessions.map((pausedSession) => <div className="flex min-h-12 items-center gap-2 rounded-xl bg-surface-hover/60 px-2" key={pausedSession.id}>
-                                <CirclePause aria-hidden="true" className="shrink-0 text-warning" size={16} />
+                        {listedPausedSessions.length > 0 && <section aria-label="Paused Focus Tasks" className="focus-island-control space-y-2">
+                            <h2 className="px-2 text-xs font-bold text-muted uppercase">{runningSession ? 'Switch to' : 'Other paused tasks'}</h2>
+                            {listedPausedSessions.map((pausedSession) => <div className="flex min-h-14 items-center gap-2 rounded-xl border border-border-strong/60 bg-surface-hover/50 px-2 transition-colors hover:bg-surface-hover" data-island-session-id={pausedSession.id} key={pausedSession.id}>
+                                <span className="grid size-7 shrink-0 place-items-center rounded-full bg-warning/12 text-warning"><CirclePause aria-hidden="true" size={16} /></span>
                                 <span className="min-w-0 flex-1">
                                     <span className="block truncate text-sm font-semibold">{pausedSession.taskTitle}</span>
                                     <span className="block font-mono text-xs text-muted">{formatFocusClock(pausedSession.elapsedSeconds)}</span>
