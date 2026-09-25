@@ -1,6 +1,6 @@
 import { Link, usePage } from '@inertiajs/react';
 import { Timer } from 'lucide-react';
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import type { PropsWithChildren } from 'react';
 
 import { BrandMark } from '../components/BrandMark';
@@ -110,6 +110,14 @@ function AppShell({ children }: PropsWithChildren) {
     const focus = useFocusTimer();
     const dismissMobileFocus = useCallback(() => setMobileFocusVisible(false), []);
 
+    useEffect(() => {
+        if (!focus.event || !focus.session || !window.matchMedia('(max-width: 767px)').matches) return;
+        const frame = window.requestAnimationFrame(() => {
+            setMobileFocusVisible(true);
+        });
+        return () => window.cancelAnimationFrame(frame);
+    }, [focus.event, focus.session]);
+
     return (
         <div className="min-h-screen bg-app text-foreground">
             <aside className="fixed top-4 bottom-4 left-4 z-30 hidden w-20 rounded-[2rem] border border-border-subtle bg-surface/96 shadow-[var(--shadow-navigation)] md:flex md:flex-col">
@@ -201,7 +209,7 @@ function AppShell({ children }: PropsWithChildren) {
 
             {page.props.progressPanel && <ProgressNotch data={page.props.progressPanel} />}
             <DynamicIsland
-                mobileVisible={mobileFocusVisible}
+                mobileVisible={mobileFocusVisible || Boolean(focus.event && focus.session)}
                 mobileTriggerRef={mobileFocusTriggerRef}
                 onMobileDismiss={dismissMobileFocus}
             />

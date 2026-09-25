@@ -6,8 +6,10 @@ import type { RefObject } from 'react';
 import { classNames } from '../../components/ui/classNames';
 import { FocusTaskFinder } from './FocusTaskFinder';
 import { useFocusTimer } from './FocusTimerContext';
+import { animateIslandEntrance, animateIslandTransition, animateSavedFocusExit, islandMotionEase } from './dynamicIslandMotion';
+import type { IslandControlsSnapshot } from './dynamicIslandMotion';
 
-const motionEase = 'power3.out';
+const motionEase = islandMotionEase;
 
 export function DynamicIsland({ mobileVisible, mobileTriggerRef, onMobileDismiss }: {
     mobileVisible: boolean;
@@ -19,23 +21,31 @@ export function DynamicIsland({ mobileVisible, mobileTriggerRef, onMobileDismiss
     const surfaceRef = useRef<HTMLDivElement>(null);
     const controlsRef = useRef<HTMLDivElement>(null);
     const compactContentRef = useRef<HTMLDivElement>(null);
+    const savedContentRef = useRef<HTMLDivElement>(null);
+    const entryIconRef = useRef<HTMLSpanElement>(null);
     const taskFinderRef = useRef<HTMLDivElement>(null);
-    const savedStatusRef = useRef<HTMLParagraphElement>(null);
     const previousSurfaceBounds = useRef<DOMRect | null>(null);
-    const hasAnimatedIn = useRef(false);
+    const previousVisibleMode = useRef<'timer' | 'saved' | null>(null);
+    const previousContentKey = useRef<string | null>(null);
+    const previousContentSnapshot = useRef<HTMLDivElement | null>(null);
+    const previousControlsSnapshot = useRef<IslandControlsSnapshot | null>(null);
+    const skipCompactFadeRef = useRef(false);
     const [controlsExpanded, setControlsExpanded] = useState(false);
     const [controlsMounted, setControlsMounted] = useState(false);
     const [findingTask, setFindingTask] = useState(false);
     const [reducedMotion, setReducedMotion] = useState(() => prefersReducedMotion());
     const runningSession = focus.sessions.find((session) => session.running);
     const pausedSessions = focus.sessions.filter((session) => !session.running);
-    const eventOnly = !focus.session && Boolean(focus.event);
+    const showSavedEvent = Boolean(focus.event);
+    const dismissAfterSaving = !focus.session;
+    const mobileVisibilityKey = typeof window !== 'undefined' && window.matchMedia('(max-width: 767px)').matches && mobileVisible;
     const primaryTitle = runningSession?.taskTitle ?? (pausedSessions.length === 1 ? pausedSessions[0]?.taskTitle : `${pausedSessions.length} Tasks paused`);
     const stateLabel = runningSession ? 'Running' : 'All paused';
-    const sessionStateKey = focus.sessions.map((session) => `${session.id}-${session.running}-${session.elapsedSeconds}`).join('|');
-    const visualKey = eventOnly
+    const visibleMode = showSavedEvent ? 'saved' : 'timer';
+    const contentKey = showSavedEvent
         ? `saved-${focus.event?.id ?? ''}`
-        : `${sessionStateKey}-${focus.event?.id ?? ''}-${controlsMounted}-${findingTask}`;
+        : `timer-${runningSession?.id ?? ''}-${primaryTitle}-${stateLabel}`;
+    const visualKey = showSavedEvent ? contentKey : `${contentKey}-${controlsMounted}-${findingTask}`;
 
     const closeControls = useCallback(() => {
         if (!controlsMounted) return;
@@ -67,7 +77,17 @@ export function DynamicIsland({ mobileVisible, mobileTriggerRef, onMobileDismiss
         if (!mobileVisible || controlsExpanded) return;
         const timer = window.setTimeout(onMobileDismiss, 3500);
         return () => window.clearTimeout(timer);
-    }, [controlsExpanded, mobileVisible, onMobileDismiss]);
+    }, [controlsExpanded, focus.event, mobileVisible, onMobileDismiss]);
+
+    useEffect(() => {
+        if (!showSavedEvent) return;
+        const frame = window.requestAnimationFrame(() => {
+            setControlsExpanded(false);
+            setControlsMounted(false);
+            setFindingTask(false);
+        });
+        return () => window.cancelAnimationFrame(frame);
+    }, [showSavedEvent]);
 
     useEffect(() => {
         if (!controlsExpanded && !mobileVisible) return;
@@ -83,39 +103,52 @@ export function DynamicIsland({ mobileVisible, mobileTriggerRef, onMobileDismiss
         return () => document.removeEventListener('click', closeOnOutsideClick, true);
     }, [closeControls, controlsExpanded, mobileVisible, mobileTriggerRef, onMobileDismiss]);
 
-    useEffect(() => {
-        if (!eventOnly || !focus.event || reducedMotion || !surfaceRef.current) return;
-        const context = gsap.context(() => {
-            gsap.to(surfaceRef.current, { autoAlpha: 0, delay: 4.55, duration: 0.42, ease: 'power1.in' });
-        }, islandRef);
+    useLayoutEffect(() => {
+        if (!showSavedEvent || !dismissAfterSaving || reducedMotion || !surfaceRef.current || !savedContentRef.current) return;
+        const context = animateSavedFocusExit(surfaceRef.current, savedContentRef.current, islandRef.current);
         return () => context.revert();
-    }, [eventOnly, focus.event, reducedMotion]);
+    }, [dismissAfterSaving, focus.event, reducedMotion, showSavedEvent]);
 
     useLayoutEffect(() => {
         const surface = surfaceRef.current;
-        if (!surface) return;
-
-        const nextBounds = surface.getBoundingClientRect();
-        const previousBounds = previousSurfaceBounds.current;
-        previousSurfaceBounds.current = nextBounds;
-
-        if (reducedMotion) {
-            hasAnimatedIn.current = true;
+        const island = islandRef.current;
+        if (!surface || !island || window.getComputedStyle(island).display === 'none') {
+            previousVisibleMode.current = null;
+            previousContentKey.current = null;
+            previousSurfaceBounds.current = null;
+            previousContentSnapshot.current = null;
+            previousControlsSnapshot.current = null;
             return;
         }
 
-        const context = gsap.context(() => {
-            if (!hasAnimatedIn.current) {
-                gsap.fromTo(surface, { autoAlpha: 0, scale: 0.96, y: -10 }, {
-                    autoAlpha: 1,
-                    duration: 0.28,
-                    ease: motionEase,
-                    clearProps: 'transform',
-                });
-                hasAnimatedIn.current = true;
-                return;
-            }
+        const nextBounds = surface.getBoundingClientRect();
+        const previousBounds = previousSurfaceBounds.current;
+        const enterFromCircle = previousVisibleMode.current === null;
+        const transitionContent = previousContentKey.current !== null && previousContentKey.current !== contentKey;
+        previousSurfaceBounds.current = nextBounds;
+        previousVisibleMode.current = visibleMode;
+        previousContentKey.current = contentKey;
+        skipCompactFadeRef.current = !reducedMotion && (enterFromCircle || transitionContent);
 
+        if (reducedMotion) return;
+
+        if (enterFromCircle && nextBounds.height <= 90 && entryIconRef.current) {
+            const content = showSavedEvent ? savedContentRef.current : compactContentRef.current;
+            if (!content) return;
+            const context = animateIslandEntrance(surface, content, entryIconRef.current, islandRef.current);
+            return () => context.revert();
+        }
+
+        if (transitionContent) {
+            const incoming = showSavedEvent ? savedContentRef.current : compactContentRef.current;
+            const outgoing = previousContentSnapshot.current;
+            if (incoming && outgoing && previousBounds) {
+                const context = animateIslandTransition(surface, incoming, outgoing, previousBounds, nextBounds, previousControlsSnapshot.current, islandRef.current);
+                return () => context.revert();
+            }
+        }
+
+        const context = gsap.context(() => {
             if (!previousBounds) return;
 
             gsap.set(surface, {
@@ -133,7 +166,15 @@ export function DynamicIsland({ mobileVisible, mobileTriggerRef, onMobileDismiss
         }, islandRef);
 
         return () => context.revert();
-    }, [reducedMotion, visualKey]);
+    }, [contentKey, mobileVisibilityKey, reducedMotion, showSavedEvent, visibleMode, visualKey]);
+
+    useLayoutEffect(() => {
+        const content = showSavedEvent ? savedContentRef.current : compactContentRef.current;
+        previousContentSnapshot.current = createMotionSnapshot(content);
+        const controls = controlsRef.current;
+        const controlsContent = createMotionSnapshot(controls);
+        previousControlsSnapshot.current = controls && controlsContent ? { content: controlsContent, top: controls.offsetTop } : null;
+    });
 
     useEffect(() => {
         if (reducedMotion || !controlsMounted || !controlsRef.current) return;
@@ -157,7 +198,7 @@ export function DynamicIsland({ mobileVisible, mobileTriggerRef, onMobileDismiss
     }, [controlsMounted, reducedMotion]);
 
     useEffect(() => {
-        if (reducedMotion || !compactContentRef.current || eventOnly) return;
+        if (reducedMotion || skipCompactFadeRef.current || !compactContentRef.current || showSavedEvent) return;
 
         const context = gsap.context(() => {
             gsap.fromTo(compactContentRef.current, { autoAlpha: 0, y: 3 }, {
@@ -168,7 +209,7 @@ export function DynamicIsland({ mobileVisible, mobileTriggerRef, onMobileDismiss
         }, compactContentRef);
 
         return () => context.revert();
-    }, [eventOnly, primaryTitle, reducedMotion, runningSession?.id, stateLabel]);
+    }, [primaryTitle, reducedMotion, runningSession?.id, showSavedEvent, stateLabel]);
 
     useEffect(() => {
         if (!findingTask || reducedMotion || !taskFinderRef.current) return;
@@ -182,18 +223,6 @@ export function DynamicIsland({ mobileVisible, mobileTriggerRef, onMobileDismiss
         return () => context.revert();
     }, [findingTask, reducedMotion]);
 
-    useEffect(() => {
-        if (!focus.event || eventOnly || reducedMotion || !savedStatusRef.current) return;
-        const context = gsap.context(() => {
-            gsap.fromTo(savedStatusRef.current, { autoAlpha: 0, y: -3 }, {
-                autoAlpha: 1,
-                duration: 0.16,
-                ease: motionEase,
-            });
-        }, controlsRef);
-        return () => context.revert();
-    }, [eventOnly, focus.event, reducedMotion]);
-
     function openControls() {
         setControlsMounted(true);
         setControlsExpanded(true);
@@ -204,24 +233,32 @@ export function DynamicIsland({ mobileVisible, mobileTriggerRef, onMobileDismiss
     return (
         <div className={classNames(
             'fixed top-18 left-1/2 z-50 w-[min(30rem,calc(100vw-2rem))] -translate-x-1/2 md:top-4',
-            !mobileVisible && 'max-md:hidden',
+            !mobileVisible && !focus.event && 'max-md:hidden',
         )} ref={islandRef}>
             <div
                 className={classNames(
                     'mx-auto border border-border-strong bg-elevated/96 shadow-2xl backdrop-blur-md',
-                    eventOnly
-                        ? 'flex w-fit max-w-full items-center gap-3 rounded-full border-success/35 px-4 py-3 text-sm font-bold'
-                        : classNames('rounded-[1.5rem] p-2', controlsMounted ? 'w-full' : 'w-[min(24rem,calc(100vw-2rem))]'),
+                    'relative rounded-[1.5rem] p-2',
+                    showSavedEvent
+                        ? 'w-[min(24rem,calc(100vw-2rem))] border-success/35'
+                        : controlsMounted ? 'w-full' : 'w-[min(24rem,calc(100vw-2rem))]',
                 )}
                 ref={surfaceRef}
-                role={eventOnly ? 'status' : 'region'}
-                aria-label={eventOnly ? undefined : `Focus ${stateLabel.toLowerCase()}, ${primaryTitle}`}
+                role="region"
+                aria-label={showSavedEvent && focus.event
+                    ? `Focus saved for ${focus.event.taskTitle}, ${formatFocusDuration(focus.event.durationSeconds)}`
+                    : `Focus ${stateLabel.toLowerCase()}, ${primaryTitle}`}
             >
-                {eventOnly && focus.event ? <>
-                    <Check aria-hidden="true" className="text-success" size={18} />
-                    <span className="truncate">Focus saved · {formatFocusDuration(focus.event.durationSeconds)}</span>
-                </> : <>
-                    <div className="flex items-center gap-1" ref={compactContentRef}>
+                {showSavedEvent && focus.event ? <div className="flex min-h-12 items-center gap-3 px-2" ref={savedContentRef}>
+                    <span className="grid size-9 shrink-0 place-items-center rounded-full bg-success/15 text-success" data-island-icon>
+                        <Check aria-hidden="true" size={18} />
+                    </span>
+                    <span className="min-w-0 flex-1" data-island-copy>
+                        <span className="block truncate text-sm font-bold">{focus.event.taskTitle}</span>
+                        <span className="block text-[0.6875rem] font-bold tracking-[0.1em] text-success uppercase">Focus saved</span>
+                    </span>
+                    <span className="shrink-0 font-mono text-lg font-bold tabular-nums" data-island-value>{formatFocusDuration(focus.event.durationSeconds)}</span>
+                </div> : <div className="flex items-center gap-1" ref={compactContentRef}>
                         <button
                             aria-expanded={controlsExpanded}
                             aria-label={`${controlsExpanded ? 'Hide' : 'Show'} Focus controls. ${stateLabel}: ${primaryTitle}`}
@@ -229,27 +266,28 @@ export function DynamicIsland({ mobileVisible, mobileTriggerRef, onMobileDismiss
                             onClick={() => controlsMounted ? closeControls() : openControls()}
                             type="button"
                         >
-                            <span className={classNames('grid size-9 shrink-0 place-items-center rounded-full', runningSession ? 'bg-[var(--task-accent)] text-accent-foreground' : 'bg-surface-hover text-warning')}>
+                            <span className={classNames('grid size-9 shrink-0 place-items-center rounded-full', runningSession ? 'bg-[var(--task-accent)] text-accent-foreground' : 'bg-surface-hover text-warning')} data-island-icon>
                                 {runningSession ? <Timer aria-hidden="true" size={17} /> : <CirclePause aria-hidden="true" size={17} />}
                             </span>
-                            <span className="min-w-0 flex-1">
+                            <span className="min-w-0 flex-1" data-island-copy>
                                 <span className="block truncate text-sm font-bold">{primaryTitle}</span>
                                 <span className="block text-[0.6875rem] font-bold tracking-[0.1em] text-muted uppercase">{stateLabel}</span>
                             </span>
-                            {runningSession && <time className="shrink-0 font-mono text-lg font-bold tabular-nums" dateTime={`PT${focus.elapsedSeconds}S`}>
+                            {runningSession && <time className="shrink-0 font-mono text-lg font-bold tabular-nums" data-island-value dateTime={`PT${focus.elapsedSeconds}S`}>
                                 {formatFocusClock(focus.elapsedSeconds)}
                             </time>}
                         </button>
                         {runningSession && <button
                             aria-label="Find another Focus Task"
                             className="focus-ring grid size-11 shrink-0 place-items-center rounded-full text-accent-ink hover:bg-surface-hover"
+                            data-island-action
                             onClick={() => { openControls(); setFindingTask(true); }}
                             title="Find another Task"
                             type="button"
                         ><Plus aria-hidden="true" size={19} /></button>}
-                    </div>
+                    </div>}
 
-                    {controlsMounted && <div className="max-h-[min(70vh,32rem)] space-y-3 overflow-y-auto px-2 pt-3 pb-1" ref={controlsRef}>
+                    {!showSavedEvent && controlsMounted && <div className="max-h-[min(70vh,32rem)] space-y-3 overflow-y-auto px-2 pt-3 pb-1" ref={controlsRef}>
                         {runningSession && <div className="focus-island-control grid grid-cols-2 gap-2">
                             <button
                                 className="focus-ring icon-text flex min-h-11 items-center justify-center gap-2 rounded-full bg-surface-hover px-4 text-sm font-bold hover:brightness-110 disabled:opacity-55"
@@ -299,9 +337,13 @@ export function DynamicIsland({ mobileVisible, mobileTriggerRef, onMobileDismiss
                             type="button"
                         ><Plus aria-hidden="true" size={16} />Find another Task</button>
                         {findingTask && <div className="focus-island-control" ref={taskFinderRef}><FocusTaskFinder onSelected={() => setFindingTask(false)} /></div>}
-                        {focus.event && <p className="focus-island-control text-center text-xs font-semibold text-success" ref={savedStatusRef} role="status">Focus saved · {formatFocusDuration(focus.event.durationSeconds)}</p>}
                     </div>}
-                </>}
+                <span className={classNames(
+                    'pointer-events-none invisible absolute top-1/2 left-1/2 grid size-9 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full',
+                    showSavedEvent ? 'bg-success/15 text-success' : runningSession ? 'bg-[var(--task-accent)] text-accent-foreground' : 'bg-surface-hover text-warning',
+                )} ref={entryIconRef}>
+                    {showSavedEvent ? <Check aria-hidden="true" size={18} /> : runningSession ? <Timer aria-hidden="true" size={17} /> : <CirclePause aria-hidden="true" size={17} />}
+                </span>
             </div>
             <p aria-live="polite" className="sr-only">{focus.announcement}</p>
         </div>
@@ -326,4 +368,12 @@ function formatFocusDuration(seconds: number): string {
 
 function prefersReducedMotion(): boolean {
     return typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+}
+
+function createMotionSnapshot(content: HTMLDivElement | null): HTMLDivElement | null {
+    if (!content) return null;
+    const snapshot = content.cloneNode(true) as HTMLDivElement;
+    snapshot.removeAttribute('style');
+    snapshot.querySelectorAll('[style]').forEach((element) => element.removeAttribute('style'));
+    return snapshot;
 }

@@ -53,9 +53,9 @@ export function FocusTimerProvider({ children }: PropsWithChildren) {
 
     useEffect(() => {
         if (!event) return;
-        const timer = window.setTimeout(() => setEvent(null), 5000);
+        const timer = window.setTimeout(() => setEvent(null), sessions.length > 0 ? 1800 : 3400);
         return () => window.clearTimeout(timer);
-    }, [event]);
+    }, [event, sessions.length]);
 
     useEffect(() => {
         if (!error) return;
