@@ -6,6 +6,7 @@ import { classNames } from './classNames';
 interface FieldProps extends InputHTMLAttributes<HTMLInputElement> {
     label: string;
     error?: string;
+    success?: string;
 }
 
 interface SelectOption {
@@ -18,6 +19,7 @@ interface SelectFieldProps extends SelectHTMLAttributes<HTMLSelectElement> {
     options?: SelectOption[];
     children?: ReactNode;
     error?: string;
+    success?: string;
 }
 
 interface CheckboxProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'type'> {
@@ -27,7 +29,7 @@ interface CheckboxProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'typ
 }
 
 const controlClasses =
-    'focus-ring mt-2 min-h-11 w-full rounded-2xl border border-border-strong bg-inset px-4 py-2.5 text-base text-foreground transition-[background-color,border-color,box-shadow] duration-200 placeholder:text-muted hover:border-[color-mix(in_srgb,var(--module-accent)_32%,var(--border-strong))] focus:border-[var(--module-accent)] disabled:cursor-not-allowed disabled:bg-elevated disabled:text-muted';
+    'focus-ring mt-2 min-h-11 w-full rounded-[var(--radius-control)] border border-border-strong bg-inset px-4 py-2.5 text-base text-foreground transition-[background-color,border-color,box-shadow] duration-200 placeholder:text-muted hover:border-[color-mix(in_srgb,var(--module-accent)_32%,var(--border-strong))] focus:border-[var(--module-accent)] disabled:cursor-not-allowed disabled:border-border-subtle disabled:bg-elevated disabled:text-muted';
 
 function FieldLabel({ children, htmlFor }: { children: string; htmlFor: string }) {
     return (
@@ -49,36 +51,39 @@ function FieldError({ error, id }: { error?: string; id: string }) {
     );
 }
 
-export function Field({ label, error, className, id, ...props }: FieldProps) {
+export function Field({ label, error, success, className, id, ...props }: FieldProps) {
     const generatedId = useId();
     const inputId = id ?? generatedId;
     const errorId = `${inputId}-error`;
+    const successId = `${inputId}-success`;
 
     return (
         <div>
             <FieldLabel htmlFor={inputId}>{label}</FieldLabel>
             <input
-                aria-describedby={error ? errorId : undefined}
+                aria-describedby={error ? errorId : success ? successId : undefined}
                 aria-invalid={Boolean(error)}
                 className={classNames(controlClasses, error && 'border-danger', className)}
                 id={inputId}
                 {...props}
             />
             <FieldError error={error} id={errorId} />
+            {!error && success && <p className="mt-2 text-sm font-medium text-success" id={successId} role="status">{success}</p>}
         </div>
     );
 }
 
-export function SelectField({ label, options, children, error, className, id, ...props }: SelectFieldProps) {
+export function SelectField({ label, options, children, error, success, className, id, ...props }: SelectFieldProps) {
     const generatedId = useId();
     const selectId = id ?? generatedId;
     const errorId = `${selectId}-error`;
+    const successId = `${selectId}-success`;
 
     return (
         <div>
             <FieldLabel htmlFor={selectId}>{label}</FieldLabel>
             <select
-                aria-describedby={error ? errorId : undefined}
+                aria-describedby={error ? errorId : success ? successId : undefined}
                 aria-invalid={Boolean(error)}
                 className={classNames(controlClasses, 'appearance-none', error && 'border-danger', className)}
                 id={selectId}
@@ -91,6 +96,7 @@ export function SelectField({ label, options, children, error, className, id, ..
                 ))}
             </select>
             <FieldError error={error} id={errorId} />
+            {!error && success && <p className="mt-2 text-sm font-medium text-success" id={successId} role="status">{success}</p>}
         </div>
     );
 }

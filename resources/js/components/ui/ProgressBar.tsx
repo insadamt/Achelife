@@ -42,7 +42,7 @@ export function ProgressBar({
                 aria-valuemax={safeMaximum}
                 aria-valuemin={0}
                 aria-valuenow={Math.min(safeMaximum, Math.max(0, value))}
-                className="h-2.5 overflow-hidden rounded-full border border-border-subtle bg-app"
+                className="h-2.5 overflow-hidden rounded-full border border-border-strong bg-inset"
                 role="progressbar"
             >
                 <div

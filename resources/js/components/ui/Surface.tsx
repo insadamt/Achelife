@@ -7,6 +7,7 @@ interface SurfaceProps extends HTMLAttributes<HTMLDivElement> {
     accent?: string;
     interactive?: boolean;
     elevated?: boolean;
+    inset?: boolean;
     tinted?: boolean;
 }
 
@@ -17,6 +18,7 @@ export function Surface({
     accent,
     interactive = false,
     elevated = false,
+    inset = false,
     tinted = false,
     className,
     children,
@@ -28,7 +30,7 @@ export function Surface({
     return (
         <div
             className={classNames(
-                'rounded-[var(--radius-panel)] border bg-surface',
+                inset ? 'rounded-[var(--radius-card)] border border-border-strong bg-inset' : 'rounded-[var(--radius-panel)] border bg-surface',
                 elevated && 'bg-elevated shadow-[var(--shadow-raised)]',
                 tinted && 'accent-surface',
                 active && 'accent-border accent-glow',

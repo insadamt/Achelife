@@ -34,7 +34,7 @@ export function CircularProgress({
             style={{ ...style, width: size, height: size }}
         >
             <svg aria-hidden="true" className="-rotate-90" height="100%" viewBox="0 0 100 100" width="100%">
-                <circle cx="50" cy="50" fill="none" r={radius} stroke="var(--border-subtle)" strokeWidth="7" />
+                <circle cx="50" cy="50" fill="none" r={radius} stroke="var(--border-strong)" strokeWidth="7" />
                 <circle
                     className="transition-[stroke-dashoffset] duration-200 ease-out"
                     cx="50"

@@ -36,6 +36,8 @@
     --warning: #f1b84b;
     --danger: #f06d72;
     --information: #81baff;
+    --chart-grid: #46515d;
+    --chart-axis: #c6d0d8;
     --preview-blue: #43a5ff;
     --preview-violet: #9a73ff;
     --preview-orange: #ff8a45;
@@ -94,6 +96,8 @@
     --warning: #805c18;
     --danger: #a83a46;
     --information: #1767a8;
+    --chart-grid: #b3c2cf;
+    --chart-axis: #435567;
     --preview-blue: #176db2;
     --preview-violet: #6f4fc2;
     --preview-orange: #b9571f;

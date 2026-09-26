@@ -1,6 +1,6 @@
 # Phase 1 — Tokens, typography, and materials
 
-**Status:** Ready for manual review. [Roadmap](../v2.0.0_design_plan.md) · [UI guide](../ui-design-and-motion.md) · [Layout guide](../ui-layout-and-hierarchy.md)
+**Status:** Accepted with open visual-review items. [Roadmap](../v2.0.0_design_plan.md) · [UI guide](../ui-design-and-motion.md) · [Layout guide](../ui-layout-and-hierarchy.md)
 
 ## Plan
 
@@ -34,4 +34,4 @@ Create the shared visual foundation before converting pages. Use [theme palettes
 
 Exit when shared token/material recipes are implemented and the user accepts representative rendering. Follow the [common review matrix](../v2.0.0_design_plan.md#common-manual-review-for-each-visual-phase).
 
-**Handoff record:** Date: 2026-09-26 · Last completed task: shared semantic, font, and material layer · Files: `resources/css/app.css`, `appearance.css`, `today.css`, `resources/fonts/InterVariable.ttf`, `resources/fonts/OFL.txt`, `resources/js/components/ui/Dialog.tsx`, `FormControls.tsx`, this task file, roadmap, Phase 0 handoff · Decisions: preserve `normal`/`glass` behavior; keep `app-normal-glass` unexposed until Phase 7 · Checks actually performed: source review and static diff inspection only; no build or test run at the user's request · User feedback: the page-wide white/black wallpaper tint looked bad; removed it · Open issues: review the unfiltered wallpaper and rendered contrast, blur-disabled, reduced-transparency, mobile and Light/Dark review remain for the user; Phase 0 manual route pass remains user-owned · Next task: collect Phase 1 visual findings, fix shared tokens at source, then mark accepted before Phase 2.
+**Handoff record:** Date: 2026-09-26 · Last completed task: shared semantic, font, and material layer · Files: `resources/css/app.css`, `appearance.css`, `today.css`, `resources/fonts/InterVariable.ttf`, `resources/fonts/OFL.txt`, `resources/js/components/ui/Dialog.tsx`, `FormControls.tsx`, this task file, roadmap, Phase 0 handoff · Decisions: preserve `normal`/`glass` behavior; keep `app-normal-glass` unexposed until Phase 7 · Checks actually performed: source review and static diff inspection only; no build or test run at the user's request · User feedback: page-wide wallpaper tint rejected and removed, then user authorized the next phase · Open issues: the detailed contrast, blur-disabled, reduced-transparency, mobile and Light/Dark matrix remains user-owned before the final audit; Phase 0 manual route pass also remains open · Next task: Phase 2 shared controls and page structure.

@@ -124,15 +124,15 @@ export function Dialog({
                     'border border-border-strong bg-overlay shadow-[var(--shadow-raised)] transition-[width] duration-300',
                     placement === 'center'
                         ? classNames(
-                            'w-full rounded-[var(--radius-panel)] p-5 sm:p-6',
+                            'max-h-[calc(100dvh-2rem)] w-full overflow-y-auto rounded-[var(--radius-panel)] p-5 sm:p-6',
                             size === 'large'
-                                ? 'max-h-[calc(100dvh-2rem)] max-w-2xl overflow-y-auto'
+                                ? 'max-w-2xl'
                                 : 'max-w-md',
                         )
                         : placement === 'right-card'
-                            ? 'h-full w-[min(94vw,30rem)] overflow-y-auto border-y-0 border-r-0 p-5 sm:h-[min(92vh,54rem)] sm:rounded-[var(--radius-panel)] sm:border'
+                            ? 'h-full w-[min(94vw,30rem)] overflow-y-auto border-y-0 border-r-0 p-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] sm:h-[min(92vh,54rem)] sm:rounded-[var(--radius-panel)] sm:border'
                             : classNames(
-                                'h-full overflow-y-auto border-y-0 border-r-0 p-5',
+                                'h-full overflow-y-auto border-y-0 border-r-0 p-5 pb-[max(1.25rem,env(safe-area-inset-bottom))]',
                                 size === 'large' ? 'w-[min(96vw,60rem)]' : 'w-[min(94vw,28rem)]',
                             ),
                 )}

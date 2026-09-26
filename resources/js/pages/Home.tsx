@@ -59,16 +59,11 @@ export default function Home(props: TodayPageProps) {
                 />
             </div>
 
-            <main
-                aria-labelledby={`today-${activeTab}-tab`}
-                className="today-glass rounded-[1.75rem] p-4 pb-8 sm:p-5 md:hidden"
-                id={`today-${activeTab}-panel`}
-                role="tabpanel"
-                tabIndex={0}
-            >
-                {activeTab === 'tasks'
-                    ? <TodayTaskList headingId="today-mobile-task-list-title" onOpen={setSelectedTaskId} overdue={props.tasks.overdue} overdueCount={props.tasks.overdueCount} tasks={props.tasks.today} />
-                    : <TodayHabitSection flexible={props.habits.flexible} headingId="today-mobile-habit-list-title" required={props.habits.required} />}
+            <main aria-labelledby="today-tasks-tab" className="today-glass rounded-[1.75rem] p-4 pb-8 sm:p-5 md:hidden" hidden={activeTab !== 'tasks'} id="today-tasks-panel" role="tabpanel" tabIndex={0}>
+                <TodayTaskList headingId="today-mobile-task-list-title" onOpen={setSelectedTaskId} overdue={props.tasks.overdue} overdueCount={props.tasks.overdueCount} tasks={props.tasks.today} />
+            </main>
+            <main aria-labelledby="today-habits-tab" className="today-glass rounded-[1.75rem] p-4 pb-8 sm:p-5 md:hidden" hidden={activeTab !== 'habits'} id="today-habits-panel" role="tabpanel" tabIndex={0}>
+                <TodayHabitSection flexible={props.habits.flexible} headingId="today-mobile-habit-list-title" required={props.habits.required} />
             </main>
 
             <main className="today-glass hidden min-h-[18rem] items-start gap-6 rounded-[2rem] p-5 pb-8 md:grid md:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)] lg:p-6">

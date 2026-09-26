@@ -1,6 +1,6 @@
 # Phase 2 — Shared controls and page structure
 
-**Status:** Not started. [Roadmap](../v2.0.0_design_plan.md) · [UI guide](../ui-design-and-motion.md) · [Layout guide](../ui-layout-and-hierarchy.md)
+**Status:** Ready for manual review. [Roadmap](../v2.0.0_design_plan.md) · [UI guide](../ui-design-and-motion.md) · [Layout guide](../ui-layout-and-hierarchy.md)
 
 ## Plan
 
@@ -8,12 +8,20 @@ Make shared primitives express the documented hierarchy before page-by-page adop
 
 ## Implementation tasks
 
-- [ ] Update shared Button, Surface, inputs, Dialog, Drawer, status/progress, and chart presentation to use semantic tokens and the selected material family.
-- [ ] Give controls documented default, hover, focus, selected, disabled, loading, success, and error states where applicable; preserve focus management and announcements.
-- [ ] Create or refine shared page rail/header, module navigation, local-view tabs, and filter roles. Keep route links distinct from in-page tabs.
-- [ ] Apply 80rem standard and justified 92rem wide rails, shared heading scale, spacing rhythm, and control heights in the primitives.
-- [ ] Implement reduced-motion behavior in CSS and JavaScript movement, including scroll; keep state understandable with motion disabled.
-- [ ] Document component usage and exceptions for page phases; keep component files below 500 lines.
+- [x] Update shared Button, Surface, inputs, Dialog, Drawer, status/progress, and chart presentation to use semantic tokens and the selected material family.
+- [x] Give controls documented default, hover, focus, selected, disabled, loading, success, and error states where applicable; preserve focus management and announcements.
+- [x] Create or refine shared page rail/header, module navigation, local-view tabs, and filter roles. Keep route links distinct from in-page tabs.
+- [x] Apply 80rem standard and justified 92rem wide rails, shared heading scale, spacing rhythm, and control heights in the primitives.
+- [x] Implement reduced-motion behavior in CSS and JavaScript movement, including scroll; keep state understandable with motion disabled.
+- [x] Document component usage and exceptions for page phases; keep component files below 500 lines.
+
+## Component usage and page-phase handoff
+
+- `PageRail` defaults to 80rem; pass `wide` only for a documented 92rem content need, such as Task workspace or Calendar. The existing App shell remains 92rem so each page can adopt the correct inner rail in its own phase.
+- `PageHeader` owns the standard 32/40px `h1`, eyebrow, description, and optional action. `ModuleNavigation` uses route links with `aria-current="page"`; Tasks and Money now share it. `LocalViewTabs` uses in-page buttons with tab/panel IDs and Arrow/Home/End keyboard movement; Today now uses it. `FilterGroup` groups controls without pretending filters are tabs.
+- `Button` supports an accessible loading state, `Surface` has an inset depth, fields/selects can announce success as well as errors, and dialogs cap their height while drawers respect the bottom safe area. Status labels and chart axes use readable semantic text tokens. Progress tracks use the inset material.
+- Global CSS already removes nonessential animation for reduced motion. Subtask insertion now avoids smooth scrolling under that preference. The Focus island and Season switcher already contain JavaScript reduced-motion checks.
+- Page-specific title/rail adoption remains in Phases 3–8. The existing desktop Tasks workspace and Calendar can justify wide rails; other pages should adopt the standard rail. Current user feedback forbids a page-wide tint on wallpaper in every later page phase.
 
 ## Manual review checklist
 
@@ -25,4 +33,4 @@ Make shared primitives express the documented hierarchy before page-by-page adop
 
 Exit when page phases can adopt the shared roles without inventing one-off controls. Follow the [common review matrix](../v2.0.0_design_plan.md#common-manual-review-for-each-visual-phase).
 
-**Handoff record:** Date: — · Last completed task: — · Files/commit: — · Decisions: — · Checks actually performed: — · User feedback: — · Open issues: — · Next task: inspect shared UI components.
+**Handoff record:** Date: 2026-09-26 · Last completed task: shared controls and page roles · Files: `resources/js/components/ui/PageStructure.tsx`, `Button.tsx`, `Surface.tsx`, `FormControls.tsx`, `Dialog.tsx`, `Metric.tsx`, `StatusChip.tsx`, `ProgressBar.tsx`, `CircularProgress.tsx`, `index.ts`, Money and Tasks shared navigation, Today tabs/Home panels, SubtaskEditor, TaskCompletionLineChart, `resources/css/app.css`, `appearance.css`, this task file, Phase 1 and roadmap · Decisions: adopt shared roles gradually by page phase; keep route links and in-page tabs distinct; retain unfiltered wallpaper · Checks actually performed: source review and static diff check only; no build or automated tests at user request · User feedback: Phase 1 advancement authorized · Open issues: Phase 2 keyboard, mobile, focus, appearance and state review pending; Phase 0/1 detailed manual checks remain user-owned · Next task: collect manual findings, fix shared components, then mark Phase 2 accepted before Phase 3.

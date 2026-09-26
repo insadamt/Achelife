@@ -10,11 +10,12 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
     variant?: ButtonVariant;
     size?: ButtonSize;
     fullWidth?: boolean;
+    loading?: boolean;
 }
 
 const variantClasses: Record<ButtonVariant, string> = {
     primary:
-        'accent-background border-transparent shadow-[0_8px_24px_color-mix(in_srgb,var(--module-accent)_12%,transparent)] hover:brightness-110 active:translate-y-px active:brightness-95',
+        'accent-background border-[color-mix(in_srgb,var(--module-accent)_65%,white)] shadow-[0_8px_24px_color-mix(in_srgb,var(--module-accent)_12%,transparent)] hover:brightness-110 active:translate-y-px active:brightness-95',
     secondary:
         'border-border-strong bg-elevated text-foreground hover:border-[color-mix(in_srgb,var(--module-accent)_38%,var(--border-strong))] hover:bg-surface-hover active:translate-y-px',
     ghost: 'border-transparent bg-transparent text-secondary hover:bg-surface-hover hover:text-foreground active:translate-y-px',
@@ -32,7 +33,9 @@ export function Button({
     variant = 'primary',
     size = 'medium',
     fullWidth = false,
+    loading = false,
     type = 'button',
+    disabled,
     ...props
 }: PropsWithChildren<ButtonProps>) {
     const hasTextChild = Children.toArray(children).some((child) => ['string', 'number'].includes(typeof child));
@@ -40,17 +43,20 @@ export function Button({
     return (
         <button
             className={classNames(
-                'focus-ring inline-flex cursor-pointer items-center justify-center gap-2 rounded-full border font-bold tracking-[0.08em] uppercase transition-[transform,background-color,border-color,color,filter,box-shadow] duration-200 [&>svg]:size-[1.125rem] [&>svg]:shrink-0 disabled:pointer-events-none disabled:opacity-45',
+                'focus-ring relative inline-flex cursor-pointer items-center justify-center gap-2 rounded-full border font-bold tracking-[0.08em] uppercase transition-[transform,background-color,border-color,color,filter,box-shadow] duration-200 [&>svg]:size-[1.125rem] [&>svg]:shrink-0 disabled:cursor-not-allowed disabled:opacity-65',
                 hasTextChild && 'icon-text',
                 variantClasses[variant],
                 sizeClasses[size],
                 fullWidth && 'w-full',
                 className,
             )}
+            aria-busy={loading || undefined}
+            disabled={disabled || loading}
             type={type}
             {...props}
         >
             {children}
+            {loading && <span className="sr-only" role="status">Working…</span>}
         </button>
     );
 }

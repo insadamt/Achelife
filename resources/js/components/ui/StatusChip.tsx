@@ -30,7 +30,7 @@ export function StatusChip({ children, status = 'neutral' }: PropsWithChildren<S
     return (
         <span
             className={classNames(
-                'inline-flex min-h-6 items-center gap-1.5 rounded-full border px-2.5 py-1 text-[0.625rem] leading-none font-bold tracking-[0.12em] uppercase',
+                'inline-flex min-h-7 items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs leading-none font-bold tracking-[0.08em] uppercase',
                 statusClasses[status],
             )}
         >

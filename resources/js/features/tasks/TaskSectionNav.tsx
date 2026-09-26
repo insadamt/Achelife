@@ -1,7 +1,6 @@
-import { Link } from '@inertiajs/react';
 import { CalendarDays, ChartColumn, ListTodo } from 'lucide-react';
 
-import { classNames } from '../../components/ui/classNames';
+import { ModuleNavigation } from '../../components/ui';
 
 const sections = [
     { href: '/tasks', icon: ListTodo, label: 'Tasks', value: 'tasks' },
@@ -10,22 +9,5 @@ const sections = [
 ] as const;
 
 export function TaskSectionNav({ active }: { active: 'tasks' | 'calendar' | 'statistics' }) {
-    return (
-        <nav aria-label="Task sections" className="flex max-w-full flex-wrap gap-1 rounded-2xl border border-border-subtle bg-surface p-1">
-            {sections.map(({ href, icon: Icon, label, value }) => (
-                <Link
-                    aria-current={active === value ? 'page' : undefined}
-                    className={classNames(
-                        'focus-ring icon-text flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-bold transition-colors',
-                        active === value ? 'bg-elevated text-foreground shadow-sm' : 'text-muted hover:text-foreground',
-                    )}
-                    href={href}
-                    key={value}
-                >
-                    <Icon aria-hidden="true" size={15} />
-                    {label}
-                </Link>
-            ))}
-        </nav>
-    );
+    return <ModuleNavigation active={active} items={sections.map(({ icon: Icon, ...section }) => ({ ...section, icon: <Icon aria-hidden="true" size={16} /> }))} label="Task sections" />;
 }

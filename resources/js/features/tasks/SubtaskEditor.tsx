@@ -44,7 +44,7 @@ export function SubtaskEditor({ subtasks, onChange, onToggleCompletion, error }:
         setDraftError(null);
         window.requestAnimationFrame(() => {
             const subtaskList = listRef.current;
-            subtaskList?.scrollTo({ top: subtaskList.scrollHeight, behavior: newSubtasks.length === 1 ? 'smooth' : 'auto' });
+            subtaskList?.scrollTo({ top: subtaskList.scrollHeight, behavior: newSubtasks.length === 1 && !window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'smooth' : 'auto' });
             addInputRef.current?.focus();
         });
     }

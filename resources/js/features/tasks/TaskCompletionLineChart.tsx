@@ -53,7 +53,7 @@ export function TaskCompletionLineChart({ buckets, metric, unit }: TaskCompletio
                     {yTicks.map((ratio) => {
                         const y = padding.top + plotHeight * (1 - ratio);
 
-                        return <g key={ratio}><line stroke="var(--border-subtle)" strokeDasharray={ratio === 0 ? undefined : '4 8'} x1={padding.left} x2={chartWidth - padding.right} y1={y} y2={y} /><text fill="var(--text-muted)" fontSize="11" textAnchor="end" x={padding.left - 10} y={y + 4}>{Math.round(maxValue * ratio)}</text></g>;
+                        return <g key={ratio}><line stroke="var(--chart-grid)" strokeDasharray={ratio === 0 ? undefined : '4 8'} x1={padding.left} x2={chartWidth - padding.right} y1={y} y2={y} /><text fill="var(--chart-axis)" fontSize="11" textAnchor="end" x={padding.left - 10} y={y + 4}>{Math.round(maxValue * ratio)}</text></g>;
                     })}
                     <path d={areaPath} fill={`url(#${gradientId})`} />
                     <path d={linePath} fill="none" stroke="var(--module-accent)" strokeLinecap="round" strokeLinejoin="round" strokeWidth="4" />
@@ -73,7 +73,7 @@ export function TaskCompletionLineChart({ buckets, metric, unit }: TaskCompletio
                     {points.map((point, index) => {
                         const show = index === 0 || index === points.length - 1 || index % labelStep === 0;
 
-                        return show ? <text fill="var(--text-muted)" fontSize="10" key={point.date} textAnchor={index === 0 ? 'start' : index === points.length - 1 ? 'end' : 'middle'} x={point.x} y={chartHeight - 10}>{point.label}</text> : null;
+                        return show ? <text fill="var(--chart-axis)" fontSize="10" key={point.date} textAnchor={index === 0 ? 'start' : index === points.length - 1 ? 'end' : 'middle'} x={point.x} y={chartHeight - 10}>{point.label}</text> : null;
                     })}
                 </svg>
             </div>

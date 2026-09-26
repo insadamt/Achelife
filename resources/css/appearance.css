@@ -62,13 +62,17 @@
     --surface-inset: rgb(217 230 240 / 96%);
 }
 
-:is(.app-glass, .app-normal-glass) :where(.bg-surface, .bg-elevated, .today-glass) {
+:is(.app-glass, .app-normal-glass) :where(.bg-surface, .bg-elevated, .bg-overlay, .today-glass) {
     border-color: var(--border-subtle);
     box-shadow: var(--shadow-panel);
 }
 
-:is(.app-glass, .app-normal-glass) :where(.bg-elevated) {
+:is(.app-glass, .app-normal-glass) :where(.bg-elevated, .bg-overlay) {
     box-shadow: var(--shadow-raised);
+}
+
+:is(.app-glass, .app-normal-glass) :where(.bg-inset) {
+    box-shadow: inset 0 1px var(--glass-edge-bright), inset 0 -1px var(--glass-edge-dark);
 }
 
 :is(.app-glass, .app-normal-glass) :where(input, textarea, select) {
@@ -76,7 +80,7 @@
     border-color: var(--border-strong);
 }
 
-.app-glass :where(.bg-surface, .bg-elevated, .today-glass) {
+.app-glass :where(.bg-surface, .bg-elevated, .bg-overlay, .today-glass) {
     -webkit-backdrop-filter: blur(26px) saturate(140%);
     backdrop-filter: blur(26px) saturate(140%);
 }
@@ -110,7 +114,7 @@
         --surface-overlay: #fafdff;
     }
 
-    .app-glass :where(.bg-surface, .bg-elevated, .today-glass) {
+    .app-glass :where(.bg-surface, .bg-elevated, .bg-overlay, .today-glass) {
         -webkit-backdrop-filter: none;
         backdrop-filter: none;
     }
