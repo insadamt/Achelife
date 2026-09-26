@@ -51,6 +51,7 @@ class ArchiveSemanticValidator
         private readonly ArchiveRowAdapter $rowAdapter,
         private readonly ArchiveTaskOrganizationValidator $taskOrganizationValidator,
         private readonly ArchiveTaskFocusValidator $taskFocusValidator,
+        private readonly ArchiveAppearanceValidator $appearanceValidator,
     ) {}
 
     /** @param array<string, mixed> $manifest */
@@ -88,6 +89,7 @@ class ArchiveSemanticValidator
         }
 
         $this->taskFocusValidator->complete();
+        $this->appearanceValidator->complete();
         $this->validateSeasonTimeline($manifest);
         $this->validateSeasonPointTotals();
     }
@@ -147,6 +149,7 @@ class ArchiveSemanticValidator
     /** @param array<string, mixed> $row */
     private function captureDomainState(string $table, array $row): void
     {
+        $this->appearanceValidator->validateRow($table, $row);
         $this->taskOrganizationValidator->validate($table, $row);
         $this->taskFocusValidator->validate($table, $row);
 
@@ -481,6 +484,7 @@ class ArchiveSemanticValidator
         $this->presetKeys = ['money_categories' => [], 'money_subcategories' => []];
         $this->taskOrganizationValidator->reset();
         $this->taskFocusValidator->reset();
+        $this->appearanceValidator->reset();
         $this->manifestUser = [];
     }
 }

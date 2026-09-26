@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AccountPortabilityController;
 use App\Http\Controllers\AccountSettingController;
+use App\Http\Controllers\AppearanceSettingController;
 use App\Http\Controllers\ArchiveHabitController;
 use App\Http\Controllers\ArchiveLawController;
 use App\Http\Controllers\ConstitutionController;
@@ -110,6 +111,12 @@ Route::middleware('auth')->group(function (): void {
         Route::get('/seasons/{season}/closeout', [SeasonCloseoutController::class, 'show'])->name('seasons.closeout');
         Route::put('/seasons/{season}/closeout', [SeasonCloseoutController::class, 'update'])->name('seasons.closeout.update');
         Route::put('/settings/account/profile', [AccountSettingController::class, 'updateProfile'])->name('settings.account.profile');
+        Route::put('/settings/appearance/style', [AppearanceSettingController::class, 'updateStyle'])->name('appearance.style.update');
+        Route::post('/settings/appearance/background', [AppearanceSettingController::class, 'uploadBackground'])->name('appearance.background.upload');
+        Route::delete('/settings/appearance/background', [AppearanceSettingController::class, 'clearBackground'])->name('appearance.background.clear');
+        Route::get('/appearance/background/{hash}', [AppearanceSettingController::class, 'background'])
+            ->where('hash', '[a-f0-9]{64}')
+            ->name('appearance.background');
         Route::get('/settings/portability/export', [AccountPortabilityController::class, 'export'])->name('portability.export');
         Route::post('/settings/portability/preview', [AccountPortabilityController::class, 'previewReplacement'])->name('portability.preview');
         Route::post('/settings/portability/restore', [AccountPortabilityController::class, 'restoreReplacement'])->name('portability.restore');

@@ -13,6 +13,10 @@ export interface SharedPageProps {
     auth: {
         user: AuthenticatedUser | null;
     };
+    appearance: {
+        surfaceStyle: 'normal' | 'glass';
+        backgroundUrl: string | null;
+    };
     flash: {
         constitutionViolation: RecordedViolationFlashData | null;
     };

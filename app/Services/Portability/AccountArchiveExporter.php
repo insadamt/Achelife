@@ -10,7 +10,7 @@ use ZipArchive;
 
 class AccountArchiveExporter
 {
-    public const FORMAT_VERSION = 9;
+    public const FORMAT_VERSION = 10;
 
     public function __construct(
         private readonly PortableTableRegistry $tableRegistry,

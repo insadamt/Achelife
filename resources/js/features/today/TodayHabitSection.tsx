@@ -1,5 +1,5 @@
-import { router } from '@inertiajs/react';
-import { Check, ChevronDown, MoreVertical } from 'lucide-react';
+import { Link, router } from '@inertiajs/react';
+import { Check, ChevronDown, MoreVertical, Repeat2 } from 'lucide-react';
 import { useState } from 'react';
 
 import { classNames } from '../../components/ui/classNames';
@@ -47,8 +47,8 @@ function HabitCard({ habit, onNumeric, onSkip }: {
           : null;
 
     return (
-        <div className={classNames('relative isolate min-h-16 overflow-hidden rounded-2xl border bg-surface', completed ? 'border-[color-mix(in_srgb,var(--habit-accent)_34%,var(--border-subtle))]' : 'border-border-subtle')}>
-            {progress > 0 && <span aria-hidden="true" className="absolute inset-y-0 left-0 -z-10 bg-[color-mix(in_srgb,var(--habit-accent)_12%,transparent)] transition-[width] duration-200" style={{ width: `${progress}%` }} />}
+        <div className={classNames('today-glass-inner relative isolate min-h-16 overflow-hidden rounded-2xl', completed && 'today-glass-completed')}>
+            <span aria-hidden="true" className="absolute inset-y-0 left-0 -z-10 bg-[color-mix(in_srgb,var(--habit-accent)_12%,transparent)] transition-[width] duration-200" style={{ width: `${progress}%` }} />
             <div className="flex min-h-16 items-center gap-2 px-3">
                 <button
                     aria-label={`${habit.type === 'numeric' ? 'Update' : completed || skipped ? 'Reset' : 'Complete'} ${habit.name}`}
@@ -56,7 +56,7 @@ function HabitCard({ habit, onNumeric, onSkip }: {
                     onClick={performPrimaryAction}
                     type="button"
                 >
-                    <span className={classNames('grid size-9 shrink-0 place-items-center rounded-full border-2 transition-colors', completed ? 'border-[var(--habit-accent)] bg-[var(--habit-accent)] text-accent-foreground' : skipped ? 'border-warning text-warning' : 'border-border-strong hover:border-[var(--habit-accent)]')}>
+                    <span className={classNames('grid size-9 shrink-0 place-items-center rounded-full border-2 transition-colors', completed ? 'today-check-pop border-[var(--habit-accent)] bg-[var(--habit-accent)] text-accent-foreground' : skipped ? 'border-warning text-warning' : 'border-border-strong hover:border-[var(--habit-accent)]')}>
                         {completed ? <Check aria-hidden="true" size={18} strokeWidth={3} /> : <HabitIcon name={habit.icon} size={16} />}
                     </span>
                     <span className={classNames('min-w-0 flex-1 truncate text-base font-bold', completed && 'line-through opacity-60')}>{habit.name}</span>
@@ -84,21 +84,31 @@ export function TodayHabitSection({ required, flexible, headingId }: { required:
     const [numericSelection, setNumericSelection] = useState<SelectedHabitDay | null>(null);
     const [skipSelection, setSkipSelection] = useState<SelectedHabitDay | null>(null);
     const resolvedCount = required.filter((habit) => ['completed', 'skipped'].includes(habit.days[0]!.state ?? '')).length;
+    const unresolvedCount = required.length - resolvedCount;
 
     return (
         <section aria-labelledby={headingId} className="min-w-0">
-            <div className="mb-4 flex items-center justify-between gap-4">
-                <h2 className="text-2xl font-bold" id={headingId}>Habits</h2>
-                <span className="text-sm font-semibold text-muted">{resolvedCount} / {required.length}</span>
+            <div className="mb-5 flex items-center justify-between gap-4">
+                <div className="flex items-center gap-3">
+                    <span aria-hidden="true" className="grid size-10 place-items-center rounded-2xl bg-accent/10 text-accent-ink"><Repeat2 size={20} /></span>
+                    <div>
+                        <h2 className="text-2xl font-bold leading-none" id={headingId}>Habits</h2>
+                        <p className="mt-1 text-xs text-muted">{resolvedCount} of {required.length} resolved</p>
+                    </div>
+                </div>
+                <span className="shrink-0 rounded-full border border-border-subtle bg-elevated px-3 py-1.5 text-xs font-bold text-secondary"><span className="today-count-change inline-block" key={unresolvedCount}>{unresolvedCount}</span> left</span>
             </div>
 
             {required.length > 0
                 ? <HabitCards habits={required} onNumeric={setNumericSelection} onSkip={setSkipSelection} />
-                : <div className="rounded-2xl border border-border-subtle bg-surface px-4 py-6 text-sm text-muted">No habits.</div>}
+                : <div className="today-glass-inner rounded-2xl px-4 py-6 text-sm text-muted">
+                    <p>No required habits today.</p>
+                    <Link className="focus-ring mt-2 inline-block font-bold text-accent-ink hover:underline" href="/habits">Open Habits</Link>
+                </div>}
 
             {flexible.length > 0 && (
                 <details className="group mt-3">
-                    <summary className="focus-ring flex min-h-12 cursor-pointer list-none items-center justify-between gap-4 rounded-2xl border border-border-subtle bg-surface px-4">
+                    <summary className="today-glass-inner focus-ring flex min-h-12 cursor-pointer list-none items-center justify-between gap-4 rounded-2xl px-4">
                         <span className="text-sm font-bold text-secondary">Flexible</span>
                         <span className="icon-text flex items-center gap-2 text-xs text-muted">
                             {flexible.length}

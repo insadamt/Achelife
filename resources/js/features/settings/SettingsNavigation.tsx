@@ -14,7 +14,7 @@ interface SettingsNavigationItem {
 }
 
 const navigationItems: SettingsNavigationItem[] = [
-    { id: 'appearance', label: 'Appearance', description: 'Theme for this device', icon: Palette },
+    { id: 'appearance', label: 'Appearance', description: 'Theme, style, and background', icon: Palette },
     { id: 'profile', label: 'Profile', description: 'Your display name', icon: UserRound },
     { id: 'calendar', label: 'Calendar', description: 'Time zone and daily timing', icon: CalendarDays },
     { id: 'season', label: 'Season', description: 'What happens after Day 30', icon: RefreshCw },

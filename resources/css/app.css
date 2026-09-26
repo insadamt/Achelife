@@ -1,4 +1,6 @@
 @import 'tailwindcss';
+@import './appearance.css';
+@import './today.css';
 
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';
@@ -123,12 +125,6 @@
     background:
         radial-gradient(circle at 82% 18%, color-mix(in srgb, var(--money-accent) 24%, transparent), transparent 34%),
         linear-gradient(135deg, color-mix(in srgb, var(--money-accent) 9%, var(--surface-primary)), var(--surface-primary) 62%);
-}
-
-.today-progress-hero {
-    background:
-        radial-gradient(circle at 18% 0%, color-mix(in srgb, var(--accent) 24%, transparent), transparent 42%),
-        linear-gradient(125deg, color-mix(in srgb, var(--accent) 10%, var(--surface-primary)), var(--surface-primary) 64%);
 }
 
 .habit-card {

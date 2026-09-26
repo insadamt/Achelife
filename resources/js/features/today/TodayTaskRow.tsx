@@ -29,7 +29,7 @@ export function TodayTaskRow({ task, onOpen }: { task: TaskViewData; onOpen: () 
                 className={classNames(
                     'focus-ring grid size-9 shrink-0 place-items-center rounded-full border-2 transition-[background-color,border-color,box-shadow,transform] hover:scale-105',
                     completed
-                        ? 'border-[var(--task-accent)] bg-[var(--task-accent)] text-accent-foreground shadow-[0_0_20px_color-mix(in_srgb,var(--task-accent)_20%,transparent)]'
+                        ? 'today-check-pop border-[var(--task-accent)] bg-[var(--task-accent)] text-accent-foreground shadow-[0_0_20px_color-mix(in_srgb,var(--task-accent)_20%,transparent)]'
                         : 'border-border-strong bg-elevated hover:border-[var(--task-accent)]',
                     !canToggle && 'cursor-not-allowed opacity-45',
                 )}

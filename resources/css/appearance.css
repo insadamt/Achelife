@@ -1,0 +1,64 @@
+.app-wallpaper {
+    background-image:
+        linear-gradient(180deg, rgb(6 16 24 / 15%), rgb(7 16 23 / 35%)),
+        var(--app-wallpaper);
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-attachment: fixed;
+}
+
+:root[data-theme='light'] .app-wallpaper {
+    background-image:
+        linear-gradient(180deg, rgb(245 249 249 / 8%), rgb(234 242 244 / 24%)),
+        var(--app-wallpaper);
+}
+
+.app-glass {
+    --app-background: rgb(10 19 25 / 22%);
+    --surface-primary: rgb(13 27 35 / 43%);
+    --surface-elevated: rgb(20 34 43 / 53%);
+    --surface-hover: rgb(255 255 255 / 13%);
+    --border-subtle: rgb(255 255 255 / 23%);
+    --border-strong: rgb(255 255 255 / 42%);
+    --text-secondary: #e2e8ec;
+    --text-muted: #cbd5dc;
+    --shadow-panel: 0 28px 64px rgb(0 0 0 / 27%), inset 0 1px rgb(255 255 255 / 25%);
+    --shadow-raised: 0 20px 48px rgb(0 0 0 / 24%), inset 0 1px rgb(255 255 255 / 20%);
+    --shadow-navigation: 0 25px 60px rgb(0 0 0 / 32%), inset 0 1px rgb(255 255 255 / 24%);
+    background-image:
+        linear-gradient(180deg, rgb(6 16 24 / 15%), rgb(7 16 23 / 35%)),
+        var(--app-wallpaper, url('../images/today/city-garden.png'));
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-attachment: fixed;
+}
+
+:root[data-theme='light'] .app-glass {
+    --app-background: rgb(246 248 248 / 19%);
+    --surface-primary: rgb(255 255 255 / 52%);
+    --surface-elevated: rgb(255 255 255 / 66%);
+    --surface-hover: rgb(255 255 255 / 56%);
+    --border-subtle: rgb(255 255 255 / 66%);
+    --border-strong: rgb(255 255 255 / 84%);
+    --text-secondary: #43505b;
+    --text-muted: #56636e;
+    --shadow-panel: 0 24px 56px rgb(35 58 72 / 17%), inset 0 1px rgb(255 255 255 / 70%);
+    --shadow-raised: 0 18px 42px rgb(35 58 72 / 14%), inset 0 1px rgb(255 255 255 / 65%);
+    --shadow-navigation: 0 22px 50px rgb(35 58 72 / 20%), inset 0 1px rgb(255 255 255 / 72%);
+    background-image:
+        linear-gradient(180deg, rgb(245 249 249 / 8%), rgb(234 242 244 / 24%)),
+        var(--app-wallpaper, url('../images/today/city-garden.png'));
+}
+
+.app-glass :where(.bg-surface, .bg-elevated) {
+    -webkit-backdrop-filter: blur(26px) saturate(140%);
+    backdrop-filter: blur(26px) saturate(140%);
+}
+
+.appearance-background-preview {
+    background-image: url('../images/today/city-garden.png');
+    background-position: center;
+    background-size: cover;
+}

@@ -1,7 +1,7 @@
 import { Link, usePage } from '@inertiajs/react';
 import { Timer } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import type { PropsWithChildren } from 'react';
+import type { CSSProperties, PropsWithChildren } from 'react';
 
 import { BrandMark } from '../components/BrandMark';
 import { ThemeToggle } from '../components/ThemeToggle';
@@ -104,6 +104,7 @@ function UserIdentity({ name }: { name: string }) {
 function AppShell({ children }: PropsWithChildren) {
     const page = usePage<SharedPageProps>();
     const { auth } = page.props;
+    const { appearance } = page.props;
     const [mobileNavigationOpen, setMobileNavigationOpen] = useState(false);
     const [mobileFocusVisible, setMobileFocusVisible] = useState(false);
     const mobileFocusTriggerRef = useRef<HTMLButtonElement>(null);
@@ -111,6 +112,9 @@ function AppShell({ children }: PropsWithChildren) {
     const focus = useFocusTimer();
     const spGain = useSpGain();
     const dismissMobileFocus = useCallback(() => setMobileFocusVisible(false), []);
+    const wallpaperStyle = appearance.backgroundUrl === null
+        ? undefined
+        : { '--app-wallpaper': `url("${appearance.backgroundUrl}")` } as CSSProperties;
 
     useEffect(() => {
         if ((!focus.event && !spGain.event) || !focus.session || !window.matchMedia('(max-width: 767px)').matches) return;
@@ -121,7 +125,10 @@ function AppShell({ children }: PropsWithChildren) {
     }, [focus.event, focus.session, spGain.event]);
 
     return (
-        <div className="min-h-screen bg-app text-foreground">
+        <div
+            className={classNames('min-h-screen bg-app text-foreground', appearance.surfaceStyle === 'glass' && 'app-glass', appearance.backgroundUrl !== null && 'app-wallpaper')}
+            style={wallpaperStyle}
+        >
             <aside className="fixed top-4 bottom-4 left-4 z-30 hidden w-20 rounded-[2rem] border border-border-subtle bg-surface/96 shadow-[var(--shadow-navigation)] md:flex md:flex-col">
                 <div className="flex justify-center py-4">
                     <BrandMark compact />

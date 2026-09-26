@@ -4,6 +4,8 @@ import type { LucideIcon } from 'lucide-react';
 import { classNames } from '../../components/ui/classNames';
 import { useTheme } from '../../theme/ThemeProvider';
 import type { ThemePreference } from '../../theme/theme';
+import { BackgroundSettings } from './BackgroundSettings';
+import { SurfaceStyleSettings } from './SurfaceStyleSettings';
 
 interface ThemeOption {
     value: ThemePreference;
@@ -30,7 +32,7 @@ export function AppearanceSettingsPanel() {
                 <div className="min-w-0 flex-1">
                     <p className="text-xs font-bold tracking-[0.14em] text-accent-ink uppercase">This device</p>
                     <h2 className="mt-1 text-2xl font-bold tracking-[-0.03em]">Appearance</h2>
-                    <p className="mt-1 text-sm leading-6 text-muted">Choose a theme for this device. System mode follows its display setting automatically.</p>
+                    <p className="mt-1 text-sm leading-6 text-muted">Choose a color theme for this device, then set the surface style and background for your account.</p>
                 </div>
             </div>
 
@@ -66,6 +68,9 @@ export function AppearanceSettingsPanel() {
             <p aria-live="polite" className="mt-4 text-xs font-semibold tracking-[0.08em] text-muted uppercase">
                 Applied immediately: using {resolvedTheme} mode on this device
             </p>
+
+            <SurfaceStyleSettings />
+            <BackgroundSettings />
         </section>
     );
 }

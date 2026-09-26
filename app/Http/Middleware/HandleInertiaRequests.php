@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use App\Services\Calendar\UserCalendar;
+use App\Models\AppearanceSetting;
 use App\Support\Progress\ProgressPanelViewDataFactory;
 use App\Support\Tasks\TaskFocusSessionViewDataFactory;
 use Illuminate\Http\Request;
@@ -25,6 +26,7 @@ class HandleInertiaRequests extends Middleware
     {
         $user = $request->user();
         $openFocusSessions = null;
+        $appearance = $user === null ? null : AppearanceSetting::query()->find($user->id);
         $loadOpenFocusSessions = function () use ($user, &$openFocusSessions): array {
             return $openFocusSessions ??= ($user === null ? [] : $this->focusSessionViewDataFactory->openForUser($user));
         };
@@ -41,6 +43,12 @@ class HandleInertiaRequests extends Middleware
             ],
             'flash' => [
                 'constitutionViolation' => $request->session()->get('constitutionViolation'),
+            ],
+            'appearance' => [
+                'surfaceStyle' => $appearance?->surface_style ?? 'glass',
+                'backgroundUrl' => $appearance?->background_hash === null
+                    ? null
+                    : route('appearance.background', ['hash' => $appearance->background_hash]),
             ],
             'progressPanel' => fn () => $user === null || $user->onboarding_completed_at === null
                 ? null

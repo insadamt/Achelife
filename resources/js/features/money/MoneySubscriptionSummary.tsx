@@ -2,6 +2,7 @@ import { Link } from '@inertiajs/react';
 import { ArrowRight, CalendarClock } from 'lucide-react';
 
 import { Surface } from '../../components/ui';
+import { classNames } from '../../components/ui/classNames';
 import { formatMinorUnits, formatMoneyDate } from './moneyPresentation';
 import type { MoneySubscriptionOccurrenceData } from './types';
 
@@ -9,10 +10,12 @@ export function MoneySubscriptionSummary({
     due,
     upcoming = [],
     title = 'Subscriptions',
+    surfaceClassName,
 }: {
     due: MoneySubscriptionOccurrenceData[];
     upcoming?: MoneySubscriptionOccurrenceData[];
     title?: string;
+    surfaceClassName?: string;
 }) {
     if (due.length === 0 && upcoming.length === 0) return null;
 
@@ -26,7 +29,7 @@ export function MoneySubscriptionSummary({
                     Manage <ArrowRight aria-hidden="true" size={14} />
                 </Link>
             </div>
-            <Surface className="divide-y divide-border-subtle px-4" elevated>
+            <Surface className={classNames('divide-y divide-border-subtle px-4', surfaceClassName)} elevated>
                 {due.slice(0, 4).map((occurrence) => <SummaryRow key={occurrence.id} occurrence={occurrence} />)}
                 {upcoming.slice(0, Math.max(0, 4 - due.length)).map((occurrence) => <SummaryRow key={occurrence.id} occurrence={occurrence} upcoming />)}
             </Surface>
