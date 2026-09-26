@@ -268,7 +268,7 @@ export function DynamicIsland({ mobileVisible, mobileTriggerRef, onMobileDismiss
         )} ref={islandRef}>
             <div
                 className={classNames(
-                    'mx-auto border border-border-strong bg-elevated/96 shadow-2xl backdrop-blur-md',
+                    'mx-auto border border-border-strong bg-overlay shadow-[var(--shadow-raised)]',
                     'relative rounded-[1.5rem] p-2',
                     showSavedEvent
                         ? 'w-[min(24rem,calc(100vw-2rem))] border-success/35'

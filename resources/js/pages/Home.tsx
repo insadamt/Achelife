@@ -2,6 +2,7 @@ import { Head } from '@inertiajs/react';
 import { useState } from 'react';
 import type { CSSProperties } from 'react';
 
+import { PageRail } from '../components/ui';
 import { TodayHabitSection } from '../features/today/TodayHabitSection';
 import { TodayOverview } from '../features/today/TodayOverview';
 import { TodaySettingsDialog } from '../features/today/TodaySettingsDialog';
@@ -37,7 +38,7 @@ export default function Home(props: TodayPageProps) {
     }
 
     return (
-        <div className="today-page min-h-[calc(100vh-5rem)]" style={todayStyle}>
+        <PageRail className="today-page" style={todayStyle}>
             <Head title="Today" />
 
             <TodayOverview
@@ -59,24 +60,24 @@ export default function Home(props: TodayPageProps) {
                 />
             </div>
 
-            <main aria-labelledby="today-tasks-tab" className="today-glass rounded-[1.75rem] p-4 pb-8 sm:p-5 md:hidden" hidden={activeTab !== 'tasks'} id="today-tasks-panel" role="tabpanel" tabIndex={0}>
+            <section aria-labelledby="today-tasks-tab" className="today-glass rounded-[1.75rem] p-4 pb-8 sm:p-5 md:hidden" hidden={activeTab !== 'tasks'} id="today-tasks-panel" role="tabpanel" tabIndex={0}>
                 <TodayTaskList headingId="today-mobile-task-list-title" onOpen={setSelectedTaskId} overdue={props.tasks.overdue} overdueCount={props.tasks.overdueCount} tasks={props.tasks.today} />
-            </main>
-            <main aria-labelledby="today-habits-tab" className="today-glass rounded-[1.75rem] p-4 pb-8 sm:p-5 md:hidden" hidden={activeTab !== 'habits'} id="today-habits-panel" role="tabpanel" tabIndex={0}>
+            </section>
+            <section aria-labelledby="today-habits-tab" className="today-glass rounded-[1.75rem] p-4 pb-8 sm:p-5 md:hidden" hidden={activeTab !== 'habits'} id="today-habits-panel" role="tabpanel" tabIndex={0}>
                 <TodayHabitSection flexible={props.habits.flexible} headingId="today-mobile-habit-list-title" required={props.habits.required} />
-            </main>
+            </section>
 
-            <main className="today-glass hidden min-h-[18rem] items-start gap-6 rounded-[2rem] p-5 pb-8 md:grid md:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)] lg:p-6">
-                <div className="min-w-0 md:border-r md:border-white/20 md:pr-6">
+            <section aria-label="Today tasks and habits" className="today-glass hidden min-h-[18rem] items-start gap-6 rounded-[2rem] p-5 pb-8 md:grid md:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)] lg:p-6">
+                <div className="min-w-0 md:border-r md:border-border-subtle md:pr-6">
                     <TodayTaskList headingId="today-desktop-task-list-title" onOpen={setSelectedTaskId} overdue={props.tasks.overdue} overdueCount={props.tasks.overdueCount} tasks={props.tasks.today} />
                 </div>
                 <div className="min-w-0">
                     <TodayHabitSection flexible={props.habits.flexible} headingId="today-desktop-habit-list-title" required={props.habits.required} />
                 </div>
-            </main>
+            </section>
 
             {settingsOpen && <TodaySettingsDialog onClose={() => setSettingsOpen(false)} settings={props.settings} />}
             {selectedTask && <TaskDetailsDrawer explorer={props.explorer} key={selectedTask.id} onClose={() => setSelectedTaskId(null)} task={selectedTask} today={props.today} />}
-        </div>
+        </PageRail>
     );
 }

@@ -21,6 +21,13 @@ interface NavigationDestination {
     href?: string;
 }
 
+function isActiveDestination(destination: NavigationDestination, url: string) {
+    if (!destination.href) return false;
+    const pathname = url.split('?')[0];
+    if (destination.href === '/settings/general') return pathname.startsWith('/settings/');
+    return pathname === destination.href || pathname.startsWith(`${destination.href}/`);
+}
+
 const destinations: NavigationDestination[] = [
     { label: 'Today', icon: 'today', href: '/home' },
     { label: 'Seasons', icon: 'seasons', href: '/seasons' },
@@ -38,20 +45,22 @@ function NavigationItem({
     destination,
     mobile = false,
     rail = false,
+    onNavigate,
 }: {
     destination: NavigationDestination;
     mobile?: boolean;
     rail?: boolean;
+    onNavigate?: () => void;
 }) {
     const { url } = usePage();
-    const active = destination.href === '/home' ? url === '/home' : destination.href !== undefined && url.startsWith(destination.href);
+    const active = isActiveDestination(destination, url);
     const itemClassName = rail
         ? `focus-ring group relative flex size-12 items-center justify-center rounded-2xl transition-[background-color,color,transform] duration-200 hover:-translate-y-0.5 ${
               active ? 'bg-[var(--module-accent)] text-accent-foreground' : 'text-muted hover:bg-surface-hover hover:text-foreground'
           }`
         : mobile
           ? `focus-ring icon-text relative flex min-h-14 flex-1 flex-col items-center justify-center gap-1 rounded-xl px-1 text-[0.625rem] font-bold tracking-[0.06em] uppercase transition-colors duration-200 ${
-                active ? 'text-accent-ink' : 'text-muted'
+                active ? 'bg-[color-mix(in_srgb,var(--module-accent)_16%,transparent)] text-foreground' : 'text-secondary hover:bg-surface-hover'
             }`
           : `focus-ring icon-text group flex min-h-11 w-full items-center gap-3 rounded-xl px-3 text-sm font-semibold transition-[background-color,color] duration-200 ${
                 active ? 'bg-[color-mix(in_srgb,var(--module-accent)_10%,transparent)] text-foreground' : 'text-secondary'
@@ -64,18 +73,18 @@ function NavigationItem({
             {!rail && <span>{destination.label}</span>}
             {!destination.href && !mobile && !rail && <span className="ml-auto text-[0.5625rem] tracking-[0.12em] text-muted uppercase">Soon</span>}
             {rail && (
-                <span className="pointer-events-none absolute left-[calc(100%+0.75rem)] z-40 flex min-w-max items-center gap-2 rounded-xl border border-border-subtle bg-elevated px-3 py-2 text-xs font-semibold text-foreground opacity-0 shadow-xl transition-opacity duration-160 group-hover:opacity-100 group-focus-visible:opacity-100">
+                <span className="pointer-events-none absolute left-[calc(100%+0.75rem)] z-40 flex min-w-max items-center gap-2 rounded-xl border border-border-subtle bg-overlay px-3 py-2 text-xs font-semibold text-foreground opacity-0 shadow-[var(--shadow-raised)] transition-opacity duration-160 group-hover:opacity-100 group-focus-visible:opacity-100">
                     {destination.label}
                     {!destination.href && <span className="text-[0.5625rem] tracking-widest text-muted uppercase">Soon</span>}
                 </span>
             )}
-            {active && mobile && <span className="absolute bottom-0 h-0.5 w-5 rounded-full bg-[var(--module-accent)]" />}
+            {active && mobile && <span aria-hidden="true" className="absolute bottom-0 h-0.5 w-6 rounded-full bg-[var(--module-accent)]" />}
         </>
     );
 
     if (destination.href) {
         return (
-            <Link aria-current={active ? 'page' : undefined} className={itemClassName} href={destination.href}>
+            <Link aria-current={active ? 'page' : undefined} className={itemClassName} href={destination.href} onClick={onNavigate}>
                 {content}
             </Link>
         );
@@ -115,6 +124,9 @@ function AppShell({ children }: PropsWithChildren) {
     const wallpaperStyle = appearance.backgroundUrl === null
         ? undefined
         : { '--app-wallpaper': `url("${appearance.backgroundUrl}")` } as CSSProperties;
+    const secondaryDestinationActive = [...destinations, settingsDestination].some((destination) =>
+        !mobilePrimaryLabels.has(destination.label) && isActiveDestination(destination, page.url),
+    );
 
     useEffect(() => {
         if ((!focus.event && !spGain.event) || !focus.session || !window.matchMedia('(max-width: 767px)').matches) return;
@@ -129,7 +141,7 @@ function AppShell({ children }: PropsWithChildren) {
             className={classNames('min-h-screen bg-app text-foreground', appearance.surfaceStyle === 'glass' && 'app-glass', appearance.backgroundUrl !== null && 'app-wallpaper')}
             style={wallpaperStyle}
         >
-            <aside className="fixed top-4 bottom-4 left-4 z-30 hidden w-20 rounded-[2rem] border border-border-subtle bg-surface/96 shadow-[var(--shadow-navigation)] md:flex md:flex-col">
+            <aside className="fixed top-4 bottom-4 left-4 z-30 hidden w-20 rounded-[2rem] border border-border-subtle bg-overlay shadow-[var(--shadow-navigation)] md:flex md:flex-col">
                 <div className="flex justify-center py-4">
                     <BrandMark compact />
                 </div>
@@ -150,7 +162,7 @@ function AppShell({ children }: PropsWithChildren) {
                 )}
             </aside>
 
-            <header className="sticky top-0 z-20 flex h-16 items-center justify-between border-b border-border-subtle bg-app/92 px-4 backdrop-blur-md md:hidden">
+            <header className="sticky top-0 z-20 flex min-h-16 items-center justify-between border-b border-border-subtle bg-overlay px-4 py-2 shadow-[var(--shadow-panel)] md:hidden">
                 <BrandMark />
                 {user && (
                     <div className="flex items-center gap-2">
@@ -173,25 +185,27 @@ function AppShell({ children }: PropsWithChildren) {
                 )}
             </header>
 
-            <main className="min-h-screen px-4 pt-7 pb-28 sm:px-6 md:ml-28 md:px-8 md:pt-10 md:pb-12 lg:px-12">
+            <main className="min-h-screen px-4 pt-6 pb-[calc(8rem+env(safe-area-inset-bottom))] sm:px-6 md:ml-28 md:px-8 md:pt-10 md:pb-12 lg:px-12">
                 <div className="mx-auto max-w-[92rem]">{children}</div>
             </main>
 
             <nav
                 aria-label="Mobile primary navigation"
-                className="fixed right-3 bottom-3 left-3 z-30 flex items-center rounded-2xl border border-border-strong bg-elevated/96 p-1.5 shadow-[var(--shadow-navigation)] backdrop-blur-md md:hidden"
+                className="fixed right-3 bottom-[calc(0.75rem+env(safe-area-inset-bottom))] left-3 z-30 flex items-center rounded-2xl border border-border-strong bg-overlay p-1.5 shadow-[var(--shadow-navigation)] md:hidden"
             >
                 {destinations.filter((destination) => mobilePrimaryLabels.has(destination.label)).map((destination) => (
                     <NavigationItem destination={destination} key={destination.label} mobile />
                 ))}
                 <button
                     aria-expanded={mobileNavigationOpen}
-                    className="focus-ring icon-text flex min-h-14 flex-1 flex-col items-center justify-center gap-1 rounded-xl px-1 text-[0.625rem] font-bold tracking-[0.06em] text-muted uppercase transition-colors duration-200 hover:text-foreground"
+                    aria-label={secondaryDestinationActive ? 'More navigation, current section' : 'More navigation'}
+                    className={classNames('focus-ring icon-text relative flex min-h-14 flex-1 flex-col items-center justify-center gap-1 rounded-xl px-1 text-[0.625rem] font-bold tracking-[0.06em] uppercase transition-colors duration-200', secondaryDestinationActive ? 'bg-[color-mix(in_srgb,var(--module-accent)_16%,transparent)] text-foreground' : 'text-secondary hover:bg-surface-hover')}
                     onClick={() => setMobileNavigationOpen(true)}
                     type="button"
                 >
                     <Icon name="menu" />
                     More
+                    {secondaryDestinationActive && <span aria-hidden="true" className="absolute bottom-0 h-0.5 w-6 rounded-full bg-[var(--module-accent)]" />}
                 </button>
             </nav>
 
@@ -203,14 +217,14 @@ function AppShell({ children }: PropsWithChildren) {
             >
                 <nav aria-label="All destinations" className="space-y-1">
                     {destinations.map((destination) => (
-                        <NavigationItem destination={destination} key={destination.label} />
+                        <NavigationItem destination={destination} key={destination.label} onNavigate={() => setMobileNavigationOpen(false)} />
                     ))}
                 </nav>
                 {user && (
                     <div className="mt-8 border-t border-border-subtle pt-6">
                         <UserIdentity name={user.name} />
                         <div className="mt-5">
-                            <NavigationItem destination={settingsDestination} />
+                            <NavigationItem destination={settingsDestination} onNavigate={() => setMobileNavigationOpen(false)} />
                         </div>
                     </div>
                 )}
@@ -223,7 +237,7 @@ function AppShell({ children }: PropsWithChildren) {
                 onMobileDismiss={dismissMobileFocus}
                 spGain={spGain.event}
             />
-            {focus.error && <div className="fixed top-[8.5rem] left-1/2 z-[60] w-[min(30rem,calc(100vw-2rem))] -translate-x-1/2 rounded-xl border border-danger/30 bg-elevated p-3 text-sm font-semibold text-danger shadow-xl md:top-20" role="alert">
+            {focus.error && <div className="fixed top-[8.5rem] left-1/2 z-[60] w-[min(30rem,calc(100vw-2rem))] -translate-x-1/2 rounded-xl border border-danger/30 bg-overlay p-3 text-sm font-semibold text-danger shadow-[var(--shadow-raised)] md:top-20" role="alert">
                 {focus.error}
             </div>}
         </div>

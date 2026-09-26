@@ -22,26 +22,26 @@ export function TodayTaskRow({ task, onOpen }: { task: TaskViewData; onOpen: () 
     }
 
     return (
-        <div className={classNames('border-b border-border-subtle last:border-b-0', completed && 'opacity-55')}>
+        <div className="border-b border-border-subtle last:border-b-0">
             <div className="flex min-h-16 items-center gap-3 px-1 py-2">
                 <button
-                aria-label={completed ? `Mark ${task.title} incomplete` : `Complete ${task.title}`}
-                className={classNames(
-                    'focus-ring grid size-9 shrink-0 place-items-center rounded-full border-2 transition-[background-color,border-color,box-shadow,transform] hover:scale-105',
-                    completed
-                        ? 'today-check-pop border-[var(--task-accent)] bg-[var(--task-accent)] text-accent-foreground shadow-[0_0_20px_color-mix(in_srgb,var(--task-accent)_20%,transparent)]'
-                        : 'border-border-strong bg-elevated hover:border-[var(--task-accent)]',
-                    !canToggle && 'cursor-not-allowed opacity-45',
-                )}
-                disabled={!canToggle || processing}
-                onClick={toggleCompletion}
-                type="button"
-            >
-                {completed && <Check aria-hidden="true" size={18} strokeWidth={3} />}
+                    aria-label={completed ? `Mark ${task.title} incomplete` : `Complete ${task.title}`}
+                    className={classNames(
+                        'focus-ring grid size-11 shrink-0 place-items-center rounded-full border-2 transition-[background-color,border-color,box-shadow,transform] hover:scale-105',
+                        completed
+                            ? 'today-check-pop border-[var(--task-accent)] bg-[var(--task-accent)] text-accent-foreground shadow-[0_0_20px_color-mix(in_srgb,var(--task-accent)_20%,transparent)]'
+                            : 'border-border-strong bg-elevated hover:border-[var(--task-accent)]',
+                        !canToggle && 'cursor-not-allowed opacity-45',
+                    )}
+                    disabled={!canToggle || processing}
+                    onClick={toggleCompletion}
+                    type="button"
+                >
+                    {completed && <Check aria-hidden="true" size={18} strokeWidth={3} />}
                 </button>
-                <button className="focus-ring min-w-0 flex-1 rounded-xl py-1 text-left" onClick={onOpen} type="button">
+                <button className="focus-ring min-h-11 min-w-0 flex-1 rounded-xl py-1 text-left" onClick={onOpen} type="button">
                     <div className="flex items-center gap-2">
-                        <p className={classNames('truncate text-base font-bold', completed && 'line-through')}>{task.title}</p>
+                        <p className={classNames('min-w-0 break-words text-base font-bold', completed && 'text-secondary line-through')}>{task.title}</p>
                         {task.important && <span aria-label="Important" className="size-1.5 shrink-0 rounded-full bg-warning" title="Important" />}
                     </div>
                 </button>

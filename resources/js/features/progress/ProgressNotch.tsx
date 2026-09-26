@@ -64,7 +64,7 @@ function ProgressPanel({ data, onClose }: { data: ProgressPanelData; onClose: ()
     return (
         <>
             <button aria-label="Close progress panel" className="fixed inset-0 z-40 cursor-default bg-black/55 backdrop-blur-[1px]" onClick={onClose} type="button" />
-            <aside aria-labelledby={titleId} aria-modal="true" className="progress-notch-panel fixed top-16 right-0 bottom-20 z-50 w-[min(91vw,25rem)] overflow-y-auto rounded-l-[2rem] border border-r-0 border-border-strong bg-elevated p-5 shadow-[-26px_0_70px_rgba(0,0,0,0.42)] md:top-3 md:bottom-3 md:p-6" ref={panelRef} role="dialog">
+            <aside aria-labelledby={titleId} aria-modal="true" className="progress-notch-panel fixed top-16 right-0 bottom-[calc(6rem+env(safe-area-inset-bottom))] z-50 w-[min(91vw,25rem)] overflow-y-auto rounded-l-[2rem] border border-r-0 border-border-strong bg-overlay p-5 shadow-[var(--shadow-raised)] md:top-3 md:bottom-3 md:p-6" ref={panelRef} role="dialog">
                 <div className="flex items-center justify-between gap-4">
                     <h2 className="text-xl font-bold" id={titleId}>Progress</h2>
                     <button aria-label="Close progress panel" className="focus-ring grid size-10 place-items-center rounded-full text-secondary hover:bg-surface-hover hover:text-foreground" onClick={onClose} type="button">
@@ -96,7 +96,7 @@ function ProgressPanel({ data, onClose }: { data: ProgressPanelData; onClose: ()
 
                 <section className="mt-5">
                     <h3 className="mb-2 flex items-center gap-2 text-sm font-bold"><BookOpen aria-hidden="true" size={17} />Diary</h3>
-                    <Link className="focus-ring flex min-h-14 items-center gap-3 rounded-2xl border border-border-subtle bg-surface px-4 hover:border-accent" href={data.diary.href}>
+                    <Link className="focus-ring flex min-h-14 items-center gap-3 rounded-2xl border border-border-subtle bg-surface px-4 hover:border-accent" href={data.diary.href} onClick={onClose}>
                         <span className={classNames('grid size-8 shrink-0 place-items-center rounded-full border-2', data.diary.state === 'completed' ? 'border-accent bg-accent text-accent-foreground' : 'border-border-strong')}>
                             {data.diary.state === 'completed' && <Check aria-hidden="true" size={16} strokeWidth={3} />}
                         </span>
@@ -131,7 +131,7 @@ export function ProgressNotch({ data }: { data: ProgressPanelData }) {
 
     return (
         <>
-            <button aria-expanded={open} aria-label="Pull open progress panel" className="focus-ring group fixed top-1/2 right-0 z-30 grid h-28 w-7 -translate-y-1/2 place-items-center rounded-l-[1.15rem] border border-r-0 border-border-strong bg-surface shadow-[-10px_10px_28px_rgba(0,0,0,0.34)] transition-[width,background-color,border-color] hover:w-9 hover:border-accent hover:bg-elevated" onClick={() => setOpen(true)} type="button">
+            <button aria-expanded={open} aria-label="Pull open progress panel" className="focus-ring group fixed top-1/2 right-0 z-30 grid h-28 w-10 -translate-y-1/2 place-items-center rounded-l-[1.15rem] border border-r-0 border-border-strong bg-overlay shadow-[var(--shadow-raised)] transition-[width,background-color,border-color] hover:w-11 hover:border-accent hover:bg-surface-hover" onClick={() => setOpen(true)} type="button">
                 <span aria-hidden="true" className="absolute inset-y-5 left-0 w-px bg-accent/70" />
                 <ChevronLeft aria-hidden="true" className="text-accent-ink transition-transform group-hover:-translate-x-0.5" size={17} />
             </button>

@@ -23,14 +23,12 @@ function calendarDateLabel(date: string) {
 
 export function TodayOverview({ date, seasonNumber, seasonDay, progress, onOpenSettings }: TodayOverviewProps) {
     return (
-        <div className="mb-5 space-y-3">
-            <header className="today-glass flex items-center justify-between gap-4 rounded-[1.5rem] px-4 py-3.5 sm:px-5">
+        <div className="mb-6 space-y-4">
+            <header className="today-glass flex items-start justify-between gap-4 rounded-[1.75rem] px-4 py-5 sm:px-6 sm:py-6">
                 <div className="min-w-0">
-                    <div className="flex flex-wrap items-baseline gap-x-3 gap-y-0.5">
-                        <h1 className="text-2xl font-bold leading-none tracking-[-0.04em]">Today</h1>
-                        <p className="text-sm font-medium text-secondary">{calendarDateLabel(date)}</p>
-                    </div>
-                    <p className="mt-1.5 text-xs font-semibold text-muted">Season {String(seasonNumber).padStart(2, '0')} · Day {seasonDay} / 30</p>
+                    <h1 className="text-[2rem] leading-[1.1] font-bold tracking-[-0.04em] sm:text-[2.5rem]">Today</h1>
+                    <p className="mt-2 text-sm font-medium text-secondary">{calendarDateLabel(date)}</p>
+                    <p className="mt-1 text-xs font-semibold text-muted">Season {String(seasonNumber).padStart(2, '0')} · Day {seasonDay} / 30</p>
                 </div>
                 <button
                     aria-label="Open Today settings"
@@ -42,9 +40,9 @@ export function TodayOverview({ date, seasonNumber, seasonDay, progress, onOpenS
                 </button>
             </header>
 
-            <section aria-labelledby="today-daily-progress-title" className="today-glass flex items-center justify-between gap-3 rounded-[1.5rem] px-4 py-4 sm:gap-6 sm:px-5">
+            <section aria-labelledby="today-daily-progress-title" className="today-glass flex items-center justify-between gap-3 rounded-[1.75rem] px-4 py-5 sm:gap-6 sm:px-6">
                 <div className="min-w-0 flex-1">
-                    <h2 className="text-xs font-bold tracking-[0.13em] text-secondary uppercase" id="today-daily-progress-title">Daily progress</h2>
+                    <h2 className="text-xl font-bold leading-tight sm:text-2xl" id="today-daily-progress-title">Daily progress</h2>
                     <p aria-live="polite" className="mt-1.5 text-xl font-bold tracking-[-0.035em] sm:text-2xl">
                         <span className="today-count-change inline-block" key={progress.completed}>{progress.completed}</span> <span className="text-secondary">of {progress.total} complete</span>
                     </p>

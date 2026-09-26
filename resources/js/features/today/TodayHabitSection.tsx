@@ -52,18 +52,18 @@ function HabitCard({ habit, onNumeric, onSkip }: {
             <div className="flex min-h-16 items-center gap-2 px-3">
                 <button
                     aria-label={`${habit.type === 'numeric' ? 'Update' : completed || skipped ? 'Reset' : 'Complete'} ${habit.name}`}
-                    className="focus-ring flex min-w-0 flex-1 items-center gap-3 rounded-xl py-2 text-left"
+                    className="focus-ring flex min-h-11 min-w-0 flex-1 items-center gap-3 rounded-xl py-2 text-left"
                     onClick={performPrimaryAction}
                     type="button"
                 >
-                    <span className={classNames('grid size-9 shrink-0 place-items-center rounded-full border-2 transition-colors', completed ? 'today-check-pop border-[var(--habit-accent)] bg-[var(--habit-accent)] text-accent-foreground' : skipped ? 'border-warning text-warning' : 'border-border-strong hover:border-[var(--habit-accent)]')}>
+                    <span className={classNames('grid size-10 shrink-0 place-items-center rounded-full border-2 transition-colors', completed ? 'today-check-pop border-[var(--habit-accent)] bg-[var(--habit-accent)] text-accent-foreground' : skipped ? 'border-warning text-warning' : 'border-border-strong hover:border-[var(--habit-accent)]')}>
                         {completed ? <Check aria-hidden="true" size={18} strokeWidth={3} /> : <HabitIcon name={habit.icon} size={16} />}
                     </span>
-                    <span className={classNames('min-w-0 flex-1 truncate text-base font-bold', completed && 'line-through opacity-60')}>{habit.name}</span>
+                    <span className={classNames('min-w-0 flex-1 break-words text-base font-bold', completed && 'text-secondary line-through')}>{habit.name}</span>
                     {valueLabel && <span className={classNames('shrink-0 text-xs font-bold', skipped ? 'text-warning' : 'text-secondary')}>{valueLabel}</span>}
                 </button>
                 {day.required && !skipped && (
-                    <button aria-label={`Skip ${habit.name}`} className="focus-ring grid size-9 shrink-0 place-items-center rounded-full text-muted hover:bg-surface-hover hover:text-foreground" onClick={() => onSkip({ habit, day })} title={`Skip ${habit.name}`} type="button">
+                    <button aria-label={`Skip ${habit.name}`} className="focus-ring grid size-11 shrink-0 place-items-center rounded-full text-muted hover:bg-surface-hover hover:text-foreground" onClick={() => onSkip({ habit, day })} title={`Skip ${habit.name}`} type="button">
                         <MoreVertical aria-hidden="true" size={17} />
                     </button>
                 )}

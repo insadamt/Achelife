@@ -16,18 +16,6 @@
     --today-glass-shadow: var(--shadow-panel);
 }
 
-:is(.app-glass, .app-normal-glass) .today-page,
-.app-wallpaper .today-page {
-    padding: 0.75rem;
-}
-
-@media (min-width: 640px) {
-    :is(.app-glass, .app-normal-glass) .today-page,
-    .app-wallpaper .today-page {
-        padding: 1.5rem;
-    }
-}
-
 .today-page .today-glass {
     border: 1px solid var(--today-glass-border);
     background: var(--today-glass-fill);
