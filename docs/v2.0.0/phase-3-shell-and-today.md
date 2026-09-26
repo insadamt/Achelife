@@ -10,7 +10,7 @@ Apply the shared structure to the persistent shell and the daily landing view. K
 
 - [x] Update desktop sidebar, mobile header/bottom navigation, More drawer, and active-location cue using shared tokens and controls.
 - [x] Align shell padding and default page rail; remove duplicate page padding where it causes edge drift.
-- [x] Update Today header, progress summary, Tasks/Habits local views, cards, and empty/loading/error states with the shared hierarchy.
+- [x] Update Today header, Tasks and Habits panels, cards, and empty/loading/error states with the shared hierarchy.
 - [x] Integrate progress panel and Dynamic Island with the same raised material and safe-area/focus rules.
 - [x] Preserve Task/Habit actions, Diary access, SP feedback, Focus timer persistence, and navigation behavior.
 - [x] Record any shell or Today layout exception and its reason.
@@ -18,7 +18,8 @@ Apply the shared structure to the persistent shell and the daily landing view. K
 ## Layout decisions and exceptions
 
 - The shell and workspace pages use the same 80rem outer ceiling; shell padding owns their left and right edges in every appearance, including wallpaper.
-- Today keeps its compact two-column Tasks/Habits panel on desktop and accessible in-page tabs on mobile. The page header follows the shared type scale. The date, Season/Day label, and Daily Progress summary were removed from this page after review; the global progress panel remains available.
+- Today shows Tasks and Habits in separate panels, side by side on desktop and stacked on mobile. The page header follows the shared type scale. The date, Season/Day label, and Daily Progress summary were removed from this page after review; the global progress panel remains available.
+- Completing a Today Task draws the checkmark from left to right with GSAP, holds the full mark for 450 ms, then submits the existing completion action so the Task moves after the acknowledgment. Reduced motion submits immediately. Failed requests restore the pending row state.
 - Today's data arrives with the Inertia page; its empty state is shown inside each section. It has no separate page loading view. Focus errors remain in the global shell alert. Task and Habit mutation behavior is unchanged.
 - The mobile bottom bar and progress panel account for the device safe area. The progress panel remains modal while open, and Diary navigation closes it. The Focus island stays below the mobile header.
 

@@ -64,16 +64,6 @@
     border-color: color-mix(in srgb, var(--habit-accent) 40%, var(--today-glass-inner-border));
 }
 
-.today-page .today-glass-tab-active {
-    border: 1px solid color-mix(in srgb, var(--accent) 42%, var(--today-glass-border));
-    background: color-mix(in srgb, var(--accent) 16%, var(--today-glass-inner-fill));
-}
-
-.app-glass .today-page .today-glass-tab-active {
-    border-color: transparent;
-    box-shadow: none;
-}
-
 .app-glass .today-page :is(.today-glass, .today-glass-inner) {
     border-color: transparent;
     box-shadow: none;

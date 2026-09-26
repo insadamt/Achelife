@@ -8,9 +8,9 @@ The shared application shell allows content up to `92rem`, but pages choose widt
 
 Top-level title size also changes by module: Today uses `text-2xl`, Money's shared page header uses `text-3xl sm:text-4xl`, and many Tasks, Habits, Diary, Constitution, and Settings pages use `text-4xl sm:text-5xl`. Some pages place section navigation next to the title, while Money puts it below a bordered heading. The visual order of title, context, action, and navigation therefore changes during navigation.
 
-Controls at similar levels use different shapes and heights. Today view tabs use `min-h-12` and a large pill; Task view tabs use `min-h-11` in a rounded panel; Season view tabs use `min-h-9`; Money section links use `min-h-10` with an underline. Money Debts and Subscriptions use another underline pattern for local views. The shared Button uses `min-h-9` or `min-h-11`, and shared fields use `min-h-11`. These are source observations, not a claim that every difference is wrong; the problem is that equivalent roles have no shared rule.
+Controls at similar levels use different shapes and heights. Task view tabs use `min-h-11` in a rounded panel; Season view tabs use `min-h-9`; Money section links use `min-h-10` with an underline. Money Debts and Subscriptions use another underline pattern for local views. The shared Button uses `min-h-9` or `min-h-11`, and shared fields use `min-h-11`. These are source observations, not a claim that every difference is wrong; the problem is that equivalent roles have no shared rule.
 
-Representative source: `resources/js/layouts/AppLayout.tsx`, `resources/js/features/today/TodayHeader.tsx`, `resources/js/features/today/TodayTabSwitcher.tsx`, `resources/js/features/tasks/TaskSectionNav.tsx`, `resources/js/features/tasks/TaskViewNavigation.tsx`, `resources/js/features/seasons/SeasonSwitcher.tsx`, `resources/js/features/money/MoneyPageHeader.tsx`, and `resources/js/features/money/MoneySectionNav.tsx`.
+Representative source: `resources/js/layouts/AppLayout.tsx`, `resources/js/features/today/TodayHeader.tsx`, `resources/js/features/tasks/TaskSectionNav.tsx`, `resources/js/features/tasks/TaskViewNavigation.tsx`, `resources/js/features/seasons/SeasonSwitcher.tsx`, `resources/js/features/money/MoneyPageHeader.tsx`, and `resources/js/features/money/MoneySectionNav.tsx`.
 
 | Existing area | Redesign alignment target |
 | --- | --- |
@@ -19,7 +19,7 @@ Representative source: `resources/js/layouts/AppLayout.tsx`, `resources/js/featu
 | Tasks workspace and Calendar `max-w-7xl` | Use the same `80rem` rail as the other pages |
 | Today, Money, and other top-level titles using different scales | Shared responsive page-title scale; retain a larger hero only for a deliberate milestone |
 | Task and Money module navigation using different patterns | One shared module-navigation role and placement below the page header |
-| Today, Task, Season, Debt, and Subscription local views | One shared local-view pattern with consistent height and selected state; preserve each view's route or in-page behavior |
+| Task, Season, Debt, and Subscription local views | One shared local-view pattern with consistent height and selected state; preserve each view's route or in-page behavior |
 
 ## One page frame
 
