@@ -1,37 +1,28 @@
 .today-page {
     --today-glass-fill: var(--surface-primary);
-    --today-glass-inner-fill: var(--surface-primary);
+    --today-glass-inner-fill: var(--surface-inset);
     --today-glass-border: var(--border-subtle);
     --today-glass-inner-border: var(--border-subtle);
     --today-glass-highlight: transparent;
     --today-glass-shadow: var(--shadow-panel);
 }
 
-.app-glass .today-page {
-    --today-glass-fill: rgb(13 26 35 / 42%);
-    --today-glass-inner-fill: rgb(9 20 28 / 48%);
-    --today-glass-border: rgb(255 255 255 / 42%);
-    --today-glass-inner-border: rgb(255 255 255 / 26%);
-    --today-glass-highlight: rgb(255 255 255 / 27%);
-    --today-glass-shadow: 0 30px 70px rgb(0 0 0 / 28%), 0 8px 20px rgb(0 0 0 / 16%);
+:is(.app-glass, .app-normal-glass) .today-page {
+    --today-glass-fill: var(--surface-primary);
+    --today-glass-inner-fill: var(--surface-inset);
+    --today-glass-border: var(--border-subtle);
+    --today-glass-inner-border: var(--border-strong);
+    --today-glass-highlight: var(--glass-edge-bright);
+    --today-glass-shadow: var(--shadow-panel);
 }
 
-:root[data-theme='light'] .app-glass .today-page {
-    --today-glass-fill: rgb(255 255 255 / 51%);
-    --today-glass-inner-fill: rgb(255 255 255 / 59%);
-    --today-glass-border: rgb(255 255 255 / 82%);
-    --today-glass-inner-border: rgb(255 255 255 / 72%);
-    --today-glass-highlight: rgb(255 255 255 / 46%);
-    --today-glass-shadow: 0 28px 64px rgb(35 58 72 / 20%), 0 7px 18px rgb(35 58 72 / 9%);
-}
-
-.app-glass .today-page,
+:is(.app-glass, .app-normal-glass) .today-page,
 .app-wallpaper .today-page {
     padding: 0.75rem;
 }
 
 @media (min-width: 640px) {
-    .app-glass .today-page,
+    :is(.app-glass, .app-normal-glass) .today-page,
     .app-wallpaper .today-page {
         padding: 1.5rem;
     }
@@ -43,11 +34,14 @@
     box-shadow: var(--today-glass-shadow);
 }
 
-.app-glass .today-page .today-glass {
+:is(.app-glass, .app-normal-glass) .today-page .today-glass {
     background:
         linear-gradient(145deg, var(--today-glass-highlight), transparent 52%),
         var(--today-glass-fill);
-    box-shadow: var(--today-glass-shadow), inset 0 1px rgb(255 255 255 / 40%), inset 0 -1px rgb(255 255 255 / 9%);
+    box-shadow: var(--today-glass-shadow);
+}
+
+.app-glass .today-page .today-glass {
     -webkit-backdrop-filter: blur(30px) saturate(145%);
     backdrop-filter: blur(30px) saturate(145%);
 }
@@ -57,8 +51,11 @@
     background: var(--today-glass-inner-fill);
 }
 
+:is(.app-glass, .app-normal-glass) .today-page .today-glass-inner {
+    box-shadow: inset 0 1px var(--glass-edge-bright), inset 0 -1px var(--glass-edge-dark), 0 10px 26px rgb(0 0 0 / 12%);
+}
+
 .app-glass .today-page .today-glass-inner {
-    box-shadow: inset 0 1px rgb(255 255 255 / 19%), 0 10px 26px rgb(0 0 0 / 12%);
     -webkit-backdrop-filter: blur(20px) saturate(125%);
     backdrop-filter: blur(20px) saturate(125%);
 }
@@ -79,6 +76,13 @@
 
 .app-glass .today-page .today-glass-tab-active {
     box-shadow: inset 0 1px rgb(255 255 255 / 13%), 0 7px 20px rgb(0 0 0 / 12%);
+}
+
+@media (prefers-reduced-transparency: reduce) {
+    .app-glass .today-page :is(.today-glass, .today-glass-inner) {
+        -webkit-backdrop-filter: none;
+        backdrop-filter: none;
+    }
 }
 
 .today-count-change {

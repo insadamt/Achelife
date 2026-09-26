@@ -27,7 +27,7 @@ interface CheckboxProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'typ
 }
 
 const controlClasses =
-    'focus-ring mt-2 min-h-11 w-full rounded-2xl border border-border-strong bg-app px-4 py-2.5 text-base text-foreground transition-[background-color,border-color,box-shadow] duration-200 placeholder:text-muted hover:border-[color-mix(in_srgb,var(--module-accent)_32%,var(--border-strong))] focus:border-[var(--module-accent)] disabled:cursor-not-allowed disabled:bg-elevated disabled:text-muted';
+    'focus-ring mt-2 min-h-11 w-full rounded-2xl border border-border-strong bg-inset px-4 py-2.5 text-base text-foreground transition-[background-color,border-color,box-shadow] duration-200 placeholder:text-muted hover:border-[color-mix(in_srgb,var(--module-accent)_32%,var(--border-strong))] focus:border-[var(--module-accent)] disabled:cursor-not-allowed disabled:bg-elevated disabled:text-muted';
 
 function FieldLabel({ children, htmlFor }: { children: string; htmlFor: string }) {
     return (
@@ -107,7 +107,7 @@ export function Checkbox({ label, description, error, className, id, ...props }:
                     aria-describedby={error ? errorId : undefined}
                     aria-invalid={Boolean(error)}
                     className={classNames(
-                        'focus-ring mt-0.5 size-5 shrink-0 cursor-pointer appearance-none rounded-md border border-border-strong bg-app transition-[background-color,border-color,box-shadow] duration-200 checked:border-[var(--module-accent)] checked:bg-[var(--module-accent)] checked:bg-[url("data:image/svg+xml,%3Csvg_viewBox=%270_0_16_16%27_xmlns=%27http://www.w3.org/2000/svg%27%3E%3Cpath_d=%27m3_8_3_3_7-7%27_fill=%27none%27_stroke=%27%23101506%27_stroke-linecap=%27round%27_stroke-linejoin=%27round%27_stroke-width=%272%27/%3E%3C/svg%3E")] disabled:cursor-not-allowed disabled:opacity-45',
+                        'focus-ring mt-0.5 size-5 shrink-0 cursor-pointer appearance-none rounded-md border border-border-strong bg-inset transition-[background-color,border-color,box-shadow] duration-200 checked:border-[var(--module-accent)] checked:bg-[var(--module-accent)] checked:bg-[url("data:image/svg+xml,%3Csvg_viewBox=%270_0_16_16%27_xmlns=%27http://www.w3.org/2000/svg%27%3E%3Cpath_d=%27m3_8_3_3_7-7%27_fill=%27none%27_stroke=%27%23101506%27_stroke-linecap=%27round%27_stroke-linejoin=%27round%27_stroke-width=%272%27/%3E%3C/svg%3E")] disabled:cursor-not-allowed disabled:opacity-45',
                         error && 'border-danger',
                         className,
                     )}

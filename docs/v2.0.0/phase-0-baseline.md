@@ -1,6 +1,6 @@
 # Phase 0 — Baseline and screen inventory
 
-**Status:** Not started. [Roadmap](../v2.0.0_design_plan.md) · [UI guide](../ui-design-and-motion.md) · [Layout guide](../ui-layout-and-hierarchy.md)
+**Status:** Accepted with an open manual-route-review exception. [Roadmap](../v2.0.0_design_plan.md) · [UI guide](../ui-design-and-motion.md) · [Layout guide](../ui-layout-and-hierarchy.md) · [Baseline inventory](phase-0-inventory.md)
 
 ## Plan
 
@@ -8,12 +8,12 @@ Establish an accurate starting point and decide how the new appearance data can 
 
 ## Implementation tasks
 
-- [ ] List every route and classify shell, page header, module navigation, local views, filters, primary content, overlays, and feedback states. Include setup, onboarding, restore, Season introduction/closeout, and intermission.
-- [ ] Inventory shared UI primitives, CSS/theme tokens, fonts, wallpaper handling, current `normal`/`glass` storage, and export/import paths. Link the relevant files in the handoff record.
-- [ ] Record existing widths, heading scales, navigation variants, and control heights against the [layout audit](../ui-layout-and-hierarchy.md#current-app-audit). Identify already redesigned pieces that should be kept.
-- [ ] Write a phase baseline of current workflow behavior and known defects so a later visual change is not mistaken for an old problem.
-- [ ] Document the proposed palette storage schema, defaults for old accounts, exact-color preservation, derived variants, new Normal glass value, and versioned archive strategy. Resolve open design choices before Phase 7 implements them.
-- [ ] Record which screens will need a justified 92rem rail or hero exception.
+- [x] List every route and classify shell, page header, module navigation, local views, filters, primary content, overlays, and feedback states. Include setup, onboarding, restore, Season introduction/closeout, and intermission.
+- [x] Inventory shared UI primitives, CSS/theme tokens, fonts, wallpaper handling, current `normal`/`glass` storage, and export/import paths. Link the relevant files in the handoff record.
+- [x] Record existing widths, heading scales, navigation variants, and control heights against the [layout audit](../ui-layout-and-hierarchy.md#current-app-audit). Identify already redesigned pieces that should be kept.
+- [x] Write a phase baseline of current workflow behavior and known defects so a later visual change is not mistaken for an old problem.
+- [x] Document the proposed palette storage schema, defaults for old accounts, exact-color preservation, derived variants, new Normal glass value, and versioned archive strategy. Resolve open design choices before Phase 7 implements them.
+- [x] Record which screens will need a justified 92rem rail or hero exception.
 
 ## Manual review checklist
 
@@ -25,4 +25,4 @@ Establish an accurate starting point and decide how the new appearance data can 
 
 Exit when the route inventory, compatibility design, and baseline are documented and the user accepts them. Keep the phase **In progress** until then.
 
-**Handoff record:** Date: — · Last completed task: — · Files/commit: — · Decisions: — · Checks actually performed: — · User feedback: — · Open issues: — · Next task: inventory routes.
+**Handoff record:** Date: 2026-09-26 · Last completed task: source-based route, layout, workflow, and compatibility inventory · Files: `phase-0-inventory.md`, this task file, roadmap · Decisions: versioned palette JSON, `normal_glass`, archive format 11 with explicit format-10 adapter proposed for Phase 7 · Checks actually performed: read docs and source, verified route/controller roles and current format-10 implementation; no automated or browser tests run · User feedback: user authorized Phase 1 without reporting route-by-route manual results or explicit storage-design approval · Open issues: representative desktop/mobile route captures and pre-existing runtime defect report remain user-owned before the final audit; confirm the proposed storage design before Phase 7 persistence work · Next task: Phase 1 visual foundation and its manual review.

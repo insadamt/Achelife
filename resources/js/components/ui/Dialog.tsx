@@ -121,7 +121,7 @@ export function Dialog({
         >
             <div
                 className={classNames(
-                    'border border-border-strong bg-elevated shadow-2xl transition-[width] duration-300',
+                    'border border-border-strong bg-overlay shadow-[var(--shadow-raised)] transition-[width] duration-300',
                     placement === 'center'
                         ? classNames(
                             'w-full rounded-[var(--radius-panel)] p-5 sm:p-6',

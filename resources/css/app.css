@@ -2,6 +2,14 @@
 @import './appearance.css';
 @import './today.css';
 
+@font-face {
+    font-family: 'Inter';
+    src: url('../fonts/InterVariable.ttf') format('truetype');
+    font-style: normal;
+    font-weight: 100 900;
+    font-display: swap;
+}
+
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';
 @source '../js/**/*.tsx';
@@ -12,18 +20,22 @@
     --app-background: #121315;
     --surface-primary: #060708;
     --surface-elevated: #18191c;
+    --surface-inset: #101216;
+    --surface-overlay: #1b1e22;
     --surface-hover: #222328;
     --border-subtle: #26272b;
     --border-strong: #3b3d43;
     --text-primary: #f5f7f8;
     --text-secondary: #afb6c0;
     --text-muted: #737c89;
+    --text-link: #d7e66b;
     --accent: #d7e66b;
     --accent-ink: var(--accent);
     --accent-foreground: #0b0d06;
     --success: #55d58a;
     --warning: #f1b84b;
     --danger: #f06d72;
+    --information: #81baff;
     --preview-blue: #43a5ff;
     --preview-violet: #9a73ff;
     --preview-orange: #ff8a45;
@@ -51,6 +63,8 @@
     --module-accent: var(--accent);
     --focus-ring: color-mix(in srgb, var(--module-accent) 74%, white);
     --radius-panel: 1.75rem;
+    --radius-card: 1.25rem;
+    --radius-control: 0.875rem;
     --motion-fast: 160ms;
     --motion-standard: 220ms;
     --shadow-panel: 0 20px 55px rgb(0 0 0 / 20%);
@@ -60,15 +74,18 @@
 
 :root[data-theme='light'] {
     color-scheme: light;
-    --app-background: #ededee;
-    --surface-primary: #fafafa;
-    --surface-elevated: #f5f5f6;
-    --surface-hover: #e5e5e8;
-    --border-subtle: #dcdce0;
-    --border-strong: #b7b7bf;
-    --text-primary: #303139;
-    --text-secondary: #555761;
-    --text-muted: #686a75;
+    --app-background: #e9eef3;
+    --surface-primary: #f9fbfd;
+    --surface-elevated: #ffffff;
+    --surface-inset: #e2eaf1;
+    --surface-overlay: #ffffff;
+    --surface-hover: #edf3f7;
+    --border-subtle: #cbd5df;
+    --border-strong: #8799aa;
+    --text-primary: #25313d;
+    --text-secondary: #435567;
+    --text-muted: #526577;
+    --text-link: #465719;
     --accent: #d7e66b;
     --accent-ink: #59651f;
     --accent-foreground: #0b0d06;
@@ -76,6 +93,7 @@
     --success-foreground: #f3faf5;
     --warning: #805c18;
     --danger: #a83a46;
+    --information: #1767a8;
     --preview-blue: #176db2;
     --preview-violet: #6f4fc2;
     --preview-orange: #b9571f;
@@ -94,9 +112,9 @@
     --habit-pending-foreground: #6b4d12;
     --habit-pending-border: #c5a764;
     --focus-ring: var(--accent-ink);
-    --shadow-panel: 0 8px 28px rgb(24 25 32 / 5%);
-    --shadow-raised: 0 8px 24px rgb(24 25 32 / 5%);
-    --shadow-navigation: 0 12px 32px rgb(24 25 32 / 7%);
+    --shadow-panel: 0 12px 32px rgb(44 67 87 / 9%);
+    --shadow-raised: 0 16px 38px rgb(44 67 87 / 13%);
+    --shadow-navigation: 0 16px 40px rgb(44 67 87 / 16%);
 }
 
 .season-switcher-track {
@@ -216,22 +234,27 @@
 }
 
 @theme inline {
-    --font-sans: 'League Spartan Variable', ui-sans-serif, system-ui, sans-serif;
+    --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+    --font-display: 'League Spartan Variable', 'Inter', ui-sans-serif, system-ui, sans-serif;
     --color-app: var(--app-background);
     --color-surface: var(--surface-primary);
     --color-elevated: var(--surface-elevated);
+    --color-inset: var(--surface-inset);
+    --color-overlay: var(--surface-overlay);
     --color-surface-hover: var(--surface-hover);
     --color-border-subtle: var(--border-subtle);
     --color-border-strong: var(--border-strong);
     --color-foreground: var(--text-primary);
     --color-secondary: var(--text-secondary);
     --color-muted: var(--text-muted);
+    --color-link: var(--text-link);
     --color-accent: var(--accent);
     --color-accent-ink: var(--accent-ink);
     --color-accent-foreground: var(--accent-foreground);
     --color-success: var(--success);
     --color-warning: var(--warning);
     --color-danger: var(--danger);
+    --color-information: var(--information);
 }
 
 @layer base {
@@ -249,7 +272,7 @@
         margin: 0;
         background: var(--app-background);
         color: var(--text-primary);
-        font-family: 'League Spartan Variable', ui-sans-serif, system-ui, sans-serif;
+        font-family: 'Inter', ui-sans-serif, system-ui, sans-serif;
         font-synthesis: none;
         text-rendering: optimizeLegibility;
     }
@@ -259,6 +282,15 @@
     select,
     textarea {
         font: inherit;
+    }
+
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6 {
+        font-family: 'League Spartan Variable', 'Inter', ui-sans-serif, system-ui, sans-serif;
     }
 
     button,

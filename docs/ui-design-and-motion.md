@@ -15,16 +15,16 @@ Frosted glass and Normal glass use the built-in city garden image unless a custo
 | --- | --- | --- | --- |
 | Light + Normal | Neutral gray, or custom image | Solid, light surfaces | Dark semantic text; solid controls |
 | Dark + Normal | Deep neutral, or custom image | Solid, dark surfaces | Light semantic text; solid controls |
-| Light + Frosted glass | Built-in or custom image with a light scrim | Light translucent surfaces with blur, glass edges, and nested depth | Dark semantic text |
-| Dark + Frosted glass | Built-in or custom image with a dark scrim | Dark translucent surfaces with blur, glass edges, and nested depth | Light semantic text |
-| Light + Normal glass | Built-in or custom image with a light scrim | Transparent-looking light surfaces with glass edges and nested depth; left navigation is the reference | Dark semantic text |
-| Dark + Normal glass | Built-in or custom image with a dark scrim | Transparent-looking dark surfaces with glass edges and nested depth; left navigation is the reference | Light semantic text |
+| Light + Frosted glass | Built-in or custom image without a page-wide tint | Light translucent surfaces with blur, glass edges, and nested depth | Dark semantic text |
+| Dark + Frosted glass | Built-in or custom image without a page-wide tint | Dark translucent surfaces with blur, glass edges, and nested depth | Light semantic text |
+| Light + Normal glass | Built-in or custom image without a page-wide tint | Transparent-looking light surfaces with glass edges and nested depth; left navigation is the reference | Dark semantic text |
+| Dark + Normal glass | Built-in or custom image without a page-wide tint | Transparent-looking dark surfaces with glass edges and nested depth; left navigation is the reference | Light semantic text |
 
-The wallpaper is decoration, never the color source for text. Theme tokens decide foreground colors in all three styles; text does not switch colors according to the image behind an individual panel. Design and verify the built-in background for readability. A custom image can reduce readability, so explain that risk beside the background control and offer Normal as the most readable style. The custom image is the user's choice; it does not require automatic per-image text adaptation.
+The wallpaper is decoration, never the color source for text. Do not tint the whole image white or black; strengthen local surfaces where content needs contrast. Theme tokens decide foreground colors in all three styles; text does not switch colors according to the image behind an individual panel. Design and verify the built-in background for readability. A custom image can reduce readability, so explain that risk beside the background control and offer Normal as the most readable style. The custom image is the user's choice; it does not require automatic per-image text adaptation.
 
 ## Rules in priority order
 
-1. **Content and actions remain readable and recognizable.** Target [WCAG 2.2 AA text contrast](https://www.w3.org/WAI/WCAG22/Understanding/contrast-minimum) of at least 4.5:1 for ordinary text and 3:1 for qualifying large text with the built-in background. Prefer 4.5:1 for headings too when practical. Required control boundaries, state indicators, and meaningful icons need at least [3:1 against adjacent colors](https://www.w3.org/WAI/WCAG22/Understanding/non-text-contrast). Measure the rendered foreground against the rendered background, after image, scrim, transparency, gradients, and overlays are combined. User-uploaded images may make glass styles harder to read; show that limitation clearly in Settings.
+1. **Content and actions remain readable and recognizable.** Target [WCAG 2.2 AA text contrast](https://www.w3.org/WAI/WCAG22/Understanding/contrast-minimum) of at least 4.5:1 for ordinary text and 3:1 for qualifying large text with the built-in background. Prefer 4.5:1 for headings too when practical. Required control boundaries, state indicators, and meaningful icons need at least [3:1 against adjacent colors](https://www.w3.org/WAI/WCAG22/Understanding/non-text-contrast). Measure the rendered foreground against the rendered background, after image, transparency, gradients, and overlays are combined. User-uploaded images may make glass styles harder to read; show that limitation clearly in Settings.
 2. **Structure and behavior are the same across appearances.** Appearance changes material and color, not information hierarchy, labels, control placement, or access to an action.
 3. **Semantic roles drive styling.** Use `bg-app`, `bg-surface`, `bg-elevated`, `text-foreground`, `text-secondary`, `text-muted`, `border-border-subtle`, and the shared components in `resources/js/components/ui`. Add a semantic token when a recurring role cannot be expressed clearly. Do not choose arbitrary light or dark neutrals inside a page.
 4. **Use the accent with purpose.** Lime is the default, and a freely chosen user accent is a planned Settings option. Apply it to primary actions, active navigation, selection, and progress; keep glass edges mostly neutral. Save the user's exact chosen color, then derive readable foreground, standalone ink, and focus variants for each theme while retaining its hue. Do not assume a tint conveys selection by itself. The earlier [global foundation](v0.1.0/phase-0.5-global-ui-foundation.md) describes the current fixed-lime implementation; this guide records the agreed redesign direction.
@@ -42,7 +42,7 @@ Organize editable colors by meaning instead of by page. The planned palette cove
 
 | Group | Base roles |
 | --- | --- |
-| Background and depth | Page, main surface, raised surface, inset surface, overlay, wallpaper tint |
+| Background and depth | Page, main surface, raised surface, inset surface, overlay |
 | Content | Primary, secondary, and muted text; link text |
 | Actions | Primary accent and secondary action; semantic action treatments use the shared Success, Warning, and Danger families |
 | Feedback | One editable Success, Warning, Danger, and Information family for text, icons, buttons, messages, and status indicators |
@@ -60,7 +60,7 @@ Use a small, consistent depth scale. Every component in a selected glass style, 
 
 | Level | Typical use | Treatment |
 | --- | --- | --- |
-| Page | App background and wallpaper | Quiet backdrop and theme-specific scrim when an image is present |
+| Page | App background and wallpaper | Plain color in Normal without an image; unfiltered image where one is present |
 | Surface | Main cards and panels | The selected material with its surface fill, glass edge when applicable, and panel radius |
 | Raised surface | Menus, drawers, dialogs, floating controls | The same material with greater apparent lift and separation |
 | Inset surface | Inputs, nested data, selected row groups | The same material with a recessed or deeper treatment that reads as part of the parent |
