@@ -25,6 +25,8 @@ composer setup
 composer dev
 ```
 
+`composer dev` and `php artisan serve` load Achelife's PHP upload settings for the local server. Restart the server after changing these settings so background images up to 8 MB can upload.
+
 The setup command creates a local `.env`, generates a development key, initializes SQLite, installs dependencies, applies migrations, and builds the frontend. Never use production data, a real backup, or a private account export in development or test fixtures.
 
 ## Code expectations

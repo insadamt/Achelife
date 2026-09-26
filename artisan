@@ -6,6 +6,15 @@ use Symfony\Component\Console\Input\ArgvInput;
 
 define('LARAVEL_START', microtime(true));
 
+if (($argv[1] ?? null) === 'serve') {
+    // The PHP child server reads upload limits only when it starts.
+    $existingScanDirectories = getenv('PHP_INI_SCAN_DIR');
+    $uploadScanDirectories = ($existingScanDirectories === false ? '' : $existingScanDirectories).':'.__DIR__.'/config/php';
+    putenv('PHP_INI_SCAN_DIR='.$uploadScanDirectories);
+    $_SERVER['PHP_INI_SCAN_DIR'] = $uploadScanDirectories;
+    unset($_ENV['PHP_INI_SCAN_DIR']);
+}
+
 // Register the Composer autoloader...
 require __DIR__.'/vendor/autoload.php';
 

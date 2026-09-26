@@ -68,7 +68,7 @@ Debt principal is excluded from ordinary Income and Spending statistics. Money n
 
 ## Settings
 
-General Settings contains appearance, your name, timezone, rollover preference, and account portability. Choose System, Light, or Dark under Appearance; the color theme is stored on the current device. **Frosted glass** is the default and shows translucent panels over the built-in city garden image. Choose **Normal** to use the original solid panels. Upload a JPEG, PNG, WebP, or AVIF image up to 8 MB to use it across the app. The surface style and custom image follow your account and are included in account exports. Removing a custom image returns to the built-in image in glass mode; normal mode without a custom image keeps the original plain background. Changing timezone can change which local day contains an activity.
+General Settings contains appearance, your name, timezone, rollover preference, and account portability. Choose System, Light, or Dark under Appearance; the color theme is stored on the current device. **Frosted glass** is the default and shows translucent panels over the built-in city garden image. Choose **Normal** to use the original solid panels. Upload a JPG/JPEG, PNG, WebP, or AVIF image up to 8 MB to use it across the app. The surface style and custom image follow your account and are included in account exports. Removing a custom image returns to the built-in image in glass mode; normal mode without a custom image keeps the original plain background. Changing timezone can change which local day contains an activity.
 
 ## Portable account exports
 

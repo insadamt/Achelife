@@ -48,14 +48,14 @@ export function BackgroundSettings() {
             <form className="mt-4" onSubmit={submit}>
                 <label className="block text-sm font-semibold" htmlFor="appearance-background">Choose an image</label>
                 <input
-                    accept="image/jpeg,image/png,image/webp,image/avif"
+                    accept=".jpg,.jpeg,.png,.webp,.avif,image/jpeg,image/png,image/webp,image/avif"
                     className="focus-ring mt-2 block w-full rounded-2xl border border-border-strong bg-app p-3 text-sm"
                     id="appearance-background"
                     onChange={(event) => upload.setData('background', event.target.files?.[0] ?? null)}
                     ref={inputRef}
                     type="file"
                 />
-                <p className="mt-2 text-xs text-muted">JPEG, PNG, WebP, or AVIF · up to 8 MB</p>
+                <p className="mt-2 text-xs text-muted">JPG/JPEG, PNG, WebP, or AVIF · up to 8 MB</p>
                 {upload.errors.background && <p className="mt-2 text-sm font-semibold text-danger" role="alert">{upload.errors.background}</p>}
                 <div className="mt-4 flex flex-wrap gap-3">
                     <Button disabled={upload.processing || upload.data.background === null} type="submit"><ImageUp aria-hidden="true" size={17} />{upload.processing ? 'Uploading…' : 'Use this background'}</Button>

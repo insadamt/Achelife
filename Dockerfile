@@ -98,6 +98,7 @@ COPY --from=frontend --chown=www-data:www-data /app/public/build /var/www/html/p
 
 COPY docker/selfhost/entrypoint.sh /usr/local/bin/achelife-entrypoint
 COPY docker/selfhost/php-fpm.conf /usr/local/etc/php-fpm.d/zz-achelife.conf
+COPY config/php/achelife-uploads.ini /usr/local/etc/php/conf.d/zz-achelife-uploads.ini
 
 RUN chmod +x /usr/local/bin/achelife-entrypoint \
     && mkdir -p /data \
