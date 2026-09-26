@@ -1,6 +1,6 @@
 import { Link, router } from '@inertiajs/react';
 import { BookOpen, CalendarDays, Check, ChevronLeft, ChevronRight, Target } from 'lucide-react';
-import { useEffect, useId, useRef, useState } from 'react';
+import { useCallback, useEffect, useId, useRef, useState } from 'react';
 
 import { RankBadge, RankProgress } from '../../components/rank';
 import { Surface } from '../../components/ui';
@@ -13,7 +13,7 @@ function formatSignedPoints(points: number) {
     return `${points > 0 ? '+' : ''}${points.toLocaleString()} SP`;
 }
 
-function ProgressPanel({ data, onClose }: { data: ProgressPanelData; onClose: () => void }) {
+function ProgressPanel({ data, open, onClose, onExitComplete }: { data: ProgressPanelData; open: boolean; onClose: () => void; onExitComplete: () => void }) {
     const panelRef = useRef<HTMLElement>(null);
     const titleId = useId();
     const season = data.season;
@@ -63,8 +63,10 @@ function ProgressPanel({ data, onClose }: { data: ProgressPanelData; onClose: ()
 
     return (
         <>
-            <button aria-label="Close progress panel" className="fixed inset-0 z-40 cursor-default bg-black/55 backdrop-blur-[1px]" onClick={onClose} type="button" />
-            <aside aria-labelledby={titleId} aria-modal="true" className="progress-notch-panel fixed top-16 right-0 bottom-[calc(6rem+env(safe-area-inset-bottom))] z-50 w-[min(91vw,25rem)] overflow-y-auto rounded-l-[2rem] border border-r-0 border-border-strong bg-overlay p-5 shadow-[var(--shadow-raised)] md:top-3 md:bottom-3 md:p-6" ref={panelRef} role="dialog">
+            <button aria-label="Close progress panel" className={classNames('progress-notch-backdrop fixed inset-0 z-40 cursor-default bg-black/55 backdrop-blur-[1px]', !open && 'progress-notch-exit')} onClick={onClose} type="button" />
+            <aside aria-labelledby={titleId} aria-modal="true" className={classNames('progress-notch-panel fixed top-16 right-0 bottom-[calc(6rem+env(safe-area-inset-bottom))] z-50 w-[min(91vw,25rem)] overflow-y-auto rounded-l-[2rem] border border-r-0 border-border-strong bg-overlay p-5 shadow-[var(--shadow-raised)] md:top-3 md:bottom-3 md:p-6', !open && 'progress-notch-exit')} onAnimationEnd={(event) => {
+                if (!open && event.target === event.currentTarget && event.animationName === 'progress-notch-leave') onExitComplete();
+            }} ref={panelRef} role="dialog">
                 <div className="flex items-center justify-between gap-4">
                     <h2 className="text-xl font-bold" id={titleId}>Progress</h2>
                     <button aria-label="Close progress panel" className="focus-ring grid size-10 place-items-center rounded-full text-secondary hover:bg-surface-hover hover:text-foreground" onClick={onClose} type="button">
@@ -128,14 +130,21 @@ function ProgressPanel({ data, onClose }: { data: ProgressPanelData; onClose: ()
 
 export function ProgressNotch({ data }: { data: ProgressPanelData }) {
     const [open, setOpen] = useState(false);
+    const [mounted, setMounted] = useState(false);
+    const closePanel = useCallback(() => setOpen(false), []);
+
+    function openPanel() {
+        setMounted(true);
+        setOpen(true);
+    }
 
     return (
         <>
-            <button aria-expanded={open} aria-label="Pull open progress panel" className="focus-ring group fixed top-1/2 right-0 z-30 grid h-28 w-10 -translate-y-1/2 place-items-center rounded-l-[1.15rem] border border-r-0 border-border-strong bg-overlay shadow-[var(--shadow-raised)] transition-[width,background-color,border-color] hover:w-11 hover:border-accent hover:bg-surface-hover" onClick={() => setOpen(true)} type="button">
+            <button aria-expanded={open} aria-label="Pull open progress panel" className="focus-ring group fixed top-1/2 right-0 z-30 grid h-28 w-10 -translate-y-1/2 place-items-center rounded-l-[1.15rem] border border-r-0 border-border-strong bg-overlay shadow-[var(--shadow-raised)] transition-[width,background-color,border-color] hover:w-11 hover:border-accent hover:bg-surface-hover" onClick={openPanel} type="button">
                 <span aria-hidden="true" className="absolute inset-y-5 left-0 w-px bg-accent/70" />
                 <ChevronLeft aria-hidden="true" className="text-accent-ink transition-transform group-hover:-translate-x-0.5" size={17} />
             </button>
-            {open && <ProgressPanel data={data} onClose={() => setOpen(false)} />}
+            {mounted && <ProgressPanel data={data} onClose={closePanel} onExitComplete={() => setMounted(false)} open={open} />}
         </>
     );
 }
