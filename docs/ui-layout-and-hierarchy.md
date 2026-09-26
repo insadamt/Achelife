@@ -45,7 +45,7 @@ Each standard page follows this order:
 4. **Primary content:** summary or main work area, then supporting sections.
 5. **Feedback:** loading, empty, error, and success states appear in the relevant content region without shifting the whole page hierarchy.
 
-Use one `h1` per page. For standard pages, use a common responsive title scale around 32px on mobile and 40px on larger screens; keep it consistent across modules. Use `h2` for major page sections around 24px, `h3` for card or subsection titles around 18–20px, and labels/body copy in Inter. League Spartan remains the display heading font. Hero screens such as Season introduction can deliberately exceed the standard title scale.
+Use one `h1` per page. For standard pages, use a common responsive title scale around 32px on mobile and 40px on larger screens; keep it consistent across modules. Use `h2` for major page sections around 24px and `h3` for card or subsection titles around 18–20px. League Spartan remains the interface font at every level. Hero screens such as Season introduction can deliberately exceed the standard title scale.
 
 The page header may wrap into two rows on narrow screens, but its content order stays the same. A long title wraps instead of truncating. A page action moves below the title when needed; it does not squeeze the title or force horizontal scrolling.
 

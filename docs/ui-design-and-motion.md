@@ -77,7 +77,7 @@ Blur softens background detail but does not set a predictable contrast ratio. `b
 
 ## Text, icons, and data
 
-- Keep League Spartan for display headings and use [Inter](https://rsms.me/inter/) for body text, forms, labels, navigation, and dense data. Establish hierarchy through size, weight, and spacing before color. Reserve `text-muted` for supplementary text that still passes the contrast requirement; placeholders, timestamps, axis labels, and empty-state explanations are real content.
+- Use League Spartan throughout the interface, including headings, body text, forms, labels, navigation, and dense data. Establish hierarchy through size, weight, and spacing before color. Reserve `text-muted` for supplementary text that still passes the contrast requirement; placeholders, timestamps, axis labels, and empty-state explanations are real content.
 - Keep body copy comfortably readable. Avoid tiny uppercase labels for essential information and avoid all-caps paragraphs. Allow long names, localized strings, user text, and 200% text scaling to wrap without hiding actions. At narrow widths, pages should [reflow at 320 CSS pixels](https://www.w3.org/WAI/WCAG22/Understanding/reflow). Do not clip content when users increase [text spacing](https://www.w3.org/WAI/WCAG22/Understanding/text-spacing).
 - Icons that carry meaning need an accessible name and a visible shape with sufficient contrast. Pair unfamiliar icons with labels. Decorative icons can be hidden from assistive technology.
 - Give charts readable axes and labels on stable surfaces. Distinguish series by labels, symbols, or line patterns in addition to color. Show exact values through text or an accessible detail view. Check colors against the chart's actual fill, not the page token alone.

@@ -59,7 +59,7 @@ Preserve the existing Focus island/progress notch, Today saved tab (session stor
 
 The [user guide](../user-guide.md) defines current flows: first setup and fresh/restore onboarding; Today Tasks/Habits and progress; 30-day Seasons, objectives, closeout/intermission and Rank; Task organization, completion, Focus and statistics; Habit check-ins/statistics; Diary autosave/People; Constitution violations; Money activity, transfers, debts, subscriptions, organization and statistics; Settings and portable archives. These are the behavior-preservation checklist for later visual phases. Domain calculations and archive semantics remain unchanged in Phases 0–6 and 8.
 
-Known before redesign: inconsistent page rails, title scales, nav treatment and control heights; translucent contrast and blur fallback still need review, especially Light glass and uploaded images; Normal glass, editable palettes, and Inter are not implemented. No functional defect is asserted from source inspection alone. The user should record any pre-existing route failure during the manual pass below, with URL, viewport, appearance, and observed behavior.
+Known before redesign: inconsistent page rails, title scales, nav treatment and control heights; translucent contrast and blur fallback still need review, especially Light glass and uploaded images; Normal glass and editable palettes are not implemented. The original League Spartan typography remains the target after Phase 1 user review. No functional defect is asserted from source inspection alone. The user should record any pre-existing route failure during the manual pass below, with URL, viewport, appearance, and observed behavior.
 
 ## Proposed Phase 7 appearance compatibility design
 

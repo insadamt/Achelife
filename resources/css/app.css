@@ -2,14 +2,6 @@
 @import './appearance.css';
 @import './today.css';
 
-@font-face {
-    font-family: 'Inter';
-    src: url('../fonts/InterVariable.ttf') format('truetype');
-    font-style: normal;
-    font-weight: 100 900;
-    font-display: swap;
-}
-
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';
 @source '../js/**/*.tsx';
@@ -238,8 +230,7 @@
 }
 
 @theme inline {
-    --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
-    --font-display: 'League Spartan Variable', 'Inter', ui-sans-serif, system-ui, sans-serif;
+    --font-sans: 'League Spartan Variable', ui-sans-serif, system-ui, sans-serif;
     --color-app: var(--app-background);
     --color-surface: var(--surface-primary);
     --color-elevated: var(--surface-elevated);
@@ -276,7 +267,7 @@
         margin: 0;
         background: var(--app-background);
         color: var(--text-primary);
-        font-family: 'Inter', ui-sans-serif, system-ui, sans-serif;
+        font-family: 'League Spartan Variable', ui-sans-serif, system-ui, sans-serif;
         font-synthesis: none;
         text-rendering: optimizeLegibility;
     }
@@ -286,15 +277,6 @@
     select,
     textarea {
         font: inherit;
-    }
-
-    h1,
-    h2,
-    h3,
-    h4,
-    h5,
-    h6 {
-        font-family: 'League Spartan Variable', 'Inter', ui-sans-serif, system-ui, sans-serif;
     }
 
     button,
