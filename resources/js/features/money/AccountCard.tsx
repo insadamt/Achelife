@@ -1,23 +1,32 @@
 import { Link } from '@inertiajs/react';
 import { ArrowUpRight, ChevronRight, Wallet } from 'lucide-react';
+import type { CSSProperties } from 'react';
 
 import { formatMinorUnits } from './moneyPresentation';
 import type { MoneyAccountData } from './types';
 
+const defaultTheme = { gradient: 'from-[#173f46] via-[#246f6b] to-[#8ad8bd]', tint: '#246f6b' };
 const themes = [
-    'from-[#173f46] via-[#246f6b] to-[#8ad8bd]',
-    'from-[#242d57] via-[#455da4] to-[#9cb2f1]',
-    'from-[#46233f] via-[#8d456b] to-[#e5a56f]',
-    'from-[#392d17] via-[#80642d] to-[#d8bd70]',
-    'from-[#20283a] via-[#435066] to-[#90a5b8]',
-    'from-[#3e224b] via-[#704a98] to-[#bd8eda]',
+    defaultTheme,
+    { gradient: 'from-[#242d57] via-[#455da4] to-[#9cb2f1]', tint: '#455da4' },
+    { gradient: 'from-[#46233f] via-[#8d456b] to-[#e5a56f]', tint: '#8d456b' },
+    { gradient: 'from-[#392d17] via-[#80642d] to-[#d8bd70]', tint: '#80642d' },
+    { gradient: 'from-[#20283a] via-[#435066] to-[#90a5b8]', tint: '#435066' },
+    { gradient: 'from-[#3e224b] via-[#704a98] to-[#bd8eda]', tint: '#704a98' },
 ];
 
+function accountTheme(themeIndex: number) {
+    return themes[themeIndex % themes.length] ?? defaultTheme;
+}
+
 export function AccountCard({ account, large = false }: { account: MoneyAccountData; large?: boolean }) {
+    const theme = accountTheme(account.themeIndex);
+
     return (
         <Link
-            className={`focus-ring group relative block aspect-[1.72/1] w-full shrink-0 overflow-hidden rounded-[1.5rem] bg-gradient-to-br ${themes[account.themeIndex % themes.length]} p-5 text-white shadow-[0_16px_36px_rgba(0,0,0,0.26)] transition-[transform,box-shadow] duration-200 hover:-translate-y-1 hover:shadow-[0_22px_46px_rgba(0,0,0,0.32)] ${large ? 'max-w-[32rem] sm:p-7' : ''}`}
+            className={`money-account-card focus-ring group relative block aspect-[1.72/1] w-full shrink-0 overflow-hidden rounded-[1.5rem] bg-gradient-to-br ${theme.gradient} p-5 text-white shadow-[0_16px_36px_rgba(0,0,0,0.26)] transition-[transform,box-shadow] duration-200 hover:-translate-y-1 hover:shadow-[0_22px_46px_rgba(0,0,0,0.32)] ${large ? 'max-w-[32rem] sm:p-7' : ''}`}
             href={`/money/accounts/${account.id}`}
+            style={{ '--account-card-tint': theme.tint } as CSSProperties}
         >
             <span className="absolute -top-16 -right-10 size-48 rounded-full border border-white/12 bg-white/8" />
             <span className="absolute -right-8 -bottom-20 size-56 rounded-full border border-white/10" />
@@ -45,8 +54,8 @@ export function AccountCard({ account, large = false }: { account: MoneyAccountD
 
 export function AccountListItem({ account }: { account: MoneyAccountData }) {
     return (
-        <Link className="focus-ring group flex min-h-17 items-center gap-3 rounded-2xl px-3 py-3 transition-colors hover:bg-surface-hover" href={`/money/accounts/${account.id}`}>
-            <span className={`grid size-11 shrink-0 place-items-center rounded-2xl bg-gradient-to-br ${themes[account.themeIndex % themes.length]} text-white shadow-sm`}>
+        <Link className="money-account-list-item focus-ring group flex min-h-17 items-center gap-3 rounded-2xl px-3 py-3 transition-colors hover:bg-surface-hover" href={`/money/accounts/${account.id}`}>
+            <span className={`grid size-11 shrink-0 place-items-center rounded-2xl bg-gradient-to-br ${accountTheme(account.themeIndex).gradient} text-white shadow-sm`}>
                 <Wallet aria-hidden="true" size={18} />
             </span>
             <span className="min-w-0 flex-1">

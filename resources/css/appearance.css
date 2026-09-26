@@ -100,14 +100,58 @@
     border-color: var(--border-strong);
 }
 
-.app-glass :where(.bg-surface, .bg-elevated, .bg-inset, .bg-overlay, .today-glass, .today-glass-inner, input, textarea, select, [role='tablist']) {
+.app-glass :where(
+    .bg-app, .bg-surface, .bg-elevated, .bg-inset, .bg-overlay, .bg-surface-hover,
+    .today-glass, .today-glass-inner, input, textarea, select, [role='tablist'],
+    [class*='bg-app/'], [class*='bg-surface/'], [class*='bg-elevated/'],
+    [class*='bg-[color-mix'], [class*='bg-warning/'], [class*='bg-danger/'],
+    [class*='bg-success/'], [class*='bg-accent/'], [class*='bg-info/']
+) {
     -webkit-backdrop-filter: blur(26px) saturate(140%);
     backdrop-filter: blur(26px) saturate(140%);
 }
 
-.app-glass :is(.bg-surface, .bg-elevated, .bg-inset, .bg-overlay, .today-glass, .today-glass-inner, input, textarea, select) {
+.app-glass :is(.bg-surface, .bg-elevated, .bg-inset, .bg-overlay, .bg-surface-hover, .today-glass, .today-glass-inner, input, textarea, select) {
     border-color: transparent;
     box-shadow: none;
+}
+
+.app-glass :is(.bg-app, [class*='bg-app/'], [class*='bg-surface/'], [class*='bg-elevated/'], [class*='bg-[color-mix']) {
+    box-shadow: none;
+}
+
+.app-glass :is(.bg-app, [class*='bg-app/']) {
+    background-color: var(--surface-inset);
+}
+
+.app-glass [class*='bg-surface/'] {
+    background-color: var(--surface-primary);
+}
+
+.app-glass [class*='bg-elevated/'] {
+    background-color: var(--surface-elevated);
+}
+
+.app-glass .money-account-card {
+    background: linear-gradient(135deg, color-mix(in srgb, var(--account-card-tint) 18%, transparent), var(--surface-primary));
+    color: var(--text-primary);
+    box-shadow: none;
+    -webkit-backdrop-filter: blur(26px) saturate(140%);
+    backdrop-filter: blur(26px) saturate(140%);
+}
+
+.app-glass .money-account-card [class*='text-white/'] {
+    color: var(--text-secondary);
+}
+
+.app-glass .money-account-list-item {
+    background-color: var(--surface-inset);
+    -webkit-backdrop-filter: blur(26px) saturate(140%);
+    backdrop-filter: blur(26px) saturate(140%);
+}
+
+.app-glass .focus-ring:focus-visible {
+    box-shadow: 0 0 0 3px var(--focus-ring);
 }
 
 .app-glass :is(.shadow-sm, .shadow-md, .shadow-lg, .shadow-xl, .shadow-2xl) {
@@ -168,11 +212,22 @@
         --surface-overlay: #fafdff;
     }
 
-    .app-glass :where(.bg-surface, .bg-elevated, .bg-inset, .bg-overlay, .today-glass, .today-glass-inner, input, textarea, select, [role='tablist']),
+    .app-glass :where(
+        .bg-app, .bg-surface, .bg-elevated, .bg-inset, .bg-overlay, .bg-surface-hover,
+        .today-glass, .today-glass-inner, input, textarea, select, [role='tablist'],
+        [class*='bg-app/'], [class*='bg-surface/'], [class*='bg-elevated/'],
+        [class*='bg-[color-mix'], [class*='bg-warning/'], [class*='bg-danger/'],
+        [class*='bg-success/'], [class*='bg-accent/'], [class*='bg-info/']
+    ),
     .app-glass main header:has(h1),
-    .app-glass main nav {
+    .app-glass main nav,
+    .app-glass :is(.money-account-card, .money-account-list-item) {
         -webkit-backdrop-filter: none;
         backdrop-filter: none;
+    }
+
+    .app-glass .money-account-card {
+        background: var(--surface-primary);
     }
 }
 
