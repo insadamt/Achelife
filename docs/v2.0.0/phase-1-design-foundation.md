@@ -20,9 +20,9 @@ Create the shared visual foundation before converting pages. Use [theme palettes
 
 - Normal Light: page `#e9eef3`, surface `#f9fbfd`, raised/overlay `#ffffff`, inset `#e2eaf1`, text `#25313d`/`#435567`/`#526577`. Normal Dark retains page `#121315`, surface `#060708`, raised `#18191c`, with new inset `#101216` and overlay `#1b1e22`.
 - Both themes retain the exact default lime accent `#d7e66b`. Added semantic link and information colors, inset and overlay roles, and panel/card/control radii. Theme preference and persisted appearance data are unchanged.
-- Frosted glass keeps the current `glass` class and city garden background. Dark and Light get nested inset fills, distinct bright/dark edges, and shadow. The wallpaper has no page-wide white or black tint, following user feedback. Light uses cool blue-gray fills. `normal` remains solid; the unexposed `app-normal-glass` recipe uses stronger opacity and no blur. The no-blur fallback raises opacity; reduced transparency uses solid fills and disables blur.
+- Frosted glass keeps the current `glass` class and city garden background. Following user review, Light uses a cool translucent tint and Dark uses a deeper translucent tint; both retain blur, edges, and shadows. Nested insets also receive blur and stay more transparent than their parents. The wallpaper has no page-wide white or black tint. `normal` remains solid; the unexposed `app-normal-glass` recipe uses stronger opacity and no blur. The no-blur fallback raises opacity; reduced transparency uses solid fills and disables blur.
 - `today.css` now reads the shared material tokens instead of carrying separate hard-coded Light/Dark glass fills. The Inter experiment was rejected in user review; the original bundled League Spartan font is restored throughout the interface.
-- Design-guide deviation pending review: current page-specific geometry and navigation heights remain for Phase 2 and later page phases. The glass recipes use stronger opacity than the previous style to protect text readability; confirm the visual character manually.
+- Design-guide deviation pending review: current page-specific geometry and navigation heights remain for Phase 2 and later page phases. The clearer glass may make text harder to read over some wallpaper regions; confirm the visual character and readability manually.
 
 ## Manual review checklist
 

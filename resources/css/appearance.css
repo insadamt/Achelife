@@ -13,53 +13,53 @@
 
 .app-glass,
 .app-normal-glass {
-    --app-background: rgb(10 19 25 / 22%);
-    --surface-primary: rgb(13 27 35 / 72%);
-    --surface-elevated: rgb(20 34 43 / 82%);
-    --surface-inset: rgb(8 19 27 / 83%);
-    --surface-overlay: rgb(19 33 42 / 94%);
-    --surface-hover: rgb(52 69 78 / 87%);
-    --border-subtle: rgb(219 235 243 / 39%);
-    --border-strong: rgb(232 243 248 / 64%);
+    --app-background: transparent;
+    --surface-primary: rgb(13 27 35 / 36%);
+    --surface-elevated: rgb(20 34 43 / 44%);
+    --surface-inset: rgb(8 19 27 / 24%);
+    --surface-overlay: rgb(19 33 42 / 56%);
+    --surface-hover: rgb(52 69 78 / 46%);
+    --border-subtle: rgb(219 235 243 / 38%);
+    --border-strong: rgb(232 243 248 / 60%);
     --text-secondary: #e2e8ec;
     --text-muted: #d2dce2;
     --glass-edge-bright: rgb(255 255 255 / 34%);
     --glass-edge-dark: rgb(0 0 0 / 30%);
-    --shadow-panel: 0 28px 64px rgb(0 0 0 / 27%), inset 0 1px var(--glass-edge-bright), inset 0 -1px var(--glass-edge-dark);
-    --shadow-raised: 0 20px 48px rgb(0 0 0 / 29%), inset 0 1px var(--glass-edge-bright), inset 0 -1px var(--glass-edge-dark);
-    --shadow-navigation: 0 25px 60px rgb(0 0 0 / 32%), inset 0 1px var(--glass-edge-bright);
+    --shadow-panel: 0 22px 48px rgb(0 0 0 / 24%), inset 0 1px var(--glass-edge-bright), inset 0 -1px var(--glass-edge-dark);
+    --shadow-raised: 0 18px 42px rgb(0 0 0 / 28%), inset 0 1px var(--glass-edge-bright), inset 0 -1px var(--glass-edge-dark);
+    --shadow-navigation: 0 22px 50px rgb(0 0 0 / 30%), inset 0 1px var(--glass-edge-bright);
     background-image: var(--app-wallpaper, url('../images/today/city-garden.png'));
 }
 
 :root[data-theme='light'] :is(.app-glass, .app-normal-glass) {
-    --app-background: rgb(232 241 247 / 28%);
-    --surface-primary: rgb(231 240 247 / 83%);
-    --surface-elevated: rgb(246 251 254 / 91%);
-    --surface-inset: rgb(217 230 240 / 90%);
-    --surface-overlay: rgb(250 253 255 / 97%);
-    --surface-hover: rgb(235 244 250 / 96%);
-    --border-subtle: rgb(92 119 139 / 52%);
-    --border-strong: rgb(60 91 115 / 70%);
+    --surface-primary: rgb(231 240 247 / 38%);
+    --surface-elevated: rgb(246 251 254 / 46%);
+    --surface-inset: rgb(217 230 240 / 26%);
+    --surface-overlay: rgb(250 253 255 / 58%);
+    --surface-hover: rgb(235 244 250 / 50%);
+    --border-subtle: rgb(92 119 139 / 46%);
+    --border-strong: rgb(60 91 115 / 62%);
     --text-secondary: #344a5c;
     --text-muted: #405668;
-    --glass-edge-bright: rgb(255 255 255 / 81%);
-    --glass-edge-dark: rgb(48 78 100 / 22%);
-    --shadow-panel: 0 24px 56px rgb(35 58 72 / 18%), inset 0 1px var(--glass-edge-bright), inset 0 -1px var(--glass-edge-dark);
+    --glass-edge-bright: rgb(255 255 255 / 72%);
+    --glass-edge-dark: rgb(48 78 100 / 24%);
+    --shadow-panel: 0 22px 48px rgb(35 58 72 / 16%), inset 0 1px var(--glass-edge-bright), inset 0 -1px var(--glass-edge-dark);
     --shadow-raised: 0 18px 42px rgb(35 58 72 / 20%), inset 0 1px var(--glass-edge-bright), inset 0 -1px var(--glass-edge-dark);
-    --shadow-navigation: 0 22px 50px rgb(35 58 72 / 21%), inset 0 1px var(--glass-edge-bright);
-    background-image: var(--app-wallpaper, url('../images/today/city-garden.png'));
+    --shadow-navigation: 0 22px 50px rgb(35 58 72 / 22%), inset 0 1px var(--glass-edge-bright);
 }
 
 .app-normal-glass {
-    --surface-primary: rgb(13 27 35 / 88%);
-    --surface-elevated: rgb(20 34 43 / 93%);
-    --surface-inset: rgb(8 19 27 / 94%);
+    --surface-primary: rgb(13 27 35 / 68%);
+    --surface-elevated: rgb(20 34 43 / 76%);
+    --surface-inset: rgb(8 19 27 / 62%);
+    --surface-overlay: rgb(19 33 42 / 84%);
 }
 
 :root[data-theme='light'] .app-normal-glass {
-    --surface-primary: rgb(231 240 247 / 91%);
-    --surface-elevated: rgb(246 251 254 / 96%);
-    --surface-inset: rgb(217 230 240 / 96%);
+    --surface-primary: rgb(231 240 247 / 68%);
+    --surface-elevated: rgb(246 251 254 / 76%);
+    --surface-inset: rgb(217 230 240 / 62%);
+    --surface-overlay: rgb(250 253 255 / 84%);
 }
 
 :is(.app-glass, .app-normal-glass) :where(.bg-surface, .bg-elevated, .bg-overlay, .today-glass) {
@@ -80,22 +80,24 @@
     border-color: var(--border-strong);
 }
 
-.app-glass :where(.bg-surface, .bg-elevated, .bg-overlay, .today-glass) {
+.app-glass :where(.bg-surface, .bg-elevated, .bg-inset, .bg-overlay, .today-glass, .today-glass-inner) {
     -webkit-backdrop-filter: blur(26px) saturate(140%);
     backdrop-filter: blur(26px) saturate(140%);
 }
 
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
     .app-glass {
-        --surface-primary: rgb(13 27 35 / 94%);
-        --surface-elevated: rgb(20 34 43 / 97%);
-        --surface-inset: rgb(8 19 27 / 98%);
+        --surface-primary: rgb(13 27 35 / 76%);
+        --surface-elevated: rgb(20 34 43 / 82%);
+        --surface-inset: rgb(8 19 27 / 68%);
+        --surface-overlay: rgb(19 33 42 / 90%);
     }
 
     :root[data-theme='light'] .app-glass {
-        --surface-primary: rgb(231 240 247 / 96%);
-        --surface-elevated: rgb(246 251 254 / 98%);
-        --surface-inset: rgb(217 230 240 / 98%);
+        --surface-primary: rgb(231 240 247 / 76%);
+        --surface-elevated: rgb(246 251 254 / 82%);
+        --surface-inset: rgb(217 230 240 / 68%);
+        --surface-overlay: rgb(250 253 255 / 90%);
     }
 }
 
