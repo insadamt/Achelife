@@ -4,7 +4,7 @@ import type { CSSProperties } from 'react';
 
 import { PageRail } from '../components/ui';
 import { TodayHabitSection } from '../features/today/TodayHabitSection';
-import { TodayOverview } from '../features/today/TodayOverview';
+import { TodayHeader } from '../features/today/TodayHeader';
 import { TodaySettingsDialog } from '../features/today/TodaySettingsDialog';
 import { TodayTabSwitcher } from '../features/today/TodayTabSwitcher';
 import type { TodayTab } from '../features/today/TodayTabSwitcher';
@@ -41,13 +41,7 @@ export default function Home(props: TodayPageProps) {
         <PageRail className="today-page" style={todayStyle}>
             <Head title="Today" />
 
-            <TodayOverview
-                date={props.today}
-                onOpenSettings={() => setSettingsOpen(true)}
-                progress={props.dailyProgress}
-                seasonDay={props.currentSeason.day}
-                seasonNumber={props.currentSeason.number}
-            />
+            <TodayHeader onOpenSettings={() => setSettingsOpen(true)} />
 
             <MoneySubscriptionSummary due={props.manualSubscriptionPayments} surfaceClassName="today-glass" title="Manual payments due" />
 

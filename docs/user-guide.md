@@ -12,7 +12,7 @@ Achelife has no login. Keep your instance on localhost, a trusted private networ
 
 ## Today
 
-Today shows your Tasks, Habit check-ins, and Daily Progress. The progress total includes today's Diary entry; open the global progress panel to reach Diary, Season Objectives, and Season Points. On mobile, switch between Tasks and Habits with the tabs below the progress summary.
+Today shows your Tasks and Habit check-ins. Open the global progress panel to reach Diary, Season Objectives, and Season Points. On mobile, switch between Tasks and Habits with the tabs below the Today header.
 
 ## Seasons, Objectives, SP, and Rank
 

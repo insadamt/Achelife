@@ -10,7 +10,7 @@ Top-level title size also changes by module: Today uses `text-2xl`, Money's shar
 
 Controls at similar levels use different shapes and heights. Today view tabs use `min-h-12` and a large pill; Task view tabs use `min-h-11` in a rounded panel; Season view tabs use `min-h-9`; Money section links use `min-h-10` with an underline. Money Debts and Subscriptions use another underline pattern for local views. The shared Button uses `min-h-9` or `min-h-11`, and shared fields use `min-h-11`. These are source observations, not a claim that every difference is wrong; the problem is that equivalent roles have no shared rule.
 
-Representative source: `resources/js/layouts/AppLayout.tsx`, `resources/js/features/today/TodayOverview.tsx`, `resources/js/features/today/TodayTabSwitcher.tsx`, `resources/js/features/tasks/TaskSectionNav.tsx`, `resources/js/features/tasks/TaskViewNavigation.tsx`, `resources/js/features/seasons/SeasonSwitcher.tsx`, `resources/js/features/money/MoneyPageHeader.tsx`, and `resources/js/features/money/MoneySectionNav.tsx`.
+Representative source: `resources/js/layouts/AppLayout.tsx`, `resources/js/features/today/TodayHeader.tsx`, `resources/js/features/today/TodayTabSwitcher.tsx`, `resources/js/features/tasks/TaskSectionNav.tsx`, `resources/js/features/tasks/TaskViewNavigation.tsx`, `resources/js/features/seasons/SeasonSwitcher.tsx`, `resources/js/features/money/MoneyPageHeader.tsx`, and `resources/js/features/money/MoneySectionNav.tsx`.
 
 | Existing area | Redesign alignment target |
 | --- | --- |
