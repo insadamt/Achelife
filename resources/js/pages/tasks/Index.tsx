@@ -3,7 +3,7 @@ import { ArrowLeft, ChevronRight, Undo2, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import type { CSSProperties } from 'react';
 
-import { Button } from '../../components/ui';
+import { Button, PageChrome, PageHeader, PageRail } from '../../components/ui';
 import { TaskComposer } from '../../features/tasks/TaskComposer';
 import { TaskDetailsDrawer } from '../../features/tasks/TaskDetailsDrawer';
 import { TaskFileBrowser } from '../../features/tasks/TaskFileBrowser';
@@ -80,14 +80,11 @@ export default function TasksIndex(props: TasksPageProps) {
     return (
         <div style={{ '--module-accent': 'var(--task-accent)' } as CSSProperties}>
             <Head title={`${props.workspace.label} · Tasks`} />
-            <div className="mx-auto max-w-7xl">
-                <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
-                    <div>
-                        <p className="text-sm font-bold text-accent-ink">Task workspace</p>
-                        <h1 className="text-4xl font-bold tracking-[-0.05em] sm:text-5xl">Tasks</h1>
-                    </div>
+            <PageRail>
+                <PageChrome>
+                    <PageHeader title="Tasks" />
                     <TaskSectionNav active="tasks" />
-                </div>
+                </PageChrome>
                 {props.intermission && (
                     <p className="mb-5 rounded-2xl border border-warning/35 bg-warning/10 px-4 py-3 text-sm leading-6 text-warning">
                         Intermission: keep planning and rescheduling Tasks. Completion and SP resume when your next Season starts.
@@ -144,7 +141,7 @@ export default function TasksIndex(props: TasksPageProps) {
                         </>
                     )}
                 </TaskWorkspace>
-            </div>
+            </PageRail>
 
             {selectedTask && <TaskDetailsDrawer explorer={props.explorer} key={selectedTask.id} onClose={() => setSelectedTaskId(null)} task={selectedTask} today={props.today} />}
             <p aria-live="polite" className="sr-only">{announcement}</p>

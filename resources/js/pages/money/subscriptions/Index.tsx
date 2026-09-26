@@ -37,9 +37,9 @@ export default function SubscriptionIndex(props: SubscriptionPageProps) {
     const [occurrence, setOccurrence] = useState<MoneySubscriptionOccurrenceData | null>(null);
 
     return (
-        <div style={moduleStyle}>
+        <div className="page-rail mx-auto w-full max-w-[80rem]" style={moduleStyle}>
             <Head title="Money Subscriptions" />
-            <MoneyPageHeader active="subscriptions" description="Stay ahead of recurring costs with deliberate manual payments or automatic Expense recording." title="Subscriptions" />
+            <MoneyPageHeader active="subscriptions" title="Subscriptions" />
 
             <Surface className="mb-6 grid grid-cols-2 divide-x divide-border-subtle p-4" elevated>
                 <div><p className="text-xs text-muted">Active</p><p className="mt-1 text-2xl font-bold tabular-nums">{props.counts.active}</p></div>

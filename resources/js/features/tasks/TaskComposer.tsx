@@ -55,7 +55,7 @@ export function TaskComposer({ explorer, initialProjectId, showProjectControl = 
     }
 
     return (
-        <section className="sticky top-18 z-10 mx-auto max-w-4xl md:top-4" aria-label="Create a Task">
+        <section className="w-full" aria-label="Create a Task">
             <form
                 className="rounded-[1.5rem] border border-border-strong bg-elevated/96 p-2 shadow-[var(--shadow-raised)] backdrop-blur-xl"
                 onSubmit={submit}

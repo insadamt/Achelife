@@ -40,22 +40,21 @@ export default function HabitStatisticsPage({ habit, statistics }: { habit: Habi
     return (
         <div style={{ '--module-accent': 'var(--habit-accent)' } as CSSProperties}>
             <Head title={`${habit.name} statistics`} />
-            <div className="mx-auto max-w-6xl">
+            <div className="page-rail mx-auto w-full max-w-[80rem]">
                 <Link className="focus-ring mb-6 inline-flex min-h-10 items-center gap-2 rounded-xl border border-border-subtle px-3 text-xs font-semibold text-secondary hover:bg-surface-hover hover:text-foreground" href={habit.archived ? '/habits/archived' : '/habits'}>
                     <ArrowLeft aria-hidden="true" size={15} />Back to habits
                 </Link>
-                <header className="mb-7 flex flex-wrap items-end justify-between gap-5">
+                <header className="page-chrome">
                     <div className="min-w-0 flex-1">
-                        <p className="mb-2 text-xs font-bold uppercase tracking-[0.16em] text-accent-ink">Habit statistics{habit.archived ? ' · Archived' : ''}</p>
                         <div className="flex items-center gap-3"><span aria-hidden="true" className="grid size-11 shrink-0 place-items-center rounded-2xl border border-border-subtle bg-elevated text-accent-ink"><HabitIcon name={habit.icon} size={21} /></span><h1 className="break-words text-4xl font-bold tracking-[-0.05em] sm:text-5xl">{habit.name}</h1></div>
-                        <p className="mt-3 text-sm text-muted">See your consistency take shape.</p>
                     </div>
-                    <div className="flex shrink-0 items-center gap-3 rounded-2xl border border-border-subtle bg-elevated px-4 py-3">
+                </header>
+
+                <div className="mb-6 flex w-fit items-center gap-3 rounded-2xl border border-border-subtle bg-elevated px-4 py-3">
                         <Flame aria-hidden="true" className="text-accent-ink" size={24} />
                         <strong className="text-3xl font-bold tracking-tight tabular-nums">{statistics.currentStreak}</strong>
                         <div><p className="text-xs font-bold">Current streak</p><p className="mt-0.5 text-xs text-muted">Overall, as of today</p></div>
-                    </div>
-                </header>
+                </div>
 
                 <section aria-busy={loading} aria-label="Habit statistics" className="space-y-5">
                     <Surface className="rounded-2xl p-3 sm:p-4">

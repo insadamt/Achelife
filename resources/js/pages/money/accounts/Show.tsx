@@ -48,16 +48,15 @@ export default function AccountShow(props: AccountShowProps) {
     }
 
     return (
-        <div style={{ '--module-accent': 'var(--money-accent)' } as CSSProperties}>
+        <div className="page-rail mx-auto w-full max-w-[80rem]" style={{ '--module-accent': 'var(--money-accent)' } as CSSProperties}>
             <Head title={`${props.account.name} · Money`} />
             <Link className="focus-ring inline-flex min-h-10 items-center gap-2 rounded-full text-sm font-bold text-muted hover:text-foreground" href={archived ? '/money/accounts/archived' : '/money'}>
                 <ArrowLeft aria-hidden="true" size={17} /> Back to {archived ? 'Archived Accounts' : 'Money'}
             </Link>
 
-            <header className="mt-5 mb-7 flex items-end justify-between gap-4">
+            <header className="page-chrome mt-5">
                 <div>
-                    <p className="text-xs font-bold tracking-[0.2em] text-accent-ink uppercase">{props.account.currency} Account</p>
-                    <h1 className="mt-2 text-4xl font-bold tracking-[-0.05em] sm:text-5xl">{props.account.name}</h1>
+                    <h1 className="text-4xl font-bold tracking-[-0.05em] sm:text-5xl">{props.account.name}</h1>
                 </div>
                 <Button onClick={() => setSettingsOpen(true)} size="small" variant="secondary">
                     <Settings2 aria-hidden="true" size={16} /> Settings

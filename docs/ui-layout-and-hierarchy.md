@@ -2,7 +2,7 @@
 
 This is the layout contract for Achelife page redesigns. Read it with the [UI and motion guide](ui-design-and-motion.md). It covers alignment, widths, vertical rhythm, headings, navigation levels, tabs, and control dimensions. The values below are proposed shared defaults for the redesign; they are not all implemented yet.
 
-## Current app audit
+## Before alignment audit
 
 The shared application shell allows content up to `92rem`, but pages choose widths independently. Tasks and Calendar use `max-w-7xl`; Habits uses `max-w-5xl`; Seasons, Statistics, Constitution, and Settings commonly use `max-w-6xl`; Money pages have no page-level width wrapper and can expand to the shell limit. Those decisions change the left and right edges of content when moving between destinations.
 
@@ -14,18 +14,20 @@ Representative source: `resources/js/layouts/AppLayout.tsx`, `resources/js/featu
 
 | Existing area | Redesign alignment target |
 | --- | --- |
-| Money pages reaching the `92rem` shell limit | Standard `80rem` page rail unless a specific data view needs the wider layout |
+| Money pages reaching the `92rem` shell limit | Shared `80rem` page rail |
 | Habits `max-w-5xl` and common `max-w-6xl` pages | Standard `80rem` page rail; narrow individual reading columns inside it |
-| Tasks workspace and Calendar `max-w-7xl` | Use the documented wide rail when the file browser or calendar needs it; keep header alignment consistent with that rail |
+| Tasks workspace and Calendar `max-w-7xl` | Use the same `80rem` rail as the other pages |
 | Today, Money, and other top-level titles using different scales | Shared responsive page-title scale; retain a larger hero only for a deliberate milestone |
 | Task and Money module navigation using different patterns | One shared module-navigation role and placement below the page header |
 | Today, Task, Season, Debt, and Subscription local views | One shared local-view pattern with consistent height and selected state; preserve each view's route or in-page behavior |
 
 ## One page frame
 
+The shared page chrome uses one `80rem` rail and a `7rem` desktop header. Headers scroll with the page. Titles and controls align vertically in a rounded header; descriptions and secondary metrics sit outside it. Route navigation shares the header surface, keeps 44px targets, and scrolls horizontally when it cannot fit. Frosted and normal glass use a blurred translucent header and navigation surface; reduced-transparency settings use an opaque surface.
+
 All authenticated destinations use the same inner content rail and left edge after the global sidebar. The default page rail is `80rem` maximum and fills the available width below that. It is centered inside the shell, with the shell providing consistent responsive side padding. Page headers, module navigation, and primary content align to this rail.
 
-Use a wider `92rem` rail only when the content itself needs parallel columns or a broad timeline, such as the Task workspace or Calendar. A long-reading or single-form section may have a narrower **inner column**, but its page header and navigation stay aligned with the main rail. Do not assign a different page max width simply because a new module is being built. Document a wider exception beside the page design.
+A long-reading or single-form section may have a narrower **inner column**, but its page header and navigation stay aligned with the main rail. Do not assign a different page max width simply because a new module is being built.
 
 The page frame grows with content. Do not force a fixed page height or equal-height cards across unrelated sections. Use equal heights only within a deliberate row of peer cards, and preserve content and controls when text wraps or the viewport narrows.
 
@@ -33,14 +35,14 @@ The page frame grows with content. Do not force a fixed page height or equal-hei
 
 Use a shared spacing scale based on 4px steps. The main intervals are 8px for tightly related items, 12px for controls within a group, 16px for card contents or peer cards, 24px from a page header to its navigation or first section, and 32px between major sections. Larger gaps are allowed for a deliberate hero or milestone, but the ordinary page should not invent a new rhythm.
 
-The application shell owns top and side padding. Pages own the space between their header, module navigation, local controls, and content. Avoid stacking page-level padding on top of shell padding. On mobile, respect the sticky header, bottom navigation, safe area, and any floating control; no content or keyboard focus should be completely hidden behind them. [WCAG 2.2 Focus Not Obscured](https://www.w3.org/WAI/WCAG22/Understanding/focus-not-obscured-minimum) is the reference for that requirement.
+The application shell owns top and side padding. Pages own the space between their header, module navigation, local controls, and content. Avoid stacking page-level padding on top of shell padding. On mobile, respect the bottom navigation, safe area, and any floating control; no content or keyboard focus should be completely hidden behind them. [WCAG 2.2 Focus Not Obscured](https://www.w3.org/WAI/WCAG22/Understanding/focus-not-obscured-minimum) is the reference for that requirement.
 
 ## Consistent page hierarchy
 
 Each standard page follows this order:
 
-1. **Page header:** optional module eyebrow or breadcrumb, one `h1`, concise context, and at most one prominent page action.
-2. **Module navigation:** destinations such as Tasks / Calendar / Statistics or Money / History / Debts. Place it consistently below the header.
+1. **Page header:** one `h1`, module navigation where present, and at most one prominent page action. Place descriptive context below the header.
+2. **Module navigation:** destinations such as Tasks / Calendar / Statistics or Money / History / Debts. Place it beside the heading when space allows, and wrap it below the heading within the same header surface on narrower screens.
 3. **Local view controls:** tabs, search, filters, and period controls belonging to this page.
 4. **Primary content:** summary or main work area, then supporting sections.
 5. **Feedback:** loading, empty, error, and success states appear in the relevant content region without shifting the whole page hierarchy.
@@ -56,7 +58,7 @@ Use three distinct levels, with one shared component pattern for each level acro
 | Level | Purpose | Behavior and visual treatment |
 | --- | --- | --- |
 | Global navigation | Move between Today, Tasks, Habits, Money, and other modules | Existing sidebar/mobile shell; strongest location cue |
-| Module navigation | Move between routes within one module | Consistent compact rail directly below the page header; active destination is persistent and uses `aria-current="page"` |
+| Module navigation | Move between routes within one module | Consistent compact rail within the page header; active destination is persistent and uses `aria-current="page"` |
 | Local views | Replace one content panel within the current page | Consistent inset segmented or tab treatment near that panel; selected state is persistent |
 
 Filters and period selectors sit below local navigation and look like controls, not a second module navigation bar. A page should not show two visually equal rows of tabs with unclear priority. Counts are supporting metadata; they must not dominate labels or change tab height.

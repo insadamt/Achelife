@@ -8,12 +8,12 @@ import type { MoneyAccountData } from '../../../features/money/types';
 
 export default function ArchivedAccounts({ accounts }: { accounts: MoneyAccountData[] }) {
     return (
-        <div style={{ '--module-accent': 'var(--money-accent)' } as CSSProperties}>
+        <div className="page-rail mx-auto w-full max-w-[80rem]" style={{ '--module-accent': 'var(--money-accent)' } as CSSProperties}>
             <Head title="Archived Accounts" />
             <Link className="focus-ring inline-flex min-h-10 items-center gap-2 rounded-full text-sm font-bold text-muted hover:text-foreground" href="/money">
                 <ArrowLeft aria-hidden="true" size={17} /> Back to Money
             </Link>
-            <header className="mt-5 mb-8">
+            <header className="page-chrome mt-5">
                 <h1 className="text-4xl font-bold tracking-[-0.05em] sm:text-5xl">Archived Accounts</h1>
             </header>
 

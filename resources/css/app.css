@@ -113,6 +113,52 @@
     --shadow-navigation: 0 16px 40px rgb(44 67 87 / 16%);
 }
 
+.page-chrome {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    width: 100%;
+    min-height: 7rem;
+    margin-bottom: 1.5rem;
+    padding: 1rem 1.5rem;
+    border: 1px solid var(--border-subtle);
+    border-radius: 1.75rem;
+    background-color: color-mix(in srgb, var(--surface-overlay) 88%, transparent);
+    box-shadow: var(--shadow-panel);
+    -webkit-backdrop-filter: blur(28px) saturate(145%);
+    backdrop-filter: blur(28px) saturate(145%);
+}
+
+.page-chrome h1 {
+    font-size: 2rem;
+    line-height: 1.1;
+    letter-spacing: -0.04em;
+}
+
+@media (min-width: 640px) {
+    .page-chrome h1 { font-size: 2.5rem; }
+}
+
+.module-navigation {
+    width: max-content;
+    border: 1px solid var(--border-subtle);
+    background-color: color-mix(in srgb, var(--surface-inset) 78%, transparent);
+    -webkit-backdrop-filter: blur(24px) saturate(145%);
+    backdrop-filter: blur(24px) saturate(145%);
+}
+
+@media (min-width: 1280px) {
+    .page-chrome { height: 7rem; }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+    .page-chrome { background-color: var(--surface-overlay); }
+    .module-navigation { background-color: var(--surface-inset); }
+    .page-chrome, .module-navigation { -webkit-backdrop-filter: none; backdrop-filter: none; }
+}
+
 .season-switcher-track {
     scroll-padding-inline: 0.5rem;
 }

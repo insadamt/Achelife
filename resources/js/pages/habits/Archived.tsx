@@ -11,8 +11,8 @@ export default function ArchivedHabits({ habits }: { habits: ArchivedHabitData[]
     return (
         <div style={{ '--module-accent': 'var(--habit-accent)' } as CSSProperties}>
             <Head title="Archived Habits" />
-            <div className="mx-auto max-w-5xl">
-                <header className="mb-6 flex items-center gap-3">
+            <div className="page-rail mx-auto w-full max-w-[80rem]">
+                <header className="page-chrome">
                     <Link aria-label="Active habits" className="focus-ring grid size-11 place-items-center rounded-full text-secondary hover:bg-surface-hover hover:text-foreground" href="/habits" title="Active habits">
                         <ArrowLeft aria-hidden="true" size={20} />
                     </Link>

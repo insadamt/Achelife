@@ -33,9 +33,9 @@ export default function MoneyIndex(props: MoneyIndexProps) {
     const [selectedTransaction, setSelectedTransaction] = useState<MoneyTransactionData | null>(null);
 
     return (
-        <div style={moduleStyle}>
+        <div className="page-rail mx-auto w-full max-w-[80rem]" style={moduleStyle}>
             <Head title="Money" />
-            <MoneyPageHeader active="overview" description="See what you have, record what changed, and keep every Account in view." title="Overview" />
+            <MoneyPageHeader active="overview" title="Overview" />
 
             <section aria-labelledby="accounts-heading" className="mb-8">
                 <div className="mb-4 flex items-center justify-between gap-4">

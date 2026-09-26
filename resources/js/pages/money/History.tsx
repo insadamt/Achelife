@@ -136,9 +136,9 @@ export default function MoneyHistory(props: HistoryProps) {
     }
 
     return (
-        <div style={{ '--module-accent': 'var(--money-accent)' } as CSSProperties}>
+        <div className="page-rail mx-auto w-full max-w-[80rem]" style={{ '--module-accent': 'var(--money-accent)' } as CSSProperties}>
             <Head title="Money history" />
-            <MoneyPageHeader active="history" description="Search, filter, and review every movement across your Accounts." title="History" />
+            <MoneyPageHeader active="history" title="History" />
 
             <Surface className="mb-5 p-4 sm:p-5" elevated>
                 <form className="flex flex-col gap-3 lg:grid lg:grid-cols-[minmax(14rem,2fr)_repeat(5,minmax(7rem,1fr))_auto] lg:items-end" onSubmit={applyFilters}>

@@ -17,7 +17,7 @@ Apply the shared structure to the persistent shell and the daily landing view. K
 
 ## Layout decisions and exceptions
 
-- The shell retains its 92rem outer ceiling so wide Task and Calendar workspaces remain possible. Today uses the standard 80rem `PageRail`; shell padding owns its left and right edges in every appearance, including wallpaper.
+- The shell and workspace pages use the same 80rem outer ceiling; shell padding owns their left and right edges in every appearance, including wallpaper.
 - Today keeps its compact two-column Tasks/Habits panel on desktop and accessible in-page tabs on mobile. This preserves the daily workflow while the header and progress headings follow the shared type scale.
 - Today's data arrives with the Inertia page; its empty state is shown inside each section. It has no separate page loading view. Focus errors remain in the global shell alert. Task and Habit mutation behavior is unchanged.
 - The mobile bottom bar and progress panel account for the device safe area. The progress panel remains modal while open, and Diary navigation closes it. The Focus island stays below the mobile header.

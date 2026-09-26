@@ -162,7 +162,7 @@ function AppShell({ children }: PropsWithChildren) {
                 )}
             </aside>
 
-            <header className="sticky top-0 z-20 flex min-h-16 items-center justify-between border-b border-border-subtle bg-overlay px-4 py-2 shadow-[var(--shadow-panel)] md:hidden">
+            <header className="relative z-20 flex min-h-16 items-center justify-between border-b border-border-subtle bg-overlay px-4 py-2 shadow-[var(--shadow-panel)] md:hidden">
                 <BrandMark />
                 {user && (
                     <div className="flex items-center gap-2">
@@ -186,7 +186,7 @@ function AppShell({ children }: PropsWithChildren) {
             </header>
 
             <main className="min-h-screen px-4 pt-6 pb-[calc(8rem+env(safe-area-inset-bottom))] sm:px-6 md:ml-28 md:px-8 md:pt-10 md:pb-12 lg:px-12">
-                <div className="mx-auto max-w-[92rem]">{children}</div>
+                <div className="mx-auto w-full max-w-[80rem]">{children}</div>
             </main>
 
             <nav

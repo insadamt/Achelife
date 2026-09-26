@@ -3,6 +3,7 @@ import { CalendarDays, Check, Circle, FolderKanban, GripVertical } from 'lucide-
 import { useMemo, useState } from 'react';
 import type { CSSProperties, DragEvent } from 'react';
 
+import { PageChrome, PageHeader, PageRail } from '../../components/ui';
 import { classNames } from '../../components/ui/classNames';
 import { TaskCalendarControls } from '../../features/tasks/TaskCalendarControls';
 import { TaskCalendarGrid } from '../../features/tasks/TaskCalendarGrid';
@@ -48,11 +49,11 @@ export default function TaskCalendarPage(props: CalendarPageProps) {
 
     return <div style={{ '--module-accent': 'var(--task-accent)' } as CSSProperties}>
         <Head title="Calendar · Tasks" />
-        <div className="mx-auto max-w-7xl">
-            <div className="flex flex-wrap items-center justify-between gap-4">
-                <div><p className="text-sm font-bold text-accent-ink">Task planning</p><h1 className="text-4xl font-bold tracking-[-0.05em] sm:text-5xl">Calendar</h1><p className="mt-2 max-w-2xl text-sm leading-6 text-muted">Plan every open, scheduled Task across your active Projects and Inbox.</p></div>
+        <PageRail>
+            <PageChrome>
+                <PageHeader title="Calendar" />
                 <TaskSectionNav active="calendar" />
-            </div>
+            </PageChrome>
             {props.intermission && <p className="mt-5 rounded-2xl border border-warning/35 bg-warning/10 px-4 py-3 text-sm leading-6 text-warning">Intermission: you can keep planning and rescheduling Tasks. Completion and SP resume when your next Season starts.</p>}
             <TaskCalendarControls includeInbox={props.includeInbox} month={props.month} onFiltersChange={(projectIds, includeInbox) => navigate(props.selectedDate, projectIds, includeInbox)} projectIds={props.selectedProjectIds} projects={props.projects} threeDayStart={props.threeDayStart} today={props.today} view={props.view} weekStart={props.weekStart} />
             <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_22rem]">
@@ -63,7 +64,7 @@ export default function TaskCalendarPage(props: CalendarPageProps) {
                     : <TaskCalendarGrid month={props.month} onOpenTask={setSelectedTaskId} onReschedule={reschedule} onSelectDate={navigate} selectedDate={props.selectedDate} tasks={props.tasks} tasksByDay={byDay} today={props.today} />}
                 <DayAgenda allTasks={props.tasks} date={props.selectedDate} onOpenTask={setSelectedTaskId} onReschedule={reschedule} tasks={selectedTasks} />
             </div>
-        </div>
+        </PageRail>
         {selectedTask && <TaskDetailsDrawer explorer={props.explorer} key={selectedTask.id} onClose={() => setSelectedTaskId(null)} task={selectedTask} today={props.today} />}
         <p aria-live="polite" className="sr-only">{announcement}</p>
     </div>;

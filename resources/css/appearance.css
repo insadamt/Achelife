@@ -158,8 +158,8 @@
     box-shadow: none;
 }
 
-.app-glass main header:has(h1):not(.today-glass):not(.bg-surface):not(.bg-elevated):not(.bg-overlay),
-.app-glass main nav:not(.bg-surface):not(.bg-elevated):not(.bg-overlay):not(.today-glass) {
+.app-glass main header:has(h1):not(.page-header):not(.page-chrome):not(.today-glass):not(.bg-surface):not(.bg-elevated):not(.bg-overlay),
+.app-glass main nav:not(.module-navigation):not(.bg-surface):not(.bg-elevated):not(.bg-overlay):not(.today-glass) {
     border-radius: var(--radius-panel);
     background-color: var(--surface-primary);
     box-shadow: none;
@@ -167,11 +167,11 @@
     backdrop-filter: blur(26px) saturate(140%);
 }
 
-.app-glass main header:has(h1):not(.today-glass):not(.bg-surface):not(.bg-elevated):not(.bg-overlay) {
+.app-glass main header:has(h1):not(.page-header):not(.page-chrome):not(.today-glass):not(.bg-surface):not(.bg-elevated):not(.bg-overlay) {
     padding: 1.25rem 1.5rem;
 }
 
-.app-glass main nav:not(.bg-surface):not(.bg-elevated):not(.bg-overlay):not(.today-glass) {
+.app-glass main nav:not(.module-navigation):not(.bg-surface):not(.bg-elevated):not(.bg-overlay):not(.today-glass) {
     padding: 0.5rem;
 }
 

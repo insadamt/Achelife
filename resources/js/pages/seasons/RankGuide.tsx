@@ -105,8 +105,8 @@ export default function RankGuide({ ranks }: RankGuideProps) {
         <div style={{ '--module-accent': 'var(--season-accent)' } as CSSProperties}>
             <Head title="Season Rank Guide" />
 
-            <div className="mx-auto max-w-6xl">
-                <header className="flex items-center justify-between gap-4">
+            <div className="page-rail mx-auto w-full max-w-[80rem]">
+                <header className="page-chrome">
                     <div className="flex min-w-0 items-center gap-3">
                         <Link
                             aria-label="Back to Seasons"
@@ -118,7 +118,6 @@ export default function RankGuide({ ranks }: RankGuideProps) {
                         </Link>
                         <div>
                             <h1 className="text-3xl font-bold tracking-[-0.045em] sm:text-4xl">Rank Explorer</h1>
-                            <p className="mt-0.5 text-xs font-bold tracking-[0.13em] text-muted uppercase">22 divisions · 100 SP each</p>
                         </div>
                     </div>
                     {currentRankIndex !== selectedIndex && (

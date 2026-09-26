@@ -41,9 +41,9 @@ export default function DebtIndex(props: DebtPageProps) {
     const overdueCount = props.debts.filter((debt) => debt.status === 'overdue').length;
 
     return (
-        <div style={{ '--module-accent': 'var(--money-accent)' } as CSSProperties}>
+        <div className="page-rail mx-auto w-full max-w-[80rem]" style={{ '--module-accent': 'var(--money-accent)' } as CSSProperties}>
             <Head title="Money Debts" />
-            <MoneyPageHeader active="debts" description="Track what you owe and what is owed to you without mixing principal into income or spending." title="Debts" />
+            <MoneyPageHeader active="debts" title="Debts" />
 
             {Object.keys(props.totalsByCurrency).length > 0 ? (
                 <Surface className="divide-y divide-border-subtle px-4" elevated>

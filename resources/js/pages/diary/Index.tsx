@@ -91,13 +91,12 @@ function DiaryWorkspace(props: DiaryPageProps) {
     const nextDate = shiftDate(day.date, 1);
 
     return (
-        <div className="diary-page" style={{ '--module-accent': 'var(--diary-accent)' } as CSSProperties}>
+        <div className="diary-page page-rail mx-auto w-full max-w-[80rem]" style={{ '--module-accent': 'var(--diary-accent)' } as CSSProperties}>
             <Head title="Diary" />
 
-            <header className="mb-5 flex items-end justify-between gap-4">
+            <header className="page-chrome">
                 <div>
-                    <p className="text-xs font-bold tracking-[0.22em] text-accent-ink uppercase">A day, kept</p>
-                    <h1 className="mt-1 text-4xl font-bold tracking-[-0.05em] sm:text-5xl">Diary</h1>
+                    <h1 className="text-4xl font-bold tracking-[-0.05em] sm:text-5xl">Diary</h1>
                 </div>
                 <div aria-label="Diary tools" className="flex items-center gap-1 rounded-2xl border border-border-subtle bg-surface p-1">
                     <DiaryTool active={activePanel === 'search'} label="Search" onClick={() => setActivePanel('search')}><Search size={18} /></DiaryTool>

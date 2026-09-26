@@ -66,12 +66,10 @@ export default function HabitsIndex(props: HabitsPageProps) {
         <div style={{ '--module-accent': 'var(--habit-accent)' } as CSSProperties}>
             <Head title="Habits" />
 
-            <div className="mx-auto max-w-5xl">
-                <header className="mb-8 flex flex-wrap items-end justify-between gap-4">
+            <div className="page-rail mx-auto w-full max-w-[80rem]">
+                <header className="page-chrome">
                     <div>
-                        <p className="mb-2 text-xs font-bold uppercase tracking-[0.16em] text-accent-ink">Build consistency</p>
                         <h1 className="text-4xl font-bold tracking-[-0.05em] sm:text-5xl">Habits</h1>
-                        <p className="mt-2 text-sm text-muted">Small actions. A clearer picture of your progress.</p>
                     </div>
                     <div className="flex items-center gap-2">
                         <CalendarLabelSetting value={props.calendarLabels} />

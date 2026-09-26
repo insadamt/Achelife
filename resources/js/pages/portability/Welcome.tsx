@@ -1,7 +1,7 @@
 import { Head } from '@inertiajs/react';
 import { ArchiveRestore, CalendarCheck, Download, Trophy } from 'lucide-react';
 
-import { Button, Surface } from '../../components/ui';
+import { Button, PageChrome, PageHeader, Surface } from '../../components/ui';
 
 interface RestoreSummary {
     restoredAt: string;
@@ -25,9 +25,10 @@ interface RestoreSummary {
 
 export default function Welcome({ summary }: { summary: RestoreSummary }) {
     return (
-        <div className="mx-auto max-w-4xl">
+        <div className="page-rail mx-auto w-full max-w-[80rem]">
             <Head title="Welcome back" />
-            <header><p className="text-xs font-bold tracking-[0.18em] text-accent-ink uppercase">Restore complete</p><h1 className="mt-2 text-4xl font-bold tracking-[-0.04em] sm:text-6xl">Welcome back.</h1><p className="mt-3 max-w-2xl text-base leading-7 text-secondary">Your snapshot was restored with its original calendar and timezone. No empty Seasons were created for time away.</p></header>
+            <PageChrome><PageHeader title="Welcome back" /></PageChrome>
+            <p className="text-base leading-7 text-secondary">Your snapshot was restored with its original calendar and timezone. No empty Seasons were created for time away.</p>
 
             <div className="mt-8 grid gap-4 sm:grid-cols-3">
                 <Surface className="p-5"><ArchiveRestore className="text-accent-ink" size={20} /><p className="mt-4 text-sm text-muted">Imported timeline</p><p className="text-xl font-bold">Season {summary.seasonNumber}</p><p className="text-sm text-secondary">Day 30: {summary.seasonEndDate}</p></Surface>

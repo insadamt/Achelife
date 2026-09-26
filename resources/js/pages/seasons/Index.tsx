@@ -47,17 +47,14 @@ export default function SeasonsIndex({ seasons, currentSeasonNumber, cycle }: Se
         <div style={{ '--module-accent': 'var(--season-accent)' } as React.CSSProperties}>
             <Head title="Seasons" />
 
-            <div className="mx-auto max-w-6xl">
-                <header className="flex items-center justify-between gap-4">
+            <div className="page-rail mx-auto w-full max-w-[80rem]">
+                <header className="page-chrome">
                     <div className="flex min-w-0 items-center gap-3">
                         <span className="grid size-11 shrink-0 place-items-center rounded-2xl border border-[color-mix(in_srgb,var(--module-accent)_38%,var(--border-subtle))] bg-[color-mix(in_srgb,var(--module-accent)_8%,transparent)] text-accent-ink">
                             <Orbit aria-hidden="true" size={21} />
                         </span>
                         <div>
                             <h1 className="text-3xl font-bold tracking-[-0.045em] sm:text-4xl">Seasons</h1>
-                            <p className="mt-0.5 text-xs font-bold tracking-[0.13em] text-muted uppercase">
-                                {currentSeason ? `${currentSeason.day} / 30 · Season ${String(currentSeason.number).padStart(2, '0')}` : `Intermission · ${cycle.intermission?.elapsedRestDays ?? 0} rest days`}
-                            </p>
                         </div>
                     </div>
                     <Link
@@ -69,6 +66,10 @@ export default function SeasonsIndex({ seasons, currentSeasonNumber, cycle }: Se
                         <span className="hidden sm:inline">Ranks</span>
                     </Link>
                 </header>
+
+                <p className="mb-4 text-sm font-semibold text-muted">
+                    {currentSeason ? `${currentSeason.day} / 30 · Season ${String(currentSeason.number).padStart(2, '0')}` : `Intermission · ${cycle.intermission?.elapsedRestDays ?? 0} rest days`}
+                </p>
 
                 {cycle.state === 'intermission' && cycle.intermission && (
                     <section className="mt-5 flex flex-col gap-4 rounded-[1.5rem] border border-[color-mix(in_srgb,var(--module-accent)_30%,var(--border-subtle))] bg-[color-mix(in_srgb,var(--module-accent)_7%,var(--surface-primary))] p-5 sm:flex-row sm:items-center sm:justify-between">

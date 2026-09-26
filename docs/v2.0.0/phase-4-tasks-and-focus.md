@@ -4,7 +4,7 @@
 
 ## Plan
 
-Redesign Tasks without changing its domain contract. Read [Tasks behavior](../user-guide.md#tasks), the [Tasks 2.0 roadmap](../v1.3.0/README.md), [Task statistics](../task-statistics.md), and [Task Targets](../task-targets-plan.md). A workspace or calendar wider than 80rem needs a recorded reason.
+Redesign Tasks without changing its domain contract. Read [Tasks behavior](../user-guide.md#tasks), the [Tasks 2.0 roadmap](../v1.3.0/README.md), [Task statistics](../task-statistics.md), and [Task Targets](../task-targets-plan.md). The workspace and calendar use the shared 80rem page rail.
 
 ## Implementation tasks
 

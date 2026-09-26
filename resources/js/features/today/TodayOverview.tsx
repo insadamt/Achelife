@@ -23,12 +23,10 @@ function calendarDateLabel(date: string) {
 
 export function TodayOverview({ date, seasonNumber, seasonDay, progress, onOpenSettings }: TodayOverviewProps) {
     return (
-        <div className="mb-6 space-y-4">
-            <header className="today-glass flex items-start justify-between gap-4 rounded-[1.75rem] px-4 py-5 sm:px-6 sm:py-6">
+        <>
+            <header className="page-chrome today-glass">
                 <div className="min-w-0">
                     <h1 className="text-[2rem] leading-[1.1] font-bold tracking-[-0.04em] sm:text-[2.5rem]">Today</h1>
-                    <p className="mt-2 text-sm font-medium text-secondary">{calendarDateLabel(date)}</p>
-                    <p className="mt-1 text-xs font-semibold text-muted">Season {String(seasonNumber).padStart(2, '0')} · Day {seasonDay} / 30</p>
                 </div>
                 <button
                     aria-label="Open Today settings"
@@ -40,7 +38,9 @@ export function TodayOverview({ date, seasonNumber, seasonDay, progress, onOpenS
                 </button>
             </header>
 
-            <section aria-labelledby="today-daily-progress-title" className="today-glass flex items-center justify-between gap-3 rounded-[1.75rem] px-4 py-5 sm:gap-6 sm:px-6">
+            <p className="mb-4 text-sm font-medium text-secondary">{calendarDateLabel(date)} · Season {String(seasonNumber).padStart(2, '0')} · Day {seasonDay} / 30</p>
+
+            <section aria-labelledby="today-daily-progress-title" className="today-glass mb-6 flex items-center justify-between gap-3 rounded-[1.75rem] px-4 py-5 sm:gap-6 sm:px-6">
                 <div className="min-w-0 flex-1">
                     <h2 className="text-xl font-bold leading-tight sm:text-2xl" id="today-daily-progress-title">Daily progress</h2>
                     <p aria-live="polite" className="mt-1.5 text-xl font-bold tracking-[-0.035em] sm:text-2xl">
@@ -58,6 +58,6 @@ export function TodayOverview({ date, seasonNumber, seasonDay, progress, onOpenS
                     />
                 </div>
             </section>
-        </div>
+        </>
     );
 }

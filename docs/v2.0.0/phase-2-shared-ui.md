@@ -11,17 +11,17 @@ Make shared primitives express the documented hierarchy before page-by-page adop
 - [x] Update shared Button, Surface, inputs, Dialog, Drawer, status/progress, and chart presentation to use semantic tokens and the selected material family.
 - [x] Give controls documented default, hover, focus, selected, disabled, loading, success, and error states where applicable; preserve focus management and announcements.
 - [x] Create or refine shared page rail/header, module navigation, local-view tabs, and filter roles. Keep route links distinct from in-page tabs.
-- [x] Apply 80rem standard and justified 92rem wide rails, shared heading scale, spacing rhythm, and control heights in the primitives.
+- [x] Apply the shared 80rem rail, heading scale, spacing rhythm, and control heights in the primitives.
 - [x] Implement reduced-motion behavior in CSS and JavaScript movement, including scroll; keep state understandable with motion disabled.
 - [x] Document component usage and exceptions for page phases; keep component files below 500 lines.
 
 ## Component usage and page-phase handoff
 
-- `PageRail` defaults to 80rem; pass `wide` only for a documented 92rem content need, such as Task workspace or Calendar. The existing App shell remains 92rem so each page can adopt the correct inner rail in its own phase.
+- `PageRail` and the outer App shell use the same 80rem width for each workspace page, including Tasks and Calendar.
 - `PageHeader` owns the standard 32/40px `h1`, eyebrow, description, and optional action. `ModuleNavigation` uses route links with `aria-current="page"`; Tasks and Money now share it. `LocalViewTabs` uses in-page buttons with tab/panel IDs and Arrow/Home/End keyboard movement; Today now uses it. `FilterGroup` groups controls without pretending filters are tabs.
 - `Button` supports an accessible loading state, `Surface` has an inset depth, fields/selects can announce success as well as errors, and dialogs cap their height while drawers respect the bottom safe area. Status labels and chart axes use readable semantic text tokens. Progress tracks use the inset material.
 - Global CSS already removes nonessential animation for reduced motion. Subtask insertion now avoids smooth scrolling under that preference. The Focus island and Season switcher already contain JavaScript reduced-motion checks.
-- Page-specific title/rail adoption remains in Phases 3–8. The existing desktop Tasks workspace and Calendar can justify wide rails; other pages should adopt the standard rail. Current user feedback forbids a page-wide tint on wallpaper in every later page phase.
+- Page-specific title adoption remains in Phases 3–8. All workspace pages use the standard rail. Current user feedback forbids a page-wide tint on wallpaper in every later page phase.
 
 ## Manual review checklist
 

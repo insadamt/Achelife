@@ -1,7 +1,7 @@
 import { Head, Link, router } from '@inertiajs/react';
 import { CalendarDays, Coffee, History, Play } from 'lucide-react';
 
-import { Button, Surface } from '../components/ui';
+import { Button, PageChrome, PageHeader, Surface } from '../components/ui';
 import type { SeasonViewData } from '../features/seasons/types';
 import { MoneySubscriptionSummary } from '../features/money/MoneySubscriptionSummary';
 import type { MoneySubscriptionOccurrenceData } from '../features/money/types';
@@ -29,8 +29,9 @@ export default function Intermission({ cycle, lastSeason, closeout, manualSubscr
     }
 
     return (
-        <div className="mx-auto max-w-4xl">
+        <div className="page-rail mx-auto w-full max-w-[80rem]">
             <Head title="Season intermission" />
+            <PageChrome><PageHeader title="Intermission" /></PageChrome>
 
             <Surface className="overflow-hidden p-6 sm:p-9" elevated>
                 <div className="flex flex-col gap-7 md:flex-row md:items-center md:justify-between">
@@ -39,7 +40,7 @@ export default function Intermission({ cycle, lastSeason, closeout, manualSubscr
                             <Coffee aria-hidden="true" size={23} />
                         </span>
                         <p className="mt-6 text-xs font-bold tracking-[0.18em] text-accent-ink uppercase">Intermission · {cycle.intermission.reasonLabel}</p>
-                        <h1 className="mt-2 text-4xl font-bold tracking-[-0.045em] sm:text-6xl">Your next Season is waiting.</h1>
+                        <h2 className="mt-2 text-4xl font-bold tracking-[-0.045em] sm:text-6xl">Your next Season is waiting.</h2>
                         <p className="mt-4 max-w-xl text-base leading-7 text-secondary">
                             You have rested for {cycle.intermission.elapsedRestDays} {cycle.intermission.elapsedRestDays === 1 ? 'day' : 'days'}. Money, settings, planning, and your history remain available; seasonal rewards resume when you start again.
                         </p>

@@ -1,9 +1,9 @@
-import { Head, Link, router } from '@inertiajs/react';
+import { Head, router } from '@inertiajs/react';
 import { Archive, CircleAlert, Plus, Scale, ShieldCheck, TrendingDown, Undo2, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import type { CSSProperties, ReactNode } from 'react';
 
-import { Button, Surface } from '../../components/ui';
+import { Button, ModuleNavigation, Surface } from '../../components/ui';
 import { LawCard } from '../../features/constitution/LawCard';
 import { LawDetailsDrawer } from '../../features/constitution/LawDetailsDrawer';
 import { LawFormDrawer } from '../../features/constitution/LawFormDrawer';
@@ -55,17 +55,19 @@ export default function ConstitutionIndex(props: ConstitutionPageProps) {
         <div style={{ '--module-accent': 'var(--constitution-accent)' } as CSSProperties}>
             <Head title="Constitution" />
 
-            <div className="mx-auto max-w-6xl">
-                <header className="mb-6 flex items-center justify-between gap-4">
+            <div className="page-rail mx-auto w-full max-w-[80rem]">
+                <header className="page-chrome">
                     <div>
                         <h1 className="text-4xl font-bold tracking-[-0.05em] sm:text-5xl">Constitution</h1>
-                        <p className="mt-1 text-sm font-semibold text-muted">Season {String(props.currentSeason.number).padStart(2, '0')}</p>
                     </div>
                     <Button onClick={() => setCreating(true)}>
                         <Plus aria-hidden="true" size={18} />
                         New Law
                     </Button>
+                    <ModuleNavigation active="active" items={[{ value: 'active', label: 'Active', href: '/constitution', count: props.laws.length, icon: <ShieldCheck aria-hidden="true" size={17} /> }, { value: 'archived', label: 'Archived', href: '/constitution/archived', icon: <Archive aria-hidden="true" size={17} /> }]} label="Constitution views" />
                 </header>
+
+                <p className="mb-4 text-sm font-semibold text-muted">Season {String(props.currentSeason.number).padStart(2, '0')}</p>
 
                 {props.intermission && (
                     <p className="mb-5 rounded-2xl border border-warning/35 bg-warning/10 px-4 py-3 text-sm leading-6 text-warning">
@@ -78,20 +80,6 @@ export default function ConstitutionIndex(props: ConstitutionPageProps) {
                     <SummaryMetric danger icon={<TrendingDown size={18} />} label="SP lost" value={props.summary.spLost === 0 ? '0 SP' : `-${props.summary.spLost.toLocaleString()} SP`} />
                     <SummaryMetric className="col-span-2 sm:col-span-1" icon={<Scale size={18} />} label="Season SP" value={`${props.currentSeason.seasonPoints.toLocaleString()} SP`} />
                 </Surface>
-
-                <nav aria-label="Constitution views" className="mb-5 flex items-center justify-between border-b border-border-subtle">
-                    <div className="flex items-center gap-1">
-                        <span aria-current="page" className="icon-text flex min-h-11 items-center gap-2 border-b-2 border-[var(--module-accent)] px-3 text-sm font-bold text-foreground">
-                            <ShieldCheck aria-hidden="true" size={17} />
-                            Active
-                            <span className="rounded-full bg-elevated px-2 py-0.5 text-xs text-secondary">{props.laws.length}</span>
-                        </span>
-                        <Link className="focus-ring icon-text flex min-h-11 items-center gap-2 rounded-t-xl px-3 text-sm font-bold text-muted hover:bg-surface-hover hover:text-foreground" href="/constitution/archived">
-                            <Archive aria-hidden="true" size={17} />
-                            Archived
-                        </Link>
-                    </div>
-                </nav>
 
                 {props.laws.length === 0 ? (
                     <Surface className="grid min-h-64 place-items-center p-8 text-center" elevated>

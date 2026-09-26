@@ -15,9 +15,9 @@ export default function MoneyStatisticsPage({ statistics }: { statistics: MoneyS
     const [loading, setLoading] = useState(false);
 
     return (
-        <div style={{ '--module-accent': 'var(--money-accent)' } as CSSProperties}>
+        <div className="page-rail mx-auto w-full max-w-[80rem]" style={{ '--module-accent': 'var(--money-accent)' } as CSSProperties}>
             <Head title="Money statistics" />
-            <MoneyPageHeader active="statistics" description="See where money enters, where it goes, and how your cash flow changes." title="Statistics" />
+            <MoneyPageHeader active="statistics" title="Statistics" />
             <section aria-busy={loading} className={`space-y-5 transition-opacity ${loading ? 'pointer-events-none opacity-60' : 'opacity-100'}`}>
                 <MoneyStatisticsToolbar loading={loading} setLoading={setLoading} statistics={statistics} />
                 {statistics.currency === null ? <div className="grid min-h-72 place-items-center rounded-[2rem] border border-dashed border-border-strong bg-surface p-6 text-center"><div><p className="text-xl font-bold">Create an Account to begin</p><p className="mt-2 text-sm text-muted">Statistics are calculated separately for each Account currency.</p></div></div> : <>

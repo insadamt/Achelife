@@ -3,26 +3,24 @@ import type { HTMLAttributes, KeyboardEvent, ReactNode } from 'react';
 
 import { classNames } from './classNames';
 
-export function PageRail({ children, className, wide = false, ...props }: HTMLAttributes<HTMLDivElement> & { wide?: boolean }) {
-    return <div className={classNames('mx-auto w-full min-w-0', wide ? 'max-w-[92rem]' : 'max-w-[80rem]', className)} {...props}>{children}</div>;
+export function PageRail({ children, className, ...props }: HTMLAttributes<HTMLDivElement>) {
+    return <div className={classNames('page-rail mx-auto w-full min-w-0 max-w-[80rem]', className)} {...props}>{children}</div>;
+}
+
+export function PageChrome({ children, className }: { children: ReactNode; className?: string }) {
+    return <div className={classNames('page-chrome', className)}>{children}</div>;
 }
 
 interface PageHeaderProps {
     title: string;
-    description?: string;
-    eyebrow?: string;
     action?: ReactNode;
     className?: string;
 }
 
-export function PageHeader({ title, description, eyebrow, action, className }: PageHeaderProps) {
+export function PageHeader({ title, action, className }: PageHeaderProps) {
     return (
-        <header className={classNames('mb-6 flex min-w-0 flex-wrap items-start justify-between gap-4', className)}>
-            <div className="min-w-0 flex-1 basis-64">
-                {eyebrow && <p className="text-xs font-bold tracking-[0.14em] text-accent-ink uppercase">{eyebrow}</p>}
-                <h1 className="mt-1 break-words text-[2rem] leading-[1.1] font-bold tracking-[-0.04em] sm:text-[2.5rem]">{title}</h1>
-                {description && <p className="mt-2 max-w-2xl text-sm leading-6 text-secondary">{description}</p>}
-            </div>
+        <header className={classNames('page-header flex min-w-0 items-center gap-4', className)}>
+            <h1 className="min-w-0 break-words text-[2rem] leading-[1.1] font-bold tracking-[-0.04em] sm:text-[2.5rem]">{title}</h1>
             {action && <div className="min-w-0 shrink-0">{action}</div>}
         </header>
     );
@@ -33,6 +31,7 @@ export interface ModuleDestination<Value extends string> {
     label: string;
     href: string;
     icon?: ReactNode;
+    count?: number;
 }
 
 export function ModuleNavigation<Value extends string>({ label, items, active, className }: {
@@ -42,7 +41,7 @@ export function ModuleNavigation<Value extends string>({ label, items, active, c
     className?: string;
 }) {
     return (
-        <nav aria-label={label} className={classNames('mb-6 flex max-w-full gap-1 overflow-x-auto rounded-2xl border border-border-subtle bg-surface p-1 [scrollbar-width:thin]', className)}>
+        <nav aria-label={label} className={classNames('module-navigation flex max-w-full gap-1 overflow-x-auto rounded-2xl p-1 [scrollbar-width:thin]', className)}>
             {items.map((item) => (
                 <Link
                     aria-current={active === item.value ? 'page' : undefined}
@@ -55,6 +54,7 @@ export function ModuleNavigation<Value extends string>({ label, items, active, c
                 >
                     {item.icon}
                     {item.label}
+                    {item.count !== undefined && <span className="rounded-full bg-surface px-1.5 py-0.5 text-xs text-secondary">{item.count}</span>}
                 </Link>
             ))}
         </nav>

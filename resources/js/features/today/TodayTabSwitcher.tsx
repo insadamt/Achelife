@@ -13,7 +13,7 @@ export function TodayTabSwitcher({ activeTab, pendingTaskCount, unresolvedHabitC
     return (
         <LocalViewTabs
             active={activeTab}
-            className="today-glass sticky top-[4.75rem] z-10 mx-auto mb-5 w-full max-w-xl md:top-4"
+            className="today-glass mx-auto mb-5 w-full max-w-xl"
             idPrefix="today"
             label="Today views"
             onChange={onChange}

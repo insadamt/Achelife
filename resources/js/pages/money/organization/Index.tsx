@@ -26,9 +26,9 @@ export default function MoneyOrganization({ categories, initialSection, merchant
     ];
 
     return (
-        <div style={{ '--module-accent': 'var(--money-accent)' } as CSSProperties}>
+        <div className="page-rail mx-auto w-full max-w-[80rem]" style={{ '--module-accent': 'var(--money-accent)' } as CSSProperties}>
             <Head title="Money Organization" />
-            <MoneyPageHeader active="organization" description="Control the reusable labels that keep every transaction consistent and easy to find." title="Organization" />
+            <MoneyPageHeader active="organization" title="Organization" />
             <nav aria-label="Organization sections" className="mb-7 grid gap-2 rounded-[1.5rem] border border-border-subtle bg-surface p-2 sm:grid-cols-3">
                 {sections.map((section) => {
                     const SectionIcon = section.icon;

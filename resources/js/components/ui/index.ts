@@ -6,7 +6,7 @@ export { Drawer } from './Drawer';
 export { Icon } from './Icon';
 export type { IconName } from './Icon';
 export { Metric } from './Metric';
-export { FilterGroup, LocalViewTabs, ModuleNavigation, PageHeader, PageRail } from './PageStructure';
+export { FilterGroup, LocalViewTabs, ModuleNavigation, PageChrome, PageHeader, PageRail } from './PageStructure';
 export { ProgressBar } from './ProgressBar';
 export { StatusChip } from './StatusChip';
 export { Surface } from './Surface';
