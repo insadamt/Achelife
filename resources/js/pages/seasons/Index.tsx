@@ -67,9 +67,11 @@ export default function SeasonsIndex({ seasons, currentSeasonNumber, cycle }: Se
                     </Link>
                 </header>
 
-                <p className="mb-4 text-sm font-semibold text-muted">
-                    {currentSeason ? `${currentSeason.day} / 30 · Season ${String(currentSeason.number).padStart(2, '0')}` : `Intermission · ${cycle.intermission?.elapsedRestDays ?? 0} rest days`}
-                </p>
+                {!currentSeason && (
+                    <p className="mb-4 text-sm font-semibold text-muted">
+                        Intermission · {cycle.intermission?.elapsedRestDays ?? 0} rest days
+                    </p>
+                )}
 
                 {cycle.state === 'intermission' && cycle.intermission && (
                     <section className="mt-5 flex flex-col gap-4 rounded-[1.5rem] border border-[color-mix(in_srgb,var(--module-accent)_30%,var(--border-subtle))] bg-[color-mix(in_srgb,var(--module-accent)_7%,var(--surface-primary))] p-5 sm:flex-row sm:items-center sm:justify-between">
@@ -84,15 +86,15 @@ export default function SeasonsIndex({ seasons, currentSeasonNumber, cycle }: Se
                     </section>
                 )}
 
-                {currentSeason && cycle.rolloverPreference === 'automatic' && (
+                {currentSeason && cycle.rolloverPreference === 'automatic' && !cycle.holdNextSeason && (
                     <div className="mt-4 flex justify-end">
                         <Button
-                            onClick={() => router.put('/seasons/hold', { hold: !cycle.holdNextSeason }, { preserveScroll: true })}
+                            onClick={() => router.put('/seasons/hold', { hold: true }, { preserveScroll: true })}
                             size="small"
                             variant="secondary"
                         >
                             <PauseCircle aria-hidden="true" size={16} />
-                            {cycle.holdNextSeason ? 'Resume automatic rollover' : 'Pause after this Season'}
+                            Pause after this Season
                         </Button>
                     </div>
                 )}
