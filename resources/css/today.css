@@ -16,6 +16,13 @@
     --today-glass-shadow: var(--shadow-panel);
 }
 
+.app-glass .today-page {
+    --today-glass-border: transparent;
+    --today-glass-inner-border: transparent;
+    --today-glass-highlight: transparent;
+    --today-glass-shadow: none;
+}
+
 .today-page .today-glass {
     border: 1px solid var(--today-glass-border);
     background: var(--today-glass-fill);
@@ -63,7 +70,13 @@
 }
 
 .app-glass .today-page .today-glass-tab-active {
-    box-shadow: inset 0 1px rgb(255 255 255 / 13%), 0 7px 20px rgb(0 0 0 / 12%);
+    border-color: transparent;
+    box-shadow: none;
+}
+
+.app-glass .today-page :is(.today-glass, .today-glass-inner) {
+    border-color: transparent;
+    box-shadow: none;
 }
 
 @media (prefers-reduced-transparency: reduce) {

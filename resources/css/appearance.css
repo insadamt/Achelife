@@ -14,11 +14,11 @@
 .app-glass,
 .app-normal-glass {
     --app-background: transparent;
-    --surface-primary: rgb(13 27 35 / 36%);
-    --surface-elevated: rgb(20 34 43 / 44%);
-    --surface-inset: rgb(8 19 27 / 24%);
-    --surface-overlay: rgb(19 33 42 / 56%);
-    --surface-hover: rgb(52 69 78 / 46%);
+    --surface-primary: rgb(13 27 35 / 28%);
+    --surface-elevated: rgb(20 34 43 / 25%);
+    --surface-inset: rgb(8 19 27 / 12%);
+    --surface-overlay: rgb(19 33 42 / 36%);
+    --surface-hover: rgb(52 69 78 / 24%);
     --border-subtle: rgb(219 235 243 / 38%);
     --border-strong: rgb(232 243 248 / 60%);
     --text-secondary: #e2e8ec;
@@ -32,11 +32,11 @@
 }
 
 :root[data-theme='light'] :is(.app-glass, .app-normal-glass) {
-    --surface-primary: rgb(231 240 247 / 38%);
-    --surface-elevated: rgb(246 251 254 / 46%);
-    --surface-inset: rgb(217 230 240 / 26%);
-    --surface-overlay: rgb(250 253 255 / 58%);
-    --surface-hover: rgb(235 244 250 / 50%);
+    --surface-primary: rgb(231 240 247 / 30%);
+    --surface-elevated: rgb(246 251 254 / 25%);
+    --surface-inset: rgb(217 230 240 / 12%);
+    --surface-overlay: rgb(250 253 255 / 36%);
+    --surface-hover: rgb(235 244 250 / 24%);
     --border-subtle: rgb(92 119 139 / 46%);
     --border-strong: rgb(60 91 115 / 62%);
     --text-secondary: #344a5c;
@@ -53,6 +53,26 @@
     --surface-elevated: rgb(20 34 43 / 76%);
     --surface-inset: rgb(8 19 27 / 62%);
     --surface-overlay: rgb(19 33 42 / 84%);
+}
+
+.app-glass {
+    --border-subtle: rgb(219 235 243 / 26%);
+    --border-strong: rgb(232 243 248 / 42%);
+    --glass-edge-bright: transparent;
+    --glass-edge-dark: transparent;
+    --shadow-panel: none;
+    --shadow-raised: none;
+    --shadow-navigation: none;
+}
+
+:root[data-theme='light'] .app-glass {
+    --border-subtle: rgb(92 119 139 / 32%);
+    --border-strong: rgb(60 91 115 / 46%);
+    --glass-edge-bright: transparent;
+    --glass-edge-dark: transparent;
+    --shadow-panel: none;
+    --shadow-raised: none;
+    --shadow-navigation: none;
 }
 
 :root[data-theme='light'] .app-normal-glass {
@@ -80,9 +100,41 @@
     border-color: var(--border-strong);
 }
 
-.app-glass :where(.bg-surface, .bg-elevated, .bg-inset, .bg-overlay, .today-glass, .today-glass-inner) {
+.app-glass :where(.bg-surface, .bg-elevated, .bg-inset, .bg-overlay, .today-glass, .today-glass-inner, input, textarea, select, [role='tablist']) {
     -webkit-backdrop-filter: blur(26px) saturate(140%);
     backdrop-filter: blur(26px) saturate(140%);
+}
+
+.app-glass :is(.bg-surface, .bg-elevated, .bg-inset, .bg-overlay, .today-glass, .today-glass-inner, input, textarea, select) {
+    border-color: transparent;
+    box-shadow: none;
+}
+
+.app-glass :is(.shadow-sm, .shadow-md, .shadow-lg, .shadow-xl, .shadow-2xl) {
+    box-shadow: none;
+}
+
+.app-glass main header:has(h1):not(.today-glass):not(.bg-surface):not(.bg-elevated):not(.bg-overlay),
+.app-glass main nav:not(.bg-surface):not(.bg-elevated):not(.bg-overlay):not(.today-glass) {
+    border-radius: var(--radius-panel);
+    background-color: var(--surface-primary);
+    box-shadow: none;
+    -webkit-backdrop-filter: blur(26px) saturate(140%);
+    backdrop-filter: blur(26px) saturate(140%);
+}
+
+.app-glass main header:has(h1):not(.today-glass):not(.bg-surface):not(.bg-elevated):not(.bg-overlay) {
+    padding: 1.25rem 1.5rem;
+}
+
+.app-glass main nav:not(.bg-surface):not(.bg-elevated):not(.bg-overlay):not(.today-glass) {
+    padding: 0.5rem;
+}
+
+.app-glass [role='tablist']:not(.bg-surface):not(.bg-elevated):not(.bg-inset):not(.bg-overlay):not(.today-glass) {
+    border-color: transparent;
+    background-color: var(--surface-inset);
+    box-shadow: none;
 }
 
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
@@ -116,7 +168,9 @@
         --surface-overlay: #fafdff;
     }
 
-    .app-glass :where(.bg-surface, .bg-elevated, .bg-overlay, .today-glass) {
+    .app-glass :where(.bg-surface, .bg-elevated, .bg-inset, .bg-overlay, .today-glass, .today-glass-inner, input, textarea, select, [role='tablist']),
+    .app-glass main header:has(h1),
+    .app-glass main nav {
         -webkit-backdrop-filter: none;
         backdrop-filter: none;
     }

@@ -15,8 +15,8 @@ Frosted glass and Normal glass use the built-in city garden image unless a custo
 | --- | --- | --- | --- |
 | Light + Normal | Neutral gray, or custom image | Solid, light surfaces | Dark semantic text; solid controls |
 | Dark + Normal | Deep neutral, or custom image | Solid, dark surfaces | Light semantic text; solid controls |
-| Light + Frosted glass | Built-in or custom image without a page-wide tint | Cool light translucent surfaces with blur, glass edges, and nested depth | Dark semantic text |
-| Dark + Frosted glass | Built-in or custom image without a page-wide tint | Deep translucent surfaces with blur, glass edges, and nested depth | Light semantic text |
+| Light + Frosted glass | Built-in or custom image without a page-wide tint | Separate cool translucent panels with blur; transparent nested components and no decorative border or depth | Dark semantic text |
+| Dark + Frosted glass | Built-in or custom image without a page-wide tint | Separate deep translucent panels with blur; transparent nested components and no decorative border or depth | Light semantic text |
 | Light + Normal glass | Built-in or custom image without a page-wide tint | Cool light translucent surfaces with glass edges and nested depth; left navigation is the reference | Dark semantic text |
 | Dark + Normal glass | Built-in or custom image without a page-wide tint | Deep translucent surfaces with glass edges and nested depth | Light semantic text |
 
@@ -27,7 +27,7 @@ The wallpaper is decoration, never the color source for text. Do not tint the wh
 1. **Content and actions remain readable and recognizable.** Target [WCAG 2.2 AA text contrast](https://www.w3.org/WAI/WCAG22/Understanding/contrast-minimum) of at least 4.5:1 for ordinary text and 3:1 for qualifying large text with the built-in background. Prefer 4.5:1 for headings too when practical. Required control boundaries, state indicators, and meaningful icons need at least [3:1 against adjacent colors](https://www.w3.org/WAI/WCAG22/Understanding/non-text-contrast). Measure the rendered foreground against the rendered background, after image, transparency, gradients, and overlays are combined. User-uploaded images may make glass styles harder to read; show that limitation clearly in Settings.
 2. **Structure and behavior are the same across appearances.** Appearance changes material and color, not information hierarchy, labels, control placement, or access to an action.
 3. **Semantic roles drive styling.** Use `bg-app`, `bg-surface`, `bg-elevated`, `text-foreground`, `text-secondary`, `text-muted`, `border-border-subtle`, and the shared components in `resources/js/components/ui`. Add a semantic token when a recurring role cannot be expressed clearly. Do not choose arbitrary light or dark neutrals inside a page.
-4. **Use the accent with purpose.** Lime is the default, and a freely chosen user accent is a planned Settings option. Apply it to primary actions, active navigation, selection, and progress; keep glass edges mostly neutral. Save the user's exact chosen color, then derive readable foreground, standalone ink, and focus variants for each theme while retaining its hue. Do not assume a tint conveys selection by itself. The earlier [global foundation](v0.1.0/phase-0.5-global-ui-foundation.md) describes the current fixed-lime implementation; this guide records the agreed redesign direction.
+4. **Use the accent with purpose.** Lime is the default, and a freely chosen user accent is a planned Settings option. Apply it to primary actions, active navigation, selection, and progress; keep Frosted glass borderless. Save the user's exact chosen color, then derive readable foreground, standalone ink, and focus variants for each theme while retaining its hue. Do not assume a tint conveys selection by itself. The earlier [global foundation](v0.1.0/phase-0.5-global-ui-foundation.md) describes the current fixed-lime implementation; this guide records the agreed redesign direction.
 5. **Motion explains change.** Animate a state transition, navigation relationship, or acknowledgment when it improves understanding. A static state must still communicate the same information.
 
 ## Theme palettes
@@ -47,7 +47,7 @@ Organize editable colors by meaning instead of by page. The planned palette cove
 | Actions | Primary accent and secondary action; semantic action treatments use the shared Success, Warning, and Danger families |
 | Feedback | One editable Success, Warning, Danger, and Information family for text, icons, buttons, messages, and status indicators |
 | Interaction | Focus, selection, input boundary, divider, disabled treatment |
-| Glass materials | Surface tint, bright edge, darker edge, shadow for Frosted glass and Normal glass |
+| Glass materials | Surface tint and blur for Frosted glass; tint, edges, and shadow for the planned Normal glass |
 | Data | A chart series palette; individual Project, Category, and Tag colors retain their own item-level meaning |
 
 Each role may need a foreground, tint, border, hover, pressed, or disabled variant. Derive those companions from the edited base color and active theme instead of requiring a separate picker for every state. Show live component previews and contrast feedback in Settings. If a user-chosen palette makes essential text or controls hard to read, show a clear warning but allow the choice; the user retains full control and can reset individual roles or all of Appearance. Achelife's default palettes remain the readability target. The remaining editor details and persistence format remain to be decided. The current `app.css` tokens are the starting inventory, not the limit of the finished palette.
@@ -56,22 +56,22 @@ Success, Warning, Danger, and Information each use one editable color family per
 
 ## Surface and depth system
 
-Use a small, consistent depth scale. Every component in a selected glass style, including a component inside another component, belongs to the same material family. Nested components gain depth through a deliberate change in fill, light, edge, and shadow instead of becoming unrelated solid cards.
+Use separate section panels with visible wallpaper between them. In Frosted glass, every surface inside a section stays translucent and blurred, including nested cards, controls, menus, and inputs. Put page headings and standalone navigation on their own glass panels so text has a material behind it. Keep subtle divider lines inside panels where they separate content.
 
 | Level | Typical use | Treatment |
 | --- | --- | --- |
 | Page | App background and wallpaper | Plain color in Normal without an image; unfiltered image where one is present |
-| Surface | Main cards and panels | The selected material with its surface fill, glass edge when applicable, and panel radius |
-| Raised surface | Menus, drawers, dialogs, floating controls | The same material with greater apparent lift and separation |
-| Inset surface | Inputs, nested data, selected row groups | The same material with a recessed or deeper treatment that reads as part of the parent |
+| Surface | Main cards and panels | The selected material with its surface fill and panel radius |
+| Raised surface | Menus, drawers, dialogs, floating controls | The selected material with a distinct fill but no artificial depth in Frosted glass |
+| Inset surface | Inputs, nested data, selected row groups | A quieter translucent fill with blur in Frosted glass |
 
-Frosted glass uses a visibly blurred backdrop and translucent fills. Normal glass takes its visual cue from the current left navigation: subtle transparency that reveals background light and color without clearly showing image details, a shaped edge, and shadow with little or no backdrop blur. Normal uses solid fills. Both glass styles need an edge that reads as the thickness and reflected light of glass, including on nested pieces. A flat one-color outline does not express the intended material. Build the edge through coordinated highlights, a subtle darker side, and appropriate inner or outer shadow. Tune the glass tint, edge, and shadow for Light and Dark while preserving transparency and blur in both. Keep enough visible separation for the shape and state of a control to remain clear.
+Frosted glass uses visibly blurred backdrops and translucent fills across parent and nested components. It has no visible panel outline, reflected edge, or depth shadow; internal divider lines remain visible. Light and Dark use different transparent tints. Normal glass takes its visual cue from the current left navigation: subtle transparency that reveals background light and color without clearly showing image details, a shaped edge, and shadow with little or no backdrop blur. Normal uses solid fills. Keep enough visible separation for the shape and state of a control to remain clear.
 
-Light glass takes a **cool clear glass** direction: a restrained blue-gray tint rather than a flat white wash, a fine bright edge, a darker lower edge, and a soft shadow. Dark glass uses a deeper tint and stronger shadow. Apply those material characters to both Frosted glass and Normal glass; blur remains the main difference between them.
+Light Frosted glass takes a **cool clear glass** direction with a restrained blue-gray tint rather than a flat white wash. Dark Frosted glass uses a deeper transparent tint. Neither uses decorative edges or shadows. The planned Normal glass material can retain a shaped edge and shadow; blur remains the main difference between the two glass styles.
 
 Use **soft, layered corners** in every style. Main panels have the largest radius, nested cards and inset controls step down in radius, and selected controls or primary buttons may use pill shapes. The changing radius should make the parent-child relationship clear instead of giving every level the same outline. Keep the shared `--radius-panel` as the starting point and derive smaller component radii consistently.
 
-Nested glass is intentional: a card can contain a deeper glass row, control, or inset panel. Keep the number of levels understandable, so the parent and child remain visually related. Dense reading, forms, charts, menus, destructive confirmations, and long text still need legible local fills within the selected material. A raised overlay needs separation from both the wallpaper and the panel beneath it. Neither blur nor shadow alone defines an interactive boundary.
+Nested Frosted glass is intentional: a card can contain a transparent blurred row, control, or inset panel. Keep the number of levels understandable, so the parent and child remain visually related without panel outlines or depth shadows. Dense reading, forms, charts, menus, destructive confirmations, and long text still need legible local fills within the selected material. Use subtle divider lines, text, spacing, focus indicators, and selected states to define content and interactive boundaries.
 
 Blur softens background detail but does not set a predictable contrast ratio. `backdrop-filter` may be unavailable in older browsers, so Frosted glass needs a usable fill without blur; see [MDN's backdrop-filter reference](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Properties/backdrop-filter). Where supported, honor `prefers-reduced-transparency: reduce` with more opaque surfaces, while retaining the in-app Normal option because [browser support for that preference is incomplete](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/At-rules/%40media/prefers-reduced-transparency).
 
@@ -87,7 +87,7 @@ Blur softens background detail but does not set a predictable contrast ratio. `b
 
 Use the shared `Button`, `Surface`, form controls, dialog, and drawer before adding a page-specific version. The default button hierarchy is one primary action per immediate decision area, secondary actions for alternatives, ghost actions for low emphasis, and destructive treatment for destructive actions. Keep button labels as verbs that describe the result.
 
-In Frosted glass and Normal glass, the primary action keeps a filled accent color with a subtle glass edge and depth. Secondary actions use a quieter layer of the selected glass material. Buttons inside panels still read as part of that material family; their fill, edge, and shadow establish the action hierarchy without turning into an unrelated flat style.
+In Frosted glass and Normal glass, the primary action keeps a filled accent color. Secondary actions use a quieter layer of the selected glass material. Buttons inside panels still read as part of that material family; in Frosted glass, their fill and text establish the action hierarchy without borders or depth shadows.
 
 Warning and Danger actions use a restrained tinted treatment in ordinary menus and workflows. Use a strongly filled semantic button for the final confirmation of a consequential warning or destructive action. This keeps the action's meaning visible without making every related control compete with the primary accent.
 

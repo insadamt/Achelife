@@ -67,7 +67,7 @@ Module navigation and local tabs use a 44px minimum control height. Compact 36px
 
 ## Section and card sizing
 
-Use the selected Normal, Frosted glass, or Normal glass material through parent and child surfaces as specified in the [material guide](ui-design-and-motion.md#surface-and-depth-system). A section's width follows the page grid. A card should fit its content; use minimum heights only for a known visual purpose such as an empty state or comparable summary cards. Equal-height peer cards align their content and actions; nested cards step down in corner radius and depth. Avoid different panel padding for the same component role across pages.
+Use the selected Normal, Frosted glass, or Normal glass material through parent and child surfaces as specified in the [material guide](ui-design-and-motion.md#surface-and-depth-system). Frosted glass uses separate flat section panels without outer borders, translucent nested components, and subtle internal dividers. A section's width follows the page grid. A card should fit its content; use minimum heights only for a known visual purpose such as an empty state or comparable summary cards. Equal-height peer cards align their content and actions; nested cards step down in corner radius. Avoid different panel padding for the same component role across pages.
 
 ## Adoption rule for agents
 

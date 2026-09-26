@@ -11,7 +11,7 @@ Create the shared visual foundation before converting pages. Use [theme palettes
 - [x] Inventory existing `app.css`, `appearance.css`, `today.css`, theme provider, fonts, and semantic utility usage; record the exact files to change.
 - [x] Define default Light cool-porcelain and Dark palette tokens by semantic role. Keep Dark glass character and current persisted style meanings.
 - [x] Keep bundled League Spartan for headings, body, forms, navigation, and dense data; restore the original interface typography after user review.
-- [x] Define page, surface, raised, and inset material recipes with layered radii, glass highlights/darker edges, shadows, and unfiltered wallpaper.
+- [x] Define page, surface, raised, and inset material recipes with layered radii and unfiltered wallpaper; Frosted glass was later flattened after user review.
 - [x] Define reusable recipes for Normal solid, Frosted glass, and future Normal glass; do not expose the new saved setting until Phase 7 handles compatibility.
 - [x] Add usable no-blur fallback and reduced-transparency treatment; avoid relying on alpha or blur alone for readability.
 - [x] Record the default token values and any deliberate deviation from the design guides.
@@ -20,7 +20,7 @@ Create the shared visual foundation before converting pages. Use [theme palettes
 
 - Normal Light: page `#e9eef3`, surface `#f9fbfd`, raised/overlay `#ffffff`, inset `#e2eaf1`, text `#25313d`/`#435567`/`#526577`. Normal Dark retains page `#121315`, surface `#060708`, raised `#18191c`, with new inset `#101216` and overlay `#1b1e22`.
 - Both themes retain the exact default lime accent `#d7e66b`. Added semantic link and information colors, inset and overlay roles, and panel/card/control radii. Theme preference and persisted appearance data are unchanged.
-- Frosted glass keeps the current `glass` class and city garden background. Following user review, Light uses a cool translucent tint and Dark uses a deeper translucent tint; both retain blur, edges, and shadows. Nested insets also receive blur and stay more transparent than their parents. The wallpaper has no page-wide white or black tint. `normal` remains solid; the unexposed `app-normal-glass` recipe uses stronger opacity and no blur. The no-blur fallback raises opacity; reduced transparency uses solid fills and disables blur.
+- Frosted glass keeps the current `glass` class and city garden background. Following user review, Light uses a cool translucent tint and Dark uses a deeper translucent tint; parent and nested components retain blur and transparency without panel outlines, reflected edges, or depth shadows. Subtle divider lines remain inside panels. Headings and standalone menus sit on separate glass panels, with wallpaper visible between sections. `normal` remains solid; the unexposed `app-normal-glass` recipe uses stronger opacity and no blur. The no-blur fallback raises opacity; reduced transparency uses solid fills and disables blur.
 - `today.css` now reads the shared material tokens instead of carrying separate hard-coded Light/Dark glass fills. The Inter experiment was rejected in user review; the original bundled League Spartan font is restored throughout the interface.
 - Design-guide deviation pending review: current page-specific geometry and navigation heights remain for Phase 2 and later page phases. The clearer glass may make text harder to read over some wallpaper regions; confirm the visual character and readability manually.
 
@@ -28,7 +28,7 @@ Create the shared visual foundation before converting pages. Use [theme palettes
 
 - [ ] User reviews representative shell, nested card, input, and overlay in Light and Dark against the built-in wallpaper.
 - [ ] User checks Normal and Frosted glass still correspond to their existing saved values.
-- [ ] User checks blur-disabled and reduced-transparency rendering where available, plus readable text and visible material edges.
+- [ ] User checks blur-disabled and reduced-transparency rendering where available, plus readable text and clear control states.
 
 ## Exit and handoff
 
