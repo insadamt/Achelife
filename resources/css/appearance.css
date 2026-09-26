@@ -32,15 +32,15 @@
 }
 
 :root[data-theme='light'] :is(.app-glass, .app-normal-glass) {
-    --surface-primary: rgb(231 240 247 / 30%);
-    --surface-elevated: rgb(246 251 254 / 25%);
-    --surface-inset: rgb(217 230 240 / 12%);
-    --surface-overlay: rgb(250 253 255 / 36%);
-    --surface-hover: rgb(235 244 250 / 24%);
+    --surface-primary: rgb(231 240 247 / 95%);
+    --surface-elevated: rgb(246 251 254 / 96%);
+    --surface-inset: rgb(217 230 240 / 97%);
+    --surface-overlay: rgb(250 253 255 / 97%);
+    --surface-hover: rgb(235 244 250 / 95%);
     --border-subtle: rgb(92 119 139 / 46%);
     --border-strong: rgb(60 91 115 / 62%);
-    --text-secondary: #344a5c;
-    --text-muted: #405668;
+    --text-secondary: #34485b;
+    --text-muted: #40556a;
     --glass-edge-bright: rgb(255 255 255 / 72%);
     --glass-edge-dark: rgb(48 78 100 / 24%);
     --shadow-panel: 0 22px 48px rgb(35 58 72 / 16%), inset 0 1px var(--glass-edge-bright), inset 0 -1px var(--glass-edge-dark);
@@ -73,6 +73,14 @@
     --shadow-panel: none;
     --shadow-raised: none;
     --shadow-navigation: none;
+}
+
+:root[data-theme='light'] .app-glass .page-chrome {
+    background-color: var(--surface-overlay);
+}
+
+:root[data-theme='light'] .app-glass .module-navigation {
+    background-color: var(--surface-inset);
 }
 
 :root[data-theme='light'] .app-normal-glass {
@@ -190,10 +198,10 @@
     }
 
     :root[data-theme='light'] .app-glass {
-        --surface-primary: rgb(231 240 247 / 76%);
-        --surface-elevated: rgb(246 251 254 / 82%);
-        --surface-inset: rgb(217 230 240 / 68%);
-        --surface-overlay: rgb(250 253 255 / 90%);
+        --surface-primary: rgb(231 240 247 / 98%);
+        --surface-elevated: rgb(246 251 254 / 98%);
+        --surface-inset: rgb(217 230 240 / 99%);
+        --surface-overlay: rgb(250 253 255 / 99%);
     }
 }
 

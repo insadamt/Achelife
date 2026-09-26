@@ -14,14 +14,14 @@ export const severityPenalties: Record<LawSeverity, number> = {
 
 export const severityStyles: Record<LawSeverity, { text: string; border: string; background: string }> = {
     minor: {
-        text: 'text-[#e7bd61]',
-        border: 'border-[#9b7738]',
-        background: 'bg-[#e7bd61]/8',
+        text: 'text-[var(--severity-minor)]',
+        border: 'border-[var(--severity-minor-border)]',
+        background: 'bg-[color-mix(in_srgb,var(--severity-minor)_8%,transparent)]',
     },
     major: {
-        text: 'text-[#ef914f]',
-        border: 'border-[#a95d2d]',
-        background: 'bg-[#ef914f]/8',
+        text: 'text-[var(--severity-major)]',
+        border: 'border-[var(--severity-major-border)]',
+        background: 'bg-[color-mix(in_srgb,var(--severity-major)_8%,transparent)]',
     },
     critical: {
         text: 'text-danger',
