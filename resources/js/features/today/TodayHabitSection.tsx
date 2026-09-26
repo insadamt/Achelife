@@ -1,6 +1,7 @@
 import { Link, router } from '@inertiajs/react';
-import { Check, ChevronDown, MoreVertical, Repeat2 } from 'lucide-react';
-import { useState } from 'react';
+import gsap from 'gsap';
+import { ChevronDown, MoreVertical, Repeat2 } from 'lucide-react';
+import { useCallback, useLayoutEffect, useRef, useState } from 'react';
 
 import { classNames } from '../../components/ui/classNames';
 import { HabitIcon } from '../habits/HabitIcon';
@@ -30,14 +31,81 @@ function HabitCard({ habit, onNumeric, onSkip }: {
     const completed = day.state === 'completed';
     const skipped = day.state === 'skipped';
     const progress = habit.type === 'numeric' ? numericProgress(day) : completed ? 100 : 0;
+    const [markingComplete, setMarkingComplete] = useState(false);
+    const [processing, setProcessing] = useState(false);
+    const markContainerRef = useRef<HTMLSpanElement>(null);
+    const previousState = useRef(day.state);
+    const showCheckmark = completed || markingComplete;
+
+    const finishBooleanToggle = useCallback(() => {
+        setProcessing(false);
+        setMarkingComplete(false);
+    }, []);
+
+    const submitBooleanToggle = useCallback(() => {
+        router.post(`/habits/${habit.id}/occurrences/${day.date}/toggle`, {}, {
+            preserveScroll: true,
+            onFinish: finishBooleanToggle,
+        });
+    }, [day.date, finishBooleanToggle, habit.id]);
+
+    useLayoutEffect(() => {
+        if (!markingComplete) return;
+
+        const checkPath = markContainerRef.current?.querySelector<SVGPathElement>('svg path');
+        if (!checkPath) {
+            submitBooleanToggle();
+            return;
+        }
+
+        const pathLength = checkPath.getTotalLength();
+        gsap.set(checkPath, { strokeDasharray: pathLength, strokeDashoffset: pathLength });
+        const drawMark = gsap.timeline()
+            .to(checkPath, { strokeDashoffset: 0, duration: 0.38, ease: 'power2.inOut' })
+            .call(submitBooleanToggle, [], '+=0.45');
+
+        return () => drawMark.kill();
+    }, [markingComplete, submitBooleanToggle]);
+
+    useLayoutEffect(() => {
+        const priorState = previousState.current;
+        previousState.current = day.state;
+        if (priorState === day.state || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+        if (skipped) {
+            const skipMark = markContainerRef.current;
+            if (!skipMark) return;
+            const acknowledgeSkip = gsap.fromTo(skipMark, { scale: 0.88 }, { scale: 1, duration: 0.22, ease: 'back.out(2)' });
+            return () => acknowledgeSkip.kill();
+        }
+
+        if (habit.type !== 'numeric' || !completed) return;
+
+        const checkPath = markContainerRef.current?.querySelector<SVGPathElement>('svg path');
+        if (!checkPath) return;
+
+        const pathLength = checkPath.getTotalLength();
+        gsap.set(checkPath, { strokeDasharray: pathLength, strokeDashoffset: pathLength });
+        const drawMark = gsap.to(checkPath, { strokeDashoffset: 0, duration: 0.38, ease: 'power2.inOut' });
+
+        return () => drawMark.kill();
+    }, [completed, day.state, habit.type, skipped]);
 
     function performPrimaryAction() {
+        if (processing) return;
+
         if (habit.type === 'numeric') {
             onNumeric({ habit, day });
             return;
         }
 
-        router.post(`/habits/${habit.id}/occurrences/${day.date}/toggle`, {}, { preserveScroll: true });
+        setProcessing(true);
+        if (completed || skipped || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+            submitBooleanToggle();
+            return;
+        }
+
+        setMarkingComplete(true);
     }
 
     const valueLabel = habit.type === 'numeric'
@@ -51,19 +119,24 @@ function HabitCard({ habit, onNumeric, onSkip }: {
             <span aria-hidden="true" className="absolute inset-y-0 left-0 -z-10 bg-[color-mix(in_srgb,var(--habit-accent)_12%,transparent)] transition-[width] duration-200" style={{ width: `${progress}%` }} />
             <div className="flex min-h-16 items-center gap-2 px-3">
                 <button
-                    aria-label={`${habit.type === 'numeric' ? 'Update' : completed || skipped ? 'Reset' : 'Complete'} ${habit.name}`}
+                    aria-label={`${markingComplete ? 'Completing' : habit.type === 'numeric' ? 'Update' : completed || skipped ? 'Reset' : 'Complete'} ${habit.name}`}
                     className="focus-ring flex min-h-11 min-w-0 flex-1 items-center gap-3 rounded-xl py-2 text-left"
+                    disabled={processing}
                     onClick={performPrimaryAction}
                     type="button"
                 >
-                    <span className={classNames('grid size-10 shrink-0 place-items-center rounded-full border-2 transition-colors', completed ? 'today-check-pop border-[var(--habit-accent)] bg-[var(--habit-accent)] text-accent-foreground' : skipped ? 'border-warning text-warning' : 'border-border-strong hover:border-[var(--habit-accent)]')}>
-                        {completed ? <Check aria-hidden="true" size={18} strokeWidth={3} /> : <HabitIcon name={habit.icon} size={16} />}
+                    <span ref={markContainerRef} className={classNames('grid size-10 shrink-0 place-items-center rounded-full border-2 transition-colors', showCheckmark ? 'border-[var(--habit-accent)] bg-[var(--habit-accent)] text-accent-foreground' : skipped ? 'border-warning text-warning' : 'border-border-strong hover:border-[var(--habit-accent)]')}>
+                        {showCheckmark ? (
+                            <svg aria-hidden="true" fill="none" height={18} stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} viewBox="0 0 24 24" width={18}>
+                                <path d="M4 12l5 5L20 6" />
+                            </svg>
+                        ) : <HabitIcon name={habit.icon} size={16} />}
                     </span>
                     <span className={classNames('min-w-0 flex-1 break-words text-base font-bold', completed && 'text-secondary line-through')}>{habit.name}</span>
                     {valueLabel && <span className={classNames('shrink-0 text-xs font-bold', skipped ? 'text-warning' : 'text-secondary')}>{valueLabel}</span>}
                 </button>
                 {day.required && !skipped && (
-                    <button aria-label={`Skip ${habit.name}`} className="focus-ring grid size-11 shrink-0 place-items-center rounded-full text-muted hover:bg-surface-hover hover:text-foreground" onClick={() => onSkip({ habit, day })} title={`Skip ${habit.name}`} type="button">
+                    <button aria-label={`Skip ${habit.name}`} className="focus-ring grid size-11 shrink-0 place-items-center rounded-full text-muted hover:bg-surface-hover hover:text-foreground" disabled={processing} onClick={() => onSkip({ habit, day })} title={`Skip ${habit.name}`} type="button">
                         <MoreVertical aria-hidden="true" size={17} />
                     </button>
                 )}
