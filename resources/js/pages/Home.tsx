@@ -1,11 +1,11 @@
 import { Head } from '@inertiajs/react';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import type { CSSProperties } from 'react';
 
 import { PageRail } from '../components/ui';
 import { TodayHabitSection } from '../features/today/TodayHabitSection';
 import { TodayHeader } from '../features/today/TodayHeader';
-import { TodaySettingsDialog } from '../features/today/TodaySettingsDialog';
+import { TodaySettingsDrawer } from '../features/today/TodaySettingsDrawer';
 import { TodayTaskList } from '../features/today/TodayTaskList';
 import type { TodayPageProps } from '../features/today/types';
 import { MoneySubscriptionSummary } from '../features/money/MoneySubscriptionSummary';
@@ -17,6 +17,7 @@ export default function Home(props: TodayPageProps) {
     const [settingsOpen, setSettingsOpen] = useState(false);
     const [selectedTaskId, setSelectedTaskId] = useState<number | null>(null);
     const selectedTask = [...props.tasks.today, ...props.tasks.overdue].find((task) => task.id === selectedTaskId) ?? null;
+    const closeSettings = useCallback(() => setSettingsOpen(false), []);
 
     return (
         <PageRail className="today-page" style={todayStyle}>
@@ -35,7 +36,7 @@ export default function Home(props: TodayPageProps) {
 
             <MoneySubscriptionSummary due={props.manualSubscriptionPayments} surfaceClassName="today-glass" title="Manual payments due" />
 
-            {settingsOpen && <TodaySettingsDialog onClose={() => setSettingsOpen(false)} settings={props.settings} />}
+            {settingsOpen && <TodaySettingsDrawer onClose={closeSettings} settings={props.settings} />}
             {selectedTask && <TaskDetailsDrawer explorer={props.explorer} key={selectedTask.id} onClose={() => setSelectedTaskId(null)} task={selectedTask} today={props.today} />}
         </PageRail>
     );

@@ -38,7 +38,7 @@ Today SP sums Task completions, Habit occurrences, Diary rewards, Objective comp
 
 - show Flexible Habits;
 
-The header settings control opens a compact dialog that persists this value through the profile-scoped Today settings route. The preference affects Today presentation only.
+The header settings control opens a right-side drawer with a switch that persists this value through the profile-scoped Today settings route. The preference affects Today presentation only.
 
 ## Interface
 
