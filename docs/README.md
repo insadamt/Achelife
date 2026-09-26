@@ -22,4 +22,6 @@
 
 [Page layout and hierarchy](ui-layout-and-hierarchy.md) — shared page widths, headings, navigation levels, tabs, spacing, and control dimensions.
 
+[v2.0.0 design implementation plan](v2.0.0_design_plan.md) — phased whole-app redesign, document references, and manual review gates.
+
 [v1.3.0 Tasks 2.0 roadmap](v1.3.0/README.md) · [Task Targets plan](task-targets-plan.md) · [Release notes](releases/README.md) · [Contributing](../CONTRIBUTING.md) · [Security](../SECURITY.md) · [Engineering history](history.md)
