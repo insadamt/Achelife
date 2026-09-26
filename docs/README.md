@@ -18,4 +18,8 @@
 
 ## Project
 
+[UI and motion guide](ui-design-and-motion.md) — appearance matrix, glass surfaces, contrast, components, motion, and review rules for new UI work.
+
+[Page layout and hierarchy](ui-layout-and-hierarchy.md) — shared page widths, headings, navigation levels, tabs, spacing, and control dimensions.
+
 [v1.3.0 Tasks 2.0 roadmap](v1.3.0/README.md) · [Task Targets plan](task-targets-plan.md) · [Release notes](releases/README.md) · [Contributing](../CONTRIBUTING.md) · [Security](../SECURITY.md) · [Engineering history](history.md)
