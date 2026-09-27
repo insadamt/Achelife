@@ -47,11 +47,13 @@ function NavigationItem({
     mobile = false,
     rail = false,
     onNavigate,
+    onPrimaryNavigate,
 }: {
     destination: NavigationDestination;
     mobile?: boolean;
     rail?: boolean;
     onNavigate?: () => void;
+    onPrimaryNavigate?: (href: string) => void;
 }) {
     const { url } = usePage();
     const active = isActiveDestination(destination, url);
@@ -84,8 +86,13 @@ function NavigationItem({
     );
 
     if (destination.href) {
+        const href = destination.href;
         return (
-            <Link aria-current={active ? 'page' : undefined} className={itemClassName} href={destination.href} onClick={onNavigate}>
+            <Link aria-current={active ? 'page' : undefined} className={itemClassName} href={href} onClick={(event) => {
+                if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+                onPrimaryNavigate?.(href);
+                onNavigate?.();
+            }}>
                 {content}
             </Link>
         );
@@ -113,7 +120,7 @@ function UserIdentity({ name }: { name: string }) {
 
 function AppShell({ children }: PropsWithChildren) {
     const page = usePage<SharedPageProps>();
-    const { mainRef, shellRef } = useWorkspacePageTransition(page.url);
+    const { mainRef, shellRef, markPrimaryNavigation } = useWorkspacePageTransition(page.url);
     const { auth } = page.props;
     const { appearance } = page.props;
     const [mobileNavigationOpen, setMobileNavigationOpen] = useState(false);
@@ -151,7 +158,7 @@ function AppShell({ children }: PropsWithChildren) {
                 <div className="mx-4 border-t border-border-subtle" />
                 <nav aria-label="Primary navigation" className="flex flex-1 flex-col items-center gap-1 px-2 py-4">
                     {destinations.map((destination) => (
-                        <NavigationItem destination={destination} key={destination.label} rail />
+                        <NavigationItem destination={destination} key={destination.label} onPrimaryNavigate={markPrimaryNavigation} rail />
                     ))}
                 </nav>
                 {user && (
@@ -160,7 +167,7 @@ function AppShell({ children }: PropsWithChildren) {
                             {user.name.charAt(0).toUpperCase()}
                         </span>
                         <ThemeToggle />
-                        <NavigationItem destination={settingsDestination} rail />
+                        <NavigationItem destination={settingsDestination} onPrimaryNavigate={markPrimaryNavigation} rail />
                     </div>
                 )}
             </aside>
@@ -197,7 +204,7 @@ function AppShell({ children }: PropsWithChildren) {
                 className="fixed right-3 bottom-[calc(0.75rem+env(safe-area-inset-bottom))] left-3 z-30 flex items-center rounded-2xl border border-border-strong bg-overlay p-1.5 shadow-[var(--shadow-navigation)] md:hidden"
             >
                 {destinations.filter((destination) => mobilePrimaryLabels.has(destination.label)).map((destination) => (
-                    <NavigationItem destination={destination} key={destination.label} mobile />
+                    <NavigationItem destination={destination} key={destination.label} mobile onPrimaryNavigate={markPrimaryNavigation} />
                 ))}
                 <button
                     aria-expanded={mobileNavigationOpen}
@@ -220,14 +227,14 @@ function AppShell({ children }: PropsWithChildren) {
             >
                 <nav aria-label="All destinations" className="space-y-1">
                     {destinations.map((destination) => (
-                        <NavigationItem destination={destination} key={destination.label} onNavigate={() => setMobileNavigationOpen(false)} />
+                        <NavigationItem destination={destination} key={destination.label} onNavigate={() => setMobileNavigationOpen(false)} onPrimaryNavigate={markPrimaryNavigation} />
                     ))}
                 </nav>
                 {user && (
                     <div className="mt-8 border-t border-border-subtle pt-6">
                         <UserIdentity name={user.name} />
                         <div className="mt-5">
-                            <NavigationItem destination={settingsDestination} onNavigate={() => setMobileNavigationOpen(false)} />
+                            <NavigationItem destination={settingsDestination} onNavigate={() => setMobileNavigationOpen(false)} onPrimaryNavigate={markPrimaryNavigation} />
                         </div>
                     </div>
                 )}

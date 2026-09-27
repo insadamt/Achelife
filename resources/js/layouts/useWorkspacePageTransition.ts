@@ -68,7 +68,17 @@ function tabTransition(currentUrl: URL, destinationUrl: URL): { direction: 'left
     return { direction: destinationIndex > currentIndex ? 'left' : 'right', boundarySelector: queryTabs.boundarySelector };
 }
 
-function transitionFor(currentUrl: URL, destinationUrl: URL) {
+function transitionFor(currentUrl: URL, destinationUrl: URL, fromPrimaryNavigation: boolean) {
+    if (fromPrimaryNavigation) {
+        if (currentUrl.pathname === destinationUrl.pathname) return null;
+        const verticalDirection = scrollDirection(currentUrl.pathname, destinationUrl.pathname);
+        return {
+            scope: 'page' as const,
+            leavingClassName: `page-scroll-leaving-${verticalDirection}`,
+            enteringClassName: `page-scroll-entering-${verticalDirection}`,
+            durationMs: pageTransitionDurationMs,
+        };
+    }
     const tab = tabTransition(currentUrl, destinationUrl);
     if (tab) {
         return {
@@ -79,14 +89,7 @@ function transitionFor(currentUrl: URL, destinationUrl: URL) {
             durationMs: tabTransitionDurationMs,
         };
     }
-    if (currentUrl.pathname === destinationUrl.pathname) return null;
-    const verticalDirection = scrollDirection(currentUrl.pathname, destinationUrl.pathname);
-    return {
-        scope: 'page' as const,
-        leavingClassName: `page-scroll-leaving-${verticalDirection}`,
-        enteringClassName: `page-scroll-entering-${verticalDirection}`,
-        durationMs: pageTransitionDurationMs,
-    };
+    return null;
 }
 
 export function useWorkspacePageTransition(pageUrl: string) {
@@ -96,13 +99,18 @@ export function useWorkspacePageTransition(pageUrl: string) {
     const activeSnapshotRef = useRef<HTMLElement | null>(null);
     const activeBoundaryRef = useRef<HTMLElement | null>(null);
     const animationTimerRef = useRef<number | null>(null);
+    const primaryNavigationUrlRef = useRef<string | null>(null);
 
-    const prepareSnapshot = useCallback((destinationUrl: string) => {
+    const markPrimaryNavigation = useCallback((href: string) => {
+        primaryNavigationUrlRef.current = new URL(href, window.location.origin).pathname;
+    }, []);
+
+    const prepareSnapshot = useCallback((destinationUrl: string, fromPrimaryNavigation = false) => {
         const main = mainRef.current;
         if (!main || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
         const currentUrl = new URL(window.location.href);
         const nextUrl = new URL(destinationUrl, currentUrl);
-        const transition = transitionFor(currentUrl, nextUrl);
+        const transition = transitionFor(currentUrl, nextUrl, fromPrimaryNavigation);
         if (!transition) return;
 
         pendingSnapshotRef.current = {
@@ -114,7 +122,11 @@ export function useWorkspacePageTransition(pageUrl: string) {
 
     useEffect(() => {
         const stopStart = router.on('start', (event) => {
-            if (event.detail.visit.method === 'get') prepareSnapshot(event.detail.visit.url.toString());
+            const destinationUrl = event.detail.visit.url.toString();
+            const destinationPath = new URL(destinationUrl, window.location.origin).pathname;
+            const fromPrimaryNavigation = primaryNavigationUrlRef.current === destinationPath;
+            primaryNavigationUrlRef.current = null;
+            if (event.detail.visit.method === 'get') prepareSnapshot(destinationUrl, fromPrimaryNavigation);
         });
         const stopBeforeUpdate = router.on('beforeUpdate', (event) => {
             if (!pendingSnapshotRef.current) prepareSnapshot(event.detail.page.url);
@@ -198,5 +210,5 @@ export function useWorkspacePageTransition(pageUrl: string) {
         mainRef.current?.style.removeProperty('--page-tab-distance');
     }, []);
 
-    return { mainRef, shellRef };
+    return { mainRef, shellRef, markPrimaryNavigation };
 }
