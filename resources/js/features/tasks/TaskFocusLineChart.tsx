@@ -26,7 +26,7 @@ export function TaskFocusLineChart({ trend }: { trend: TaskFocusStatisticsData['
     const labelStep = Math.max(1, Math.ceil(points.length / 6));
 
     return <div>
-        <div aria-label="Scrollable Focus activity chart" className="focus-ring overflow-x-auto rounded-xl pb-1" role="region" tabIndex={0}>
+        <div aria-label="Scrollable Focus activity chart" className="focus-ring overflow-x-auto rounded-2xl bg-inset p-3" role="region" tabIndex={0}>
             <svg aria-label={`Line chart of completed Focus Time per ${trend.unit}`} className="h-auto min-w-[620px] w-full" role="img" viewBox={`0 0 ${chartWidth} ${chartHeight}`}>
                 <defs><linearGradient id={gradientId} x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stopColor="var(--module-accent)" stopOpacity="0.28" /><stop offset="100%" stopColor="var(--module-accent)" stopOpacity="0" /></linearGradient></defs>
                 {[1, 0.75, 0.5, 0.25, 0].map((ratio) => {

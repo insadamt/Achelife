@@ -13,9 +13,9 @@ interface RankedItem {
 function Ranking({ items, empty }: { items: RankedItem[]; empty: string }) {
     const maximum = Math.max(1, ...items.map((item) => item.seconds));
 
-    if (items.length === 0) return <p className="mt-5 grid min-h-40 place-items-center rounded-2xl border border-dashed border-border-strong bg-app/35 px-5 text-center text-sm text-muted">{empty}</p>;
+    if (items.length === 0) return <p className="mt-5 grid min-h-40 place-items-center rounded-2xl border border-dashed border-border-strong bg-inset px-5 text-center text-sm text-muted">{empty}</p>;
 
-    return <ol className="mt-5 space-y-3">{items.map((item, index) => <li className="relative overflow-hidden rounded-xl border border-border-subtle bg-app/45 p-3" key={item.key}>
+    return <ol className="mt-5 space-y-3">{items.map((item, index) => <li className="relative overflow-hidden rounded-xl border border-border-subtle bg-inset p-3" key={item.key}>
         <span aria-hidden="true" className="absolute inset-y-0 left-0 bg-[color-mix(in_srgb,var(--module-accent)_12%,transparent)]" style={{ width: `${item.seconds / maximum * 100}%` }} />
         <div className="relative flex items-center justify-between gap-3"><span className="min-w-0 truncate text-sm font-semibold"><span className="mr-2 text-xs text-muted">{index + 1}</span>{item.label}</span><span className="shrink-0 text-xs font-bold tabular-nums">{formatFocusDuration(item.seconds)}</span></div>
     </li>)}</ol>;

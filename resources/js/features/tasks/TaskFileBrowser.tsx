@@ -21,7 +21,7 @@ export function TaskFileBrowser({ explorer, filters, onAnnounce, workspace }: { 
     const browsingFolder = workspace.view === 'folder' && selectedFolder !== null;
 
     return <section aria-labelledby="task-files-heading" className="mt-6">
-        <Header browsingFolder={browsingFolder} count={explorer.folders.length + explorer.rootProjects.length + 1} filters={filters} folder={selectedFolder} onArchived={() => setShowArchived(true)} onCreate={setCreateLocation} />
+        <FilesHeader browsingFolder={browsingFolder} count={explorer.folders.length + explorer.rootProjects.length + 1} filters={filters} folder={selectedFolder} onArchived={() => setShowArchived(true)} onCreate={setCreateLocation} />
         {browsingFolder ? <>
             {draggingProject && <RootDropTarget onDrop={() => moveProject(draggingProject, null, explorer.rootProjects.length, 'Files', onAnnounce)} />}
             <ProjectGrid emptyMessage="This Folder has no Projects yet." filters={filters} folderId={selectedFolder.id} onDragStateChange={setDraggingProject} onManage={(project) => setManagingLocation(projectTarget(project))} projects={selectedFolder.projects} />
@@ -37,10 +37,40 @@ export function TaskFileBrowser({ explorer, filters, onAnnounce, workspace }: { 
     </section>;
 }
 
-function Header({ browsingFolder, count, filters, folder, onArchived, onCreate }: { browsingFolder: boolean; count: number; filters: TaskSearchFilters; folder: TaskFolderViewData | null; onArchived: () => void; onCreate: (kind: Exclude<CreateLocation, null>) => void }) {
-    if (browsingFolder) return <div className="mb-6 flex flex-wrap items-end justify-between gap-4"><div><Link className="focus-ring mb-3 inline-flex min-h-10 items-center gap-2 rounded-full px-3 text-sm font-bold text-muted hover:bg-surface-hover hover:text-foreground" href={taskNavigationHref('files', filters)}><ArrowLeft size={17} />Files</Link><h2 className="text-2xl font-bold tracking-[-0.03em]" id="task-files-heading">{folder?.name}</h2><p className="mt-1 text-sm text-muted">Choose a Project to open its Tasks.</p></div><Button onClick={() => onCreate('project')}><Plus size={17} />New Project</Button></div>;
+function FilesHeader({ browsingFolder, count, filters, folder, onArchived, onCreate }: { browsingFolder: boolean; count: number; filters: TaskSearchFilters; folder: TaskFolderViewData | null; onArchived: () => void; onCreate: (kind: Exclude<CreateLocation, null>) => void }) {
+    const surfaceClassName = 'mb-6 rounded-[var(--radius-panel)] border border-border-subtle bg-surface px-5 py-4 sm:px-6';
 
-    return <div className="mb-6 flex flex-col items-center gap-4 text-center sm:flex-row sm:justify-between sm:text-left"><div><div className="flex items-center justify-center gap-2 sm:justify-start"><h2 className="text-sm font-bold tracking-[0.12em] text-secondary uppercase" id="task-files-heading">Files</h2><span className="rounded-full bg-surface-hover px-2 py-0.5 text-xs font-bold text-muted">{count}</span></div><p className="mt-2 text-sm text-muted">Keep Projects together in Folders.</p></div><div className="flex flex-wrap justify-center gap-2"><Button onClick={onArchived} size="small" variant="ghost"><Archive size={16} />Archived</Button><Button onClick={() => onCreate('folder')} size="small" variant="secondary"><Plus size={16} />New Folder</Button><Button onClick={() => onCreate('project')} size="small"><Plus size={16} />New Project</Button></div></div>;
+    if (browsingFolder) {
+        return (
+            <div className={classNames(surfaceClassName, 'flex flex-wrap items-center justify-between gap-4 lg:flex-nowrap')}>
+                <div className="flex min-w-0 flex-wrap items-center gap-x-5 gap-y-2">
+                    <Link className="focus-ring inline-flex min-h-10 shrink-0 items-center gap-2 rounded-full px-3 text-sm font-bold text-muted hover:bg-surface-hover hover:text-foreground" href={taskNavigationHref('files', filters)}><ArrowLeft size={17} />Files</Link>
+                    <div className="flex min-w-0 flex-wrap items-baseline gap-x-3 gap-y-1">
+                        <h2 className="text-2xl font-bold tracking-[-0.03em]" id="task-files-heading">{folder?.name}</h2>
+                        <p className="text-sm text-muted">Choose a Project to open its Tasks.</p>
+                    </div>
+                </div>
+                <Button className="shrink-0" onClick={() => onCreate('project')}><Plus size={17} />New Project</Button>
+            </div>
+        );
+    }
+
+    return (
+        <div className={classNames(surfaceClassName, 'flex flex-col items-center gap-4 text-center sm:flex-row sm:justify-between sm:text-left')}>
+            <div>
+                <div className="flex items-center justify-center gap-2 sm:justify-start">
+                    <h2 className="text-sm font-bold tracking-[0.12em] text-secondary uppercase" id="task-files-heading">Files</h2>
+                    <span className="rounded-full bg-surface-hover px-2 py-0.5 text-xs font-bold text-muted">{count}</span>
+                </div>
+                <p className="mt-2 text-sm text-muted">Keep Projects together in Folders.</p>
+            </div>
+            <div className="flex flex-wrap justify-center gap-2">
+                <Button onClick={onArchived} size="small" variant="ghost"><Archive size={16} />Archived</Button>
+                <Button onClick={() => onCreate('folder')} size="small" variant="secondary"><Plus size={16} />New Folder</Button>
+                <Button onClick={() => onCreate('project')} size="small"><Plus size={16} />New Project</Button>
+            </div>
+        </div>
+    );
 }
 
 function FolderCard({ filters, folder, onAnnounce, onManage }: { filters: TaskSearchFilters; folder: TaskFolderViewData; onAnnounce: (message: string) => void; onManage: () => void }) {

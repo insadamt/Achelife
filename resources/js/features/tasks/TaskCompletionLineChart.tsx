@@ -42,7 +42,7 @@ export function TaskCompletionLineChart({ buckets, metric, unit }: TaskCompletio
 
     return (
         <div>
-            <div className="relative overflow-x-auto pb-1">
+            <div className="relative overflow-x-auto rounded-2xl bg-inset p-3">
                 <svg aria-label={`Line chart of ${metricLabel} per ${unit}`} className="h-auto min-w-[620px] w-full" role="img" viewBox={`0 0 ${chartWidth} ${chartHeight}`}>
                     <defs>
                         <linearGradient id={gradientId} x1="0" x2="0" y1="0" y2="1">

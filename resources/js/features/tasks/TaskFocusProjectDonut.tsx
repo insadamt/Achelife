@@ -25,7 +25,7 @@ export function TaskFocusProjectDonut({ focus }: { focus: TaskFocusStatisticsDat
     return <Surface className="min-w-0 rounded-3xl p-4 sm:p-6">
         <h3 className="flex items-center gap-2 text-lg font-bold"><FolderKanban aria-hidden="true" className="text-accent-ink" size={18} />Focus by Project</h3>
         <p className="mt-1 text-sm text-muted">Hover a segment to see its Project and completed Focus Time.</p>
-        {slices.length === 0 ? <p className="mt-5 grid min-h-40 place-items-center rounded-2xl border border-dashed border-border-strong bg-app/35 px-5 text-center text-sm text-muted">No Project Focus in this period.</p> : <div className="mt-5">
+        {slices.length === 0 ? <p className="mt-5 grid min-h-40 place-items-center rounded-2xl border border-dashed border-border-strong bg-inset px-5 text-center text-sm text-muted">No Project Focus in this period.</p> : <div className="mt-5">
             <ProjectDonut activeKey={activeKey} onActiveKeyChange={setActiveKey} slices={slices} totalSeconds={focus.current.totalSeconds} />
             <ul aria-label="Focus Time by Project" className="mt-6 grid gap-x-8 gap-y-3 border-t border-border-subtle pt-5 sm:grid-cols-2 xl:grid-cols-3">{slices.map((slice) => <li className="flex items-center justify-between gap-3" key={slice.key}>
                 <span className="flex min-w-0 items-center gap-2"><span aria-hidden="true" className="size-3 shrink-0 rounded-full" style={{ backgroundColor: slice.color }} /><span className="truncate text-sm font-semibold">{slice.name}</span></span>

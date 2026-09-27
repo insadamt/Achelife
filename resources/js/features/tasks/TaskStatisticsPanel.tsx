@@ -70,7 +70,7 @@ export function TaskStatisticsPanel({ statistics }: { statistics: TaskStatistics
         <section aria-busy={loading} aria-labelledby="task-statistics-heading" className={`space-y-5 transition-opacity ${loading ? 'opacity-60' : 'opacity-100'}`}>
             <Surface className="rounded-2xl p-3 sm:p-4">
                 <div className="flex flex-col justify-between gap-4 lg:flex-row lg:items-center">
-                    <div aria-label="Statistics period" className="grid grid-cols-4 gap-1 rounded-xl bg-app p-1 lg:min-w-80" role="group">
+                    <div aria-label="Statistics period" className="grid grid-cols-4 gap-1 rounded-xl bg-inset p-1 lg:min-w-80" role="group">
                         {filters.map(([key, label]) => (
                             <button aria-pressed={statistics.filter === key} className={`focus-ring min-h-10 rounded-lg px-3 text-xs font-bold transition-colors ${statistics.filter === key ? 'bg-[var(--module-accent)] text-accent-foreground' : 'text-muted hover:bg-surface-hover hover:text-foreground'}`} disabled={loading} key={key} onClick={() => changeFilter(key)} type="button">{label}</button>
                         ))}
@@ -107,13 +107,13 @@ export function TaskStatisticsPanel({ statistics }: { statistics: TaskStatistics
             <Surface className="overflow-hidden p-4 sm:p-6">
                 <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
                     <div><h3 className="text-lg font-bold">Activity trend</h3><p className="mt-1 text-sm text-muted">{chartMetric === 'tasks' ? 'Tasks completed' : 'Task SP earned'} per {statistics.trend.unit}</p></div>
-                    <div aria-label="Chart metric" className="flex gap-1 rounded-full border border-border-subtle bg-app p-1" role="group">
+                    <div aria-label="Chart metric" className="flex gap-1 rounded-full border border-border-subtle bg-inset p-1" role="group">
                         <button aria-pressed={chartMetric === 'tasks'} className={`focus-ring rounded-full px-3 py-1.5 text-xs font-bold transition-colors ${chartMetric === 'tasks' ? 'bg-[var(--module-accent)] text-accent-foreground' : 'text-muted hover:text-foreground'}`} onClick={() => setChartMetric('tasks')} type="button">Tasks</button>
                         <button aria-pressed={chartMetric === 'sp'} className={`focus-ring rounded-full px-3 py-1.5 text-xs font-bold transition-colors ${chartMetric === 'sp' ? 'bg-[var(--module-accent)] text-accent-foreground' : 'text-muted hover:text-foreground'}`} onClick={() => setChartMetric('sp')} type="button">SP</button>
                     </div>
                 </div>
                 {statistics.current.completed === 0
-                    ? <div className="grid min-h-64 place-items-center rounded-2xl border border-dashed border-border-strong bg-app/35 px-5 text-center"><div><CheckCheck aria-hidden="true" className="mx-auto text-muted" size={28} /><p className="mt-3 font-bold">No completions yet</p><p className="mt-1 text-sm text-muted">Completed tasks will form your activity line here.</p></div></div>
+                    ? <div className="grid min-h-64 place-items-center rounded-2xl border border-dashed border-border-strong bg-inset px-5 text-center"><div><CheckCheck aria-hidden="true" className="mx-auto text-muted" size={28} /><p className="mt-3 font-bold">No completions yet</p><p className="mt-1 text-sm text-muted">Completed tasks will form your activity line here.</p></div></div>
                     : <TaskCompletionLineChart buckets={statistics.trend.buckets} metric={chartMetric} unit={statistics.trend.unit} />}
             </Surface>
 
