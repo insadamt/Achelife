@@ -2,6 +2,7 @@ import { Archive, ArrowDownLeft, ArrowUpRight, PackageOpen, Plus, Search } from 
 import { useState } from 'react';
 
 import { Button, Field, Surface } from '../../components/ui';
+import { useHorizontalTabTransition } from '../../components/ui/useHorizontalTabTransition';
 import { CategoryCard } from './CategoryCard';
 import { CategoryCreateDrawer, SubcategoryCreateDrawer } from './CategoryEditorDrawers';
 import { MoneyPresetPackDrawer } from './MoneyPresetPackDrawer';
@@ -9,9 +10,11 @@ import type { MoneyPresetPackData } from './MoneyPresetPackDrawer';
 import type { MoneyCategoryData, MoneyCategoryType } from './types';
 
 type CategoryTab = MoneyCategoryType | 'archived';
+const categoryTabs: readonly CategoryTab[] = ['expense', 'income', 'archived'];
 
 export function CategoryManager({ categories, presetPack }: { categories: MoneyCategoryData[]; presetPack: MoneyPresetPackData }) {
     const [activeTab, setActiveTab] = useState<CategoryTab>('expense');
+    const { panelRef, selectTab, shellRef } = useHorizontalTabTransition(activeTab, categoryTabs, setActiveTab);
     const [creatingCategory, setCreatingCategory] = useState(false);
     const [subcategoryParentId, setSubcategoryParentId] = useState<number | null>(null);
     const [presetPreviewOpen, setPresetPreviewOpen] = useState(false);
@@ -30,12 +33,16 @@ export function CategoryManager({ categories, presetPack }: { categories: MoneyC
         <>
             <div className="mb-6 flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
                 <div aria-label="Category views" className="flex max-w-full overflow-x-auto rounded-full border border-border-subtle bg-surface p-1" role="tablist">
-                    {tabs.map((tab) => { const TabIcon = tab.icon; return <button aria-selected={activeTab === tab.value} className={activeTab === tab.value ? 'focus-ring icon-text flex shrink-0 items-center gap-1.5 rounded-full bg-elevated px-4 py-2 text-sm font-bold shadow-sm' : 'focus-ring icon-text flex shrink-0 items-center gap-1.5 rounded-full px-4 py-2 text-sm font-bold text-muted'} key={tab.value} onClick={() => setActiveTab(tab.value)} role="tab" type="button"><TabIcon aria-hidden="true" size={14} />{tab.label} <span className="text-xs text-muted">{tab.count}</span></button>; })}
+                    {tabs.map((tab) => { const TabIcon = tab.icon; return <button aria-selected={activeTab === tab.value} className={activeTab === tab.value ? 'focus-ring icon-text flex shrink-0 items-center gap-1.5 rounded-full bg-elevated px-4 py-2 text-sm font-bold shadow-sm' : 'focus-ring icon-text flex shrink-0 items-center gap-1.5 rounded-full px-4 py-2 text-sm font-bold text-muted'} key={tab.value} onClick={() => selectTab(tab.value)} role="tab" type="button"><TabIcon aria-hidden="true" size={14} />{tab.label} <span className="text-xs text-muted">{tab.count}</span></button>; })}
                 </div>
                 <div className="flex flex-wrap gap-2"><Button onClick={() => setPresetPreviewOpen(true)} variant="secondary"><PackageOpen aria-hidden="true" size={17} />Presets</Button><Button onClick={() => setCreatingCategory(true)}><Plus aria-hidden="true" size={17} />Category</Button></div>
             </div>
-            <div className="relative mb-5 max-w-xl"><Search aria-hidden="true" className="pointer-events-none absolute top-[2.8rem] left-4 text-muted" size={18} /><Field className="pl-11" label="Search Categories and Subcategories" onChange={(event) => setSearch(event.target.value)} placeholder="Try Bank Fees or Transport" value={search} /></div>
-            {visibleCategories.length > 0 ? <div className="grid gap-4 xl:grid-cols-2">{visibleCategories.map((category) => <CategoryCard category={category} key={category.id} onAddSubcategory={() => setSubcategoryParentId(category.id)} />)}</div> : <Surface className="grid min-h-56 place-items-center p-7 text-center" elevated><div><p className="text-2xl font-bold">{search ? 'No matching Categories' : `No ${activeTab} Categories`}</p>{activeTab !== 'archived' && <Button className="mt-5" onClick={() => setCreatingCategory(true)}><Plus aria-hidden="true" size={17} />Create Category</Button>}</div></Surface>}
+            <div className="relative" ref={shellRef}>
+                <div ref={panelRef}>
+                    <div className="relative mb-5 max-w-xl"><Search aria-hidden="true" className="pointer-events-none absolute top-[2.8rem] left-4 text-muted" size={18} /><Field className="pl-11" label="Search Categories and Subcategories" onChange={(event) => setSearch(event.target.value)} placeholder="Try Bank Fees or Transport" value={search} /></div>
+                    {visibleCategories.length > 0 ? <div className="grid gap-4 xl:grid-cols-2">{visibleCategories.map((category) => <CategoryCard category={category} key={category.id} onAddSubcategory={() => setSubcategoryParentId(category.id)} />)}</div> : <Surface className="grid min-h-56 place-items-center p-7 text-center" elevated><div><p className="text-2xl font-bold">{search ? 'No matching Categories' : `No ${activeTab} Categories`}</p>{activeTab !== 'archived' && <Button className="mt-5" onClick={() => setCreatingCategory(true)}><Plus aria-hidden="true" size={17} />Create Category</Button>}</div></Surface>}
+                </div>
+            </div>
             {creatingCategory && <CategoryCreateDrawer onClose={() => setCreatingCategory(false)} />}
             {presetPreviewOpen && <MoneyPresetPackDrawer onClose={() => setPresetPreviewOpen(false)} pack={presetPack} />}
             {subcategoryParentId !== null && <SubcategoryCreateDrawer categories={activeCategories} initialCategoryId={subcategoryParentId} onClose={() => setSubcategoryParentId(null)} />}

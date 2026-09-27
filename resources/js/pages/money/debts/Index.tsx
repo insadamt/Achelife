@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react';
 import type { CSSProperties } from 'react';
 
 import { Surface } from '../../../components/ui';
+import { useHorizontalTabTransition } from '../../../components/ui/useHorizontalTabTransition';
 import { DebtCard } from '../../../features/money/DebtCard';
 import { DebtComposerDrawer } from '../../../features/money/DebtComposerDrawer';
 import { DebtRepaymentDrawer } from '../../../features/money/DebtRepaymentDrawer';
@@ -28,9 +29,11 @@ const views: Array<{ value: DebtView; label: string }> = [
     { value: 'receivable', label: 'Owed to you' },
     { value: 'settled', label: 'Settled' },
 ];
+const debtTabOrder = views.map((item) => item.value);
 
 export default function DebtIndex(props: DebtPageProps) {
     const [view, setView] = useState<DebtView>('active');
+    const { panelRef, selectTab, shellRef } = useHorizontalTabTransition(view, debtTabOrder, setView);
     const [composerOpen, setComposerOpen] = useState(() => typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('create') === '1');
     const [repayingDebt, setRepayingDebt] = useState<MoneyDebtData | null>(null);
     const visibleDebts = useMemo(() => props.debts.filter((debt) => {
@@ -62,13 +65,17 @@ export default function DebtIndex(props: DebtPageProps) {
 
             <div className="my-6">
                 <div aria-label="Debt views" className="flex max-w-full gap-1 overflow-x-auto border-b border-border-subtle" role="group">
-                    {views.map((item) => <button aria-pressed={view === item.value} className={`focus-ring shrink-0 border-b-2 px-3 py-3 text-sm font-bold ${view === item.value ? 'border-[var(--money-accent)] text-foreground' : 'border-transparent text-muted hover:text-foreground'}`} key={item.value} onClick={() => setView(item.value)} type="button">{item.label}</button>)}
+                    {views.map((item) => <button aria-pressed={view === item.value} className={`focus-ring shrink-0 border-b-2 px-3 py-3 text-sm font-bold ${view === item.value ? 'border-[var(--money-accent)] text-foreground' : 'border-transparent text-muted hover:text-foreground'}`} key={item.value} onClick={() => selectTab(item.value)} type="button">{item.label}</button>)}
                 </div>
             </div>
 
-            {visibleDebts.length > 0 ? <div className="grid gap-3">{visibleDebts.map((debt) => <DebtCard debt={debt} key={debt.id} onRepay={() => setRepayingDebt(debt)} />)}</div> : (
-                <Surface className="grid min-h-64 place-items-center p-8 text-center" elevated><div><HandCoins className="mx-auto text-muted" size={28} /><p className="mt-3 text-2xl font-bold">Nothing here</p><p className="mt-2 text-muted">This debt view is clear.</p></div></Surface>
-            )}
+            <div className="relative" ref={shellRef}>
+                <div ref={panelRef}>
+                    {visibleDebts.length > 0 ? <div className="grid gap-3">{visibleDebts.map((debt) => <DebtCard debt={debt} key={debt.id} onRepay={() => setRepayingDebt(debt)} />)}</div> : (
+                        <Surface className="grid min-h-64 place-items-center p-8 text-center" elevated><div><HandCoins className="mx-auto text-muted" size={28} /><p className="mt-3 text-2xl font-bold">Nothing here</p><p className="mt-2 text-muted">This debt view is clear.</p></div></Surface>
+                    )}
+                </div>
+            </div>
 
             {composerOpen && <DebtComposerDrawer accounts={props.accounts} onClose={() => setComposerOpen(false)} people={props.people} today={props.today} />}
             {repayingDebt && <DebtRepaymentDrawer accounts={props.accounts} debt={repayingDebt} onClose={() => setRepayingDebt(null)} today={props.today} />}

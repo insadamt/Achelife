@@ -26,7 +26,7 @@ export function TaskCalendarControls({ includeInbox, month, onFiltersChange, pro
     const periodLabel = view === 'week' ? weekLabel(weekStart) : view === 'three_day' ? threeDayLabel(threeDayStart) : monthLabel(month);
 
     return (
-        <div className="mt-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border-subtle bg-surface p-2 sm:p-3">
+        <div className="mt-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border-subtle bg-surface p-2 sm:p-3" data-horizontal-nav="calendar-view">
             <div className="flex items-center gap-1">
                 <Link aria-label={`Previous ${view}`} className="focus-ring grid size-11 place-items-center rounded-xl text-secondary hover:bg-surface-hover hover:text-foreground" href={calendarHref(view, previousAnchor, previousAnchor, projectIds, includeInbox)}><ChevronLeft size={19} /></Link>
                 <div className="min-w-40 px-2 text-center"><p className="text-lg font-bold tracking-[-0.02em]">{periodLabel}</p></div>

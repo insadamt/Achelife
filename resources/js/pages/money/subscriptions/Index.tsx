@@ -46,7 +46,7 @@ export default function SubscriptionIndex(props: SubscriptionPageProps) {
                 <div className="pl-4"><p className="text-xs text-muted">Needs attention</p><p className={`mt-1 text-2xl font-bold tabular-nums ${props.counts.due > 0 ? 'text-warning' : ''}`}>{props.counts.due}</p></div>
             </Surface>
 
-            <nav aria-label="Subscription views" className="mb-6 flex max-w-full gap-1 overflow-x-auto border-b border-border-subtle">
+            <nav aria-label="Subscription views" className="mb-6 flex max-w-full gap-1 overflow-x-auto border-b border-border-subtle" data-horizontal-nav="subscription-view">
                 {views.map((item) => <Link aria-current={props.view === item.value ? 'page' : undefined} className={`focus-ring shrink-0 border-b-2 px-3 py-3 text-sm font-bold ${props.view === item.value ? 'border-[var(--money-accent)] text-foreground' : 'border-transparent text-muted hover:text-foreground'}`} href={`/money/subscriptions?view=${item.value}`} key={item.value}>{item.label} <span className="ml-1 text-xs">{props.counts[item.value]}</span></Link>)}
             </nav>
 

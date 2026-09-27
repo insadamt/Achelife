@@ -29,7 +29,7 @@ export default function MoneyOrganization({ categories, initialSection, merchant
         <div className="page-rail mx-auto w-full max-w-[80rem]" style={{ '--module-accent': 'var(--money-accent)' } as CSSProperties}>
             <Head title="Money Organization" />
             <MoneyPageHeader active="organization" title="Organization" />
-            <nav aria-label="Organization sections" className="mb-7 grid gap-2 rounded-[1.5rem] border border-border-subtle bg-surface p-2 sm:grid-cols-3">
+            <nav aria-label="Organization sections" className="mb-7 grid gap-2 rounded-[1.5rem] border border-border-subtle bg-surface p-2 sm:grid-cols-3" data-horizontal-nav="organization">
                 {sections.map((section) => {
                     const SectionIcon = section.icon;
                     return (

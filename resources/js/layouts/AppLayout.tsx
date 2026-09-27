@@ -14,6 +14,7 @@ import { DynamicIsland } from '../features/focus/DynamicIsland';
 import { FocusTimerProvider, useFocusTimer } from '../features/focus/FocusTimerContext';
 import type { SharedPageProps } from '../types';
 import { ThemeProvider } from '../theme/ThemeProvider';
+import { useWorkspacePageTransition } from './useWorkspacePageTransition';
 
 interface NavigationDestination {
     label: string;
@@ -112,6 +113,7 @@ function UserIdentity({ name }: { name: string }) {
 
 function AppShell({ children }: PropsWithChildren) {
     const page = usePage<SharedPageProps>();
+    const { mainRef, shellRef } = useWorkspacePageTransition(page.url);
     const { auth } = page.props;
     const { appearance } = page.props;
     const [mobileNavigationOpen, setMobileNavigationOpen] = useState(false);
@@ -139,6 +141,7 @@ function AppShell({ children }: PropsWithChildren) {
     return (
         <div
             className={classNames('min-h-screen bg-app text-foreground', appearance.surfaceStyle === 'glass' && 'app-glass', appearance.backgroundUrl !== null && 'app-wallpaper')}
+            ref={shellRef}
             style={wallpaperStyle}
         >
             <aside className="fixed top-4 bottom-4 left-4 z-30 hidden w-20 rounded-[2rem] border border-border-subtle bg-overlay shadow-[var(--shadow-navigation)] md:flex md:flex-col">
@@ -185,7 +188,7 @@ function AppShell({ children }: PropsWithChildren) {
                 )}
             </header>
 
-            <main className="min-h-screen px-4 pt-6 pb-[calc(8rem+env(safe-area-inset-bottom))] sm:px-6 md:ml-28 md:px-8 md:pt-10 md:pb-12 lg:px-12">
+            <main aria-label="Page content" className="workspace-scroll-region focus-ring h-[calc(100dvh-4rem)] overflow-y-auto px-4 pt-6 pb-[calc(8rem+env(safe-area-inset-bottom))] sm:px-6 md:ml-28 md:h-dvh md:px-8 md:pt-10 md:pb-12 lg:px-12" ref={mainRef} scroll-region="" tabIndex={0}>
                 <div className="mx-auto w-full max-w-[80rem]">{children}</div>
             </main>
 

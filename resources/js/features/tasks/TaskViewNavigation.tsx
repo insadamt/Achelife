@@ -22,7 +22,7 @@ export function TaskViewNavigation({ counts, workspace }: {
     workspace: TaskWorkspaceViewData;
 }) {
     return (
-        <nav aria-label="Task views" className="mt-7 overflow-x-auto rounded-2xl border border-border-subtle bg-surface p-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <nav aria-label="Task views" className="mt-7 overflow-x-auto rounded-2xl border border-border-subtle bg-surface p-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden" data-horizontal-nav="task-view">
             <div className="grid min-w-[34rem] grid-cols-4 gap-1 sm:min-w-0">
                 {taskViews.map((item) => {
                     const active = workspace.taskView === item.view;
