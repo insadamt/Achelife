@@ -1,5 +1,5 @@
 import { Link, usePage } from '@inertiajs/react';
-import { Timer } from 'lucide-react';
+import { BookOpenText, CalendarDays, CheckCheck, House, Repeat2, ScrollText, Settings2, Timer, Wallet, type LucideIcon } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { CSSProperties, PropsWithChildren } from 'react';
 
@@ -7,7 +7,6 @@ import { BrandMark } from '../components/BrandMark';
 import { ThemeToggle } from '../components/ThemeToggle';
 import { Drawer, Icon } from '../components/ui';
 import { classNames } from '../components/ui/classNames';
-import type { IconName } from '../components/ui';
 import { ProgressNotch } from '../features/progress/ProgressNotch';
 import { SpGainProvider, useSpGain } from '../features/progress/SpGainContext';
 import { DynamicIsland } from '../features/focus/DynamicIsland';
@@ -19,7 +18,7 @@ import { useWorkspacePageTransition } from './useWorkspacePageTransition';
 
 interface NavigationDestination {
     label: string;
-    icon: IconName;
+    icon: LucideIcon;
     href?: string;
 }
 
@@ -31,17 +30,17 @@ function isActiveDestination(destination: NavigationDestination, url: string) {
 }
 
 const destinations: NavigationDestination[] = [
-    { label: 'Today', icon: 'today', href: '/home' },
-    { label: 'Seasons', icon: 'seasons', href: '/seasons' },
-    { label: 'Tasks', icon: 'tasks', href: '/tasks' },
-    { label: 'Habits', icon: 'habits', href: '/habits' },
-    { label: 'Diary', icon: 'diary', href: '/diary' },
-    { label: 'Constitution', icon: 'constitution', href: '/constitution' },
-    { label: 'Money', icon: 'money', href: '/money' },
+    { label: 'Today', icon: House, href: '/home' },
+    { label: 'Seasons', icon: CalendarDays, href: '/seasons' },
+    { label: 'Tasks', icon: CheckCheck, href: '/tasks' },
+    { label: 'Habits', icon: Repeat2, href: '/habits' },
+    { label: 'Diary', icon: BookOpenText, href: '/diary' },
+    { label: 'Constitution', icon: ScrollText, href: '/constitution' },
+    { label: 'Money', icon: Wallet, href: '/money' },
 ];
 
 const mobilePrimaryLabels = new Set(['Today', 'Tasks', 'Habits']);
-const settingsDestination: NavigationDestination = { label: 'Settings', icon: 'settings', href: '/settings/general' };
+const settingsDestination: NavigationDestination = { label: 'Settings', icon: Settings2, href: '/settings/general' };
 
 function NavigationItem({
     destination,
@@ -58,10 +57,9 @@ function NavigationItem({
 }) {
     const { url } = usePage();
     const active = isActiveDestination(destination, url);
+    const DestinationIcon = destination.icon;
     const itemClassName = rail
-        ? `focus-ring group relative flex size-12 items-center justify-center rounded-2xl transition-[background-color,color,transform] duration-200 hover:-translate-y-0.5 ${
-              active ? 'bg-[var(--module-accent)] text-accent-foreground' : 'text-muted hover:bg-surface-hover hover:text-foreground'
-          }`
+        ? 'focus-ring group relative flex min-h-12 w-full items-center justify-center rounded-2xl px-2 text-secondary transition-colors duration-200 hover:text-foreground'
         : mobile
           ? `focus-ring icon-text relative flex min-h-14 flex-1 flex-col items-center justify-center gap-1 rounded-xl px-1 text-[0.625rem] font-bold tracking-[0.06em] uppercase transition-colors duration-200 ${
                 active ? 'bg-[color-mix(in_srgb,var(--module-accent)_16%,transparent)] text-foreground' : 'text-secondary hover:bg-surface-hover'
@@ -72,16 +70,15 @@ function NavigationItem({
 
     const content = (
         <>
+            {active && rail && <span aria-hidden="true" className="absolute top-3 bottom-3 left-0 w-1 rounded-r-full bg-[var(--module-accent)]" />}
             {active && !mobile && !rail && <span className="h-5 w-0.5 rounded-full bg-[var(--module-accent)]" aria-hidden="true" />}
-            <Icon className={active && !rail ? 'text-accent-ink' : ''} name={destination.icon} />
+            {rail ? (
+                <span className={classNames('grid size-9 shrink-0 place-items-center rounded-xl transition-colors duration-200', active && 'bg-[var(--module-accent)] text-accent-foreground')}>
+                    <DestinationIcon aria-hidden="true" size={21} strokeWidth={2} />
+                </span>
+            ) : <DestinationIcon aria-hidden="true" className={active ? 'text-accent-ink' : ''} size={24} strokeWidth={2} />}
             {!rail && <span>{destination.label}</span>}
             {!destination.href && !mobile && !rail && <span className="ml-auto text-[0.5625rem] tracking-[0.12em] text-muted uppercase">Soon</span>}
-            {rail && (
-                <span className="pointer-events-none absolute left-[calc(100%+0.75rem)] z-40 flex min-w-max items-center gap-2 rounded-xl border border-border-subtle bg-overlay px-3 py-2 text-xs font-semibold text-foreground opacity-0 shadow-[var(--shadow-raised)] transition-opacity duration-160 group-hover:opacity-100 group-focus-visible:opacity-100">
-                    {destination.label}
-                    {!destination.href && <span className="text-[0.5625rem] tracking-widest text-muted uppercase">Soon</span>}
-                </span>
-            )}
             {active && mobile && <span aria-hidden="true" className="absolute bottom-0 h-0.5 w-6 rounded-full bg-[var(--module-accent)]" />}
         </>
     );
@@ -89,7 +86,7 @@ function NavigationItem({
     if (destination.href) {
         const href = destination.href;
         return (
-            <Link aria-current={active ? 'page' : undefined} className={itemClassName} href={href} onClick={(event) => {
+            <Link aria-label={rail ? destination.label : undefined} aria-current={active ? 'page' : undefined} className={itemClassName} href={href} title={rail ? destination.label : undefined} onClick={(event) => {
                 if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
                 onPrimaryNavigate?.(href);
                 onNavigate?.();
@@ -202,23 +199,27 @@ function AppShell({ children }: PropsWithChildren) {
                     style={revealingBackgroundStyle}
                 />
             )}
-            <aside className="fixed top-4 bottom-4 left-4 z-30 hidden w-20 rounded-[2rem] border border-border-subtle bg-overlay shadow-[var(--shadow-navigation)] md:flex md:flex-col">
-                <div className="flex justify-center py-4">
+            <aside className="fixed top-4 bottom-4 left-4 z-30 hidden w-20 flex-col rounded-[2rem] border border-border-subtle bg-overlay shadow-[var(--shadow-navigation)] md:flex">
+                <div className="flex min-h-19 items-center justify-center px-3">
                     <BrandMark compact />
                 </div>
-                <div className="mx-4 border-t border-border-subtle" />
-                <nav aria-label="Primary navigation" className="flex flex-1 flex-col items-center gap-1 px-2 py-4">
+                <div className="mx-3 border-t border-border-subtle" />
+                <nav aria-label="Primary navigation" className="flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto px-2 py-4">
                     {destinations.map((destination) => (
                         <NavigationItem destination={destination} key={destination.label} onPrimaryNavigate={markPrimaryNavigation} rail />
                     ))}
                 </nav>
                 {user && (
-                    <div className="flex flex-col items-center gap-2 border-t border-border-subtle py-4">
-                        <span className="grid size-10 place-items-center rounded-full bg-[linear-gradient(145deg,var(--preview-violet),var(--preview-orange))] text-sm font-bold text-white" title={user.name}>
-                            {user.name.charAt(0).toUpperCase()}
-                        </span>
-                        <ThemeToggle />
+                    <div className="flex shrink-0 flex-col gap-2 border-t border-border-subtle px-2 py-3">
                         <NavigationItem destination={settingsDestination} onPrimaryNavigate={markPrimaryNavigation} rail />
+                        <div className="flex justify-center">
+                            <ThemeToggle bare />
+                        </div>
+                        <div className="flex min-w-0 items-center justify-center border-t border-border-subtle px-2 pt-3">
+                            <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-[color-mix(in_srgb,var(--module-accent)_24%,var(--surface-elevated))] text-sm font-bold text-foreground">
+                                {user.name.charAt(0).toUpperCase()}
+                            </span>
+                        </div>
                     </div>
                 )}
             </aside>
@@ -246,7 +247,7 @@ function AppShell({ children }: PropsWithChildren) {
                 )}
             </header>
 
-            <main aria-label="Page content" className="workspace-scroll-region focus-ring h-[calc(100dvh-4rem)] overflow-y-auto px-4 pt-6 pb-[calc(8rem+env(safe-area-inset-bottom))] sm:px-6 md:ml-28 md:h-dvh md:px-8 md:pt-10 md:pb-12 lg:px-12" ref={mainRef} scroll-region="" tabIndex={0}>
+            <main aria-label="Page content" className="workspace-scroll-region focus-ring h-[calc(100dvh-4rem)] overflow-y-auto px-4 pt-6 pb-[calc(8rem+env(safe-area-inset-bottom))] sm:px-6 md:ml-28 md:h-dvh md:px-8 md:pt-10 md:pb-12 lg:ml-24 lg:px-12" ref={mainRef} scroll-region="" tabIndex={0}>
                 <div className="mx-auto w-full max-w-[80rem]">{children}</div>
             </main>
 

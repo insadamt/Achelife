@@ -3,7 +3,7 @@ import { Moon, Sun } from 'lucide-react';
 import { useTheme } from '../theme/ThemeProvider';
 import { classNames } from './ui/classNames';
 
-export function ThemeToggle({ className }: { className?: string }) {
+export function ThemeToggle({ bare = false, className }: { bare?: boolean; className?: string }) {
     const { resolvedTheme, setPreference } = useTheme();
     const nextTheme = resolvedTheme === 'dark' ? 'light' : 'dark';
     const label = `Switch to ${nextTheme} mode`;
@@ -12,7 +12,8 @@ export function ThemeToggle({ className }: { className?: string }) {
         <button
             aria-label={label}
             className={classNames(
-                'focus-ring grid size-11 shrink-0 place-items-center rounded-2xl border border-border-subtle bg-elevated text-secondary transition-[background-color,border-color,color,transform] duration-200 hover:-translate-y-0.5 hover:border-border-strong hover:bg-surface-hover hover:text-foreground',
+                'focus-ring grid size-11 shrink-0 place-items-center rounded-2xl text-secondary transition-[color,transform] duration-200 hover:-translate-y-0.5 hover:text-foreground',
+                bare ? 'bg-transparent' : 'border border-border-subtle bg-elevated hover:border-border-strong hover:bg-surface-hover',
                 className,
             )}
             onClick={() => setPreference(nextTheme)}
