@@ -30,7 +30,7 @@ export function MoneyStatisticsToolbar({ statistics, loading, setLoading }: { st
                     {periods.map(([key, label]) => (
                         <button
                             aria-pressed={statistics.filter === key}
-                            className={`focus-ring min-h-10 rounded-lg px-3 text-xs font-bold transition-colors ${statistics.filter === key ? 'bg-[var(--module-accent)] text-accent-foreground' : 'text-muted hover:bg-surface-hover hover:text-foreground'}`}
+                            className={`focus-ring min-h-10 rounded-lg px-3 text-xs font-bold transition-colors ${statistics.filter === key ? 'bg-elevated text-foreground shadow-sm' : 'text-secondary hover:bg-surface-hover hover:text-foreground'}`}
                             disabled={loading}
                             key={key}
                             onClick={() => visit({ statistics_period: key }, true)}

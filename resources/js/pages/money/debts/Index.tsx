@@ -64,8 +64,8 @@ export default function DebtIndex(props: DebtPageProps) {
             )}
 
             <div className="my-6">
-                <div aria-label="Debt views" className="flex max-w-full gap-1 overflow-x-auto border-b border-border-subtle" role="group">
-                    {views.map((item) => <button aria-pressed={view === item.value} className={`focus-ring shrink-0 border-b-2 px-3 py-3 text-sm font-bold ${view === item.value ? 'border-[var(--money-accent)] text-foreground' : 'border-transparent text-muted hover:text-foreground'}`} key={item.value} onClick={() => selectTab(item.value)} type="button">{item.label}</button>)}
+                <div aria-label="Debt views" className="flex max-w-full gap-1 overflow-x-auto rounded-2xl border border-border-subtle bg-surface p-1" role="group">
+                    {views.map((item) => <button aria-pressed={view === item.value} className={`focus-ring min-h-11 shrink-0 rounded-xl px-3 text-sm font-bold transition-[background-color,color,box-shadow] duration-200 ${view === item.value ? 'bg-elevated text-foreground shadow-sm' : 'text-secondary hover:bg-surface-hover hover:text-foreground'}`} key={item.value} onClick={() => selectTab(item.value)} type="button">{item.label}</button>)}
                 </div>
             </div>
 

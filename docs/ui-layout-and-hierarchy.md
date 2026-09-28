@@ -63,6 +63,8 @@ Use three distinct levels, with one shared component pattern for each level acro
 
 Filters and period selectors sit below local navigation and look like controls, not a second module navigation bar. A page should not show two visually equal rows of tabs with unclear priority. Counts are supporting metadata; they must not dominate labels or change tab height.
 
+Selected tabs and segmented view controls use the raised surface with foreground text; inactive choices use secondary text and the shared hover surface. Keep each group's existing size and shape so module navigation, local views, and compact chart controls remain distinct.
+
 Route navigation uses links and `aria-current="page"`. In-page tabs use the [WAI-ARIA tabs pattern](https://www.w3.org/WAI/ARIA/apg/patterns/tabs/): tablist, tabs, associated panels, selected state, and the expected keyboard behavior. A group of filter buttons may instead use buttons with `aria-pressed` or native controls. Choose the interaction model first, then the visual style; do not add `role="tab"` to route links merely to make them look like tabs.
 
 Module navigation and local tabs use a 44px minimum control height. Compact 36px controls are reserved for dense, secondary contexts where the larger surrounding interaction remains clear. Shared inputs and ordinary buttons use 44px minimum. Icon-only controls have a 40–44px target; primary touch controls aim for 44px. These are design defaults above the [WCAG 2.2 minimum target guidance](https://www.w3.org/WAI/WCAG22/Understanding/target-size-minimum). Keep widths content-driven, and allow horizontal scrolling for a long module rail on small screens rather than shrinking labels below readability.

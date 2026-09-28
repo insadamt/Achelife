@@ -62,7 +62,7 @@ export function MoneyCashFlowChart({ statistics }: { statistics: MoneyStatistics
                     )}
                     <div aria-label="Chart metric" className="flex gap-1 rounded-full border border-border-subtle bg-app p-1" role="group">
                         {(['income', 'spending'] as const).map((value) => (
-                            <button aria-pressed={metric === value} className={`focus-ring rounded-full px-3 py-1.5 text-xs font-bold transition-colors ${metric === value ? 'bg-[var(--module-accent)] text-accent-foreground' : 'text-muted hover:text-foreground'}`} key={value} onClick={() => { setMetric(value); setActiveIndex(null); }} type="button">{value === 'income' ? 'Income' : 'Spending'}</button>
+                            <button aria-pressed={metric === value} className={`focus-ring rounded-full px-3 py-1.5 text-xs font-bold transition-colors ${metric === value ? 'bg-elevated text-foreground shadow-sm' : 'text-secondary hover:bg-surface-hover hover:text-foreground'}`} key={value} onClick={() => { setMetric(value); setActiveIndex(null); }} type="button">{value === 'income' ? 'Income' : 'Spending'}</button>
                         ))}
                     </div>
                 </div>

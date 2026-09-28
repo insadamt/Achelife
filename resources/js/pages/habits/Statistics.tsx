@@ -61,7 +61,7 @@ export default function HabitStatisticsPage({ habit, statistics }: { habit: Habi
                         <div className="flex flex-col justify-between gap-4 lg:flex-row lg:items-center">
                             <div aria-label="Statistics period" className="grid grid-cols-4 gap-1 rounded-xl bg-app p-1 lg:min-w-80" role="group">
                                 {periods.map(([key, label]) => (
-                                    <button aria-pressed={statistics.filter === key} className={`focus-ring min-h-10 rounded-lg px-3 text-xs font-bold transition-colors ${statistics.filter === key ? 'bg-[var(--module-accent)] text-accent-foreground' : 'text-muted hover:bg-surface-hover hover:text-foreground'}`} disabled={loading} key={key} onClick={() => visitPeriod(key)} type="button">{label}</button>
+                                    <button aria-pressed={statistics.filter === key} className={`focus-ring min-h-10 rounded-lg px-3 text-xs font-bold transition-colors ${statistics.filter === key ? 'bg-elevated text-foreground shadow-sm' : 'text-secondary hover:bg-surface-hover hover:text-foreground'}`} disabled={loading} key={key} onClick={() => visitPeriod(key)} type="button">{label}</button>
                                 ))}
                             </div>
                             <div className="flex items-center justify-between gap-3 lg:justify-end">

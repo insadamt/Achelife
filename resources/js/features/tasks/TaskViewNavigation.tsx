@@ -31,16 +31,16 @@ export function TaskViewNavigation({ counts, workspace }: {
                         <Link
                             aria-current={active ? 'page' : undefined}
                             className={classNames(
-                                'focus-ring flex min-h-11 items-center justify-center gap-2 rounded-xl px-3 text-sm font-bold transition-colors',
+                                'focus-ring flex min-h-11 items-center justify-center gap-2 rounded-xl px-3 text-sm font-bold transition-[background-color,color,box-shadow] duration-200',
                                 active
-                                    ? 'bg-[color-mix(in_srgb,var(--module-accent)_14%,transparent)] text-foreground'
-                                    : 'text-muted hover:bg-surface-hover hover:text-foreground',
+                                    ? 'bg-elevated text-foreground shadow-sm'
+                                    : 'text-secondary hover:bg-surface-hover hover:text-foreground',
                             )}
                             href={taskViewHref(workspace, item.view)}
                             key={item.view}
                         >
                             <span>{item.label}</span>
-                            <span className="rounded-full bg-elevated px-1.5 py-0.5 text-[0.68rem] leading-none text-muted">{counts[item.view]}</span>
+                            <span className="rounded-full bg-surface px-1.5 py-0.5 text-[0.68rem] leading-none text-secondary">{counts[item.view]}</span>
                         </Link>
                     );
                 })}

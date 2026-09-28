@@ -13,7 +13,7 @@ export function CalendarLabelSetting({ value }: { value: HabitCalendarLabels }) 
             <button
                 aria-label="Show calendar dates"
                 aria-pressed={value === 'calendar_dates'}
-                className={`focus-ring grid size-9 place-items-center rounded-full ${value === 'calendar_dates' ? 'bg-[var(--module-accent)] text-accent-foreground' : 'text-secondary hover:bg-surface-hover hover:text-foreground'}`}
+                className={`focus-ring grid size-9 place-items-center rounded-full ${value === 'calendar_dates' ? 'bg-elevated text-foreground shadow-sm' : 'text-secondary hover:bg-surface-hover hover:text-foreground'}`}
                 onClick={() => update('calendar_dates')}
                 title="Calendar dates"
                 type="button"
@@ -23,7 +23,7 @@ export function CalendarLabelSetting({ value }: { value: HabitCalendarLabels }) 
             <button
                 aria-label="Show Season days"
                 aria-pressed={value === 'season_days'}
-                className={`focus-ring grid size-9 place-items-center rounded-full ${value === 'season_days' ? 'bg-[var(--module-accent)] text-accent-foreground' : 'text-secondary hover:bg-surface-hover hover:text-foreground'}`}
+                className={`focus-ring grid size-9 place-items-center rounded-full ${value === 'season_days' ? 'bg-elevated text-foreground shadow-sm' : 'text-secondary hover:bg-surface-hover hover:text-foreground'}`}
                 onClick={() => update('season_days')}
                 title="Season days"
                 type="button"

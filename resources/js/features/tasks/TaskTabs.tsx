@@ -30,7 +30,7 @@ export function TaskTabs({ activeTab, counts, onChange }: {
                         'focus-ring flex min-h-11 items-center justify-center gap-2 rounded-xl px-3 text-sm font-bold transition-colors',
                         activeTab === option.value
                             ? 'bg-elevated text-foreground shadow-sm'
-                            : 'text-muted hover:bg-surface-hover hover:text-foreground',
+                            : 'text-secondary hover:bg-surface-hover hover:text-foreground',
                         option.value === 'overdue' && option.count > 0 && activeTab !== option.value && 'text-warning',
                     )}
                     key={option.value}

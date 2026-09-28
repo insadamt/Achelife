@@ -33,7 +33,7 @@ export default function MoneyOrganization({ categories, initialSection, merchant
                 {sections.map((section) => {
                     const SectionIcon = section.icon;
                     return (
-                        <Link aria-current={initialSection === section.value ? 'page' : undefined} className={classNames('focus-ring flex min-h-16 items-center gap-3 rounded-2xl border px-4 transition-colors', initialSection === section.value ? 'border-[color-mix(in_srgb,var(--money-accent)_35%,transparent)] bg-elevated shadow-sm' : 'border-transparent text-muted hover:bg-surface-hover hover:text-foreground')} href={`/money/organization?section=${section.value}`} key={section.value}>
+                        <Link aria-current={initialSection === section.value ? 'page' : undefined} className={classNames('focus-ring flex min-h-16 items-center gap-3 rounded-2xl border border-transparent px-4 transition-[background-color,color,box-shadow] duration-200', initialSection === section.value ? 'bg-elevated text-foreground shadow-sm' : 'text-secondary hover:bg-surface-hover hover:text-foreground')} href={`/money/organization?section=${section.value}`} key={section.value}>
                             <span className={classNames('grid size-9 place-items-center rounded-xl', initialSection === section.value ? 'bg-[color-mix(in_srgb,var(--money-accent)_12%,transparent)] text-accent-ink' : 'bg-app')}><SectionIcon size={17} /></span>
                             <span className="font-bold">{section.label}</span><span className="ml-auto text-xs font-bold text-muted">{section.count}</span>
                         </Link>

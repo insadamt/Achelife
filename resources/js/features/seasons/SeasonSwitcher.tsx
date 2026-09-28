@@ -86,7 +86,7 @@ export function SeasonSwitcher({ seasons, selectedSeasonNumber, onSelect, active
                                 aria-selected={selected}
                                 className={classNames(
                                     'focus-ring flex min-h-9 items-center justify-center gap-2 rounded-lg px-3 text-xs font-bold transition-colors sm:px-4',
-                                    selected ? 'bg-elevated text-foreground shadow-sm' : 'text-muted hover:bg-surface-hover hover:text-foreground',
+                                    selected ? 'bg-elevated text-foreground shadow-sm' : 'text-secondary hover:bg-surface-hover hover:text-foreground',
                                 )}
                                 id={`season-${id}-tab`}
                                 key={id}
