@@ -15,3 +15,5 @@ The Stats view loads on demand. Selecting it does not add statistics queries to 
 - SP sources and practical outcomes reuse the same authoritative derived summary as Season closeout. No statistics snapshot or duplicated JSON is stored.
 
 Current Seasons call the view **Season performance**. Completed Seasons call it **Season report** and remain read-only.
+
+Season comparison uses the shared compact pill to show percentage and absolute SP change against the matched day of the previous Season. A zero baseline shows absolute SP change “from 0” instead of an undefined percentage; equal values show “No change”.

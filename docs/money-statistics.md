@@ -20,7 +20,7 @@ Account activity keeps Transfer principal visible as transferred in and transfer
 
 ## Deltas
 
-Every applicable period metric shows its absolute and percentage change from the preceding period. Savings rate and Category share use percentage-point changes. A zero baseline displays `Previously 0` when the current result is nonzero and `No change` when both are zero. All time has no delta.
+Every applicable period metric shows percentage and absolute change together in a compact pill. Savings rate and Category share spell out changes in percentage points. A zero baseline shows the absolute change `from 0`. Equal values show `No change`; missing baselines show `No comparison available`. All time has no delta.
 
 Delta tone follows meaning: more income, net cash flow, savings, or no-spend days is favorable; more spending, fees, or Subscription spending is unfavorable. Transaction-count movement is neutral. Net-cash-flow percentage change divides by the absolute previous value so movement across zero retains its direction.
 

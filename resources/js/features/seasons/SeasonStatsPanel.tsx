@@ -2,6 +2,7 @@ import { Activity, BookOpen, ChartNoAxesCombined, Gavel, ListChecks, LoaderCircl
 import { useEffect, useState } from 'react';
 
 import { Button, StatusChip, Surface } from '../../components/ui';
+import { StatisticDelta } from '../../components/ui/StatisticDelta';
 import { formatSeasonRange } from './dateFormat';
 import { SeasonInsightsChart } from './SeasonInsightsChart';
 import type { SeasonChartView } from './SeasonInsightsChart';
@@ -82,7 +83,7 @@ export function SeasonStatsPanel({ season }: { season: SeasonViewData }) {
                         <h2 className="mt-2 text-2xl font-bold tracking-[-0.04em] sm:text-3xl">{historical ? 'Season report' : 'Season performance'}</h2>
                         <p className="mt-1 text-sm font-semibold text-secondary">{formatSeasonRange(season.startDate, season.endDate)}</p>
                     </div>
-                    {comparison !== null && <div className="rounded-2xl border border-border-subtle bg-app/55 px-4 py-3 text-right"><p className={`text-lg font-bold tabular-nums ${comparison >= 0 ? 'text-success' : 'text-danger'}`}>{comparison > 0 ? '+' : ''}{comparison.toLocaleString()} SP</p><p className="text-xs text-muted">vs previous Season at Day {insights.elapsedDays}</p></div>}
+                    {comparison !== null && <StatisticDelta comparisonLabel={`previous Season at Day ${insights.elapsedDays}`} current={currentAtSameDay} formatValue={(value) => `${value.toLocaleString()} SP`} previous={previousAtSameDay ?? null} />}
                 </div>
 
                 <section aria-label="Season snapshot" className="mt-6 grid gap-3 sm:grid-cols-3">

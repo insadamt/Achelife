@@ -1,8 +1,9 @@
 import { router } from '@inertiajs/react';
-import { ArrowDownRight, ArrowUpRight, CalendarDays, CheckCheck, ChevronLeft, ChevronRight, Clock3, LoaderCircle, Minus, Star, Zap } from 'lucide-react';
+import { CalendarDays, CheckCheck, ChevronLeft, ChevronRight, Clock3, LoaderCircle, Star, Zap } from 'lucide-react';
 import { useState } from 'react';
 
 import { Surface } from '../../components/ui';
+import { StatisticDelta } from '../../components/ui/StatisticDelta';
 import { TaskCompletionLineChart } from './TaskCompletionLineChart';
 import { TaskFocusStatisticsPanel } from './TaskFocusStatisticsPanel';
 import type { TaskStatisticsData } from './taskStatisticsTypes';
@@ -18,22 +19,6 @@ const number = new Intl.NumberFormat(undefined, { maximumFractionDigits: 1 });
 
 function formatMetric(value: number | null, percentage: boolean): string {
     return value === null ? '—' : `${number.format(value)}${percentage ? '%' : ''}`;
-}
-
-function MetricDelta({ current, previous, percentage }: { current: number | null; previous: number | null; percentage: boolean }) {
-    if (current === null || previous === null) return <span className="text-xs font-semibold text-muted">No previous result</span>;
-
-    const delta = Math.round((current - previous) * 10) / 10;
-    const relativeChange = previous === 0 ? null : Math.round(delta / previous * 1000) / 10;
-    const Icon = delta > 0 ? ArrowUpRight : delta < 0 ? ArrowDownRight : Minus;
-    const tone = delta > 0 ? 'text-success' : delta < 0 ? 'text-danger' : 'text-muted';
-    const label = percentage
-        ? `${delta > 0 ? '+' : ''}${number.format(delta)} pp`
-        : previous === 0
-            ? delta === 0 ? 'No change' : 'New'
-            : `${relativeChange && relativeChange > 0 ? '+' : ''}${number.format(relativeChange ?? 0)}%`;
-
-    return <span className={`icon-text inline-flex items-center gap-1 text-xs font-bold ${tone}`}><Icon aria-hidden="true" size={14} />{label}</span>;
 }
 
 export function TaskStatisticsPanel({ statistics }: { statistics: TaskStatisticsData }) {
@@ -98,7 +83,7 @@ export function TaskStatisticsPanel({ statistics }: { statistics: TaskStatistics
                             <div className="flex items-center justify-between gap-2"><h3 className="text-xs font-semibold text-secondary">{label}</h3><Icon aria-hidden="true" className={index === 0 ? 'shrink-0 text-accent-ink' : 'shrink-0 text-muted'} size={16} /></div>
                             <p className="mt-5 text-3xl font-bold leading-none tracking-[-0.05em] tabular-nums sm:text-4xl">{formatMetric(statistics.current[key], percentage)}</p>
                             <p className="mb-4 mt-2 text-xs leading-5 text-muted">{detail}</p>
-                            {statistics.filter !== 'all' && <div className="mt-auto space-y-1.5 border-t border-border-subtle pt-3 text-xs font-semibold"><MetricDelta current={statistics.current[key]} percentage={percentage} previous={previous} /><p className="font-normal text-muted">Previous {formatMetric(previous, percentage)}</p></div>}
+                            {statistics.filter !== 'all' && <div className="mt-auto space-y-1.5 border-t border-border-subtle pt-3 text-xs font-semibold"><StatisticDelta current={statistics.current[key]} formatValue={(value) => formatMetric(value, percentage)} percentagePoints={percentage} previous={previous} /></div>}
                         </Surface>
                     );
                 })}

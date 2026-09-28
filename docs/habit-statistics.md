@@ -10,7 +10,7 @@ Current streak is the current overall stored streak, without a period comparison
 
 Numeric totals include all recorded values, including zero, partial missed days, today's partial entry, and unresolved flexible extras. Average divides by the number of days with a recorded value; missing values are not zeros. Values use the habit's displayed unit. Historical targets come from occurrence snapshots.
 
-Count, best streak, total, and average cards show absolute and percentage changes. Completion rate shows percentage-point changes. Zero baselines show “Previously 0” or “No change”; unavailable averages/rates have no numeric delta.
+Count, best streak, total, and average cards show percentage and absolute change together in a compact pill. Completion rate spells out its change in percentage points. Zero baselines show the absolute change “from 0”; equal values show “No change”. Unavailable averages/rates and missing baselines have no numeric delta.
 
 Boolean charts show completions. Numeric charts switch between Total and Average per recorded day. Season/month charts use daily buckets; year/all-time charts use monthly buckets, switching to yearly buckets for all-time histories longer than 36 months. Future buckets are omitted. Missing totals/counts are zero-filled; missing averages are gaps. Daily numeric charts show historical target marks. Points expose exact values on hover and keyboard focus.
 

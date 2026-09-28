@@ -1,25 +1,9 @@
-import { ArrowDownRight, ArrowUpRight, CheckCheck, Medal, Minus, Percent, Sigma, TrendingUp } from 'lucide-react';
+import { CheckCheck, Medal, Percent, Sigma, TrendingUp } from 'lucide-react';
 
 import { Surface } from '../../components/ui';
+import { StatisticDelta } from '../../components/ui/StatisticDelta';
 import { formatStatistic } from './statisticsTypes';
 import type { HabitStatisticsData, HabitStatisticsTotals } from './statisticsTypes';
-
-function StatisticDelta({ current, previous, percentage }: { current: number | null; previous: number | null; percentage: boolean }) {
-    if (current === null || previous === null) return <span className="text-muted">No comparison available</span>;
-    const difference = Math.round((current - previous) * 1000) / 1000;
-    const signed = `${difference > 0 ? '+' : ''}${formatStatistic(difference)}`;
-    const relative = previous === 0
-        ? difference === 0 ? 'No change' : 'Previously 0'
-        : `${difference > 0 ? '+' : ''}${formatStatistic(Math.round(difference / previous * 1000) / 10)}%`;
-    const Icon = difference > 0 ? ArrowUpRight : difference < 0 ? ArrowDownRight : Minus;
-
-    return (
-        <span className={`inline-flex items-center gap-1 ${difference > 0 ? 'text-success' : difference < 0 ? 'text-danger' : 'text-muted'}`}>
-            <Icon aria-hidden="true" size={14} />
-            {percentage ? `${signed} pp` : difference === 0 ? 'No change' : `${signed} · ${relative}`}
-        </span>
-    );
-}
 
 export function HabitStatisticCards({ statistics, numeric, unit }: { statistics: HabitStatisticsData; numeric: boolean; unit: string | null }) {
     const metrics: { key: keyof HabitStatisticsTotals; label: string; detail: string; icon: typeof Percent }[] = [
@@ -49,8 +33,7 @@ export function HabitStatisticCards({ statistics, numeric, unit }: { statistics:
                     <p className="mb-4 mt-2 text-xs leading-5 text-muted">{detail}</p>
                     {statistics.filter !== 'all' && (
                         <div className="mt-auto space-y-1.5 border-t border-border-subtle pt-3 text-xs font-semibold">
-                            <StatisticDelta current={statistics.current[key]} percentage={key === 'completionRate'} previous={statistics.previous?.[key] ?? null} />
-                            <p className="font-normal text-muted">Previous {formatStatistic(statistics.previous?.[key] ?? null)}{key === 'completionRate' && statistics.previous?.[key] != null ? '%' : ''}</p>
+                            <StatisticDelta current={statistics.current[key]} formatValue={(value) => `${formatStatistic(value)}${key === 'completionRate' ? '%' : ''}`} percentagePoints={key === 'completionRate'} previous={statistics.previous?.[key] ?? null} />
                         </div>
                     )}
                 </Surface>
