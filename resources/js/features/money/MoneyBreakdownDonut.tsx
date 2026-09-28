@@ -93,7 +93,7 @@ function MoneyDistributionChart({ activeKey, currency, frame, onActiveKeyChange,
                 return <path
                     aria-hidden={slice ? undefined : true}
                     aria-label={slice ? `Open ${slice.name}: ${formatMinorUnits(slice.amountMinor, currency)}, ${percentage(slice.share)}` : undefined}
-                    className="cursor-pointer outline-none transition-[stroke-width,opacity,filter] duration-200 focus-visible:[filter:drop-shadow(0_0_6px_currentColor)]"
+                    className="cursor-pointer outline-none transition-[stroke,stroke-width,opacity,filter] duration-200 focus-visible:[filter:drop-shadow(0_0_6px_currentColor)]"
                     d={arcPath(arc.start, arc.end)}
                     fill="none"
                     key={arc.key}

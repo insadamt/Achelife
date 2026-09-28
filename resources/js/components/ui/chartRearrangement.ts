@@ -133,39 +133,31 @@ export function useRearrangedLineChart(target: LineChartFrame): LineChartFrame {
 function interpolateDonutSlices(from: DonutChartFrame, to: DonutValueSlice[], progress: number): DonutChartFrame {
     const oldByKey = new Map(from.slices.map((slice) => [slice.key, slice]));
     const nextByKey = new Map(to.map((slice) => [slice.key, slice]));
-    const order = [...to.map((slice) => slice.key), ...from.slices.filter((slice) => !nextByKey.has(slice.key)).map((slice) => slice.key)];
-    const oldAngles = new Map(from.arcs.map((arc) => [arc.key, arc]));
-    const nextAngles = new Map(donutArcAngles(to).map((arc) => [arc.key, arc]));
-
-    return { sweep: interpolateNumber(from.sweep, to.some((slice) => slice.value > 0) ? 360 : 0, progress), arcs: order.map((key) => {
-        const old = oldAngles.get(key);
-        const next = nextAngles.get(key);
-        return {
-            key,
-            start: interpolateNumber(old?.start ?? next?.start ?? 0, next?.start ?? old?.start ?? 0, progress),
-            end: interpolateNumber(old?.end ?? next?.start ?? 0, next?.end ?? old?.start ?? 0, progress),
-        };
-    }), slices: order.map((key) => {
+    const order = [...new Set([...oldByKey.keys(), ...nextByKey.keys()])].sort((a, b) => a.localeCompare(b));
+    const slices = order.map((key) => {
         const old = oldByKey.get(key);
         const next = nextByKey.get(key);
         return {
             key,
-            color: next?.color ?? old?.color ?? 'transparent',
+            color: progress > 0 ? next?.color ?? old?.color ?? 'transparent' : old?.color ?? next?.color ?? 'transparent',
             value: interpolateNumber(old?.value ?? 0, next?.value ?? 0, progress),
             exiting: !next,
         };
-    }) };
+    });
+    const sweep = interpolateNumber(from.sweep, to.some((slice) => slice.value > 0) ? 360 : 0, progress);
+    return { slices, arcs: donutArcAngles(slices, sweep), sweep };
 }
 
 export function useRearrangedDonut(target: DonutValueSlice[]): DonutChartFrame {
-    const signature = JSON.stringify(target);
+    const orderedTarget = [...target].sort((a, b) => a.key.localeCompare(b.key));
+    const signature = JSON.stringify(orderedTarget);
     const completedFrame = (slices: DonutValueSlice[]): DonutChartFrame => ({ slices: slices.map((slice) => ({ ...slice, exiting: false })), arcs: donutArcAngles(slices), sweep: slices.some((slice) => slice.value > 0) ? 360 : 0 });
-    const [rendered, setRendered] = useState<DonutChartFrame>(() => completedFrame(target));
+    const [rendered, setRendered] = useState<DonutChartFrame>(() => completedFrame(orderedTarget));
     const renderedRef = useRef(rendered);
     const targetRef = useRef(target);
     const signatureRef = useRef(signature);
     const tweenRef = useRef<gsap.core.Tween | null>(null);
-    targetRef.current = target;
+    targetRef.current = orderedTarget;
 
     useLayoutEffect(() => {
         if (signatureRef.current === signature) return;

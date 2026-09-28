@@ -107,7 +107,7 @@ Animate the incoming content with transforms only, using the shared navigation a
 
 In-page tabs use the same 160 ms horizontal entrance with 24 px of travel. Moving to a later tab brings content in from the right; moving to an earlier tab brings it in from the left. The tab controls and surrounding page stay in place.
 
-Statistics charts use a 420 ms rearrange transition when an existing chart receives new data or changes metric or period. Line, area, points, scale, and comparison marks move together; donut segments retain their identity while their shares and positions change. The longer duration makes changes across a dense chart readable. Initial chart appearance is immediate, interrupted updates continue from the displayed position, and reduced motion applies the new chart state immediately. Exact values and keyboard access remain available throughout.
+Statistics charts use a 420 ms rearrange transition when an existing chart receives new data or changes metric or period. Line, area, points, scale, and comparison marks move together. Donut segments retain their identity and remain consecutive around the ring while all entering, leaving, and changing slices move at the same time. The longer duration makes changes across a dense chart readable. Initial chart appearance is immediate, interrupted updates continue from the displayed position, and reduced motion applies the new chart state immediately. Exact values and keyboard access remain available throughout.
 
 | Event | Motion behavior | Reduced motion behavior |
 | --- | --- | --- |
