@@ -1,6 +1,6 @@
 import { Link, usePage } from '@inertiajs/react';
 import { BookOpenText, CalendarDays, CheckCheck, House, Repeat2, ScrollText, Settings2, Timer, Wallet, type LucideIcon } from 'lucide-react';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import type { CSSProperties, PropsWithChildren } from 'react';
 
 import { BrandMark } from '../components/BrandMark';
@@ -42,6 +42,40 @@ const destinations: NavigationDestination[] = [
 const mobilePrimaryLabels = new Set(['Today', 'Tasks', 'Habits']);
 const settingsDestination: NavigationDestination = { label: 'Settings', icon: Settings2, href: '/settings/general' };
 
+function useSidebarActiveIndicator(url: string) {
+    const sidebarRef = useRef<HTMLElement>(null);
+    const navigationRef = useRef<HTMLElement>(null);
+    const [indicatorTop, setIndicatorTop] = useState<number | null>(null);
+
+    useLayoutEffect(() => {
+        const sidebar = sidebarRef.current;
+        const navigation = navigationRef.current;
+        if (!sidebar || !navigation) return;
+
+        function updateIndicatorPosition() {
+            const activeLink = sidebar.querySelector<HTMLAnchorElement>('a[aria-current="page"]');
+            if (!activeLink || sidebar.getClientRects().length === 0) {
+                setIndicatorTop(null);
+                return;
+            }
+
+            const linkBounds = activeLink.getBoundingClientRect();
+            const sidebarBounds = sidebar.getBoundingClientRect();
+            setIndicatorTop(linkBounds.top - sidebarBounds.top + (linkBounds.height - 48) / 2);
+        }
+
+        updateIndicatorPosition();
+        window.addEventListener('resize', updateIndicatorPosition);
+        navigation.addEventListener('scroll', updateIndicatorPosition);
+        return () => {
+            window.removeEventListener('resize', updateIndicatorPosition);
+            navigation.removeEventListener('scroll', updateIndicatorPosition);
+        };
+    }, [url]);
+
+    return { sidebarRef, navigationRef, indicatorTop };
+}
+
 function NavigationItem({
     destination,
     mobile = false,
@@ -70,10 +104,9 @@ function NavigationItem({
 
     const content = (
         <>
-            {active && rail && <span aria-hidden="true" className="absolute top-3 bottom-3 left-0 w-1 rounded-r-full bg-[var(--module-accent)]" />}
             {active && !mobile && !rail && <span className="h-5 w-0.5 rounded-full bg-[var(--module-accent)]" aria-hidden="true" />}
             {rail ? (
-                <span className={classNames('grid size-9 shrink-0 place-items-center rounded-xl transition-colors duration-200', active && 'bg-[var(--module-accent)] text-accent-foreground')}>
+                <span className={classNames('grid size-9 shrink-0 place-items-center rounded-xl transition-colors duration-200', active && 'text-accent-ink')}>
                     <DestinationIcon aria-hidden="true" size={21} strokeWidth={2} />
                 </span>
             ) : <DestinationIcon aria-hidden="true" className={active ? 'text-accent-ink' : ''} size={24} strokeWidth={2} />}
@@ -119,6 +152,7 @@ function UserIdentity({ name }: { name: string }) {
 function AppShell({ children }: PropsWithChildren) {
     const page = usePage<SharedPageProps>();
     const { mainRef, markPrimaryNavigation } = useWorkspacePageTransition(page.url);
+    const { sidebarRef, navigationRef, indicatorTop } = useSidebarActiveIndicator(page.url);
     const { auth } = page.props;
     const { appearance } = page.props;
     const [displayedSurfaceStyle, setDisplayedSurfaceStyle] = useState(appearance.surfaceStyle);
@@ -199,12 +233,25 @@ function AppShell({ children }: PropsWithChildren) {
                     style={revealingBackgroundStyle}
                 />
             )}
-            <aside className="fixed top-4 bottom-4 left-4 z-30 hidden w-20 flex-col rounded-[2rem] border border-border-subtle bg-overlay shadow-[var(--shadow-navigation)] md:flex">
+            <aside className="fixed top-4 bottom-4 left-4 z-30 hidden w-20 flex-col rounded-[2rem] border border-border-subtle bg-overlay shadow-[var(--shadow-navigation)] md:flex" ref={sidebarRef}>
+                {indicatorTop !== null && (
+                    <div
+                        aria-hidden="true"
+                        className="pointer-events-none absolute top-0 right-2 left-2 h-12 transition-transform duration-[280ms] ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none"
+                        style={{ transform: `translateY(${indicatorTop}px)` }}
+                    >
+                        <span className="absolute top-3 bottom-3 left-0 w-1 rounded-r-full bg-[var(--module-accent)]" />
+                        <span
+                            className="absolute top-1/2 left-1/2 size-9 -translate-x-1/2 -translate-y-1/2 rounded-xl"
+                            style={{ backgroundColor: 'color-mix(in srgb, var(--module-accent) 22%, transparent)' }}
+                        />
+                    </div>
+                )}
                 <div className="flex min-h-19 items-center justify-center px-3">
                     <BrandMark compact />
                 </div>
                 <div className="mx-3 border-t border-border-subtle" />
-                <nav aria-label="Primary navigation" className="flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto px-2 py-4">
+                <nav aria-label="Primary navigation" className="flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto px-2 py-4" ref={navigationRef}>
                     {destinations.map((destination) => (
                         <NavigationItem destination={destination} key={destination.label} onPrimaryNavigate={markPrimaryNavigation} rail />
                     ))}
