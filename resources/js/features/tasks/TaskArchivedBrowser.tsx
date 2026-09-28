@@ -35,7 +35,7 @@ export function TaskArchivedBrowser({ explorer }: { explorer: TaskExplorerViewDa
                     ))}
                 </div>
             ) : (
-                <p className="rounded-2xl border border-dashed border-border-strong px-5 py-12 text-center text-sm text-muted">No archived Folders or Projects.</p>
+                <p className="rounded-2xl border border-dashed border-border-strong bg-surface px-5 py-12 text-center text-sm text-muted">No archived Folders or Projects.</p>
             )}
         </section>
     );
