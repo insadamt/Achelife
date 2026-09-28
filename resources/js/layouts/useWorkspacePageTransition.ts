@@ -48,6 +48,21 @@ function queryTabIndex(url: URL, parameter: string, values: string[]): number {
     return values.indexOf(value);
 }
 
+function taskFilesTransition(currentUrl: URL, destinationUrl: URL): { direction: 'left' | 'right'; boundarySelector: string } | null {
+    if (currentUrl.pathname !== '/tasks' || destinationUrl.pathname !== '/tasks') return null;
+    if (currentUrl.searchParams.has('search') || destinationUrl.searchParams.has('search')) return null;
+
+    const filesViews = ['files', 'archived'];
+    const currentIndex = filesViews.indexOf(currentUrl.searchParams.get('view') ?? 'files');
+    const destinationIndex = filesViews.indexOf(destinationUrl.searchParams.get('view') ?? 'files');
+    if (currentIndex < 0 || destinationIndex < 0 || currentIndex === destinationIndex) return null;
+
+    return {
+        direction: destinationIndex > currentIndex ? 'left' : 'right',
+        boundarySelector: '[data-horizontal-nav="task-files"]',
+    };
+}
+
 function tabTransition(currentUrl: URL, destinationUrl: URL): { direction: 'left' | 'right'; boundarySelector: string } | null {
     const modulePath = navigationPaths[navigationIndex(currentUrl.pathname)];
     if (!modulePath || modulePath !== navigationPaths[navigationIndex(destinationUrl.pathname)]) return null;
@@ -59,6 +74,9 @@ function tabTransition(currentUrl: URL, destinationUrl: URL): { direction: 'left
         if (currentIndex < 0 || destinationIndex < 0) return null;
         return { direction: destinationIndex > currentIndex ? 'left' : 'right', boundarySelector: '.page-chrome' };
     }
+
+    const filesTransition = taskFilesTransition(currentUrl, destinationUrl);
+    if (filesTransition) return filesTransition;
 
     const queryTabs = queryTabValues[currentUrl.pathname];
     if (!queryTabs) return null;

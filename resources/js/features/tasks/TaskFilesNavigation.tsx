@@ -6,7 +6,7 @@ import type { TaskSearchFilters } from './types';
 
 export function TaskFilesNavigation({ active, filters }: { active: 'files' | 'archived'; filters: TaskSearchFilters }) {
     return (
-        <nav aria-label="Task files views" className="mt-6 flex gap-1 rounded-2xl border border-border-subtle bg-surface p-1">
+        <nav aria-label="Task files views" className="mt-6 flex gap-1 rounded-2xl border border-border-subtle bg-surface p-1" data-horizontal-nav="task-files">
             {(['files', 'archived'] as const).map((view) => (
                 <Link
                     aria-current={active === view ? 'page' : undefined}
