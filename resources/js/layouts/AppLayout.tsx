@@ -120,7 +120,7 @@ function UserIdentity({ name }: { name: string }) {
 
 function AppShell({ children }: PropsWithChildren) {
     const page = usePage<SharedPageProps>();
-    const { mainRef, shellRef, markPrimaryNavigation } = useWorkspacePageTransition(page.url);
+    const { mainRef, markPrimaryNavigation } = useWorkspacePageTransition(page.url);
     const { auth } = page.props;
     const { appearance } = page.props;
     const [mobileNavigationOpen, setMobileNavigationOpen] = useState(false);
@@ -148,7 +148,6 @@ function AppShell({ children }: PropsWithChildren) {
     return (
         <div
             className={classNames('min-h-screen bg-app text-foreground', appearance.surfaceStyle === 'glass' && 'app-glass', appearance.backgroundUrl !== null && 'app-wallpaper')}
-            ref={shellRef}
             style={wallpaperStyle}
         >
             <aside className="fixed top-4 bottom-4 left-4 z-30 hidden w-20 rounded-[2rem] border border-border-subtle bg-overlay shadow-[var(--shadow-navigation)] md:flex md:flex-col">
