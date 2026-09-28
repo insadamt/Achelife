@@ -92,7 +92,7 @@
     background-position: center;
     background-repeat: no-repeat;
     background-size: cover;
-    animation: appearance-circle-reveal 850ms cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation: appearance-circle-reveal 1100ms cubic-bezier(0.45, 0, 0.55, 1) both;
 }
 
 .app-background-reveal-custom {
