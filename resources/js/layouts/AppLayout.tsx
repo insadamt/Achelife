@@ -248,7 +248,7 @@ function AppShell({ children }: PropsWithChildren) {
                     </div>
                 )}
                 <div className="flex min-h-19 items-center justify-center px-3">
-                    <BrandMark compact />
+                    <BrandMark compact large />
                 </div>
                 <div className="mx-3 border-t border-border-subtle" />
                 <nav aria-label="Primary navigation" className="flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto px-2 py-4" ref={navigationRef}>
