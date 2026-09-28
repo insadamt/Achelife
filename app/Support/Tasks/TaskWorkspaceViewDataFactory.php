@@ -23,7 +23,7 @@ class TaskWorkspaceViewDataFactory
         CarbonImmutable $today,
         ?int $currentSeasonId,
     ): array {
-        $view = in_array($requestedView, ['files', 'folder', 'today', 'inbox', 'upcoming', 'overdue', 'completed', 'project'], true)
+        $view = in_array($requestedView, ['files', 'archived', 'folder', 'today', 'inbox', 'upcoming', 'overdue', 'completed', 'project'], true)
             ? $requestedView
             : ($requestedView === '' ? 'files' : 'today');
         $folder = $view === 'folder' && $requestedFolderId !== null
@@ -84,6 +84,7 @@ class TaskWorkspaceViewDataFactory
     {
         return match ($view) {
             'files' => 'Files',
+            'archived' => 'Archived',
             'inbox' => 'Inbox',
             'upcoming' => 'Upcoming',
             'overdue' => 'Overdue',

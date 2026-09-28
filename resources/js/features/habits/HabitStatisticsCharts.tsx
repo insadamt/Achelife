@@ -2,6 +2,7 @@ import { Activity } from 'lucide-react';
 import { useId, useState } from 'react';
 
 import { Surface } from '../../components/ui';
+import { ChartTooltipCard } from '../../components/ui/ChartTooltipCard';
 import { formatStatistic } from './statisticsTypes';
 import type { HabitStatisticsData } from './statisticsTypes';
 
@@ -39,6 +40,10 @@ export function HabitStatisticsCharts({ statistics, numeric, unit }: { statistic
     const lastPoint = values.reduce<number>((lastIndex, value, index) => value === null ? lastIndex : index, -1);
     const areaPath = firstPoint === -1 || lastPoint === -1 ? '' : `${path} L ${x(lastPoint)} ${padding.top + plotHeight} L ${x(firstPoint)} ${padding.top + plotHeight} Z`;
     const labelStep = Math.max(1, Math.ceil(buckets.length / 6));
+    const focusedIndex = buckets.findIndex((bucket) => bucket.date === focused?.date);
+    const focusedValue = focusedIndex < 0 ? null : values[focusedIndex];
+    const tooltipX = focusedIndex < 0 ? 0 : Math.min(chartWidth - 66, Math.max(66, x(focusedIndex)));
+    const tooltipY = focusedValue === null || focusedValue === undefined ? 0 : Math.max(2, y(focusedValue) - 56);
 
     return <div className="grid gap-5 lg:grid-cols-[minmax(0,2fr)_minmax(16rem,1fr)]">
         <Surface className="min-w-0 rounded-3xl p-4 sm:p-6">
@@ -48,7 +53,8 @@ export function HabitStatisticsCharts({ statistics, numeric, unit }: { statistic
             </div>
             {statistics.days.length === 0 ? <p className="mt-5 grid min-h-64 place-items-center rounded-2xl border border-dashed border-border-strong bg-app/40 px-5 text-center text-sm text-muted">No habit entries in this period.</p> : <>
                 <div aria-label="Scrollable activity chart" className="focus-ring mt-5 overflow-x-auto rounded-xl" role="region" tabIndex={0}>
-                <svg aria-label={`${numeric ? metric : 'Completions'} per ${statistics.trend.unit}`} className="h-auto min-w-[620px] w-full" role="img" viewBox={`0 0 ${chartWidth} ${chartHeight}`}>
+                <div className="relative min-w-[620px]">
+                <svg aria-label={`${numeric ? metric : 'Completions'} per ${statistics.trend.unit}`} className="block h-auto w-full" role="img" viewBox={`0 0 ${chartWidth} ${chartHeight}`}>
                     <defs><linearGradient id={gradientId} x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stopColor="var(--module-accent)" stopOpacity="0.28" /><stop offset="100%" stopColor="var(--module-accent)" stopOpacity="0" /></linearGradient></defs>
                     {[1, 0.75, 0.5, 0.25, 0].map((fraction) => <g key={fraction}><line stroke="var(--border-subtle)" strokeDasharray={fraction === 0 ? undefined : '4 8'} x1={padding.left} x2={chartWidth - padding.right} y1={y(maximum * fraction)} y2={y(maximum * fraction)} /><text fill="var(--text-muted)" fontSize="11" textAnchor="end" x={padding.left - 10} y={y(maximum * fraction) + 4}>{formatStatistic(maximum * fraction)}</text></g>)}
                     {numeric && buckets.map((bucket, index) => bucket.target !== null && <line key={`target-${bucket.date}`} stroke="var(--text-muted)" strokeDasharray="4 3" x1={Math.max(padding.left, x(index) - plotWidth / Math.max(1, buckets.length - 1) / 2)} x2={Math.min(chartWidth - padding.right, x(index) + plotWidth / Math.max(1, buckets.length - 1) / 2)} y1={y(bucket.target)} y2={y(bucket.target)} />)}
@@ -58,12 +64,12 @@ export function HabitStatisticsCharts({ statistics, numeric, unit }: { statistic
                         const value = values[index] ?? null;
                         const label = `${bucket.label}: ${formatStatistic(value)} ${numeric ? unit ?? '' : 'completions'}${numeric && bucket.target !== null ? `, target ${formatStatistic(bucket.target)}` : ''}`;
                         const active = focused?.date === bucket.date;
-                        const tooltipX = Math.min(chartWidth - 66, Math.max(66, x(index)));
-                        const tooltipY = Math.max(2, y(value ?? 0) - 56);
-                        return value !== null && <g aria-label={label} key={bucket.date} onBlur={() => setFocusedDate(null)} onClick={() => setSelectedPointDate(bucket.date)} onFocus={() => setFocusedDate(bucket.date)} onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); setSelectedPointDate(bucket.date); } }} onMouseEnter={() => setFocusedDate(bucket.date)} onMouseLeave={() => setFocusedDate(null)} role="button" tabIndex={0}><circle className="cursor-pointer" cx={x(index)} cy={y(value)} fill="transparent" r="14" /><circle cx={x(index)} cy={y(value)} fill={active ? 'var(--module-accent)' : 'var(--surface-primary)'} r={active ? 6 : 4} stroke="var(--module-accent)" strokeWidth="3" />{active && <g aria-hidden="true"><rect fill="var(--surface-elevated)" height="44" rx="10" stroke="var(--border-strong)" width="116" x={tooltipX - 58} y={tooltipY} /><text fill="var(--text-secondary)" fontSize="10" textAnchor="middle" x={tooltipX} y={tooltipY + 15}>{bucket.label}</text><text fill="var(--text-primary)" fontSize="14" fontWeight="700" textAnchor="middle" x={tooltipX} y={tooltipY + 33}>{formatStatistic(value)} {numeric ? unit ?? '' : 'completed'}</text></g>}</g>;
+                        return value !== null && <g aria-label={label} key={bucket.date} onBlur={() => setFocusedDate(null)} onClick={() => setSelectedPointDate(bucket.date)} onFocus={() => setFocusedDate(bucket.date)} onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); setSelectedPointDate(bucket.date); } }} onMouseEnter={() => setFocusedDate(bucket.date)} onMouseLeave={() => setFocusedDate(null)} role="button" tabIndex={0}><circle className="cursor-pointer" cx={x(index)} cy={y(value)} fill="transparent" r="14" /><circle cx={x(index)} cy={y(value)} fill={active ? 'var(--module-accent)' : 'var(--surface-primary)'} r={active ? 6 : 4} stroke="var(--module-accent)" strokeWidth="3" /></g>;
                     })}
                     {buckets.map((bucket, index) => index === 0 || index === buckets.length - 1 || index % labelStep === 0 ? <text fill="var(--text-muted)" fontSize="10" key={bucket.date} textAnchor={index === 0 ? 'start' : index === buckets.length - 1 ? 'end' : 'middle'} x={x(index)} y={chartHeight - 10}>{bucket.label}</text> : null)}
                 </svg>
+                {focused && focusedValue !== null && focusedValue !== undefined && <ChartTooltipCard chartHeight={chartHeight} chartWidth={chartWidth} height={44} label={focused.label} value={`${formatStatistic(focusedValue)} ${numeric ? unit ?? '' : 'completed'}`} width={116} x={tooltipX - 58} y={tooltipY} />}
+                </div>
                 </div>
                 <p className="mt-2 text-[0.65rem] text-muted sm:hidden">Swipe the chart to explore. Tap a point for details.</p>
                 <p aria-live="polite" className="mt-3 min-h-10 rounded-xl border border-border-subtle bg-app/40 px-3 py-2.5 text-xs text-secondary">{focused ? `${focused.label}: ${formatStatistic(numeric ? focused[metric] : focused.completed)} ${numeric ? unit ?? '' : 'completions'}${numeric && focused.target !== null ? ` · Target ${formatStatistic(focused.target)}` : ''}` : numeric && statistics.trend.unit === 'day' ? 'Dashed marks show historical daily targets. Missing averages remain gaps.' : 'Inspect points for exact values.'}</p>

@@ -38,7 +38,7 @@ export function SurfaceStyleSettings() {
                             aria-pressed={selected}
                             className={classNames(
                                 'focus-ring flex min-h-20 items-center gap-3 rounded-2xl border p-4 text-left transition-[background-color,border-color,box-shadow] duration-200',
-                                selected ? 'border-accent bg-accent/10 shadow-[0_0_0_1px_var(--accent)]' : 'border-border-subtle bg-elevated hover:border-border-strong',
+                                selected ? 'border-accent bg-[color-mix(in_srgb,var(--accent)_10%,var(--surface-elevated))] shadow-[0_0_0_1px_var(--accent)]' : 'border-border-subtle bg-elevated hover:border-border-strong',
                             )}
                             disabled={processing}
                             key={option.value}

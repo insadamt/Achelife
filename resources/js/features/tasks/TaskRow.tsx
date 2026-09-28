@@ -51,7 +51,7 @@ export function TaskRow({ task, onOpen, onCompleted, onDropTask, reorderable = f
     return (
         <article
             className={classNames(
-            'overflow-hidden rounded-2xl border bg-surface transition-[border-color,background-color] hover:border-border-strong hover:bg-surface-hover/30',
+            'overflow-hidden rounded-2xl border bg-surface transition-[border-color,background-color] hover:border-border-strong hover:bg-surface-hover',
             completed ? 'border-border-subtle' : 'border-border-strong/70',
             dropActive && 'border-[var(--module-accent)] bg-surface-hover ring-2 ring-[var(--module-accent)]/30',
             )}

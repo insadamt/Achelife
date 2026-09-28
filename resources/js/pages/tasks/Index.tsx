@@ -5,8 +5,10 @@ import type { CSSProperties } from 'react';
 
 import { Button, PageChrome, PageHeader, PageRail } from '../../components/ui';
 import { TaskComposer } from '../../features/tasks/TaskComposer';
+import { TaskArchivedBrowser } from '../../features/tasks/TaskArchivedBrowser';
 import { TaskDetailsDrawer } from '../../features/tasks/TaskDetailsDrawer';
 import { TaskFileBrowser } from '../../features/tasks/TaskFileBrowser';
+import { TaskFilesNavigation } from '../../features/tasks/TaskFilesNavigation';
 import { TaskList } from '../../features/tasks/TaskList';
 import { TaskPagination } from '../../features/tasks/TaskPagination';
 import { TaskSectionNav } from '../../features/tasks/TaskSectionNav';
@@ -46,7 +48,7 @@ export default function TasksIndex(props: TasksPageProps) {
     const selectedTask = allVisibleTasks(props, visibleCompletedRows).find((task) => task.id === selectedTaskId) ?? null;
     const nextCompletedPage = props.completedTasks.links.at(-1)?.url ?? null;
     const showingSearchResults = props.searchResults !== null;
-    const browsingManager = !showingSearchResults && (props.workspace.view === 'files' || props.workspace.view === 'folder');
+    const browsingManager = !showingSearchResults && (props.workspace.view === 'files' || props.workspace.view === 'archived' || props.workspace.view === 'folder');
     const taskLocation = props.workspace.view === 'project' || props.workspace.view === 'inbox';
 
     function loadMoreCompleted() {
@@ -93,7 +95,12 @@ export default function TasksIndex(props: TasksPageProps) {
 
                 <TaskWorkspace>
                     {browsingManager ? (
-                        <TaskFileBrowser explorer={props.explorer} filters={props.searchFilters} onAnnounce={setAnnouncement} workspace={props.workspace} />
+                        <>
+                            {props.workspace.view !== 'folder' && <TaskFilesNavigation active={props.workspace.view === 'archived' ? 'archived' : 'files'} filters={props.searchFilters} />}
+                            {props.workspace.view === 'archived'
+                                ? <TaskArchivedBrowser explorer={props.explorer} />
+                                : <TaskFileBrowser explorer={props.explorer} filters={props.searchFilters} onAnnounce={setAnnouncement} workspace={props.workspace} />}
+                        </>
                     ) : (
                         <>
                             {taskLocation && <TaskLocationBreadcrumb explorer={props.explorer} workspace={props.workspace} />}

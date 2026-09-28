@@ -118,7 +118,7 @@ export interface TaskExplorerViewData {
     archivedProjects: TaskProjectViewData[];
 }
 
-export type TaskWorkspaceView = 'files' | 'folder' | 'today' | 'inbox' | 'upcoming' | 'overdue' | 'completed' | 'project';
+export type TaskWorkspaceView = 'files' | 'archived' | 'folder' | 'today' | 'inbox' | 'upcoming' | 'overdue' | 'completed' | 'project';
 export type ProjectTaskView = 'today' | 'overdue' | 'upcoming' | 'completed';
 
 export interface TaskWorkspaceViewData {

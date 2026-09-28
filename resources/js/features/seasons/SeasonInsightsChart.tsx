@@ -1,4 +1,5 @@
 import { useId, useState } from 'react';
+import { ChartTooltipCard } from '../../components/ui/ChartTooltipCard';
 
 import type { SeasonTimelinePoint } from './insightsTypes';
 
@@ -37,7 +38,8 @@ export function SeasonInsightsChart({ current, previous, view }: { current: Seas
     return (
         <div>
             <div className="relative overflow-x-auto pb-1">
-                <svg aria-label={`Line chart of ${view === 'cumulative' ? 'cumulative Season Points' : 'daily Season Points'} by Season day`} className="h-auto min-w-[620px] w-full" role="img" viewBox={`0 0 ${chartWidth} ${chartHeight}`}>
+                <div className="relative min-w-[620px]">
+                <svg aria-label={`Line chart of ${view === 'cumulative' ? 'cumulative Season Points' : 'daily Season Points'} by Season day`} className="block h-auto w-full" role="img" viewBox={`0 0 ${chartWidth} ${chartHeight}`}>
                     <defs>
                         <linearGradient id={gradientId} x1="0" x2="0" y1="0" y2="1">
                             <stop offset="0%" stopColor="var(--module-accent)" stopOpacity="0.28" />
@@ -71,17 +73,9 @@ export function SeasonInsightsChart({ current, previous, view }: { current: Seas
 
                         return show ? <text fill="var(--text-muted)" fontSize="10" key={point.date} textAnchor={index === 0 ? 'start' : index === current.length - 1 ? 'end' : 'middle'} x={x(point.day)} y={chartHeight - 10}>Day {point.day}</text> : null;
                     })}
-                    <g aria-hidden="true" data-chart-tooltip-layer="true" pointerEvents="none">
-                        {activePoint && (
-                            <>
-                                <rect fill="var(--surface-elevated)" height="52" rx="10" stroke="var(--border-strong)" width="132" x={tooltipX - 66} y={tooltipY} />
-                                <text fill="var(--text-secondary)" fontSize="10" textAnchor="middle" x={tooltipX} y={tooltipY + 15}>{activePoint.label} · Day {activePoint.day}</text>
-                                <text fill="var(--text-primary)" fontSize="14" fontWeight="700" textAnchor="middle" x={tooltipX} y={tooltipY + 34}>{view === 'cumulative' ? `${activePoint.cumulativeSp} SP total` : `${activePoint.dailySp > 0 ? '+' : ''}${activePoint.dailySp} SP that day`}</text>
-                                <text fill="var(--text-muted)" fontSize="9" textAnchor="middle" x={tooltipX} y={tooltipY + 46}>{view === 'cumulative' ? `${activePoint.dailySp > 0 ? '+' : ''}${activePoint.dailySp} SP that day` : `${activePoint.cumulativeSp} SP total`}</text>
-                            </>
-                        )}
-                    </g>
                 </svg>
+                {activePoint && <ChartTooltipCard chartHeight={chartHeight} chartWidth={chartWidth} detail={view === 'cumulative' ? `${activePoint.dailySp > 0 ? '+' : ''}${activePoint.dailySp} SP that day` : `${activePoint.cumulativeSp} SP total`} height={52} label={`${activePoint.label} · Day ${activePoint.day}`} value={view === 'cumulative' ? `${activePoint.cumulativeSp} SP total` : `${activePoint.dailySp > 0 ? '+' : ''}${activePoint.dailySp} SP that day`} width={132} x={tooltipX - 66} y={tooltipY} />}
+                </div>
             </div>
             <p className="mt-2 text-xs leading-5 text-muted">{view === 'cumulative' ? 'Follow the line to see how your Season Points build over time.' : 'Follow the line to see the net SP earned or lost on each day.'} Hover or focus a point for its daily change and cumulative total.</p>
         </div>

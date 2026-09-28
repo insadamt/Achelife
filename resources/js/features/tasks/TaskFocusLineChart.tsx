@@ -1,4 +1,5 @@
 import { useId, useState } from 'react';
+import { ChartTooltipCard } from '../../components/ui/ChartTooltipCard';
 
 import { formatFocusDuration } from './taskStatisticsPresentation';
 import type { TaskFocusStatisticsData } from './taskStatisticsTypes';
@@ -24,10 +25,14 @@ export function TaskFocusLineChart({ trend }: { trend: TaskFocusStatisticsData['
     const lastPoint = points.at(-1);
     const areaPath = points.length > 0 ? `${linePath} L ${lastPoint?.x} ${padding.top + plotHeight} L ${firstPoint?.x} ${padding.top + plotHeight} Z` : '';
     const labelStep = Math.max(1, Math.ceil(points.length / 6));
+    const activePoint = activeIndex === null ? null : points[activeIndex];
+    const tooltipX = activePoint ? Math.min(chartWidth - 72, Math.max(72, activePoint.x)) : 0;
+    const tooltipY = activePoint ? Math.max(2, activePoint.y - 56) : 0;
 
     return <div>
         <div aria-label="Scrollable Focus activity chart" className="focus-ring overflow-x-auto rounded-2xl bg-inset p-3" role="region" tabIndex={0}>
-            <svg aria-label={`Line chart of completed Focus Time per ${trend.unit}`} className="h-auto min-w-[620px] w-full" role="img" viewBox={`0 0 ${chartWidth} ${chartHeight}`}>
+            <div className="relative min-w-[620px]">
+            <svg aria-label={`Line chart of completed Focus Time per ${trend.unit}`} className="block h-auto w-full" role="img" viewBox={`0 0 ${chartWidth} ${chartHeight}`}>
                 <defs><linearGradient id={gradientId} x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stopColor="var(--module-accent)" stopOpacity="0.28" /><stop offset="100%" stopColor="var(--module-accent)" stopOpacity="0" /></linearGradient></defs>
                 {[1, 0.75, 0.5, 0.25, 0].map((ratio) => {
                     const y = padding.top + plotHeight * (1 - ratio);
@@ -37,18 +42,17 @@ export function TaskFocusLineChart({ trend }: { trend: TaskFocusStatisticsData['
                 <path d={linePath} fill="none" stroke="var(--module-accent)" strokeLinecap="round" strokeLinejoin="round" strokeWidth="4" />
                 {points.map((point, index) => {
                     const active = activeIndex === index;
-                    const tooltipX = Math.min(chartWidth - 72, Math.max(72, point.x));
-                    const tooltipY = Math.max(2, point.y - 56);
                     const accessibleLabel = `${point.label}: ${formatFocusDuration(point.seconds)} completed Focus Time`;
 
                     return <g aria-label={accessibleLabel} key={point.date} onBlur={() => setActiveIndex(null)} onFocus={() => setActiveIndex(index)} onMouseEnter={() => setActiveIndex(index)} onMouseLeave={() => setActiveIndex(null)} role="button" tabIndex={0}>
                         <circle className="cursor-pointer" cx={point.x} cy={point.y} fill="transparent" r="14" />
                         <circle cx={point.x} cy={point.y} fill={active ? 'var(--module-accent)' : 'var(--surface-primary)'} r={active ? 6 : 4} stroke="var(--module-accent)" strokeWidth="3" />
-                        {active && <g aria-hidden="true"><rect fill="var(--surface-elevated)" height="44" rx="10" stroke="var(--border-strong)" width="128" x={tooltipX - 64} y={tooltipY} /><text fill="var(--text-secondary)" fontSize="10" textAnchor="middle" x={tooltipX} y={tooltipY + 15}>{point.label}</text><text fill="var(--text-primary)" fontSize="14" fontWeight="700" textAnchor="middle" x={tooltipX} y={tooltipY + 33}>{formatFocusDuration(point.seconds)}</text></g>}
                     </g>;
                 })}
                 {points.map((point, index) => index === 0 || index === points.length - 1 || index % labelStep === 0 ? <text fill="var(--text-muted)" fontSize="10" key={point.date} textAnchor={index === 0 ? 'start' : index === points.length - 1 ? 'end' : 'middle'} x={point.x} y={chartHeight - 10}>{point.label}</text> : null)}
             </svg>
+            {activePoint && <ChartTooltipCard chartHeight={chartHeight} chartWidth={chartWidth} height={44} label={activePoint.label} value={formatFocusDuration(activePoint.seconds)} width={128} x={tooltipX - 64} y={tooltipY} />}
+            </div>
         </div>
         <p className="mt-2 text-xs leading-5 text-muted">Completed interval time is zero-filled across the selected period. Hover or focus a point for its exact duration.</p>
     </div>;

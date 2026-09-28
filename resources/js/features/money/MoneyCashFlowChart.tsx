@@ -1,6 +1,7 @@
 import { useId, useState } from 'react';
 
 import { Surface } from '../../components/ui';
+import { ChartTooltipCard } from '../../components/ui/ChartTooltipCard';
 import { formatMinorUnits } from './moneyPresentation';
 import type { MoneyStatisticsData, MoneyTrendBucket } from './statisticsTypes';
 
@@ -44,6 +45,9 @@ export function MoneyCashFlowChart({ statistics }: { statistics: MoneyStatistics
     const labelStep = Math.max(1, Math.ceil(buckets.length / 6));
     const yTicks = [1, 0.75, 0.5, 0.25, 0];
     const metricLabel = metric === 'income' ? 'Income' : 'Spending';
+    const activePoint = activeIndex === null ? null : points[activeIndex];
+    const tooltipX = activePoint ? Math.min(chartWidth - 88, Math.max(88, activePoint.x)) : 0;
+    const tooltipY = activePoint ? Math.max(2, activePoint.y - (metric === 'income' ? 72 : 56)) : 0;
 
     return (
         <Surface className="overflow-hidden p-4 sm:p-6">
@@ -67,7 +71,8 @@ export function MoneyCashFlowChart({ statistics }: { statistics: MoneyStatistics
                 <div className="grid min-h-64 place-items-center rounded-2xl border border-dashed border-border-strong bg-app/35 text-sm text-muted">Financial activity will appear here.</div>
             ) : (
                 <div className="relative overflow-x-auto pb-1">
-                    <svg aria-label={`Line chart of ${metricLabel.toLowerCase()} per ${statistics.trend.unit}`} className="h-auto min-w-[620px] w-full" role="img" viewBox={`0 0 ${chartWidth} ${chartHeight}`}>
+                    <div className="relative min-w-[620px]">
+                    <svg aria-label={`Line chart of ${metricLabel.toLowerCase()} per ${statistics.trend.unit}`} className="block h-auto w-full" role="img" viewBox={`0 0 ${chartWidth} ${chartHeight}`}>
                         <defs><linearGradient id={gradientId} x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stopColor="var(--module-accent)" stopOpacity="0.28" /><stop offset="100%" stopColor="var(--module-accent)" stopOpacity="0" /></linearGradient></defs>
                         {yTicks.map((ratio) => {
                             const tickValue = maximumValue * ratio;
@@ -78,8 +83,6 @@ export function MoneyCashFlowChart({ statistics }: { statistics: MoneyStatistics
                         <path d={currentPath} fill="none" stroke="var(--module-accent)" strokeLinecap="round" strokeLinejoin="round" strokeWidth="4" />
                         {points.map((point, index) => {
                             const active = activeIndex === index;
-                            const tooltipX = Math.min(chartWidth - 88, Math.max(88, point.x));
-                            const tooltipY = Math.max(2, point.y - (metric === 'income' ? 72 : 56));
                             const accessibleLabel = metric === 'income'
                                 ? `${point.bucket.label}: income ${formatMinorUnits(point.value, statistics.currency ?? '')}, recorded ${formatMinorUnits(point.bucket.incomeMinor, statistics.currency ?? '')}, opening balance ${formatMinorUnits(point.bucket.openingBalanceMinor, statistics.currency ?? '')}`
                                 : `${point.bucket.label}: spending ${formatMinorUnits(point.value, statistics.currency ?? '')}`;
@@ -88,12 +91,13 @@ export function MoneyCashFlowChart({ statistics }: { statistics: MoneyStatistics
                                 <g aria-label={accessibleLabel} key={point.bucket.date} onBlur={() => setActiveIndex(null)} onFocus={() => setActiveIndex(index)} onMouseEnter={() => setActiveIndex(index)} onMouseLeave={() => setActiveIndex(null)} role="button" tabIndex={0}>
                                     <circle className="cursor-pointer" cx={point.x} cy={point.y} fill="transparent" r="14" />
                                     <circle cx={point.x} cy={point.y} fill={active ? 'var(--module-accent)' : 'var(--surface-primary)'} r={active ? 6 : 4} stroke="var(--module-accent)" strokeWidth="3" />
-                                    {active && <g aria-hidden="true"><rect fill="var(--surface-elevated)" height={metric === 'income' ? 60 : 44} rx="10" stroke="var(--border-strong)" width="166" x={tooltipX - 83} y={tooltipY} /><text fill="var(--text-secondary)" fontSize="10" textAnchor="middle" x={tooltipX} y={tooltipY + 15}>{point.bucket.label}</text><text fill="var(--text-primary)" fontSize="13" fontWeight="700" textAnchor="middle" x={tooltipX} y={tooltipY + 33}>{formatMinorUnits(point.value, statistics.currency ?? '')} {metricLabel.toLowerCase()}</text>{metric === 'income' && <text fill="var(--text-muted)" fontSize="9" textAnchor="middle" x={tooltipX} y={tooltipY + 49}>Recorded {formatMinorUnits(point.bucket.incomeMinor, statistics.currency ?? '')} · Opening {formatMinorUnits(point.bucket.openingBalanceMinor, statistics.currency ?? '')}</text>}</g>}
                                 </g>
                             );
                         })}
                         {points.map((point, index) => index === 0 || index === points.length - 1 || index % labelStep === 0 ? <text fill="var(--text-muted)" fontSize="10" key={point.bucket.date} textAnchor={index === 0 ? 'start' : index === points.length - 1 ? 'end' : 'middle'} x={point.x} y={chartHeight - 10}>{point.bucket.label}</text> : null)}
                     </svg>
+                    {activePoint && <ChartTooltipCard chartHeight={chartHeight} chartWidth={chartWidth} detail={metric === 'income' ? `Recorded ${formatMinorUnits(activePoint.bucket.incomeMinor, statistics.currency ?? '')} · Opening ${formatMinorUnits(activePoint.bucket.openingBalanceMinor, statistics.currency ?? '')}` : undefined} height={metric === 'income' ? 60 : 44} label={activePoint.bucket.label} value={`${formatMinorUnits(activePoint.value, statistics.currency ?? '')} ${metricLabel.toLowerCase()}`} width={166} x={tooltipX - 83} y={tooltipY} />}
+                    </div>
                 </div>
             )}
             <p className="mt-2 text-xs leading-5 text-muted">Follow the line to see your {metric === 'income' ? 'income peaks' : 'highest-spending periods'}. Hover or focus a point for the exact amount.</p>

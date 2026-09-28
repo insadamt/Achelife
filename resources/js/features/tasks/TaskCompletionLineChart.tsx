@@ -1,4 +1,5 @@
 import { useId, useState } from 'react';
+import { ChartTooltipCard } from '../../components/ui/ChartTooltipCard';
 
 interface TrendBucket {
     date: string;
@@ -39,11 +40,15 @@ export function TaskCompletionLineChart({ buckets, metric, unit }: TaskCompletio
         : '';
     const labelStep = Math.max(1, Math.ceil(buckets.length / 6));
     const yTicks = [1, 0.75, 0.5, 0.25, 0];
+    const activePoint = activeIndex === null ? null : points[activeIndex];
+    const tooltipX = activePoint ? Math.min(chartWidth - 66, Math.max(66, activePoint.x)) : 0;
+    const tooltipY = activePoint ? Math.max(2, activePoint.y - 56) : 0;
 
     return (
         <div>
             <div className="relative overflow-x-auto rounded-2xl bg-inset p-3">
-                <svg aria-label={`Line chart of ${metricLabel} per ${unit}`} className="h-auto min-w-[620px] w-full" role="img" viewBox={`0 0 ${chartWidth} ${chartHeight}`}>
+                <div className="relative min-w-[620px]">
+                <svg aria-label={`Line chart of ${metricLabel} per ${unit}`} className="block h-auto w-full" role="img" viewBox={`0 0 ${chartWidth} ${chartHeight}`}>
                     <defs>
                         <linearGradient id={gradientId} x1="0" x2="0" y1="0" y2="1">
                             <stop offset="0%" stopColor="var(--module-accent)" stopOpacity="0.28" />
@@ -59,14 +64,11 @@ export function TaskCompletionLineChart({ buckets, metric, unit }: TaskCompletio
                     <path d={linePath} fill="none" stroke="var(--module-accent)" strokeLinecap="round" strokeLinejoin="round" strokeWidth="4" />
                     {points.map((point, index) => {
                         const active = activeIndex === index;
-                        const tooltipX = Math.min(chartWidth - 66, Math.max(66, point.x));
-                        const tooltipY = Math.max(2, point.y - 56);
 
                         return (
                             <g aria-label={`${point.label}: ${point.value} ${metric === 'tasks' ? `completed ${point.value === 1 ? 'task' : 'tasks'}` : 'Task SP earned'}`} key={point.date} onBlur={() => setActiveIndex(null)} onFocus={() => setActiveIndex(index)} onMouseEnter={() => setActiveIndex(index)} onMouseLeave={() => setActiveIndex(null)} role="button" tabIndex={0}>
                                 <circle className="cursor-pointer" cx={point.x} cy={point.y} fill="transparent" r="14" />
                                 <circle cx={point.x} cy={point.y} fill={active ? 'var(--module-accent)' : 'var(--surface-primary)'} r={active ? 6 : 4} stroke="var(--module-accent)" strokeWidth="3" />
-                                {active && <g aria-hidden="true"><rect fill="var(--surface-elevated)" height="44" rx="10" stroke="var(--border-strong)" width="116" x={tooltipX - 58} y={tooltipY} /><text fill="var(--text-secondary)" fontSize="10" textAnchor="middle" x={tooltipX} y={tooltipY + 15}>{point.label}</text><text fill="var(--text-primary)" fontSize="14" fontWeight="700" textAnchor="middle" x={tooltipX} y={tooltipY + 33}>{point.value} {metric === 'tasks' ? 'completed' : 'SP'}</text></g>}
                             </g>
                         );
                     })}
@@ -76,6 +78,8 @@ export function TaskCompletionLineChart({ buckets, metric, unit }: TaskCompletio
                         return show ? <text fill="var(--chart-axis)" fontSize="10" key={point.date} textAnchor={index === 0 ? 'start' : index === points.length - 1 ? 'end' : 'middle'} x={point.x} y={chartHeight - 10}>{point.label}</text> : null;
                     })}
                 </svg>
+                {activePoint && <ChartTooltipCard chartHeight={chartHeight} chartWidth={chartWidth} height={44} label={activePoint.label} value={`${activePoint.value} ${metric === 'tasks' ? 'completed' : 'SP'}`} width={116} x={tooltipX - 58} y={tooltipY} />}
+                </div>
             </div>
             <p className="mt-2 text-xs leading-5 text-muted">Follow the line to see your productive peaks and quiet stretches. Hover or focus a point for its exact {metric === 'tasks' ? 'task' : 'SP'} total.</p>
         </div>

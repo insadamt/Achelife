@@ -7,6 +7,73 @@
     background-attachment: fixed;
 }
 
+.chart-tooltip-card {
+    position: absolute;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    padding: 2px;
+    pointer-events: none;
+    overflow: hidden;
+    border: 1px solid var(--border-strong);
+    border-radius: 10px;
+    background-color: var(--surface-elevated);
+    text-align: center;
+    white-space: nowrap;
+}
+
+.chart-tooltip-artwork {
+    position: absolute;
+    inset: 0;
+    display: none;
+    overflow: hidden;
+}
+
+.app-glass .chart-tooltip-artwork {
+    display: block;
+}
+
+.app-glass .chart-tooltip-artwork svg {
+    max-width: none;
+    max-height: none;
+    pointer-events: none;
+    opacity: 0.7;
+    filter: blur(10px);
+}
+
+.app-glass .chart-tooltip-card::after {
+    position: absolute;
+    inset: 0;
+    background-color: rgb(20 34 43 / 55%);
+    content: '';
+}
+
+.chart-tooltip-card > :is(span, strong) {
+    position: relative;
+    z-index: 1;
+}
+
+.chart-tooltip-label {
+    color: var(--text-secondary);
+    font-size: 10px;
+    line-height: 1;
+}
+
+.chart-tooltip-value {
+    color: var(--text-primary);
+    font-size: 13px;
+    line-height: 1;
+}
+
+.chart-tooltip-detail {
+    color: var(--text-muted);
+    font-size: 9px;
+    line-height: 1;
+}
+
 .app-wallpaper {
     background-image: var(--app-wallpaper);
 }
@@ -29,6 +96,18 @@
     --shadow-raised: 0 18px 42px rgb(0 0 0 / 28%), inset 0 1px var(--glass-edge-bright), inset 0 -1px var(--glass-edge-dark);
     --shadow-navigation: 0 22px 50px rgb(0 0 0 / 30%), inset 0 1px var(--glass-edge-bright);
     background-image: var(--app-wallpaper, url('../images/today/city-garden.png'));
+}
+
+:is(.app-glass, .app-normal-glass) .page-chrome {
+    background-color: color-mix(in srgb, var(--surface-overlay) 88%, transparent);
+    -webkit-backdrop-filter: blur(28px) saturate(145%);
+    backdrop-filter: blur(28px) saturate(145%);
+}
+
+:is(.app-glass, .app-normal-glass) .module-navigation {
+    background-color: color-mix(in srgb, var(--surface-inset) 78%, transparent);
+    -webkit-backdrop-filter: blur(24px) saturate(145%);
+    backdrop-filter: blur(24px) saturate(145%);
 }
 
 :root[data-theme='light'] :is(.app-glass, .app-normal-glass) {
@@ -124,6 +203,21 @@
     box-shadow: none;
 }
 
+.app-glass .chart-tooltip-card {
+    border-color: transparent;
+    background-color: rgb(20 34 43 / 97%);
+    -webkit-backdrop-filter: blur(26px) saturate(140%);
+    backdrop-filter: blur(26px) saturate(140%);
+}
+
+:root[data-theme='light'] .app-glass .chart-tooltip-card {
+    background-color: rgb(246 251 254 / 97%);
+}
+
+:root[data-theme='light'] .app-glass .chart-tooltip-card::after {
+    background-color: rgb(246 251 254 / 55%);
+}
+
 .app-glass :is(.bg-app, [class*='bg-app/'], [class*='bg-surface/'], [class*='bg-elevated/'], [class*='bg-[color-mix']) {
     box-shadow: none;
 }
@@ -203,6 +297,19 @@
         --surface-inset: rgb(217 230 240 / 99%);
         --surface-overlay: rgb(250 253 255 / 99%);
     }
+
+    .app-glass .chart-tooltip-card {
+        background-color: #14222b;
+    }
+
+    :root[data-theme='light'] .app-glass .chart-tooltip-card {
+        background-color: #f6fbfe;
+    }
+
+    .app-glass .chart-tooltip-artwork,
+    .app-glass .chart-tooltip-card::after {
+        display: none;
+    }
 }
 
 @media (prefers-reduced-transparency: reduce) {
@@ -232,6 +339,17 @@
     .app-glass :is(.money-account-card, .money-account-list-item) {
         -webkit-backdrop-filter: none;
         backdrop-filter: none;
+    }
+
+    .app-glass .chart-tooltip-card {
+        background-color: var(--surface-elevated);
+        -webkit-backdrop-filter: none;
+        backdrop-filter: none;
+    }
+
+    .app-glass .chart-tooltip-artwork,
+    .app-glass .chart-tooltip-card::after {
+        display: none;
     }
 
     .app-glass .money-account-card {

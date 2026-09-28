@@ -1,9 +1,9 @@
 import { Link, router } from '@inertiajs/react';
-import { Archive, ArrowLeft, ChevronRight, Folder, FolderKanban, Inbox, MoreHorizontal, Plus, RotateCcw } from 'lucide-react';
+import { ArrowLeft, ChevronRight, Folder, FolderKanban, Inbox, MoreHorizontal, Plus } from 'lucide-react';
 import { useState } from 'react';
 import type { DragEvent, ReactNode } from 'react';
 
-import { Button, Dialog } from '../../components/ui';
+import { Button } from '../../components/ui';
 import { classNames } from '../../components/ui/classNames';
 import { taskNavigationHref } from './taskNavigation';
 import { TaskLocationActionsDialog, type TaskLocationActionTarget } from './TaskLocationActionsDialog';
@@ -16,12 +16,11 @@ export function TaskFileBrowser({ explorer, filters, onAnnounce, workspace }: { 
     const [createLocation, setCreateLocation] = useState<CreateLocation>(null);
     const [draggingProject, setDraggingProject] = useState<TaskProjectViewData | null>(null);
     const [managingLocation, setManagingLocation] = useState<TaskLocationActionTarget | null>(null);
-    const [showArchived, setShowArchived] = useState(false);
     const selectedFolder = workspace.folderId === null ? null : explorer.folders.find((folder) => folder.id === workspace.folderId) ?? null;
     const browsingFolder = workspace.view === 'folder' && selectedFolder !== null;
 
     return <section aria-labelledby="task-files-heading" className="mt-6">
-        <FilesHeader browsingFolder={browsingFolder} count={explorer.folders.length + explorer.rootProjects.length + 1} filters={filters} folder={selectedFolder} onArchived={() => setShowArchived(true)} onCreate={setCreateLocation} />
+        <FilesHeader browsingFolder={browsingFolder} count={explorer.folders.length + explorer.rootProjects.length + 1} filters={filters} folder={selectedFolder} onCreate={setCreateLocation} />
         {browsingFolder ? <>
             {draggingProject && <RootDropTarget onDrop={() => moveProject(draggingProject, null, explorer.rootProjects.length, 'Files', onAnnounce)} />}
             <ProjectGrid emptyMessage="This Folder has no Projects yet." filters={filters} folderId={selectedFolder.id} onDragStateChange={setDraggingProject} onManage={(project) => setManagingLocation(projectTarget(project))} projects={selectedFolder.projects} />
@@ -33,11 +32,10 @@ export function TaskFileBrowser({ explorer, filters, onAnnounce, workspace }: { 
         <TaskLocationCreateDialog folderId={null} kind="folder" onClose={() => setCreateLocation(null)} open={createLocation === 'folder'} />
         <TaskLocationCreateDialog folderId={browsingFolder ? selectedFolder.id : null} kind="project" onClose={() => setCreateLocation(null)} open={createLocation === 'project'} />
         <TaskLocationActionsDialog onClose={() => setManagingLocation(null)} target={managingLocation} />
-        <ArchivedDialog explorer={explorer} onClose={() => setShowArchived(false)} open={showArchived} />
     </section>;
 }
 
-function FilesHeader({ browsingFolder, count, filters, folder, onArchived, onCreate }: { browsingFolder: boolean; count: number; filters: TaskSearchFilters; folder: TaskFolderViewData | null; onArchived: () => void; onCreate: (kind: Exclude<CreateLocation, null>) => void }) {
+function FilesHeader({ browsingFolder, count, filters, folder, onCreate }: { browsingFolder: boolean; count: number; filters: TaskSearchFilters; folder: TaskFolderViewData | null; onCreate: (kind: Exclude<CreateLocation, null>) => void }) {
     const surfaceClassName = 'mb-6 rounded-[var(--radius-panel)] border border-border-subtle bg-surface px-5 py-4 sm:px-6';
 
     if (browsingFolder) {
@@ -65,7 +63,6 @@ function FilesHeader({ browsingFolder, count, filters, folder, onArchived, onCre
                 <p className="mt-2 text-sm text-muted">Keep Projects together in Folders.</p>
             </div>
             <div className="flex flex-wrap justify-center gap-2">
-                <Button onClick={onArchived} size="small" variant="ghost"><Archive size={16} />Archived</Button>
                 <Button onClick={() => onCreate('folder')} size="small" variant="secondary"><Plus size={16} />New Folder</Button>
                 <Button onClick={() => onCreate('project')} size="small"><Plus size={16} />New Project</Button>
             </div>
@@ -101,13 +98,10 @@ function defaultIconTone(tone: 'folder' | 'project' | 'inbox'): string {
     return 'bg-surface-hover text-secondary';
 }
 
-function ArchivedDialog({ explorer, onClose, open }: { explorer: TaskExplorerViewData; onClose: () => void; open: boolean }) { const hasArchived = explorer.archivedFolders.length > 0 || explorer.archivedProjects.length > 0; return <Dialog description="Archived locations keep their Tasks and can be restored at any time." onClose={onClose} open={open} title="Archived Files">{hasArchived ? <div className="space-y-3">{explorer.archivedFolders.map((folder) => <ArchivedRow key={'folder-' + folder.id} kind="Folder" name={folder.name} onReactivate={() => reactivate('folders', folder.id)} summary={`${folder.projectCount} Projects · ${folder.openTaskCount} Tasks`} />)}{explorer.archivedProjects.map((project) => <ArchivedRow key={'project-' + project.id} kind="Project" name={project.name} onReactivate={() => reactivate('projects', project.id)} summary={`${project.openTaskCount} Tasks`} />)}</div> : <p className="py-6 text-center text-sm text-muted">No archived Folders or Projects.</p>}</Dialog>; }
-function ArchivedRow({ kind, name, onReactivate, summary }: { kind: 'Folder' | 'Project'; name: string; onReactivate: () => void; summary: string }) { return <div className="flex items-center justify-between gap-3 rounded-2xl border border-border-subtle p-4"><div className="min-w-0"><p className="truncate font-bold">{name}</p><p className="text-sm text-muted">{kind} · {summary}</p></div><Button onClick={onReactivate} size="small" variant="secondary"><RotateCcw size={15} />Reactivate</Button></div>; }
 function RootDropTarget({ onDrop }: { onDrop: () => void }) { return <div className="mb-4 rounded-xl border border-dashed border-[var(--module-accent)] px-4 py-3 text-center text-sm font-bold text-accent-ink" onDragOver={(event) => event.preventDefault()} onDrop={(event) => { event.preventDefault(); onDrop(); }}>Drop here to move the Project to Files root</div>; }
 function isProjectDrag(event: DragEvent<HTMLElement>): boolean { return Array.from(event.dataTransfer.types).includes('application/x-achelife-project'); }
 function draggedProject(event: DragEvent<HTMLElement>): { folderId: number | null; project: TaskProjectViewData } | null { const value = event.dataTransfer.getData('application/x-achelife-project'); return value ? JSON.parse(value) as { folderId: number | null; project: TaskProjectViewData } : null; }
 function setDragImage(event: DragEvent<HTMLElement>) { const bounds = event.currentTarget.getBoundingClientRect(); event.dataTransfer.setDragImage(event.currentTarget, Math.max(0, Math.min(bounds.width, event.clientX - bounds.left)), Math.max(0, Math.min(bounds.height, event.clientY - bounds.top))); }
 function moveProject(project: TaskProjectViewData, folderId: number | null, position: number, destination: string, onSuccess: (message: string) => void) { router.put(`/task-projects/${project.id}/move`, { task_folder_id: folderId, position: Math.max(0, position) }, { preserveScroll: true, onSuccess: () => onSuccess(`${project.name} moved to ${destination}.`) }); }
-function reactivate(kind: 'folders' | 'projects', id: number) { router.post(`/task-${kind}/${id}/reactivate`, {}, { preserveScroll: true }); }
 function folderTarget(folder: TaskFolderViewData): TaskLocationActionTarget { return { id: folder.id, kind: 'folder', name: folder.name, color: folder.color, openTaskCount: folder.openTaskCount, projectCount: folder.projectCount }; }
 function projectTarget(project: TaskProjectViewData): TaskLocationActionTarget { return { id: project.id, kind: 'project', name: project.name, color: project.color, openTaskCount: project.openTaskCount }; }

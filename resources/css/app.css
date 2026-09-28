@@ -133,10 +133,8 @@
     padding: 1rem 1.5rem;
     border: 1px solid var(--border-subtle);
     border-radius: 1.75rem;
-    background-color: color-mix(in srgb, var(--surface-overlay) 88%, transparent);
+    background-color: var(--surface-overlay);
     box-shadow: var(--shadow-panel);
-    -webkit-backdrop-filter: blur(28px) saturate(145%);
-    backdrop-filter: blur(28px) saturate(145%);
 }
 
 .page-chrome h1 {
@@ -152,9 +150,7 @@
 .module-navigation {
     width: max-content;
     border: 1px solid var(--border-subtle);
-    background-color: color-mix(in srgb, var(--surface-inset) 78%, transparent);
-    -webkit-backdrop-filter: blur(24px) saturate(145%);
-    backdrop-filter: blur(24px) saturate(145%);
+    background-color: var(--surface-inset);
 }
 
 @media (min-width: 1280px) {
