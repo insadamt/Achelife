@@ -4,6 +4,7 @@ import { usePage } from '@inertiajs/react';
 
 import type { SharedPageProps } from '../types';
 import { applyAccentPalette } from './accentPalette';
+import { revealAppearanceFromCenter } from './appearanceReveal';
 import { applyTheme, isThemePreference, readThemePreference, resolveTheme, storeThemePreference, themeStorageKey } from './theme';
 import type { ResolvedTheme, ThemePreference } from './theme';
 
@@ -56,11 +57,25 @@ export function ThemeProvider({ children }: PropsWithChildren) {
             preference,
             resolvedTheme,
             setPreference(nextPreference) {
-                setPreference(nextPreference);
-                storeThemePreference(nextPreference);
+                if (nextPreference === preference) return;
+
+                const nextTheme = resolveTheme(nextPreference);
+                const applyPreference = () => {
+                    setPreference(nextPreference);
+                    setResolvedTheme(nextTheme);
+                    applyTheme(nextTheme);
+                    applyAccentPalette(nextTheme, nextTheme === 'light' ? appearance.lightAccent : appearance.darkAccent);
+                    storeThemePreference(nextPreference);
+                };
+
+                if (nextTheme === resolvedTheme) {
+                    applyPreference();
+                } else {
+                    revealAppearanceFromCenter(applyPreference);
+                }
             },
         }),
-        [preference, resolvedTheme],
+        [appearance.darkAccent, appearance.lightAccent, preference, resolvedTheme],
     );
 
     return <ThemeContext.Provider value={contextValue}>{children}</ThemeContext.Provider>;

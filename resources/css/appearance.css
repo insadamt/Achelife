@@ -78,6 +78,31 @@
     background-image: var(--app-wallpaper);
 }
 
+.app-shell {
+    position: relative;
+    isolation: isolate;
+}
+
+.app-background-reveal-layer {
+    position: fixed;
+    z-index: -1;
+    inset: 0;
+    pointer-events: none;
+    background-color: var(--app-background);
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+    animation: appearance-circle-reveal 620ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.app-background-reveal-custom {
+    background-image: var(--reveal-wallpaper);
+}
+
+.app-background-reveal-default {
+    background-image: url('../images/today/city-garden.png');
+}
+
 .app-glass,
 .app-normal-glass {
     --app-background: transparent;

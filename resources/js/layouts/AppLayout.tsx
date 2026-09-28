@@ -123,6 +123,8 @@ function AppShell({ children }: PropsWithChildren) {
     const { mainRef, markPrimaryNavigation } = useWorkspacePageTransition(page.url);
     const { auth } = page.props;
     const { appearance } = page.props;
+    const [displayedBackgroundUrl, setDisplayedBackgroundUrl] = useState(appearance.backgroundUrl);
+    const [revealingBackgroundUrl, setRevealingBackgroundUrl] = useState<string | null | undefined>(undefined);
     const [mobileNavigationOpen, setMobileNavigationOpen] = useState(false);
     const [mobileFocusVisible, setMobileFocusVisible] = useState(false);
     const mobileFocusTriggerRef = useRef<HTMLButtonElement>(null);
@@ -130,9 +132,9 @@ function AppShell({ children }: PropsWithChildren) {
     const focus = useFocusTimer();
     const spGain = useSpGain();
     const dismissMobileFocus = useCallback(() => setMobileFocusVisible(false), []);
-    const wallpaperStyle = appearance.backgroundUrl === null
+    const wallpaperStyle = displayedBackgroundUrl === null
         ? undefined
-        : { '--app-wallpaper': `url("${appearance.backgroundUrl}")` } as CSSProperties;
+        : { '--app-wallpaper': `url("${displayedBackgroundUrl}")` } as CSSProperties;
     const secondaryDestinationActive = [...destinations, settingsDestination].some((destination) =>
         !mobilePrimaryLabels.has(destination.label) && isActiveDestination(destination, page.url),
     );
@@ -145,11 +147,54 @@ function AppShell({ children }: PropsWithChildren) {
         return () => window.cancelAnimationFrame(frame);
     }, [focus.event, focus.session, spGain.event]);
 
+    useEffect(() => {
+        const nextBackgroundUrl = appearance.backgroundUrl;
+        if (nextBackgroundUrl === displayedBackgroundUrl) return;
+
+        let cancelled = false;
+        const revealBackground = () => {
+            if (cancelled) return;
+            if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                setDisplayedBackgroundUrl(nextBackgroundUrl);
+            } else {
+                setRevealingBackgroundUrl(nextBackgroundUrl);
+            }
+        };
+
+        if (nextBackgroundUrl === null) {
+            revealBackground();
+        } else {
+            const image = new Image();
+            image.src = nextBackgroundUrl;
+            void image.decode().catch(() => undefined).then(revealBackground);
+        }
+
+        return () => { cancelled = true; };
+    }, [appearance.backgroundUrl, displayedBackgroundUrl]);
+
+    function finishBackgroundReveal() {
+        if (revealingBackgroundUrl === undefined) return;
+        setDisplayedBackgroundUrl(revealingBackgroundUrl);
+        setRevealingBackgroundUrl(undefined);
+    }
+
+    const revealingBackgroundStyle = revealingBackgroundUrl
+        ? { '--reveal-wallpaper': `url("${revealingBackgroundUrl}")` } as CSSProperties
+        : undefined;
+
     return (
         <div
-            className={classNames('min-h-screen bg-app text-foreground', appearance.surfaceStyle === 'glass' && 'app-glass', appearance.backgroundUrl !== null && 'app-wallpaper')}
+            className={classNames('app-shell min-h-screen bg-app text-foreground', appearance.surfaceStyle === 'glass' && 'app-glass', displayedBackgroundUrl !== null && 'app-wallpaper')}
             style={wallpaperStyle}
         >
+            {revealingBackgroundUrl !== undefined && (
+                <div
+                    aria-hidden="true"
+                    className={classNames('app-background-reveal-layer', revealingBackgroundUrl ? 'app-background-reveal-custom' : appearance.surfaceStyle === 'glass' && 'app-background-reveal-default')}
+                    onAnimationEnd={finishBackgroundReveal}
+                    style={revealingBackgroundStyle}
+                />
+            )}
             <aside className="fixed top-4 bottom-4 left-4 z-30 hidden w-20 rounded-[2rem] border border-border-subtle bg-overlay shadow-[var(--shadow-navigation)] md:flex md:flex-col">
                 <div className="flex justify-center py-4">
                     <BrandMark compact />
