@@ -117,7 +117,7 @@ export function SubtaskEditor({ subtasks, onChange, onToggleCompletion, error }:
             <p className="mt-2 px-1 text-xs text-muted">Tip: paste a list with one subtask per line to add everything at once.</p>
 
             {subtasks.length === 0 ? (
-                <div className="mt-5 rounded-2xl border border-dashed border-border-strong px-5 py-8 text-center">
+                <div className="mt-5 rounded-2xl border border-dashed border-border-strong bg-inset px-5 py-8 text-center">
                     <ListPlus aria-hidden="true" className="mx-auto text-muted" size={25} />
                     <p className="mt-3 text-sm font-bold text-foreground">Break this Task into clear steps</p>
                     <p className="mt-1 text-sm text-muted">Add the first step above, or paste an entire checklist.</p>

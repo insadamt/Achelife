@@ -57,7 +57,7 @@ export function TaskComposer({ explorer, initialProjectId, showProjectControl = 
     return (
         <section className="w-full" aria-label="Create a Task">
             <form
-                className="rounded-[1.5rem] border border-border-strong p-2"
+                className="rounded-[1.5rem] border border-border-strong bg-surface p-2"
                 onSubmit={submit}
             >
                 <div className="flex items-center gap-2">

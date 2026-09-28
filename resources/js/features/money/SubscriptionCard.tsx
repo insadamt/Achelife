@@ -102,7 +102,7 @@ export function SubscriptionCard({
 
                 <section className="mt-6" aria-labelledby={`subscription-${subscription.id}-history`}>
                     <h3 className="flex items-center gap-2 text-sm font-bold" id={`subscription-${subscription.id}-history`}><History aria-hidden="true" className="text-muted" size={15} />Occurrence history</h3>
-                    {subscription.occurrences.length === 0 ? <p className="mt-3 rounded-2xl border border-dashed border-border-strong p-4 text-center text-sm text-muted">No occurrences yet.</p> : (
+                    {subscription.occurrences.length === 0 ? <p className="mt-3 rounded-2xl border border-dashed border-border-strong bg-inset p-4 text-center text-sm text-muted">No occurrences yet.</p> : (
                         <div className="mt-2 divide-y divide-border-subtle">
                             {subscription.occurrences.slice(0, 8).map((occurrence) => (
                                 <button className="focus-ring flex min-h-14 w-full items-center justify-between gap-4 rounded-xl py-2 text-left" key={occurrence.id} onClick={() => openOccurrence(occurrence)} type="button">

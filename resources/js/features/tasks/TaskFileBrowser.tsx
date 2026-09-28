@@ -77,7 +77,7 @@ function FolderCard({ filters, folder, onAnnounce, onManage }: { filters: TaskSe
 }
 
 function ProjectGrid({ emptyMessage, filters, folderId, onDragStateChange, onManage, projects }: { emptyMessage: string; filters: TaskSearchFilters; folderId: number; onDragStateChange: (project: TaskProjectViewData | null) => void; onManage: (project: TaskProjectViewData) => void; projects: TaskProjectViewData[] }) {
-    if (projects.length === 0) return <p className="rounded-2xl border border-dashed border-border-strong px-5 py-12 text-center text-sm text-muted">{emptyMessage}</p>;
+    if (projects.length === 0) return <p className="rounded-2xl border border-dashed border-border-strong bg-surface px-5 py-12 text-center text-sm text-muted">{emptyMessage}</p>;
     return <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">{projects.map((project) => <ProjectCard filters={filters} folderId={folderId} key={project.id} onDragStateChange={onDragStateChange} onManage={() => onManage(project)} project={project} />)}</div>;
 }
 
@@ -98,7 +98,7 @@ function defaultIconTone(tone: 'folder' | 'project' | 'inbox'): string {
     return 'bg-surface-hover text-secondary';
 }
 
-function RootDropTarget({ onDrop }: { onDrop: () => void }) { return <div className="mb-4 rounded-xl border border-dashed border-[var(--module-accent)] px-4 py-3 text-center text-sm font-bold text-accent-ink" onDragOver={(event) => event.preventDefault()} onDrop={(event) => { event.preventDefault(); onDrop(); }}>Drop here to move the Project to Files root</div>; }
+function RootDropTarget({ onDrop }: { onDrop: () => void }) { return <div className="mb-4 rounded-xl border border-dashed border-[var(--module-accent)] bg-surface px-4 py-3 text-center text-sm font-bold text-accent-ink" onDragOver={(event) => event.preventDefault()} onDrop={(event) => { event.preventDefault(); onDrop(); }}>Drop here to move the Project to Files root</div>; }
 function isProjectDrag(event: DragEvent<HTMLElement>): boolean { return Array.from(event.dataTransfer.types).includes('application/x-achelife-project'); }
 function draggedProject(event: DragEvent<HTMLElement>): { folderId: number | null; project: TaskProjectViewData } | null { const value = event.dataTransfer.getData('application/x-achelife-project'); return value ? JSON.parse(value) as { folderId: number | null; project: TaskProjectViewData } : null; }
 function setDragImage(event: DragEvent<HTMLElement>) { const bounds = event.currentTarget.getBoundingClientRect(); event.dataTransfer.setDragImage(event.currentTarget, Math.max(0, Math.min(bounds.width, event.clientX - bounds.left)), Math.max(0, Math.min(bounds.height, event.clientY - bounds.top))); }

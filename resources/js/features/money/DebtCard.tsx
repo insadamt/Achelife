@@ -92,7 +92,7 @@ export function DebtCard({ debt, onRepay }: { debt: MoneyDebtData; onRepay: () =
 
                 <section className="mt-6" aria-labelledby={`debt-${debt.id}-history`}>
                     <h3 className="text-sm font-bold" id={`debt-${debt.id}-history`}>Settlement history</h3>
-                    {debt.settlements.length === 0 ? <p className="mt-3 rounded-2xl border border-dashed border-border-strong p-4 text-center text-sm text-muted">No repayments or forgiveness recorded.</p> : (
+                    {debt.settlements.length === 0 ? <p className="mt-3 rounded-2xl border border-dashed border-border-strong bg-inset p-4 text-center text-sm text-muted">No repayments or forgiveness recorded.</p> : (
                         <div className="mt-2 divide-y divide-border-subtle">
                             {debt.settlements.map((settlement) => (
                                 <div className="flex items-center justify-between gap-3 py-3" key={settlement.id}>

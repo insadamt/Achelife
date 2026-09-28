@@ -42,7 +42,7 @@ export function MoneyMerchantPickerDialog({ merchants, onClose, onSelect, open, 
                     );
                 })}
             </div>
-            {activeMerchants.length === 0 && <p className="mt-5 rounded-2xl border border-dashed border-border-strong p-5 text-center text-sm text-muted">No matching active Merchants.</p>}
+            {activeMerchants.length === 0 && <p className="mt-5 rounded-2xl border border-dashed border-border-strong bg-inset p-5 text-center text-sm text-muted">No matching active Merchants.</p>}
             <Button className="mt-5" fullWidth onClick={onClose} variant="ghost">Cancel</Button>
         </Dialog>
     );

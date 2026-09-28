@@ -164,7 +164,7 @@ export function TaskDetailsDrawer({ task, explorer, today, onClose }: TaskDetail
                 </div>
 
                 {task.rescheduleHistory.length > 0 && (
-                    <details className="mt-5 rounded-2xl border border-border-subtle px-4 py-3">
+                    <details className="mt-5 rounded-2xl border border-border-subtle bg-inset px-4 py-3">
                         <summary className="focus-ring cursor-pointer rounded text-sm font-semibold text-secondary">Schedule history</summary>
                         <ul className="mt-3 space-y-2 text-sm text-muted">
                             {task.rescheduleHistory.map((reschedule, index) => (

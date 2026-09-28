@@ -11,7 +11,7 @@ export function MoneyAccountStatistics({ statistics }: { statistics: MoneyStatis
 
     return <div className="grid gap-4 lg:grid-cols-2">
         <Surface className="p-4 sm:p-5"><SectionHeading description="Every card reconciles the selected period’s opening and closing balance." title="Account balance movement" />
-            {statistics.current.accounts.length === 0 ? <p className="rounded-2xl border border-dashed border-border-strong p-6 text-center text-sm text-muted">No Accounts in this currency.</p> : <div className="space-y-3">{statistics.current.accounts.map((account) => <AccountBalanceCard account={account} currency={currency} key={account.id} />)}</div>}
+            {statistics.current.accounts.length === 0 ? <p className="rounded-2xl border border-dashed border-border-strong bg-inset p-6 text-center text-sm text-muted">No Accounts in this currency.</p> : <div className="space-y-3">{statistics.current.accounts.map((account) => <AccountBalanceCard account={account} currency={currency} key={account.id} />)}</div>}
         </Surface>
         <Surface className="p-4 sm:p-5"><SectionHeading description="Useful signals from the selected period" title="Highlights" /><div className="grid gap-3 sm:grid-cols-2">
             <Highlight label="Average daily spending" value={formatMinorUnits(statistics.current.averageDailySpendingMinor, currency)} delta={statistics.filter === 'all' ? null : <MoneyDelta current={statistics.current.averageDailySpendingMinor} currency={currency} favorable="down" previous={statistics.previous?.averageDailySpendingMinor ?? null} />} />
