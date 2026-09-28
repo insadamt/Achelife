@@ -1,4 +1,7 @@
+import { useRef } from 'react';
+
 import { classNames } from '../../components/ui/classNames';
+import { SlidingNavigationIndicator } from '../../components/ui/SlidingNavigationIndicator';
 
 export type TaskTab = 'today' | 'overdue' | 'upcoming' | 'completed';
 
@@ -13,6 +16,7 @@ export function TaskTabs({ activeTab, counts, onChange }: {
     counts: Record<TaskTab, number>;
     onChange: (tab: TaskTab) => void;
 }) {
+    const tabListRef = useRef<HTMLDivElement>(null);
     const options: TaskTabOption[] = [
         { value: 'today', label: 'Today', count: counts.today },
         { value: 'overdue', label: 'Overdue', count: counts.overdue },
@@ -21,18 +25,20 @@ export function TaskTabs({ activeTab, counts, onChange }: {
     ];
 
     return (
-        <div aria-label="Task views" className="grid grid-cols-2 gap-1 rounded-2xl border border-border-subtle bg-surface p-1 sm:grid-cols-4" role="tablist">
+        <div aria-label="Task views" className="relative grid grid-cols-2 gap-1 rounded-2xl border border-border-subtle bg-surface p-1 sm:grid-cols-4" ref={tabListRef} role="tablist">
+            <SlidingNavigationIndicator active={activeTab} containerRef={tabListRef} group="task-local-tabs" />
             {options.map((option) => (
                 <button
                     aria-controls={`task-panel-${option.value}`}
                     aria-selected={activeTab === option.value}
                     className={classNames(
-                        'focus-ring flex min-h-11 items-center justify-center gap-2 rounded-xl px-3 text-sm font-bold transition-colors',
+                        'focus-ring relative z-10 flex min-h-11 items-center justify-center gap-2 rounded-xl px-3 text-sm font-bold transition-colors',
                         activeTab === option.value
-                            ? 'bg-elevated text-foreground shadow-sm'
+                            ? 'text-foreground'
                             : 'text-secondary hover:bg-surface-hover hover:text-foreground',
                         option.value === 'overdue' && option.count > 0 && activeTab !== option.value && 'text-warning',
                     )}
+                    data-nav-value={option.value}
                     key={option.value}
                     id={`task-tab-${option.value}`}
                     onClick={() => onChange(option.value)}

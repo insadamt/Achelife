@@ -9,5 +9,5 @@ const sections = [
 ] as const;
 
 export function TaskSectionNav({ active }: { active: 'tasks' | 'calendar' | 'statistics' }) {
-    return <ModuleNavigation active={active} items={sections.map(({ icon: Icon, ...section }) => ({ ...section, icon: <Icon aria-hidden="true" size={16} /> }))} label="Task sections" />;
+    return <ModuleNavigation active={active} indicatorGroup="task-sections" items={sections.map(({ icon: Icon, ...section }) => ({ ...section, icon: <Icon aria-hidden="true" size={16} /> }))} label="Task sections" />;
 }

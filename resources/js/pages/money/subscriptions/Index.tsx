@@ -1,9 +1,10 @@
 import { Head, Link } from '@inertiajs/react';
 import { CalendarClock } from 'lucide-react';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import type { CSSProperties } from 'react';
 
 import { Surface } from '../../../components/ui';
+import { SlidingNavigationIndicator } from '../../../components/ui/SlidingNavigationIndicator';
 import { MoneyFloatingActionMenu } from '../../../features/money/MoneyFloatingActionMenu';
 import { MoneyPageHeader } from '../../../features/money/MoneyPageHeader';
 import { DueOccurrenceCard, SubscriptionCard } from '../../../features/money/SubscriptionCard';
@@ -32,6 +33,7 @@ const views: Array<{ label: string; value: SubscriptionView }> = [
 ];
 
 export default function SubscriptionIndex(props: SubscriptionPageProps) {
+    const viewNavigationRef = useRef<HTMLElement>(null);
     const [composerOpen, setComposerOpen] = useState(() => typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('create') === '1');
     const [editing, setEditing] = useState<MoneySubscriptionData | null>(null);
     const [occurrence, setOccurrence] = useState<MoneySubscriptionOccurrenceData | null>(null);
@@ -46,8 +48,9 @@ export default function SubscriptionIndex(props: SubscriptionPageProps) {
                 <div className="pl-4"><p className="text-xs text-muted">Needs attention</p><p className={`mt-1 text-2xl font-bold tabular-nums ${props.counts.due > 0 ? 'text-warning' : ''}`}>{props.counts.due}</p></div>
             </Surface>
 
-            <nav aria-label="Subscription views" className="mb-6 flex max-w-full gap-1 overflow-x-auto rounded-2xl border border-border-subtle bg-surface p-1" data-horizontal-nav="subscription-view">
-                {views.map((item) => <Link aria-current={props.view === item.value ? 'page' : undefined} className={`focus-ring flex min-h-11 shrink-0 items-center rounded-xl px-3 text-sm font-bold transition-[background-color,color,box-shadow] duration-200 ${props.view === item.value ? 'bg-elevated text-foreground shadow-sm' : 'text-secondary hover:bg-surface-hover hover:text-foreground'}`} href={`/money/subscriptions?view=${item.value}`} key={item.value}>{item.label} <span className="ml-1 text-xs">{props.counts[item.value]}</span></Link>)}
+            <nav aria-label="Subscription views" className="relative mb-6 flex max-w-full gap-1 overflow-x-auto rounded-2xl border border-border-subtle bg-surface p-1" data-horizontal-nav="subscription-view" ref={viewNavigationRef}>
+                <SlidingNavigationIndicator active={props.view} containerRef={viewNavigationRef} group="money-subscription-views" />
+                {views.map((item) => <Link aria-current={props.view === item.value ? 'page' : undefined} className={`focus-ring relative z-10 flex min-h-11 shrink-0 items-center rounded-xl px-3 text-sm font-bold transition-colors duration-200 ${props.view === item.value ? 'text-foreground' : 'text-secondary hover:bg-surface-hover hover:text-foreground'}`} data-nav-value={item.value} href={`/money/subscriptions?view=${item.value}`} key={item.value}>{item.label} <span className="ml-1 text-xs">{props.counts[item.value]}</span></Link>)}
             </nav>
 
             {props.view === 'due' ? (

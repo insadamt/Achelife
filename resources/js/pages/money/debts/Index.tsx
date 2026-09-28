@@ -1,9 +1,10 @@
 import { Head } from '@inertiajs/react';
 import { AlertTriangle, HandCoins } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import type { CSSProperties } from 'react';
 
 import { Surface } from '../../../components/ui';
+import { SlidingNavigationIndicator } from '../../../components/ui/SlidingNavigationIndicator';
 import { useHorizontalTabTransition } from '../../../components/ui/useHorizontalTabTransition';
 import { DebtCard } from '../../../features/money/DebtCard';
 import { DebtComposerDrawer } from '../../../features/money/DebtComposerDrawer';
@@ -32,6 +33,7 @@ const views: Array<{ value: DebtView; label: string }> = [
 const debtTabOrder = views.map((item) => item.value);
 
 export default function DebtIndex(props: DebtPageProps) {
+    const viewNavigationRef = useRef<HTMLDivElement>(null);
     const [view, setView] = useState<DebtView>('active');
     const { panelRef, selectTab, shellRef } = useHorizontalTabTransition(view, debtTabOrder, setView);
     const [composerOpen, setComposerOpen] = useState(() => typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('create') === '1');
@@ -64,8 +66,9 @@ export default function DebtIndex(props: DebtPageProps) {
             )}
 
             <div className="my-6">
-                <div aria-label="Debt views" className="flex max-w-full gap-1 overflow-x-auto rounded-2xl border border-border-subtle bg-surface p-1" role="group">
-                    {views.map((item) => <button aria-pressed={view === item.value} className={`focus-ring min-h-11 shrink-0 rounded-xl px-3 text-sm font-bold transition-[background-color,color,box-shadow] duration-200 ${view === item.value ? 'bg-elevated text-foreground shadow-sm' : 'text-secondary hover:bg-surface-hover hover:text-foreground'}`} key={item.value} onClick={() => selectTab(item.value)} type="button">{item.label}</button>)}
+                <div aria-label="Debt views" className="relative flex max-w-full gap-1 overflow-x-auto rounded-2xl border border-border-subtle bg-surface p-1" ref={viewNavigationRef} role="group">
+                    <SlidingNavigationIndicator active={view} containerRef={viewNavigationRef} group="money-debt-views" />
+                    {views.map((item) => <button aria-pressed={view === item.value} className={`focus-ring relative z-10 min-h-11 shrink-0 rounded-xl px-3 text-sm font-bold transition-colors duration-200 ${view === item.value ? 'text-foreground' : 'text-secondary hover:bg-surface-hover hover:text-foreground'}`} data-nav-value={item.value} key={item.value} onClick={() => selectTab(item.value)} type="button">{item.label}</button>)}
                 </div>
             </div>
 

@@ -1,8 +1,9 @@
 import { router } from '@inertiajs/react';
 import { CalendarDays, CheckCheck, ChevronLeft, ChevronRight, Clock3, LoaderCircle, Star, Zap } from 'lucide-react';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 
 import { Surface } from '../../components/ui';
+import { SlidingNavigationIndicator } from '../../components/ui/SlidingNavigationIndicator';
 import { StatisticDelta } from '../../components/ui/StatisticDelta';
 import { TaskCompletionLineChart } from './TaskCompletionLineChart';
 import { TaskFocusStatisticsPanel } from './TaskFocusStatisticsPanel';
@@ -24,6 +25,8 @@ function formatMetric(value: number | null, percentage: boolean): string {
 export function TaskStatisticsPanel({ statistics }: { statistics: TaskStatisticsData }) {
     const [loading, setLoading] = useState(false);
     const [chartMetric, setChartMetric] = useState<'tasks' | 'sp'>('tasks');
+    const periodNavigationRef = useRef<HTMLDivElement>(null);
+    const chartMetricNavigationRef = useRef<HTMLDivElement>(null);
 
     function changeFilter(filter: TaskStatisticsData['filter']) {
         const url = new URL(window.location.href);
@@ -55,9 +58,10 @@ export function TaskStatisticsPanel({ statistics }: { statistics: TaskStatistics
         <section aria-busy={loading} aria-labelledby="task-statistics-heading" className={`space-y-5 transition-opacity ${loading ? 'opacity-60' : 'opacity-100'}`}>
             <Surface className="rounded-2xl p-3 sm:p-4">
                 <div className="flex flex-col justify-between gap-4 lg:flex-row lg:items-center">
-                    <div aria-label="Statistics period" className="grid grid-cols-4 gap-1 rounded-xl bg-inset p-1 lg:min-w-80" role="group">
+                    <div aria-label="Statistics period" className="relative grid grid-cols-4 gap-1 rounded-xl bg-inset p-1 lg:min-w-80" ref={periodNavigationRef} role="group">
+                        <SlidingNavigationIndicator active={statistics.filter} className="rounded-lg" containerRef={periodNavigationRef} group="task-statistics-period" />
                         {filters.map(([key, label]) => (
-                            <button aria-pressed={statistics.filter === key} className={`focus-ring min-h-10 rounded-lg px-3 text-xs font-bold transition-colors ${statistics.filter === key ? 'bg-elevated text-foreground shadow-sm' : 'text-secondary hover:bg-surface-hover hover:text-foreground'}`} disabled={loading} key={key} onClick={() => changeFilter(key)} type="button">{label}</button>
+                            <button aria-pressed={statistics.filter === key} className={`focus-ring relative z-10 min-h-10 rounded-lg px-3 text-xs font-bold transition-colors ${statistics.filter === key ? 'text-foreground' : 'text-secondary hover:bg-surface-hover hover:text-foreground'}`} data-nav-value={key} disabled={loading} key={key} onClick={() => changeFilter(key)} type="button">{label}</button>
                         ))}
                     </div>
                     {statistics.filter === 'all' ? (
@@ -92,9 +96,10 @@ export function TaskStatisticsPanel({ statistics }: { statistics: TaskStatistics
             <Surface className="overflow-hidden p-4 sm:p-6">
                 <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
                     <div><h3 className="text-lg font-bold">Activity trend</h3><p className="mt-1 text-sm text-muted">{chartMetric === 'tasks' ? 'Tasks completed' : 'Task SP earned'} per {statistics.trend.unit}</p></div>
-                    <div aria-label="Chart metric" className="flex gap-1 rounded-full border border-border-subtle bg-inset p-1" role="group">
-                        <button aria-pressed={chartMetric === 'tasks'} className={`focus-ring rounded-full px-3 py-1.5 text-xs font-bold transition-colors ${chartMetric === 'tasks' ? 'bg-elevated text-foreground shadow-sm' : 'text-secondary hover:bg-surface-hover hover:text-foreground'}`} onClick={() => setChartMetric('tasks')} type="button">Tasks</button>
-                        <button aria-pressed={chartMetric === 'sp'} className={`focus-ring rounded-full px-3 py-1.5 text-xs font-bold transition-colors ${chartMetric === 'sp' ? 'bg-elevated text-foreground shadow-sm' : 'text-secondary hover:bg-surface-hover hover:text-foreground'}`} onClick={() => setChartMetric('sp')} type="button">SP</button>
+                    <div aria-label="Chart metric" className="relative flex gap-1 rounded-full border border-border-subtle bg-inset p-1" ref={chartMetricNavigationRef} role="group">
+                        <SlidingNavigationIndicator active={chartMetric} className="rounded-full" containerRef={chartMetricNavigationRef} group="task-chart-metric" />
+                        <button aria-pressed={chartMetric === 'tasks'} className={`focus-ring relative z-10 rounded-full px-3 py-1.5 text-xs font-bold transition-colors ${chartMetric === 'tasks' ? 'text-foreground' : 'text-secondary hover:bg-surface-hover hover:text-foreground'}`} data-nav-value="tasks" onClick={() => setChartMetric('tasks')} type="button">Tasks</button>
+                        <button aria-pressed={chartMetric === 'sp'} className={`focus-ring relative z-10 rounded-full px-3 py-1.5 text-xs font-bold transition-colors ${chartMetric === 'sp' ? 'text-foreground' : 'text-secondary hover:bg-surface-hover hover:text-foreground'}`} data-nav-value="sp" onClick={() => setChartMetric('sp')} type="button">SP</button>
                     </div>
                 </div>
                 {statistics.current.completed === 0

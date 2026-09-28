@@ -1,7 +1,9 @@
 import { Link } from '@inertiajs/react';
+import { useRef } from 'react';
 import type { HTMLAttributes, KeyboardEvent, ReactNode } from 'react';
 
 import { classNames } from './classNames';
+import { SlidingNavigationIndicator } from './SlidingNavigationIndicator';
 
 export function PageRail({ children, className, ...props }: HTMLAttributes<HTMLDivElement>) {
     return <div className={classNames('page-rail mx-auto w-full min-w-0 max-w-[80rem]', className)} {...props}>{children}</div>;
@@ -34,21 +36,25 @@ export interface ModuleDestination<Value extends string> {
     count?: number;
 }
 
-export function ModuleNavigation<Value extends string>({ label, items, active, className }: {
+export function ModuleNavigation<Value extends string>({ label, items, active, className, indicatorGroup }: {
     label: string;
     items: ModuleDestination<Value>[];
     active: Value;
     className?: string;
+    indicatorGroup?: string;
 }) {
+    const navigationRef = useRef<HTMLElement>(null);
     return (
-        <nav aria-label={label} className={classNames('module-navigation flex max-w-full gap-1 overflow-x-auto rounded-2xl p-1 [scrollbar-width:thin]', className)}>
+        <nav aria-label={label} className={classNames('module-navigation relative flex max-w-full gap-1 overflow-x-auto rounded-2xl p-1 [scrollbar-width:thin]', className)} ref={navigationRef}>
+            {indicatorGroup && <SlidingNavigationIndicator active={active} containerRef={navigationRef} group={indicatorGroup} />}
             {items.map((item) => (
                 <Link
                     aria-current={active === item.value ? 'page' : undefined}
                     className={classNames(
-                        'focus-ring icon-text flex min-h-11 shrink-0 items-center gap-2 rounded-xl px-3 text-sm font-bold transition-[background-color,color,box-shadow] duration-200',
-                        active === item.value ? 'bg-elevated text-foreground shadow-sm' : 'text-secondary hover:bg-surface-hover hover:text-foreground',
+                        'focus-ring icon-text relative z-10 flex min-h-11 shrink-0 items-center gap-2 rounded-xl px-3 text-sm font-bold transition-colors duration-200',
+                        active === item.value ? (indicatorGroup ? 'text-foreground' : 'bg-elevated text-foreground shadow-sm') : 'text-secondary hover:bg-surface-hover hover:text-foreground',
                     )}
+                    data-nav-value={item.value}
                     href={item.href}
                     key={item.value}
                 >

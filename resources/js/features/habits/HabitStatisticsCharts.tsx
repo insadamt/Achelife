@@ -1,8 +1,9 @@
 import { Activity } from 'lucide-react';
-import { useId, useState } from 'react';
+import { useId, useRef, useState } from 'react';
 
 import { Surface } from '../../components/ui';
 import { ChartTooltipCard } from '../../components/ui/ChartTooltipCard';
+import { SlidingNavigationIndicator } from '../../components/ui/SlidingNavigationIndicator';
 import { formatStatistic } from './statisticsTypes';
 import type { HabitStatisticsData } from './statisticsTypes';
 
@@ -11,6 +12,7 @@ const chartHeight = 280;
 const padding = { top: 24, right: 18, bottom: 38, left: 42 };
 
 export function HabitStatisticsCharts({ statistics, numeric, unit }: { statistics: HabitStatisticsData; numeric: boolean; unit: string | null }) {
+    const metricNavigationRef = useRef<HTMLDivElement>(null);
     const [metric, setMetric] = useState<'total' | 'average'>('total');
     const [focusedDate, setFocusedDate] = useState<string | null>(null);
     const [selectedPointDate, setSelectedPointDate] = useState<string | null>(null);
@@ -49,7 +51,7 @@ export function HabitStatisticsCharts({ statistics, numeric, unit }: { statistic
         <Surface className="min-w-0 rounded-3xl p-4 sm:p-6">
             <div className="flex flex-wrap items-center justify-between gap-3">
                 <div><h3 className="flex items-center gap-2 text-lg font-bold"><Activity aria-hidden="true" className="text-accent-ink" size={18} />{numeric ? 'Recorded values' : 'Completion trend'}</h3><p className="mt-1 text-sm text-muted">{numeric ? `${metric === 'total' ? 'Total' : 'Average per recorded day'} ${unit ?? ''}` : 'Times completed'} per {statistics.trend.unit}</p></div>
-                {numeric && <div aria-label="Chart metric" className="flex gap-1 rounded-full border border-border-subtle bg-inset p-1" role="group">{(['total', 'average'] as const).map((value) => <button aria-pressed={metric === value} className={`focus-ring min-h-10 rounded-full px-4 py-1.5 text-xs font-bold ${metric === value ? 'bg-elevated text-foreground shadow-sm' : 'text-secondary hover:bg-surface-hover hover:text-foreground'}`} key={value} onClick={() => setMetric(value)} type="button">{value === 'total' ? 'Total' : 'Average'}</button>)}</div>}
+                {numeric && <div aria-label="Chart metric" className="relative flex gap-1 rounded-full border border-border-subtle bg-inset p-1" ref={metricNavigationRef} role="group"><SlidingNavigationIndicator active={metric} className="rounded-full" containerRef={metricNavigationRef} group="habit-chart-metric" />{(['total', 'average'] as const).map((value) => <button aria-pressed={metric === value} className={`focus-ring relative z-10 min-h-10 rounded-full px-4 py-1.5 text-xs font-bold ${metric === value ? 'text-foreground' : 'text-secondary hover:bg-surface-hover hover:text-foreground'}`} data-nav-value={value} key={value} onClick={() => setMetric(value)} type="button">{value === 'total' ? 'Total' : 'Average'}</button>)}</div>}
             </div>
             {statistics.days.length === 0 ? <p className="mt-5 grid min-h-64 place-items-center rounded-2xl border border-dashed border-border-strong bg-app/40 px-5 text-center text-sm text-muted">No habit entries in this period.</p> : <>
                 <div aria-label="Scrollable activity chart" className="focus-ring mt-5 overflow-x-auto rounded-xl" role="region" tabIndex={0}>

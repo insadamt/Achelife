@@ -1,8 +1,9 @@
 import { Activity, BookOpen, ChartNoAxesCombined, Gavel, ListChecks, LoaderCircle, Repeat2, Target, Zap } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import { Button, StatusChip, Surface } from '../../components/ui';
 import { StatisticDelta } from '../../components/ui/StatisticDelta';
+import { SlidingNavigationIndicator } from '../../components/ui/SlidingNavigationIndicator';
 import { formatSeasonRange } from './dateFormat';
 import { SeasonInsightsChart } from './SeasonInsightsChart';
 import type { SeasonChartView } from './SeasonInsightsChart';
@@ -26,6 +27,7 @@ export function SeasonStatsPanel({ season }: { season: SeasonViewData }) {
     const [error, setError] = useState(false);
     const [requestAttempt, setRequestAttempt] = useState(0);
     const [chartView, setChartView] = useState<SeasonChartView>('cumulative');
+    const chartViewNavigationRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         if (season.id === null) return;
@@ -95,9 +97,10 @@ export function SeasonStatsPanel({ season }: { season: SeasonViewData }) {
                 <Surface className="min-w-0 overflow-hidden p-5 sm:p-6">
                     <div className="flex flex-wrap items-start justify-between gap-3">
                         <div><h3 className="flex items-center gap-2 text-lg font-bold"><Activity aria-hidden="true" className="text-accent-ink" size={19} />SP trajectory</h3><p className="mt-1 text-sm text-muted">{chartView === 'cumulative' ? 'Cumulative points across the 30-day Season' : 'Net SP earned or lost on each Season day'}</p></div>
-                        <div aria-label="Season chart view" className="flex gap-1 rounded-full border border-border-subtle bg-app p-1" role="group">
-                            <button aria-pressed={chartView === 'cumulative'} className={`focus-ring rounded-full px-3 py-1.5 text-xs font-bold transition-colors ${chartView === 'cumulative' ? 'bg-elevated text-foreground shadow-sm' : 'text-secondary hover:bg-surface-hover hover:text-foreground'}`} onClick={() => setChartView('cumulative')} type="button">Cumulative</button>
-                            <button aria-pressed={chartView === 'daily'} className={`focus-ring rounded-full px-3 py-1.5 text-xs font-bold transition-colors ${chartView === 'daily' ? 'bg-elevated text-foreground shadow-sm' : 'text-secondary hover:bg-surface-hover hover:text-foreground'}`} onClick={() => setChartView('daily')} type="button">Daily SP</button>
+                        <div aria-label="Season chart view" className="relative flex gap-1 rounded-full border border-border-subtle bg-app p-1" ref={chartViewNavigationRef} role="group">
+                            <SlidingNavigationIndicator active={chartView} className="rounded-full" containerRef={chartViewNavigationRef} group="season-chart-view" />
+                            <button aria-pressed={chartView === 'cumulative'} className={`focus-ring relative z-10 rounded-full px-3 py-1.5 text-xs font-bold transition-colors ${chartView === 'cumulative' ? 'text-foreground' : 'text-secondary hover:bg-surface-hover hover:text-foreground'}`} data-nav-value="cumulative" onClick={() => setChartView('cumulative')} type="button">Cumulative</button>
+                            <button aria-pressed={chartView === 'daily'} className={`focus-ring relative z-10 rounded-full px-3 py-1.5 text-xs font-bold transition-colors ${chartView === 'daily' ? 'text-foreground' : 'text-secondary hover:bg-surface-hover hover:text-foreground'}`} data-nav-value="daily" onClick={() => setChartView('daily')} type="button">Daily SP</button>
                         </div>
                     </div>
                     <div className="mt-5"><SeasonInsightsChart current={insights.timeline} previous={insights.previousTimeline} view={chartView} /></div>

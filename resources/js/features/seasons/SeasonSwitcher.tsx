@@ -3,6 +3,7 @@ import type { KeyboardEvent } from 'react';
 import { ChartNoAxesCombined, Check, ChevronLeft, ChevronRight, Crown, LayoutDashboard, LockKeyhole } from 'lucide-react';
 
 import { classNames } from '../../components/ui/classNames';
+import { SlidingNavigationIndicator } from '../../components/ui/SlidingNavigationIndicator';
 import { formatSeasonRange, formatShortDate } from './dateFormat';
 import type { SeasonViewData } from './types';
 
@@ -36,6 +37,7 @@ function seasonAccessibleLabel(season: SeasonViewData, selected: boolean) {
 
 export function SeasonSwitcher({ seasons, selectedSeasonNumber, onSelect, activeView, onViewChange }: SeasonSwitcherProps) {
     const seasonElements = useRef(new Map<number, HTMLLIElement>());
+    const viewNavigationRef = useRef<HTMLDivElement>(null);
     const selectableSeasons = seasons.filter((season) => season.state !== 'locked' && season.state !== 'held');
     const selectedIndex = selectableSeasons.findIndex((season) => season.number === selectedSeasonNumber);
 
@@ -73,7 +75,8 @@ export function SeasonSwitcher({ seasons, selectedSeasonNumber, onSelect, active
         <section aria-label="Season selector">
             <div className="flex items-center justify-between gap-3 border-b border-border-subtle px-2 py-3 sm:px-0">
                 <p className="text-xs font-bold tracking-[0.14em] text-muted uppercase">Select Season</p>
-                <div aria-label="Season views" className="grid grid-cols-2 rounded-xl border border-border-subtle bg-app/55 p-1" role="tablist">
+                <div aria-label="Season views" className="relative grid grid-cols-2 rounded-xl border border-border-subtle bg-app/55 p-1" ref={viewNavigationRef} role="tablist">
+                    <SlidingNavigationIndicator active={activeView} className="rounded-lg" containerRef={viewNavigationRef} group="season-views" />
                     {([
                         { id: 'overview', label: 'Overview', icon: LayoutDashboard },
                         { id: 'stats', label: 'Stats', icon: ChartNoAxesCombined },
@@ -85,9 +88,10 @@ export function SeasonSwitcher({ seasons, selectedSeasonNumber, onSelect, active
                                 aria-controls={`season-${id}-panel`}
                                 aria-selected={selected}
                                 className={classNames(
-                                    'focus-ring flex min-h-9 items-center justify-center gap-2 rounded-lg px-3 text-xs font-bold transition-colors sm:px-4',
-                                    selected ? 'bg-elevated text-foreground shadow-sm' : 'text-secondary hover:bg-surface-hover hover:text-foreground',
+                                    'focus-ring relative z-10 flex min-h-9 items-center justify-center gap-2 rounded-lg px-3 text-xs font-bold transition-colors sm:px-4',
+                                    selected ? 'text-foreground' : 'text-secondary hover:bg-surface-hover hover:text-foreground',
                                 )}
+                                data-nav-value={id}
                                 id={`season-${id}-tab`}
                                 key={id}
                                 onClick={() => onViewChange(id)}

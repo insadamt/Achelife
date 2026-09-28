@@ -16,7 +16,7 @@ export default function ArchivedConstitution({ laws }: { laws: ArchivedLawViewDa
                     <div>
                         <h1 className="text-4xl font-bold tracking-[-0.05em] sm:text-5xl">Constitution</h1>
                     </div>
-                    <ModuleNavigation active="archived" items={[{ value: 'active', label: 'Active', href: '/constitution', icon: <ShieldCheck aria-hidden="true" size={17} /> }, { value: 'archived', label: 'Archived', href: '/constitution/archived', count: laws.length, icon: <Archive aria-hidden="true" size={17} /> }]} label="Constitution views" />
+                    <ModuleNavigation active="archived" indicatorGroup="constitution-views" items={[{ value: 'active', label: 'Active', href: '/constitution', icon: <ShieldCheck aria-hidden="true" size={17} /> }, { value: 'archived', label: 'Archived', href: '/constitution/archived', count: laws.length, icon: <Archive aria-hidden="true" size={17} /> }]} label="Constitution views" />
                 </header>
 
                 {laws.length === 0 ? (

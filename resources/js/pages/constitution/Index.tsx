@@ -64,7 +64,7 @@ export default function ConstitutionIndex(props: ConstitutionPageProps) {
                         <Plus aria-hidden="true" size={18} />
                         New Law
                     </Button>
-                    <ModuleNavigation active="active" items={[{ value: 'active', label: 'Active', href: '/constitution', count: props.laws.length, icon: <ShieldCheck aria-hidden="true" size={17} /> }, { value: 'archived', label: 'Archived', href: '/constitution/archived', icon: <Archive aria-hidden="true" size={17} /> }]} label="Constitution views" />
+                    <ModuleNavigation active="active" indicatorGroup="constitution-views" items={[{ value: 'active', label: 'Active', href: '/constitution', count: props.laws.length, icon: <ShieldCheck aria-hidden="true" size={17} /> }, { value: 'archived', label: 'Archived', href: '/constitution/archived', icon: <Archive aria-hidden="true" size={17} /> }]} label="Constitution views" />
                 </header>
 
                 <p className="mb-4 text-sm font-semibold text-muted">Season {String(props.currentSeason.number).padStart(2, '0')}</p>

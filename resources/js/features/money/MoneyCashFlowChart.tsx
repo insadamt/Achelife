@@ -1,7 +1,8 @@
-import { useId, useState } from 'react';
+import { useId, useRef, useState } from 'react';
 
 import { Surface } from '../../components/ui';
 import { ChartTooltipCard } from '../../components/ui/ChartTooltipCard';
+import { SlidingNavigationIndicator } from '../../components/ui/SlidingNavigationIndicator';
 import { formatMinorUnits } from './moneyPresentation';
 import type { MoneyStatisticsData, MoneyTrendBucket } from './statisticsTypes';
 
@@ -22,6 +23,7 @@ function linePath(points: Array<{ x: number; y: number }>): string {
 }
 
 export function MoneyCashFlowChart({ statistics }: { statistics: MoneyStatisticsData }) {
+    const metricNavigationRef = useRef<HTMLDivElement>(null);
     const [metric, setMetric] = useState<CashFlowMetric>('income');
     const [compare, setCompare] = useState(false);
     const [activeIndex, setActiveIndex] = useState<number | null>(null);
@@ -60,9 +62,10 @@ export function MoneyCashFlowChart({ statistics }: { statistics: MoneyStatistics
                     {statistics.filter !== 'all' && previous !== null && (
                         <button aria-pressed={compare} className={`focus-ring rounded-full border px-3 py-2 text-xs font-bold ${compare ? 'border-transparent bg-elevated text-foreground' : 'border-border-subtle text-muted hover:text-foreground'}`} onClick={() => setCompare(!compare)} type="button">Compare previous</button>
                     )}
-                    <div aria-label="Chart metric" className="flex gap-1 rounded-full border border-border-subtle bg-app p-1" role="group">
+                    <div aria-label="Chart metric" className="relative flex gap-1 rounded-full border border-border-subtle bg-app p-1" ref={metricNavigationRef} role="group">
+                        <SlidingNavigationIndicator active={metric} className="rounded-full" containerRef={metricNavigationRef} group="money-cash-flow-metric" />
                         {(['income', 'spending'] as const).map((value) => (
-                            <button aria-pressed={metric === value} className={`focus-ring rounded-full px-3 py-1.5 text-xs font-bold transition-colors ${metric === value ? 'bg-elevated text-foreground shadow-sm' : 'text-secondary hover:bg-surface-hover hover:text-foreground'}`} key={value} onClick={() => { setMetric(value); setActiveIndex(null); }} type="button">{value === 'income' ? 'Income' : 'Spending'}</button>
+                            <button aria-pressed={metric === value} className={`focus-ring relative z-10 rounded-full px-3 py-1.5 text-xs font-bold transition-colors ${metric === value ? 'text-foreground' : 'text-secondary hover:bg-surface-hover hover:text-foreground'}`} data-nav-value={value} key={value} onClick={() => { setMetric(value); setActiveIndex(null); }} type="button">{value === 'income' ? 'Income' : 'Spending'}</button>
                         ))}
                     </div>
                 </div>

@@ -14,5 +14,5 @@ const sections: Array<{ href: string; icon: typeof LayoutDashboard; label: strin
 ];
 
 export function MoneySectionNav({ active }: { active: MoneySection }) {
-    return <ModuleNavigation active={active} items={sections.map(({ icon: Icon, ...section }) => ({ ...section, icon: <Icon aria-hidden="true" size={16} /> }))} label="Money sections" />;
+    return <ModuleNavigation active={active} indicatorGroup="money-sections" items={sections.map(({ icon: Icon, ...section }) => ({ ...section, icon: <Icon aria-hidden="true" size={16} /> }))} label="Money sections" />;
 }

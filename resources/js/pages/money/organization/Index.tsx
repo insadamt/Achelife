@@ -1,7 +1,9 @@
 import { Head, Link } from '@inertiajs/react';
 import { Store, Tags, Waypoints } from 'lucide-react';
+import { useRef } from 'react';
 import type { CSSProperties } from 'react';
 
+import { SlidingNavigationIndicator } from '../../../components/ui/SlidingNavigationIndicator';
 import { classNames } from '../../../components/ui/classNames';
 import { CategoryManager } from '../../../features/money/CategoryManager';
 import { MerchantManager } from '../../../features/money/MerchantManager';
@@ -19,6 +21,7 @@ export default function MoneyOrganization({ categories, initialSection, merchant
     presetPack: MoneyPresetPackData;
     tags: MoneyTagManagementData[];
 }) {
+    const sectionNavigationRef = useRef<HTMLElement>(null);
     const sections = [
         { count: categories.filter((item) => item.archivedAt === null).length, icon: Waypoints, label: 'Categories', value: 'categories' as const },
         { count: merchants.filter((item) => item.archivedAt === null).length, icon: Store, label: 'Merchants', value: 'merchants' as const },
@@ -29,11 +32,12 @@ export default function MoneyOrganization({ categories, initialSection, merchant
         <div className="page-rail mx-auto w-full max-w-[80rem]" style={{ '--module-accent': 'var(--money-accent)' } as CSSProperties}>
             <Head title="Money Organization" />
             <MoneyPageHeader active="organization" title="Organization" />
-            <nav aria-label="Organization sections" className="mb-7 grid gap-2 rounded-[1.5rem] border border-border-subtle bg-surface p-2 sm:grid-cols-3" data-horizontal-nav="organization">
+            <nav aria-label="Organization sections" className="relative mb-7 grid gap-2 rounded-[1.5rem] border border-border-subtle bg-surface p-2 sm:grid-cols-3" data-horizontal-nav="organization" ref={sectionNavigationRef}>
+                <SlidingNavigationIndicator active={initialSection} className="rounded-2xl" containerRef={sectionNavigationRef} group="money-organization-sections" />
                 {sections.map((section) => {
                     const SectionIcon = section.icon;
                     return (
-                        <Link aria-current={initialSection === section.value ? 'page' : undefined} className={classNames('focus-ring flex min-h-16 items-center gap-3 rounded-2xl border border-transparent px-4 transition-[background-color,color,box-shadow] duration-200', initialSection === section.value ? 'bg-elevated text-foreground shadow-sm' : 'text-secondary hover:bg-surface-hover hover:text-foreground')} href={`/money/organization?section=${section.value}`} key={section.value}>
+                        <Link aria-current={initialSection === section.value ? 'page' : undefined} className={classNames('focus-ring relative z-10 flex min-h-16 items-center gap-3 rounded-2xl border border-transparent px-4 transition-colors duration-200', initialSection === section.value ? 'text-foreground' : 'text-secondary hover:bg-surface-hover hover:text-foreground')} data-nav-value={section.value} href={`/money/organization?section=${section.value}`} key={section.value}>
                             <span className={classNames('grid size-9 place-items-center rounded-xl', initialSection === section.value ? 'bg-[color-mix(in_srgb,var(--money-accent)_12%,transparent)] text-accent-ink' : 'bg-app')}><SectionIcon size={17} /></span>
                             <span className="font-bold">{section.label}</span><span className="ml-auto text-xs font-bold text-muted">{section.count}</span>
                         </Link>

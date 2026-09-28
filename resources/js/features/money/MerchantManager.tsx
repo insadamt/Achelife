@@ -1,7 +1,8 @@
 import { Archive, Plus, Search, Store } from 'lucide-react';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 
 import { Button, Field, Surface } from '../../components/ui';
+import { SlidingNavigationIndicator } from '../../components/ui/SlidingNavigationIndicator';
 import { useHorizontalTabTransition } from '../../components/ui/useHorizontalTabTransition';
 import { MerchantCard } from './MerchantCard';
 import { MerchantCreateDrawer } from './MerchantEditorDrawers';
@@ -10,6 +11,7 @@ import type { MoneyMerchantData } from './types';
 const merchantTabs = ['active', 'archived'] as const;
 
 export function MerchantManager({ merchants }: { merchants: MoneyMerchantData[] }) {
+    const tabNavigationRef = useRef<HTMLDivElement>(null);
     const [activeTab, setActiveTab] = useState<'active' | 'archived'>('active');
     const { panelRef, selectTab, shellRef } = useHorizontalTabTransition(activeTab, merchantTabs, setActiveTab);
     const [creating, setCreating] = useState(false);
@@ -21,9 +23,10 @@ export function MerchantManager({ merchants }: { merchants: MoneyMerchantData[] 
     return (
         <>
             <div className="mb-6 flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
-                <div className="flex rounded-full border border-border-subtle bg-surface p-1" role="tablist">
-                    <button aria-selected={activeTab === 'active'} className={activeTab === 'active' ? 'focus-ring icon-text flex items-center gap-1.5 rounded-full bg-elevated px-4 py-2 text-sm font-bold text-foreground shadow-sm' : 'focus-ring icon-text flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-bold text-secondary hover:bg-surface-hover hover:text-foreground'} onClick={() => selectTab('active')} role="tab" type="button"><Store size={14} />Active <span className="text-xs text-muted">{activeCount}</span></button>
-                    <button aria-selected={activeTab === 'archived'} className={activeTab === 'archived' ? 'focus-ring icon-text flex items-center gap-1.5 rounded-full bg-elevated px-4 py-2 text-sm font-bold text-foreground shadow-sm' : 'focus-ring icon-text flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-bold text-secondary hover:bg-surface-hover hover:text-foreground'} onClick={() => selectTab('archived')} role="tab" type="button"><Archive size={14} />Archived <span className="text-xs text-muted">{merchants.length - activeCount}</span></button>
+                <div aria-label="Merchant views" className="relative flex rounded-full border border-border-subtle bg-surface p-1" ref={tabNavigationRef} role="tablist">
+                    <SlidingNavigationIndicator active={activeTab} className="rounded-full" containerRef={tabNavigationRef} group="money-merchant-views" />
+                    <button aria-selected={activeTab === 'active'} className={activeTab === 'active' ? 'focus-ring icon-text relative z-10 flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-bold text-foreground' : 'focus-ring icon-text relative z-10 flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-bold text-secondary hover:bg-surface-hover hover:text-foreground'} data-nav-value="active" onClick={() => selectTab('active')} role="tab" type="button"><Store size={14} />Active <span className="text-xs text-muted">{activeCount}</span></button>
+                    <button aria-selected={activeTab === 'archived'} className={activeTab === 'archived' ? 'focus-ring icon-text relative z-10 flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-bold text-foreground' : 'focus-ring icon-text relative z-10 flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-bold text-secondary hover:bg-surface-hover hover:text-foreground'} data-nav-value="archived" onClick={() => selectTab('archived')} role="tab" type="button"><Archive size={14} />Archived <span className="text-xs text-muted">{merchants.length - activeCount}</span></button>
                 </div>
                 <Button onClick={() => setCreating(true)}><Plus size={17} />Merchant</Button>
             </div>

@@ -1,9 +1,10 @@
 import { Link } from '@inertiajs/react';
 import { CalendarDays, Check, ChevronLeft, ChevronRight, Filter, Inbox } from 'lucide-react';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 
 import { classNames } from '../../components/ui/classNames';
+import { SlidingNavigationIndicator } from '../../components/ui/SlidingNavigationIndicator';
 import { calendarHref, monthLabel, shiftDays, shiftMonth, shiftWeek, threeDayLabel, weekLabel } from './taskCalendar';
 import type { CalendarProject, CalendarView } from './taskCalendar';
 
@@ -19,6 +20,7 @@ export function TaskCalendarControls({ includeInbox, month, onFiltersChange, pro
     weekStart: string;
 }) {
     const [filterOpen, setFilterOpen] = useState(false);
+    const viewNavigationRef = useRef<HTMLDivElement>(null);
     const activeCount = projectIds.length + (includeInbox ? 1 : 0);
     const allSelected = projectIds.length === projects.length && includeInbox;
     const previousAnchor = view === 'week' ? shiftWeek(weekStart, -1) : view === 'three_day' ? shiftDays(threeDayStart, -3) : shiftMonth(month, -1);
@@ -33,10 +35,11 @@ export function TaskCalendarControls({ includeInbox, month, onFiltersChange, pro
                 <Link aria-label={`Next ${view}`} className="focus-ring grid size-11 place-items-center rounded-xl text-secondary hover:bg-surface-hover hover:text-foreground" href={calendarHref(view, nextAnchor, nextAnchor, projectIds, includeInbox)}><ChevronRight size={19} /></Link>
             </div>
             <div className="flex items-center gap-2">
-                <div className="flex rounded-xl bg-app p-1 text-xs font-bold">
-                    <Link aria-current={view === 'month' ? 'page' : undefined} className={classNames('focus-ring rounded-lg px-2.5 py-2', view === 'month' ? 'bg-elevated text-foreground shadow-sm' : 'text-secondary hover:bg-surface-hover hover:text-foreground')} href={calendarHref('month', today.slice(0, 7), today, projectIds, includeInbox)}>Month</Link>
-                    <Link aria-current={view === 'week' ? 'page' : undefined} className={classNames('focus-ring rounded-lg px-2.5 py-2', view === 'week' ? 'bg-elevated text-foreground shadow-sm' : 'text-secondary hover:bg-surface-hover hover:text-foreground')} href={calendarHref('week', today, today, projectIds, includeInbox)}>Week</Link>
-                    <Link aria-current={view === 'three_day' ? 'page' : undefined} className={classNames('focus-ring rounded-lg px-2.5 py-2', view === 'three_day' ? 'bg-elevated text-foreground shadow-sm' : 'text-secondary hover:bg-surface-hover hover:text-foreground')} href={calendarHref('three_day', today, today, projectIds, includeInbox)}>Three days</Link>
+                <div aria-label="Calendar views" className="relative flex rounded-xl bg-app p-1 text-xs font-bold" ref={viewNavigationRef}>
+                    <SlidingNavigationIndicator active={view} className="rounded-lg" containerRef={viewNavigationRef} group="task-calendar-views" />
+                    <Link aria-current={view === 'month' ? 'page' : undefined} className={classNames('focus-ring relative z-10 rounded-lg px-2.5 py-2', view === 'month' ? 'text-foreground' : 'text-secondary hover:bg-surface-hover hover:text-foreground')} data-nav-value="month" href={calendarHref('month', today.slice(0, 7), today, projectIds, includeInbox)}>Month</Link>
+                    <Link aria-current={view === 'week' ? 'page' : undefined} className={classNames('focus-ring relative z-10 rounded-lg px-2.5 py-2', view === 'week' ? 'text-foreground' : 'text-secondary hover:bg-surface-hover hover:text-foreground')} data-nav-value="week" href={calendarHref('week', today, today, projectIds, includeInbox)}>Week</Link>
+                    <Link aria-current={view === 'three_day' ? 'page' : undefined} className={classNames('focus-ring relative z-10 rounded-lg px-2.5 py-2', view === 'three_day' ? 'text-foreground' : 'text-secondary hover:bg-surface-hover hover:text-foreground')} data-nav-value="three_day" href={calendarHref('three_day', today, today, projectIds, includeInbox)}>Three days</Link>
                 </div>
                 <Link className="focus-ring inline-flex min-h-11 items-center gap-2 rounded-xl px-3 text-sm font-bold text-secondary hover:bg-surface-hover hover:text-foreground" href={calendarHref(view, view === 'week' || view === 'three_day' ? today : today.slice(0, 7), today, projectIds, includeInbox)}><CalendarDays size={16} />Today</Link>
                 <div className="relative">

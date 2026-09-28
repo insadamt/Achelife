@@ -1,12 +1,15 @@
 import { router } from '@inertiajs/react';
 import { CalendarDays, ChevronLeft, ChevronRight, LoaderCircle } from 'lucide-react';
+import { useRef } from 'react';
 
 import { SelectField, Surface } from '../../components/ui';
+import { SlidingNavigationIndicator } from '../../components/ui/SlidingNavigationIndicator';
 import type { MoneyStatisticsData, MoneyStatisticsPeriod } from './statisticsTypes';
 
 const periods: Array<[MoneyStatisticsPeriod, string]> = [['season', 'Season'], ['month', 'Month'], ['year', 'Year'], ['all', 'All time']];
 
 export function MoneyStatisticsToolbar({ statistics, loading, setLoading }: { statistics: MoneyStatisticsData; loading: boolean; setLoading: (value: boolean) => void }) {
+    const periodNavigationRef = useRef<HTMLDivElement>(null);
     function visit(changes: Record<string, string | null>, resetPeriod = false) {
         const url = new URL(window.location.href);
         for (const [key, value] of Object.entries(changes)) {
@@ -26,11 +29,13 @@ export function MoneyStatisticsToolbar({ statistics, loading, setLoading }: { st
     return (
         <Surface className="rounded-2xl p-3 sm:p-4" elevated>
             <div className="flex flex-col justify-between gap-4 lg:flex-row lg:items-center">
-                <div aria-label="Statistics period" className="grid grid-cols-4 gap-1 rounded-xl bg-app p-1 lg:min-w-80" role="group">
+                <div aria-label="Statistics period" className="relative grid grid-cols-4 gap-1 rounded-xl bg-app p-1 lg:min-w-80" ref={periodNavigationRef} role="group">
+                    <SlidingNavigationIndicator active={statistics.filter} className="rounded-lg" containerRef={periodNavigationRef} group="money-statistics-period" />
                     {periods.map(([key, label]) => (
                         <button
                             aria-pressed={statistics.filter === key}
-                            className={`focus-ring min-h-10 rounded-lg px-3 text-xs font-bold transition-colors ${statistics.filter === key ? 'bg-elevated text-foreground shadow-sm' : 'text-secondary hover:bg-surface-hover hover:text-foreground'}`}
+                            className={`focus-ring relative z-10 min-h-10 rounded-lg px-3 text-xs font-bold transition-colors ${statistics.filter === key ? 'text-foreground' : 'text-secondary hover:bg-surface-hover hover:text-foreground'}`}
+                            data-nav-value={key}
                             disabled={loading}
                             key={key}
                             onClick={() => visit({ statistics_period: key }, true)}

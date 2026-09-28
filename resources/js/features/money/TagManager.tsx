@@ -1,7 +1,8 @@
 import { Archive, Plus, Search, Tags } from 'lucide-react';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 
 import { Button, Field, Surface } from '../../components/ui';
+import { SlidingNavigationIndicator } from '../../components/ui/SlidingNavigationIndicator';
 import { useHorizontalTabTransition } from '../../components/ui/useHorizontalTabTransition';
 import { TagCard } from './TagCard';
 import { TagCreateDrawer } from './TagEditorDrawers';
@@ -10,6 +11,7 @@ import type { MoneyTagManagementData } from './types';
 const tagTabs = ['active', 'archived'] as const;
 
 export function TagManager({ tags }: { tags: MoneyTagManagementData[] }) {
+    const tabNavigationRef = useRef<HTMLDivElement>(null);
     const [activeTab, setActiveTab] = useState<'active' | 'archived'>('active');
     const [creating, setCreating] = useState(false);
     const [search, setSearch] = useState('');
@@ -24,7 +26,8 @@ export function TagManager({ tags }: { tags: MoneyTagManagementData[] }) {
     return (
         <>
             <div className="mb-6 flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
-                <div aria-label="Tag views" className="flex rounded-full border border-border-subtle bg-surface p-1" role="tablist">
+                <div aria-label="Tag views" className="relative flex rounded-full border border-border-subtle bg-surface p-1" ref={tabNavigationRef} role="tablist">
+                    <SlidingNavigationIndicator active={activeTab} className="rounded-full" containerRef={tabNavigationRef} group="money-tag-views" />
                     {tagTabs.map((tab) => {
                         const selected = activeTab === tab;
                         const Icon = tab === 'active' ? Tags : Archive;
@@ -33,8 +36,9 @@ export function TagManager({ tags }: { tags: MoneyTagManagementData[] }) {
                             <button
                                 aria-selected={selected}
                                 className={selected
-                                    ? 'focus-ring icon-text flex items-center gap-1.5 rounded-full bg-elevated px-4 py-2 text-sm font-bold text-foreground shadow-sm'
-                                    : 'focus-ring icon-text flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-bold text-secondary hover:bg-surface-hover hover:text-foreground'}
+                                    ? 'focus-ring icon-text relative z-10 flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-bold text-foreground'
+                                    : 'focus-ring icon-text relative z-10 flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-bold text-secondary hover:bg-surface-hover hover:text-foreground'}
+                                data-nav-value={tab}
                                 key={tab}
                                 onClick={() => selectTab(tab)}
                                 role="tab"

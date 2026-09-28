@@ -1,9 +1,10 @@
 import { Head, Link, router } from '@inertiajs/react';
 import { ArrowLeft, CalendarDays, ChevronLeft, ChevronRight, Flame, LoaderCircle } from 'lucide-react';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import type { CSSProperties } from 'react';
 
 import { Surface } from '../../components/ui';
+import { SlidingNavigationIndicator } from '../../components/ui/SlidingNavigationIndicator';
 import { HabitIcon } from '../../features/habits/HabitIcon';
 import { HabitStatisticCards } from '../../features/habits/HabitStatisticCards';
 import { HabitStatisticsCalendar } from '../../features/habits/HabitStatisticsCalendar';
@@ -24,6 +25,7 @@ const periods = [['season', 'Season'], ['month', 'Month'], ['year', 'Year'], ['a
 
 export default function HabitStatisticsPage({ habit, statistics }: { habit: HabitIdentity; statistics: HabitStatisticsData }) {
     const [loading, setLoading] = useState(false);
+    const periodNavigationRef = useRef<HTMLDivElement>(null);
     const numeric = habit.type === 'numeric';
 
     function visitPeriod(filter: HabitStatisticsData['filter'], value?: string | null) {
@@ -59,9 +61,10 @@ export default function HabitStatisticsPage({ habit, statistics }: { habit: Habi
                 <section aria-busy={loading} aria-label="Habit statistics" className="space-y-5">
                     <Surface className="rounded-2xl p-3 sm:p-4">
                         <div className="flex flex-col justify-between gap-4 lg:flex-row lg:items-center">
-                            <div aria-label="Statistics period" className="grid grid-cols-4 gap-1 rounded-xl bg-app p-1 lg:min-w-80" role="group">
+                            <div aria-label="Statistics period" className="relative grid grid-cols-4 gap-1 rounded-xl bg-app p-1 lg:min-w-80" ref={periodNavigationRef} role="group">
+                                <SlidingNavigationIndicator active={statistics.filter} className="rounded-lg" containerRef={periodNavigationRef} group="habit-statistics-period" />
                                 {periods.map(([key, label]) => (
-                                    <button aria-pressed={statistics.filter === key} className={`focus-ring min-h-10 rounded-lg px-3 text-xs font-bold transition-colors ${statistics.filter === key ? 'bg-elevated text-foreground shadow-sm' : 'text-secondary hover:bg-surface-hover hover:text-foreground'}`} disabled={loading} key={key} onClick={() => visitPeriod(key)} type="button">{label}</button>
+                                    <button aria-pressed={statistics.filter === key} className={`focus-ring relative z-10 min-h-10 rounded-lg px-3 text-xs font-bold transition-colors ${statistics.filter === key ? 'text-foreground' : 'text-secondary hover:bg-surface-hover hover:text-foreground'}`} data-nav-value={key} disabled={loading} key={key} onClick={() => visitPeriod(key)} type="button">{label}</button>
                                 ))}
                             </div>
                             <div className="flex items-center justify-between gap-3 lg:justify-end">
