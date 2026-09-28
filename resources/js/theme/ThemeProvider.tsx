@@ -1,6 +1,9 @@
 import { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import type { PropsWithChildren } from 'react';
+import { usePage } from '@inertiajs/react';
 
+import type { SharedPageProps } from '../types';
+import { applyAccentPalette } from './accentPalette';
 import { applyTheme, isThemePreference, readThemePreference, resolveTheme, storeThemePreference, themeStorageKey } from './theme';
 import type { ResolvedTheme, ThemePreference } from './theme';
 
@@ -13,6 +16,7 @@ interface ThemeContextValue {
 const ThemeContext = createContext<ThemeContextValue | null>(null);
 
 export function ThemeProvider({ children }: PropsWithChildren) {
+    const { appearance } = usePage<SharedPageProps>().props;
     const [preference, setPreference] = useState<ThemePreference>(readThemePreference);
     const [resolvedTheme, setResolvedTheme] = useState<ResolvedTheme>(() => resolveTheme(preference));
 
@@ -42,6 +46,10 @@ export function ThemeProvider({ children }: PropsWithChildren) {
 
         return () => colorScheme.removeEventListener('change', synchronizeTheme);
     }, [preference]);
+
+    useEffect(() => {
+        applyAccentPalette(resolvedTheme, resolvedTheme === 'light' ? appearance.lightAccent : appearance.darkAccent);
+    }, [appearance.darkAccent, appearance.lightAccent, resolvedTheme]);
 
     const contextValue = useMemo<ThemeContextValue>(
         () => ({

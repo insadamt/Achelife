@@ -16,4 +16,4 @@ The Stats view loads on demand. Selecting it does not add statistics queries to 
 
 Current Seasons call the view **Season performance**. Completed Seasons call it **Season report** and remain read-only.
 
-Season comparison uses the shared compact pill to show percentage and absolute SP change against the matched day of the previous Season. A zero baseline shows absolute SP change “from 0” instead of an undefined percentage; equal values show “No change”.
+Season stats and closeout comparisons use the shared `signed change | signed percentage change` pill. The Stats view compares the matched day of the previous Season. A zero baseline shows `—` for the undefined percentage change; equal values show `0 | 0%`.

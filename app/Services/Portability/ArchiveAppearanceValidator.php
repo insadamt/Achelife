@@ -80,6 +80,12 @@ class ArchiveAppearanceValidator
             throw new InvalidAccountArchive('Appearance style is invalid.');
         }
 
+        foreach (['light_accent', 'dark_accent'] as $field) {
+            if (! is_string($row[$field] ?? null) || preg_match('/^#[A-Fa-f0-9]{6}$/', $row[$field]) !== 1) {
+                throw new InvalidAccountArchive('Appearance accent color is invalid.');
+            }
+        }
+
         $hasBackground = $row['background_hash'] !== null;
 
         if ($hasBackground) {

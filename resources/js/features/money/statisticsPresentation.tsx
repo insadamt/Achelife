@@ -10,7 +10,7 @@ export function MoneyDelta({ current, previous, currency, favorable = 'up', rate
     favorable?: 'up' | 'down' | 'neutral';
     rate?: boolean;
 }) {
-    return <StatisticDelta current={current} formatValue={(value) => rate ? formatRate(value) : formatMinorUnits(value, currency)} favorable={favorable} percentagePoints={rate} previous={previous} />;
+    return <StatisticDelta current={current} formatValue={(value) => rate ? formatRate(value) : formatMinorUnits(value, currency)} favorable={favorable} previous={previous} />;
 }
 
 export function CountDelta({ current, previous, favorable = 'neutral' }: { current: number; previous: number | null; favorable?: 'up' | 'down' | 'neutral' }) {

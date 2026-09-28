@@ -4,6 +4,7 @@ import type { LucideIcon } from 'lucide-react';
 import { classNames } from '../../components/ui/classNames';
 import { useTheme } from '../../theme/ThemeProvider';
 import type { ThemePreference } from '../../theme/theme';
+import { AccentColorSettings } from './AccentColorSettings';
 import { BackgroundSettings } from './BackgroundSettings';
 import { SurfaceStyleSettings } from './SurfaceStyleSettings';
 
@@ -69,6 +70,7 @@ export function AppearanceSettingsPanel() {
                 Applied immediately: using {resolvedTheme} mode on this device
             </p>
 
+            <AccentColorSettings />
             <SurfaceStyleSettings />
             <BackgroundSettings />
         </section>

@@ -83,7 +83,7 @@ export function TaskStatisticsPanel({ statistics }: { statistics: TaskStatistics
                             <div className="flex items-center justify-between gap-2"><h3 className="text-xs font-semibold text-secondary">{label}</h3><Icon aria-hidden="true" className={index === 0 ? 'shrink-0 text-accent-ink' : 'shrink-0 text-muted'} size={16} /></div>
                             <p className="mt-5 text-3xl font-bold leading-none tracking-[-0.05em] tabular-nums sm:text-4xl">{formatMetric(statistics.current[key], percentage)}</p>
                             <p className="mb-4 mt-2 text-xs leading-5 text-muted">{detail}</p>
-                            {statistics.filter !== 'all' && <div className="mt-auto space-y-1.5 border-t border-border-subtle pt-3 text-xs font-semibold"><StatisticDelta current={statistics.current[key]} formatValue={(value) => formatMetric(value, percentage)} percentagePoints={percentage} previous={previous} /></div>}
+                            {statistics.filter !== 'all' && <div className="mt-auto space-y-1.5 border-t border-border-subtle pt-3 text-xs font-semibold"><StatisticDelta current={statistics.current[key]} formatValue={(value) => formatMetric(value, percentage)} previous={previous} /></div>}
                         </Surface>
                     );
                 })}

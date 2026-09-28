@@ -4,6 +4,7 @@ import type { FormEvent } from 'react';
 
 import { RankBadge } from '../../components/rank';
 import { Button, Surface } from '../../components/ui';
+import { StatisticDelta } from '../../components/ui/StatisticDelta';
 import type { SeasonCloseoutData } from './closeoutTypes';
 
 const breakdownPresentation = [
@@ -14,10 +15,10 @@ const breakdownPresentation = [
     { key: 'constitution', label: 'Constitution', icon: Gavel },
 ] as const;
 
-function comparison(current: number, previous: number | undefined, suffix = '') {
-    if (previous === undefined) return 'First completed Season';
-    const delta = current - previous;
-    return delta === 0 ? `Same as last Season${suffix}` : `${delta > 0 ? '+' : ''}${delta}${suffix} vs last Season`;
+function SeasonComparison({ current, previous, unit = '' }: { current: number; previous: number | undefined; unit?: string }) {
+    if (previous === undefined) return <span className="text-sm text-muted">First completed Season</span>;
+
+    return <StatisticDelta comparisonLabel="last Season" current={current} formatValue={(value) => `${value.toLocaleString()}${unit}`} previous={previous} />;
 }
 
 export function SeasonCloseoutPanel({ closeout, intermission = false }: { closeout: SeasonCloseoutData; intermission?: boolean }) {
@@ -34,7 +35,7 @@ export function SeasonCloseoutPanel({ closeout, intermission = false }: { closeo
                 <p className="text-xs font-bold tracking-[0.2em] text-accent-ink uppercase">Season {closeout.seasonNumber} complete</p>
                 <div className="mt-5 flex flex-col gap-7 sm:flex-row sm:items-end sm:justify-between">
                     <div><RankBadge rank={closeout.rank} size="hero" /><p className="mt-5 text-sm text-muted">{closeout.startDate} — {closeout.endDate}</p></div>
-                    <div className="sm:text-right"><p className="text-6xl font-bold tracking-[-0.06em]">{closeout.seasonPoints}</p><p className="mt-1 text-sm font-bold tracking-wider text-muted uppercase">Final Season SP</p><p className="mt-2 text-sm text-secondary">{comparison(closeout.seasonPoints, closeout.previous?.seasonPoints, ' SP')}</p></div>
+                    <div className="sm:text-right"><p className="text-6xl font-bold tracking-[-0.06em]">{closeout.seasonPoints}</p><p className="mt-1 text-sm font-bold tracking-wider text-muted uppercase">Final Season SP</p><p className="mt-2 text-sm text-secondary"><SeasonComparison current={closeout.seasonPoints} previous={closeout.previous?.seasonPoints} unit=" SP" /></p></div>
                 </div>
             </Surface>
 
@@ -42,7 +43,7 @@ export function SeasonCloseoutPanel({ closeout, intermission = false }: { closeo
                 <h2 className="text-xl font-bold">Where your SP came from</h2>
                 <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
                     {breakdownPresentation.map(({ key, label, icon: Icon }) => (
-                        <Surface className="p-4" key={key}><Icon aria-hidden="true" className="text-accent-ink" size={19} /><p className="mt-4 text-sm font-semibold text-secondary">{label}</p><p className="mt-1 text-3xl font-bold">{closeout.breakdown[key]} <span className="text-sm text-muted">SP</span></p><p className="mt-2 text-xs text-muted">{comparison(closeout.breakdown[key], closeout.previous?.breakdown[key])}</p></Surface>
+                        <Surface className="p-4" key={key}><Icon aria-hidden="true" className="text-accent-ink" size={19} /><p className="mt-4 text-sm font-semibold text-secondary">{label}</p><p className="mt-1 text-3xl font-bold">{closeout.breakdown[key]} <span className="text-sm text-muted">SP</span></p><p className="mt-2 text-xs text-muted"><SeasonComparison current={closeout.breakdown[key]} previous={closeout.previous?.breakdown[key]} /></p></Surface>
                     ))}
                 </div>
             </section>

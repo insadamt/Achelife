@@ -2,6 +2,8 @@
 
 namespace App\Services\Portability;
 
+use App\Exceptions\InvalidAccountArchive;
+
 class ArchiveRowAdapter
 {
     /** @param array<string, mixed> $row
@@ -34,6 +36,15 @@ class ArchiveRowAdapter
 
         if ($formatVersion <= 8 && $table === 'money_categories') {
             $row['color'] = $this->legacyCategoryColor((int) $row['id']);
+        }
+
+        if ($formatVersion <= 10 && $table === 'appearance_settings') {
+            if (array_key_exists('light_accent', $row) || array_key_exists('dark_accent', $row)) {
+                throw new InvalidAccountArchive('Appearance settings contain colors unsupported by this archive format.');
+            }
+
+            $row['light_accent'] = '#D7E66B';
+            $row['dark_accent'] = '#D7E66B';
         }
 
         return $row;

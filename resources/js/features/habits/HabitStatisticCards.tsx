@@ -33,7 +33,7 @@ export function HabitStatisticCards({ statistics, numeric, unit }: { statistics:
                     <p className="mb-4 mt-2 text-xs leading-5 text-muted">{detail}</p>
                     {statistics.filter !== 'all' && (
                         <div className="mt-auto space-y-1.5 border-t border-border-subtle pt-3 text-xs font-semibold">
-                            <StatisticDelta current={statistics.current[key]} formatValue={(value) => `${formatStatistic(value)}${key === 'completionRate' ? '%' : ''}`} percentagePoints={key === 'completionRate'} previous={statistics.previous?.[key] ?? null} />
+                            <StatisticDelta current={statistics.current[key]} formatValue={(value) => `${formatStatistic(value)}${key === 'completionRate' ? '%' : ''}`} previous={statistics.previous?.[key] ?? null} />
                         </div>
                     )}
                 </Surface>

@@ -16,6 +16,8 @@ export interface SharedPageProps {
     appearance: {
         surfaceStyle: 'normal' | 'glass';
         backgroundUrl: string | null;
+        lightAccent: string;
+        darkAccent: string;
     };
     flash: {
         constitutionViolation: RecordedViolationFlashData | null;

@@ -13,6 +13,21 @@ use RuntimeException;
 
 class AppearanceSettingController extends Controller
 {
+    public function updateAccent(Request $request): RedirectResponse
+    {
+        $input = $request->validate([
+            'theme' => ['required', Rule::in(['light', 'dark'])],
+            'accent' => ['required', 'regex:/^#[0-9A-Fa-f]{6}$/'],
+        ]);
+
+        AppearanceSetting::query()->updateOrCreate(
+            ['user_id' => $request->user()->id],
+            [$input['theme'].'_accent' => strtoupper($input['accent'])],
+        );
+
+        return back();
+    }
+
     public function updateStyle(Request $request): RedirectResponse
     {
         $style = $request->validate([

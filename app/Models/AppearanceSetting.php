@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 
-#[Fillable(['user_id', 'surface_style', 'background_mime', 'background_hash', 'background_bytes'])]
+#[Fillable(['user_id', 'surface_style', 'background_mime', 'background_hash', 'background_bytes', 'light_accent', 'dark_accent'])]
 class AppearanceSetting extends Model
 {
     protected $primaryKey = 'user_id';

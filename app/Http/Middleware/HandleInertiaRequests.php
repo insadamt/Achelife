@@ -46,6 +46,8 @@ class HandleInertiaRequests extends Middleware
             ],
             'appearance' => [
                 'surfaceStyle' => $appearance?->surface_style ?? 'glass',
+                'lightAccent' => $appearance?->light_accent ?? '#D7E66B',
+                'darkAccent' => $appearance?->dark_accent ?? '#D7E66B',
                 'backgroundUrl' => $appearance?->background_hash === null
                     ? null
                     : route('appearance.background', ['hash' => $appearance->background_hash]),

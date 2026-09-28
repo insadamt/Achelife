@@ -75,7 +75,7 @@ class PortableTableRegistry
             $this->table('money_subscription_occurrences', 'subscriptions', ['id', 'user_id', 'subscription_id', 'due_date', 'amount_minor', 'account_id', 'category_id', 'subcategory_id', 'note', 'payment_mode', 'status', 'transaction_id', 'paid_at', 'skipped_at', 'automatic_retry_blocked_at', 'created_at', 'updated_at'], ['subscription_id' => 'money_subscriptions', 'account_id' => 'money_accounts', 'category_id' => 'money_categories', 'subcategory_id' => 'money_subcategories', 'transaction_id' => 'money_transactions']),
             $this->table('today_settings', 'settings', ['user_id', 'show_flexible_habits', 'show_upcoming_tasks', 'created_at', 'updated_at'], identityColumn: null),
             ...($formatVersion >= 10 ? [
-                $this->table('appearance_settings', 'settings', ['user_id', 'surface_style', 'background_mime', 'background_hash', 'background_bytes', 'created_at', 'updated_at'], identityColumn: null),
+                $this->table('appearance_settings', 'settings', ['user_id', 'surface_style', 'background_mime', 'background_hash', 'background_bytes', 'light_accent', 'dark_accent', 'created_at', 'updated_at'], identityColumn: null),
                 $this->table('appearance_background_chunks', 'settings', ['id', 'user_id', 'sequence', 'base64_data']),
             ] : []),
         ];

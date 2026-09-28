@@ -5,7 +5,6 @@ type StatisticDeltaProps = {
     previous: number | null;
     formatValue: (value: number) => string;
     favorable?: 'up' | 'down' | 'neutral';
-    percentagePoints?: boolean;
     comparisonLabel?: string;
 };
 
@@ -18,7 +17,7 @@ function formatRelativeChange(change: number): string {
     return `${change > 0 ? '+' : change < 0 ? '−' : ''}${formattedMagnitude}%`;
 }
 
-export function StatisticDelta({ current, previous, formatValue, favorable = 'up', percentagePoints = false, comparisonLabel = 'previous period' }: StatisticDeltaProps) {
+export function StatisticDelta({ current, previous, formatValue, favorable = 'up', comparisonLabel = 'previous period' }: StatisticDeltaProps) {
     if (current === null || previous === null) {
         return <span className="text-xs font-medium text-muted">No comparison available</span>;
     }
@@ -30,13 +29,8 @@ export function StatisticDelta({ current, previous, formatValue, favorable = 'up
         ? 'bg-elevated text-secondary'
         : improved ? 'bg-success/10 text-success' : 'bg-danger/10 text-danger';
     const signedChange = `${difference > 0 ? '+' : difference < 0 ? '−' : ''}${formatValue(Math.abs(difference))}`;
-    const label = difference === 0
-        ? 'No change'
-        : percentagePoints
-            ? `${difference > 0 ? '+' : '−'}${decimal.format(Math.abs(difference))} percentage points`
-            : previous === 0
-                ? `${signedChange} from 0`
-                : `${formatRelativeChange(difference / Math.abs(previous) * 100)} · ${signedChange}`;
+    const percentageChange = previous === 0 ? difference === 0 ? '0%' : '—' : formatRelativeChange(difference / Math.abs(previous) * 100);
+    const label = `${signedChange} | ${percentageChange}`;
 
     return (
         <span aria-label={`${label} versus ${comparisonLabel}`} className={`inline-flex max-w-full flex-wrap items-center gap-x-1.5 gap-y-0.5 rounded-full px-2 py-1 text-xs font-bold tabular-nums ${tone}`}>

@@ -112,6 +112,7 @@ Route::middleware('auth')->group(function (): void {
         Route::put('/seasons/{season}/closeout', [SeasonCloseoutController::class, 'update'])->name('seasons.closeout.update');
         Route::put('/settings/account/profile', [AccountSettingController::class, 'updateProfile'])->name('settings.account.profile');
         Route::put('/settings/appearance/style', [AppearanceSettingController::class, 'updateStyle'])->name('appearance.style.update');
+        Route::put('/settings/appearance/accent', [AppearanceSettingController::class, 'updateAccent'])->name('appearance.accent.update');
         Route::post('/settings/appearance/background', [AppearanceSettingController::class, 'uploadBackground'])->name('appearance.background.upload');
         Route::delete('/settings/appearance/background', [AppearanceSettingController::class, 'clearBackground'])->name('appearance.background.clear');
         Route::get('/appearance/background/{hash}', [AppearanceSettingController::class, 'background'])
