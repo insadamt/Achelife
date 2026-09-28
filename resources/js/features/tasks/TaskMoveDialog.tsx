@@ -1,7 +1,7 @@
 import { router } from '@inertiajs/react';
 import { useMemo, useState } from 'react';
 
-import { Button, Dialog, SelectField } from '../../components/ui';
+import { Button, Dialog, DialogDismissButton, SelectField } from '../../components/ui';
 import type { TaskExplorerViewData, TaskViewData } from './types';
 
 export function TaskMoveDialog({ explorer, onClose, onMoved, task }: {
@@ -55,7 +55,7 @@ export function TaskMoveDialog({ explorer, onClose, onMoved, task }: {
                     {positions.map((index) => <option key={index} value={index}>{index + 1}</option>)}
                 </SelectField>
                 <div className="flex gap-2 pt-2">
-                    <Button fullWidth onClick={onClose} variant="secondary">Cancel</Button>
+                    <DialogDismissButton fullWidth variant="secondary">Cancel</DialogDismissButton>
                     <Button disabled={processing} fullWidth onClick={moveTask}>{processing ? 'Moving…' : 'Move'}</Button>
                 </div>
             </div>

@@ -45,7 +45,7 @@ export function TaskViewNavigation({ counts, workspace }: {
                             key={item.view}
                         >
                             <span>{item.label}</span>
-                            <span className="rounded-full bg-surface px-1.5 py-0.5 text-[0.68rem] leading-none text-secondary">{counts[item.view]}</span>
+                            <span className="text-[0.68rem] leading-none text-secondary">{counts[item.view]}</span>
                         </Link>
                     );
                 })}

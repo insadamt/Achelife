@@ -4,6 +4,7 @@ import type { LucideIcon } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
 import { classNames } from '../../components/ui/classNames';
+import { Popup } from '../../components/ui/Popup';
 
 export interface MoneyFloatingAction {
     icon: LucideIcon;
@@ -39,22 +40,20 @@ export function MoneyFloatingActionMenu({ actions, label = 'Add money activity' 
 
     return (
         <div className="fixed right-4 bottom-24 z-40 flex flex-col items-end gap-2 md:right-6 md:bottom-6" ref={menuRef}>
-            {open && (
-                <div className="flex min-w-52 flex-col gap-1 rounded-2xl border border-border-strong bg-elevated p-2 shadow-2xl" role="menu">
-                    {actions.map((action) => {
-                        const ActionIcon = action.icon;
-                        const className = classNames(
-                            'focus-ring flex min-h-12 w-full items-center gap-3 rounded-xl px-3 text-left text-sm font-bold hover:bg-surface-hover',
-                            action.tone === 'income' && 'text-success',
-                            action.tone === 'expense' && 'text-danger',
-                        );
-                        const content = <><span className="grid size-9 place-items-center rounded-xl bg-app"><ActionIcon aria-hidden="true" size={17} /></span><span>{action.label}</span></>;
+            <Popup className="flex min-w-52 flex-col gap-1 rounded-2xl border border-border-strong bg-elevated p-2 shadow-2xl" open={open} role="menu">
+                {actions.map((action) => {
+                    const ActionIcon = action.icon;
+                    const className = classNames(
+                        'focus-ring flex min-h-12 w-full items-center gap-3 rounded-xl px-3 text-left text-sm font-bold hover:bg-surface-hover',
+                        action.tone === 'income' && 'text-success',
+                        action.tone === 'expense' && 'text-danger',
+                    );
+                    const content = <><span className="grid size-9 place-items-center rounded-xl bg-app"><ActionIcon aria-hidden="true" size={17} /></span><span>{action.label}</span></>;
 
-                        if (action.href) return <Link className={className} href={action.href} key={action.label} onClick={() => setOpen(false)} role="menuitem">{content}</Link>;
-                        return <button className={className} key={action.label} onClick={() => { setOpen(false); action.onSelect?.(); }} role="menuitem" type="button">{content}</button>;
-                    })}
-                </div>
-            )}
+                    if (action.href) return <Link className={className} href={action.href} key={action.label} onClick={() => setOpen(false)} role="menuitem">{content}</Link>;
+                    return <button className={className} key={action.label} onClick={() => { setOpen(false); action.onSelect?.(); }} role="menuitem" type="button">{content}</button>;
+                })}
+            </Popup>
             <button
                 aria-expanded={directAction ? undefined : open}
                 aria-haspopup={directAction ? undefined : 'menu'}

@@ -1,6 +1,6 @@
 import { Check, Trash2, X } from 'lucide-react';
 
-import { Button, Dialog } from '../../components/ui';
+import { Button, Dialog, DialogDismissButton } from '../../components/ui';
 
 interface MoneyConfirmationDialogProps {
     confirmLabel: string;
@@ -24,9 +24,9 @@ export function MoneyConfirmationDialog({
     return (
         <Dialog description={description} onClose={onClose} open={open} title={title}>
             <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-                <Button onClick={onClose} variant="ghost">
+                <DialogDismissButton variant="ghost">
                     <X aria-hidden="true" size={16} /> Cancel
-                </Button>
+                </DialogDismissButton>
                 <Button onClick={onConfirm} variant={destructive ? 'destructive' : 'primary'}>
                     {destructive ? <Trash2 aria-hidden="true" size={16} /> : <Check aria-hidden="true" size={16} />}
                     {confirmLabel}

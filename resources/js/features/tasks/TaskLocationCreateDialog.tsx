@@ -1,7 +1,7 @@
 import { useForm } from '@inertiajs/react';
 import type { FormEvent } from 'react';
 
-import { Button, Dialog, Field } from '../../components/ui';
+import { Button, Dialog, DialogDismissButton, Field } from '../../components/ui';
 
 type LocationKind = 'folder' | 'project';
 
@@ -57,7 +57,7 @@ export function TaskLocationCreateDialog({ folderId, kind, onClose, open }: {
                 />
                 <ColorField color={form.data.color} error={form.errors.color} id={'new-' + kind + '-color'} onChange={(color) => form.setData('color', color)} />
                 <div className="mt-6 flex justify-end gap-2">
-                    <Button onClick={onClose} type="button" variant="ghost">Cancel</Button>
+                    <DialogDismissButton type="button" variant="ghost">Cancel</DialogDismissButton>
                     <Button disabled={form.processing || !form.data.name.trim()} type="submit">Create {label}</Button>
                 </div>
             </form>

@@ -1,9 +1,9 @@
 import { useForm } from '@inertiajs/react';
 import { ArrowUp, CalendarDays, FolderKanban, ListChecks, Plus, Repeat2, Star, StickyNote } from 'lucide-react';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import type { FormEvent, ReactNode } from 'react';
 
-import { Button, Dialog, Field } from '../../components/ui';
+import { Dialog, DialogDismissButton, Field } from '../../components/ui';
 import { classNames } from '../../components/ui/classNames';
 import { formatTaskDate, projectedReward } from './taskPresentation';
 import { RecurrenceControls } from './RecurrenceControls';
@@ -20,7 +20,18 @@ export function TaskComposer({ explorer, initialProjectId, showProjectControl = 
 }) {
     const [expanded, setExpanded] = useState(false);
     const [dialog, setDialog] = useState<ComposerDialog>(null);
+    const composerRef = useRef<HTMLElement>(null);
     const closeDialog = useCallback(() => setDialog(null), []);
+    useEffect(() => {
+        if (!expanded || dialog) return;
+
+        function collapseOnOutsideClick(event: PointerEvent) {
+            if (event.target instanceof Node && !composerRef.current?.contains(event.target)) setExpanded(false);
+        }
+
+        document.addEventListener('pointerdown', collapseOnOutsideClick);
+        return () => document.removeEventListener('pointerdown', collapseOnOutsideClick);
+    }, [expanded, dialog]);
     const form = useForm<TaskFormData>({
         title: '',
         task_project_id: initialProjectId,
@@ -55,7 +66,7 @@ export function TaskComposer({ explorer, initialProjectId, showProjectControl = 
     }
 
     return (
-        <section className="w-full" aria-label="Create a Task">
+        <section className="w-full" aria-label="Create a Task" ref={composerRef}>
             <form
                 className="rounded-[1.5rem] border border-border-strong bg-surface p-2"
                 onSubmit={submit}
@@ -70,6 +81,7 @@ export function TaskComposer({ explorer, initialProjectId, showProjectControl = 
                         className="task-composer-title focus-ring min-h-12 min-w-0 flex-1 rounded-lg bg-transparent px-1 text-lg font-semibold text-foreground placeholder:text-muted"
                         id="quick-task-title"
                         onChange={(event) => form.setData('title', event.target.value)}
+                        onClick={() => setExpanded(true)}
                         onFocus={() => setExpanded(true)}
                         placeholder="Add a task…"
                         value={form.data.title}
@@ -85,48 +97,53 @@ export function TaskComposer({ explorer, initialProjectId, showProjectControl = 
                     </button>
                 </div>
 
-                {expanded && (
-                    <div className="mt-2 flex flex-wrap items-center gap-1.5 border-t border-border-subtle px-1 pt-2">
-                        <ComposerControl label={`Scheduled ${dateLabel}`} onClick={() => setDialog('date')}>
-                            <CalendarDays size={17} />
-                            <span>{dateLabel}</span>
-                        </ComposerControl>
-                        <ComposerControl active={form.data.important} label={form.data.important ? 'Remove importance' : 'Mark important'} onClick={() => form.setData('important', !form.data.important)}>
-                            <Star fill={form.data.important ? 'currentColor' : 'none'} size={17} />
-                        </ComposerControl>
-                        <ComposerControl active={form.data.recurrence_type !== null} label="Repeat" onClick={() => setDialog('recurrence')}>
-                            <Repeat2 size={17} />
-                        </ComposerControl>
-                        <ComposerControl active={form.data.subtasks.length > 0} label="Subtasks" onClick={() => setDialog('subtasks')}>
-                            <ListChecks size={18} />
-                            {form.data.subtasks.length > 0 && <span>{form.data.subtasks.length}</span>}
-                        </ComposerControl>
-                        <ComposerControl active={Boolean(form.data.notes.trim())} label="Notes" onClick={() => setDialog('notes')}>
-                            <StickyNote size={17} />
-                        </ComposerControl>
-                        {showProjectControl && (
-                            <label className="focus-field-shell icon-text flex min-h-10 items-center gap-1.5 rounded-full border border-transparent px-3 text-xs font-bold text-muted hover:bg-surface-hover hover:text-foreground">
-                                <FolderKanban aria-hidden="true" size={17} />
-                                <span className="sr-only">Project</span>
-                                <select
-                                    aria-label="Project"
-                                    className="max-w-36 bg-transparent font-bold outline-none"
-                                    onChange={(event) => form.setData('task_project_id', event.target.value ? Number(event.target.value) : null)}
-                                    value={form.data.task_project_id ?? ''}
-                                >
-                                    <option value="">Inbox</option>
-                                    {explorer.rootProjects.map((project) => <option key={project.id} value={project.id}>{project.name}</option>)}
-                                    {explorer.folders.map((folder) => (
-                                        <optgroup key={folder.id} label={folder.name}>
-                                            {folder.projects.map((project) => <option key={project.id} value={project.id}>{project.name}</option>)}
-                                        </optgroup>
-                                    ))}
-                                </select>
-                            </label>
-                        )}
-                        {hasTitle && <span className="ml-auto px-2 text-sm font-bold text-accent-ink">+{reward.points} SP</span>}
+                <div className={classNames(
+                    'grid transition-[grid-template-rows,opacity] duration-[var(--motion-standard)] ease-out',
+                    expanded ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0',
+                )}>
+                    <div className="min-h-0 overflow-hidden" inert={!expanded}>
+                        <div className="mt-2 flex flex-wrap items-center gap-1.5 border-t border-border-subtle px-1 pt-2">
+                            <ComposerControl label={`Scheduled ${dateLabel}`} onClick={() => setDialog('date')}>
+                                <CalendarDays size={17} />
+                                <span>{dateLabel}</span>
+                            </ComposerControl>
+                            <ComposerControl active={form.data.important} label={form.data.important ? 'Remove importance' : 'Mark important'} onClick={() => form.setData('important', !form.data.important)}>
+                                <Star fill={form.data.important ? 'currentColor' : 'none'} size={17} />
+                            </ComposerControl>
+                            <ComposerControl active={form.data.recurrence_type !== null} label="Repeat" onClick={() => setDialog('recurrence')}>
+                                <Repeat2 size={17} />
+                            </ComposerControl>
+                            <ComposerControl active={form.data.subtasks.length > 0} label="Subtasks" onClick={() => setDialog('subtasks')}>
+                                <ListChecks size={18} />
+                                {form.data.subtasks.length > 0 && <span>{form.data.subtasks.length}</span>}
+                            </ComposerControl>
+                            <ComposerControl active={Boolean(form.data.notes.trim())} label="Notes" onClick={() => setDialog('notes')}>
+                                <StickyNote size={17} />
+                            </ComposerControl>
+                            {showProjectControl && (
+                                <label className="focus-field-shell icon-text flex min-h-10 items-center gap-1.5 rounded-full border border-transparent px-3 text-xs font-bold text-muted hover:bg-surface-hover hover:text-foreground">
+                                    <FolderKanban aria-hidden="true" size={17} />
+                                    <span className="sr-only">Project</span>
+                                    <select
+                                        aria-label="Project"
+                                        className="max-w-36 bg-transparent font-bold outline-none"
+                                        onChange={(event) => form.setData('task_project_id', event.target.value ? Number(event.target.value) : null)}
+                                        value={form.data.task_project_id ?? ''}
+                                    >
+                                        <option value="">Inbox</option>
+                                        {explorer.rootProjects.map((project) => <option key={project.id} value={project.id}>{project.name}</option>)}
+                                        {explorer.folders.map((folder) => (
+                                            <optgroup key={folder.id} label={folder.name}>
+                                                {folder.projects.map((project) => <option key={project.id} value={project.id}>{project.name}</option>)}
+                                            </optgroup>
+                                        ))}
+                                    </select>
+                                </label>
+                            )}
+                            {hasTitle && <span className="ml-auto px-2 text-sm font-bold text-accent-ink">+{reward.points} SP</span>}
+                        </div>
                     </div>
-                )}
+                </div>
 
                 {form.errors.title && <p className="px-3 pt-2 text-sm font-semibold text-danger">{form.errors.title}</p>}
                 {form.errors.scheduled_date && <p className="px-3 pt-2 text-sm font-semibold text-danger">{form.errors.scheduled_date}</p>}
@@ -136,7 +153,7 @@ export function TaskComposer({ explorer, initialProjectId, showProjectControl = 
 
             <Dialog onClose={closeDialog} open={dialog === 'date'} title="Schedule">
                 <Field label="Date" onChange={(event) => form.setData('scheduled_date', event.target.value)} required type="date" value={form.data.scheduled_date} />
-                <Button className="mt-6" fullWidth onClick={closeDialog}>Done</Button>
+                <DialogDismissButton className="mt-6" fullWidth>Done</DialogDismissButton>
             </Dialog>
 
             <Dialog onClose={closeDialog} open={dialog === 'recurrence'} title="Repeat">
@@ -146,7 +163,7 @@ export function TaskComposer({ explorer, initialProjectId, showProjectControl = 
                     type={form.data.recurrence_type}
                     weekdays={form.data.weekdays}
                 />
-                <Button className="mt-6" fullWidth onClick={closeDialog}>Done</Button>
+                <DialogDismissButton className="mt-6" fullWidth>Done</DialogDismissButton>
             </Dialog>
 
             <Dialog description="Add as many steps as you need, then arrange them in the order you want to work." onClose={closeDialog} open={dialog === 'subtasks'} size="large" title="Plan the checklist">
@@ -158,7 +175,7 @@ export function TaskComposer({ explorer, initialProjectId, showProjectControl = 
                     }}
                     subtasks={form.data.subtasks}
                 />
-                <Button className="mt-6" fullWidth onClick={closeDialog}>Done</Button>
+                <DialogDismissButton className="mt-6" fullWidth>Done</DialogDismissButton>
             </Dialog>
 
             <Dialog onClose={closeDialog} open={dialog === 'notes'} title="Notes">
@@ -173,7 +190,7 @@ export function TaskComposer({ explorer, initialProjectId, showProjectControl = 
                         value={form.data.notes}
                     />
                 </label>
-                <Button className="mt-6" fullWidth onClick={closeDialog}>Done</Button>
+                <DialogDismissButton className="mt-6" fullWidth>Done</DialogDismissButton>
             </Dialog>
         </section>
     );

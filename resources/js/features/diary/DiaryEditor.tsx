@@ -1,6 +1,7 @@
 import { forwardRef, useCallback, useEffect, useImperativeHandle, useLayoutEffect, useMemo, useRef, useState } from 'react';
 
 import { Button, Dialog } from '../../components/ui';
+import { Popup } from '../../components/ui/Popup';
 import { contentToPlainText, formatDiaryDate, restoreMentionBoundarySpacing, titleCase } from './diaryPresentation';
 import { MoodWheelDialog } from './MoodWheelDialog';
 import { getTextareaCaretCoordinates } from './textareaCaret';
@@ -404,8 +405,7 @@ export const DiaryEditor = forwardRef<DiaryEditorHandle, DiaryEditorProps>(funct
                         spellCheck
                         value={plainText}
                     />
-                    {mentionQuery !== null && (
-                        <div className="absolute z-30 w-[min(22rem,100%)] rounded-2xl border border-border-strong bg-elevated p-2 shadow-2xl" id="diary-person-suggestions" ref={suggestionsRef} role="listbox">
+                    <Popup className="absolute z-30 w-[min(22rem,100%)] rounded-2xl border border-border-strong bg-elevated p-2 shadow-2xl" containerRef={suggestionsRef} id="diary-person-suggestions" open={mentionQuery !== null} role="listbox">
                             {suggestions.map((person, index) => (
                                 <button aria-selected={index === activeSuggestionIndex} className={`focus-ring flex w-full items-center justify-between rounded-xl px-3 py-2.5 text-left ${index === activeSuggestionIndex ? 'bg-surface-hover' : 'hover:bg-surface-hover'}`} id={`diary-person-suggestion-${person.id}`} key={person.id} onClick={() => insertMention(person)} role="option" type="button">
                                     <span className="font-semibold">@{person.name}</span><span className="text-xs text-muted">Person</span>
@@ -414,8 +414,7 @@ export const DiaryEditor = forwardRef<DiaryEditorHandle, DiaryEditorProps>(funct
                             {mentionQuery !== '' && !suggestions.some((person) => person.name.toLocaleLowerCase() === mentionQuery) && (
                                 <button className="focus-ring w-full rounded-xl px-3 py-2.5 text-left font-semibold text-accent-ink hover:bg-surface-hover" onClick={() => setCreateName(mentionMatch?.[1] ?? '')} type="button">+ Create “{mentionMatch?.[1]}”</button>
                             )}
-                        </div>
-                    )}
+                    </Popup>
                 </div>
                 <div className="mt-6 flex flex-wrap items-center gap-2 border-t border-border-subtle pt-4 text-xs font-semibold" dir="ltr">
                     <CompletionRequirement complete={hasEnoughCharacters} label={hasEnoughCharacters ? `${characterCount} characters` : `${20 - characterCount} more characters`} />

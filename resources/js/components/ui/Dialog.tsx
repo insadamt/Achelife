@@ -1,5 +1,5 @@
-import { useEffect, useId, useRef } from 'react';
-import type { PropsWithChildren } from 'react';
+import { createContext, useCallback, useContext, useEffect, useId, useRef, useState } from 'react';
+import type { ComponentProps, PropsWithChildren } from 'react';
 import { X } from 'lucide-react';
 
 import { Button } from './Button';
@@ -20,6 +20,19 @@ interface DialogProps {
 const focusableSelector =
     'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
 const openDialogStack: symbol[] = [];
+const DialogDismissContext = createContext<(() => void) | null>(null);
+
+export function DialogDismissButton(props: Omit<ComponentProps<typeof Button>, 'onClick'>) {
+    const dismiss = useContext(DialogDismissContext);
+    if (!dismiss) throw new Error('DialogDismissButton must be inside a Dialog.');
+    return <Button {...props} onClick={dismiss} />;
+}
+
+interface DialogPresence {
+    requestedOpen: boolean;
+    mounted: boolean;
+    closing: boolean;
+}
 
 export function Dialog({
     open,
@@ -28,7 +41,7 @@ export function Dialog({
     description,
     placement = 'center',
     size = 'default',
-    animateEntrance = false,
+    animateEntrance = true,
     closing = false,
     onExitComplete,
     children,
@@ -36,15 +49,39 @@ export function Dialog({
     const dialogRef = useRef<HTMLDivElement>(null);
     const dialogKeyRef = useRef(Symbol('dialog'));
     const onCloseRef = useRef(onClose);
+    const [presence, setPresence] = useState<DialogPresence>({ requestedOpen: open, mounted: open, closing: false });
     const titleId = useId();
     const descriptionId = useId();
+    const isClosing = closing || presence.closing;
+
+    if (presence.requestedOpen !== open) {
+        setPresence({
+            requestedOpen: open,
+            mounted: open || (presence.mounted && animateEntrance),
+            closing: !open && presence.mounted && animateEntrance,
+        });
+    }
+
+    const requestClose = useCallback(() => {
+        if (onExitComplete || !animateEntrance || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+            onCloseRef.current();
+            return;
+        }
+
+        setPresence((current) => current.closing ? current : { ...current, closing: true });
+    }, [animateEntrance, onExitComplete]);
+    const requestCloseRef = useRef(requestClose);
+
+    useEffect(() => {
+        requestCloseRef.current = requestClose;
+    }, [requestClose]);
 
     useEffect(() => {
         onCloseRef.current = onClose;
     }, [onClose]);
 
     useEffect(() => {
-        if (!open) {
+        if (!presence.mounted) {
             return;
         }
 
@@ -67,7 +104,7 @@ export function Dialog({
 
             if (event.key === 'Escape') {
                 event.preventDefault();
-                onCloseRef.current();
+                requestCloseRef.current();
                 return;
             }
 
@@ -104,9 +141,9 @@ export function Dialog({
             document.removeEventListener('keydown', handleKeyDown);
             previouslyFocusedElement?.focus();
         };
-    }, [open]);
+    }, [presence.mounted]);
 
-    if (!open) {
+    if (!presence.mounted) {
         return null;
     }
 
@@ -117,7 +154,7 @@ export function Dialog({
             aria-modal="true"
             className={classNames(
                 'fixed inset-0 z-50 flex bg-black/72 backdrop-blur-[2px]',
-                animateEntrance && (closing ? 'dialog-exit-overlay' : 'dialog-enter-overlay'),
+                animateEntrance && (isClosing ? 'dialog-exit-overlay' : 'dialog-enter-overlay'),
                 placement === 'center'
                     ? 'items-center justify-center p-4'
                     : placement === 'right-card'
@@ -126,12 +163,17 @@ export function Dialog({
             )}
             onMouseDown={(event) => {
                 if (event.target === event.currentTarget) {
-                    onClose();
+                    requestClose();
                 }
             }}
             onAnimationEnd={(event) => {
                 if (event.target === event.currentTarget && event.animationName === 'dialog-overlay-exit') {
-                    onExitComplete?.();
+                    if (onExitComplete) {
+                        onExitComplete();
+                    } else {
+                        setPresence((current) => ({ ...current, mounted: false, closing: false }));
+                        if (open) onCloseRef.current();
+                    }
                 }
             }}
             role="dialog"
@@ -139,7 +181,8 @@ export function Dialog({
             <div
                 className={classNames(
                     'border border-border-strong bg-overlay shadow-[var(--shadow-raised)] transition-[width] duration-300',
-                    animateEntrance && (closing ? 'dialog-exit-panel' : 'dialog-enter-panel'),
+                    animateEntrance && (isClosing ? 'dialog-exit-panel' : 'dialog-enter-panel'),
+                    animateEntrance && placement !== 'center' && 'dialog-side-panel',
                     placement === 'center'
                         ? classNames(
                             'max-h-[calc(100dvh-2rem)] w-full overflow-y-auto rounded-[var(--radius-panel)] p-5 sm:p-6',
@@ -167,11 +210,13 @@ export function Dialog({
                             </p>
                         )}
                     </div>
-                    <Button aria-label="Close" className="-mr-2 -mt-2 size-10 px-0" onClick={onClose} variant="ghost">
+                    <Button aria-label="Close" className="-mr-2 -mt-2 size-10 px-0" onClick={requestClose} variant="ghost">
                         <X aria-hidden="true" size={19} />
                     </Button>
                 </div>
-                <div className="mt-6">{children}</div>
+                <DialogDismissContext.Provider value={requestClose}>
+                    <div className="mt-6">{children}</div>
+                </DialogDismissContext.Provider>
             </div>
         </div>
     );

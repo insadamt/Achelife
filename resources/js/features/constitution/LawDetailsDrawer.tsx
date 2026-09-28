@@ -3,7 +3,8 @@ import { Archive, CircleAlert, MoreHorizontal, Pencil, RefreshCw, Scale, Trash2,
 import { useState } from 'react';
 import type { FormEvent, ReactNode } from 'react';
 
-import { Button, Dialog, Drawer, Field } from '../../components/ui';
+import { Button, Dialog, DialogDismissButton, Drawer, Field } from '../../components/ui';
+import { Popup } from '../../components/ui/Popup';
 import {
     calculateLawSeasonPenalty,
     formatConstitutionDate,
@@ -102,12 +103,10 @@ export function LawDetailsDrawer({
                 <button aria-expanded={menuOpen} aria-label="Law actions" className="focus-ring grid size-11 shrink-0 place-items-center rounded-full border border-border-strong bg-elevated text-muted hover:bg-surface-hover hover:text-foreground" onClick={() => setMenuOpen(!menuOpen)} type="button">
                     <MoreHorizontal aria-hidden="true" size={20} />
                 </button>
-                {menuOpen && (
-                    <div className="absolute top-12 right-0 z-10 w-52 rounded-2xl border border-border-strong bg-elevated p-1.5 shadow-2xl">
-                        <LifecycleAction icon={<Archive size={16} />} label="Archive Law" onClick={() => { setMenuOpen(false); setLawConfirmation('archive'); }} />
-                        {law.canDelete && <LifecycleAction destructive icon={<Trash2 size={16} />} label="Delete Law" onClick={() => { setMenuOpen(false); setLawConfirmation('delete'); }} />}
-                    </div>
-                )}
+                <Popup className="absolute top-12 right-0 z-10 w-52 rounded-2xl border border-border-strong bg-elevated p-1.5 shadow-2xl" open={menuOpen}>
+                    <LifecycleAction icon={<Archive size={16} />} label="Archive Law" onClick={() => { setMenuOpen(false); setLawConfirmation('archive'); }} />
+                    {law.canDelete && <LifecycleAction destructive icon={<Trash2 size={16} />} label="Delete Law" onClick={() => { setMenuOpen(false); setLawConfirmation('delete'); }} />}
+                </Popup>
             </div>
 
             <div className="mt-4 grid grid-cols-2 gap-2">
@@ -156,7 +155,7 @@ export function LawDetailsDrawer({
             <Dialog onClose={() => setDeletingViolation(null)} open={deletingViolation !== null} title="Delete Violation?">
                 <AdjustmentPreview value={deletionAdjustment} />
                 <div className="mt-5 flex gap-2">
-                    <Button className="flex-1" onClick={() => setDeletingViolation(null)} variant="secondary">Cancel</Button>
+                    <DialogDismissButton className="flex-1" variant="secondary">Cancel</DialogDismissButton>
                     <Button className="flex-1" onClick={deleteViolation} variant="destructive"><Trash2 aria-hidden="true" size={16} />Delete</Button>
                 </div>
             </Dialog>
@@ -166,7 +165,7 @@ export function LawDetailsDrawer({
                     {lawConfirmation === 'delete' ? 'This Law has no violation history.' : 'Archived Laws cannot be reactivated.'}
                 </p>
                 <div className="mt-5 flex gap-2">
-                    <Button className="flex-1" onClick={() => setLawConfirmation(null)} variant="secondary">Cancel</Button>
+                    <DialogDismissButton className="flex-1" variant="secondary">Cancel</DialogDismissButton>
                     <Button className="flex-1" onClick={confirmLawLifecycle} variant="destructive">
                         {lawConfirmation === 'delete' ? <Trash2 aria-hidden="true" size={16} /> : <Archive aria-hidden="true" size={16} />}
                         {lawConfirmation === 'delete' ? 'Delete' : 'Archive'}

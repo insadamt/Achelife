@@ -3,8 +3,9 @@ import { CalendarDays, Check, ChevronRight, FolderKanban, ListChecks, LockKeyhol
 import { useState } from 'react';
 import type { ReactNode } from 'react';
 
-import { Button, Dialog, Drawer } from '../../components/ui';
+import { Button, Dialog, DialogDismissButton, Drawer } from '../../components/ui';
 import { classNames } from '../../components/ui/classNames';
+import { Popup } from '../../components/ui/Popup';
 import { StartFocusButton } from '../focus/StartFocusButton';
 import { formatCompletionDate, formatTaskDateLong } from './taskPresentation';
 import { TaskEditorPanel } from './TaskEditorPanel';
@@ -89,19 +90,17 @@ export function TaskDetailsDrawer({ task, explorer, today, onClose }: TaskDetail
                     )}
                 </div>
 
-                {menuOpen && (
-                    <div className="absolute top-12 right-0 z-10 w-64 rounded-2xl border border-border-strong bg-elevated p-1.5 shadow-2xl">
-                        {task.canUncomplete && <MenuAction onClick={markIncomplete}>Mark incomplete</MenuAction>}
-                        {task.canDelete && (
-                            <>
-                                <MenuAction destructive onClick={() => confirmDeletion('occurrence')}>
-                                    {task.recurrence ? 'Delete this occurrence' : 'Delete task'}
-                                </MenuAction>
-                                {task.recurrence && <MenuAction destructive onClick={() => confirmDeletion('future')}>Stop future occurrences</MenuAction>}
-                            </>
-                        )}
-                    </div>
-                )}
+                <Popup className="absolute top-12 right-0 z-10 w-64 rounded-2xl border border-border-strong bg-elevated p-1.5 shadow-2xl" open={menuOpen}>
+                    {task.canUncomplete && <MenuAction onClick={markIncomplete}>Mark incomplete</MenuAction>}
+                    {task.canDelete && (
+                        <>
+                            <MenuAction destructive onClick={() => confirmDeletion('occurrence')}>
+                                {task.recurrence ? 'Delete this occurrence' : 'Delete task'}
+                            </MenuAction>
+                            {task.recurrence && <MenuAction destructive onClick={() => confirmDeletion('future')}>Stop future occurrences</MenuAction>}
+                        </>
+                    )}
+                </Popup>
 
                 <div className="mt-7 space-y-3">
                     {!completed && <StartFocusButton taskId={task.id} taskTitle={task.title} />}
@@ -201,7 +200,7 @@ export function TaskDetailsDrawer({ task, explorer, today, onClose }: TaskDetail
                         : 'This cannot be undone.'}
                 </p>
                 <div className="mt-6 flex gap-2">
-                    <Button fullWidth onClick={() => setDeleteAction(null)} variant="secondary">Cancel</Button>
+                    <DialogDismissButton fullWidth variant="secondary">Cancel</DialogDismissButton>
                     <Button fullWidth onClick={deleteTask} variant="destructive">Delete</Button>
                 </div>
             </Dialog>

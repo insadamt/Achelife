@@ -1,11 +1,12 @@
 export { Button } from './Button';
 export { Checkbox, Field, SelectField } from './FormControls';
 export { CircularProgress } from './CircularProgress';
-export { Dialog } from './Dialog';
+export { Dialog, DialogDismissButton } from './Dialog';
 export { Drawer } from './Drawer';
 export { Icon } from './Icon';
 export type { IconName } from './Icon';
 export { Metric } from './Metric';
+export { Popup } from './Popup';
 export { FilterGroup, LocalViewTabs, ModuleNavigation, PageChrome, PageHeader, PageRail } from './PageStructure';
 export { ProgressBar } from './ProgressBar';
 export { StatusChip } from './StatusChip';

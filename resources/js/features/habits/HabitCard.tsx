@@ -2,8 +2,9 @@ import { Link, router } from '@inertiajs/react';
 import { Archive, ArrowUpRight, BarChart3, Flame, MoreHorizontal, Pencil, Shuffle, Trash2, TriangleAlert } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
-import { Button, Dialog, Surface } from '../../components/ui';
+import { Button, Dialog, DialogDismissButton, Surface } from '../../components/ui';
 import { classNames } from '../../components/ui/classNames';
+import { Popup } from '../../components/ui/Popup';
 import { HabitCalendar } from './HabitCalendar';
 import { HabitIcon } from './HabitIcon';
 import { HabitProgressSummary } from './HabitProgressSummary';
@@ -87,13 +88,11 @@ export function HabitCard({ habit, calendarLabels, calendarExpanded, onEdit, onE
                             >
                                 <MoreHorizontal aria-hidden="true" size={18} />
                             </button>
-                            {menuOpen && (
-                                <div className="absolute top-12 right-0 z-20 w-40 rounded-2xl border border-border-strong bg-elevated p-1.5 shadow-2xl">
-                                    <button className="focus-ring flex w-full items-center gap-2 min-h-11 rounded-xl px-3 py-2 text-left text-sm font-semibold hover:bg-surface-hover" onClick={() => { setMenuOpen(false); onEdit(); }} type="button"><Pencil aria-hidden="true" size={15} />Edit</button>
-                                    <button className="focus-ring flex w-full items-center gap-2 min-h-11 rounded-xl px-3 py-2 text-left text-sm font-semibold hover:bg-surface-hover" onClick={() => { setMenuOpen(false); setConfirmation('archive'); }} type="button"><Archive aria-hidden="true" size={15} />Archive</button>
-                                    <button className="focus-ring flex w-full items-center gap-2 min-h-11 rounded-xl px-3 py-2 text-left text-sm font-semibold text-danger hover:bg-danger/10" onClick={() => { setMenuOpen(false); setConfirmation('delete'); }} type="button"><Trash2 aria-hidden="true" size={15} />Delete</button>
-                                </div>
-                            )}
+                            <Popup className="absolute top-12 right-0 z-20 w-40 rounded-2xl border border-border-strong bg-elevated p-1.5 shadow-2xl" open={menuOpen}>
+                                <button className="focus-ring flex w-full items-center gap-2 min-h-11 rounded-xl px-3 py-2 text-left text-sm font-semibold hover:bg-surface-hover" onClick={() => { setMenuOpen(false); onEdit(); }} type="button"><Pencil aria-hidden="true" size={15} />Edit</button>
+                                <button className="focus-ring flex w-full items-center gap-2 min-h-11 rounded-xl px-3 py-2 text-left text-sm font-semibold hover:bg-surface-hover" onClick={() => { setMenuOpen(false); setConfirmation('archive'); }} type="button"><Archive aria-hidden="true" size={15} />Archive</button>
+                                <button className="focus-ring flex w-full items-center gap-2 min-h-11 rounded-xl px-3 py-2 text-left text-sm font-semibold text-danger hover:bg-danger/10" onClick={() => { setMenuOpen(false); setConfirmation('delete'); }} type="button"><Trash2 aria-hidden="true" size={15} />Delete</button>
+                            </Popup>
                         </div>
                     </div>
 
@@ -134,7 +133,7 @@ export function HabitCard({ habit, calendarLabels, calendarExpanded, onEdit, onE
                 title={confirmation === 'delete' ? `Delete ${habit.name}?` : `Archive ${habit.name}?`}
             >
                 <div className="flex gap-2">
-                    <Button className="flex-1" onClick={() => setConfirmation(null)} variant="secondary">Cancel</Button>
+                    <DialogDismissButton className="flex-1" variant="secondary">Cancel</DialogDismissButton>
                     <Button className="flex-1" onClick={finishLifecycle} variant={confirmation === 'delete' ? 'destructive' : 'primary'}>
                         {confirmation === 'delete' ? 'Delete forever' : 'Archive permanently'}
                     </Button>

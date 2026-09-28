@@ -1,7 +1,7 @@
 import { ChevronLeft, Check, Search } from 'lucide-react';
 import { useMemo, useState } from 'react';
 
-import { Button, Dialog } from '../../components/ui';
+import { Dialog, DialogDismissButton } from '../../components/ui';
 import { classNames } from '../../components/ui/classNames';
 import { MoneyCategoryIcon } from './MoneyCategoryIcon';
 import type { MoneyCategoryData } from './types';
@@ -109,7 +109,7 @@ export function MoneyCategoryPickerDialog({
             {((activeCategory && visibleSubcategories.length === 0) || (!activeCategory && visibleCategories.length === 0)) && (
                 <p className="mt-6 rounded-2xl border border-dashed border-border-strong bg-inset p-5 text-center text-sm text-muted">No matching {activeCategory ? 'Subcategories' : 'Categories'}.</p>
             )}
-            <Button className="mt-5" fullWidth onClick={onClose} variant="ghost">Cancel</Button>
+            <DialogDismissButton className="mt-5" fullWidth variant="ghost">Cancel</DialogDismissButton>
         </Dialog>
     );
 }
