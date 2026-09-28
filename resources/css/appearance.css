@@ -203,6 +203,31 @@
     box-shadow: none;
 }
 
+.app-glass .task-calendar-controls {
+    background-color: transparent;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+}
+
+.app-glass .task-calendar-controls::before {
+    position: absolute;
+    z-index: -1;
+    inset: 0;
+    border-radius: inherit;
+    background-color: var(--surface-primary);
+    -webkit-backdrop-filter: blur(26px) saturate(140%);
+    backdrop-filter: blur(26px) saturate(140%);
+    content: '';
+}
+
+.app-glass .task-calendar-project-menu {
+    background-color: rgb(20 34 43 / 88%);
+}
+
+:root[data-theme='light'] .app-glass .task-calendar-project-menu {
+    background-color: rgb(246 251 254 / 90%);
+}
+
 .app-glass .chart-tooltip-card {
     border-color: transparent;
     background-color: rgb(20 34 43 / 97%);
@@ -306,6 +331,14 @@
         background-color: #f6fbfe;
     }
 
+    .app-glass .task-calendar-project-menu {
+        background-color: #14222b;
+    }
+
+    :root[data-theme='light'] .app-glass .task-calendar-project-menu {
+        background-color: #f6fbfe;
+    }
+
     .app-glass .chart-tooltip-artwork,
     .app-glass .chart-tooltip-card::after {
         display: none;
@@ -345,6 +378,15 @@
         background-color: var(--surface-elevated);
         -webkit-backdrop-filter: none;
         backdrop-filter: none;
+    }
+
+    .app-glass .task-calendar-controls::before {
+        -webkit-backdrop-filter: none;
+        backdrop-filter: none;
+    }
+
+    .app-glass .task-calendar-project-menu {
+        background-color: var(--surface-elevated);
     }
 
     .app-glass .chart-tooltip-artwork,

@@ -26,7 +26,7 @@ export function TaskCalendarControls({ includeInbox, month, onFiltersChange, pro
     const periodLabel = view === 'week' ? weekLabel(weekStart) : view === 'three_day' ? threeDayLabel(threeDayStart) : monthLabel(month);
 
     return (
-        <div className="relative z-10 mt-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border-subtle bg-surface p-2 sm:p-3" data-horizontal-nav="calendar-view">
+        <div className="task-calendar-controls relative z-10 mt-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border-subtle bg-surface p-2 sm:p-3" data-horizontal-nav="calendar-view">
             <div className="flex items-center gap-1">
                 <Link aria-label={`Previous ${view}`} className="focus-ring grid size-11 place-items-center rounded-xl text-secondary hover:bg-surface-hover hover:text-foreground" href={calendarHref(view, previousAnchor, previousAnchor, projectIds, includeInbox)}><ChevronLeft size={19} /></Link>
                 <div className="min-w-40 px-2 text-center"><p className="text-lg font-bold tracking-[-0.02em]">{periodLabel}</p></div>
@@ -41,7 +41,7 @@ export function TaskCalendarControls({ includeInbox, month, onFiltersChange, pro
                 <Link className="focus-ring inline-flex min-h-11 items-center gap-2 rounded-xl px-3 text-sm font-bold text-secondary hover:bg-surface-hover hover:text-foreground" href={calendarHref(view, view === 'week' || view === 'three_day' ? today : today.slice(0, 7), today, projectIds, includeInbox)}><CalendarDays size={16} />Today</Link>
                 <div className="relative">
                     <button aria-expanded={filterOpen} className={classNames('focus-ring inline-flex min-h-11 items-center gap-2 rounded-xl border px-3 text-sm font-bold', filterOpen ? 'border-[var(--module-accent)] bg-[color-mix(in_srgb,var(--module-accent)_10%,transparent)] text-foreground' : 'border-border-subtle text-secondary hover:bg-surface-hover hover:text-foreground')} onClick={() => setFilterOpen((open) => !open)} type="button"><Filter size={16} />Projects {!allSelected && <span className="rounded-full bg-elevated px-1.5 py-0.5 text-xs">{activeCount}</span>}</button>
-                    {filterOpen && <div className="absolute right-0 z-20 mt-2 w-72 rounded-2xl border border-border-strong bg-elevated p-2 shadow-2xl">
+                    {filterOpen && <div className="task-calendar-project-menu absolute right-0 z-20 mt-2 w-72 rounded-2xl border border-border-strong bg-elevated p-2 shadow-2xl">
                         <button className="focus-ring flex min-h-10 w-full items-center gap-2 rounded-xl px-3 text-left text-sm font-bold hover:bg-surface-hover" onClick={() => onFiltersChange(projects.map((project) => project.id), true)} type="button"><Check className={classNames('text-accent-ink', !allSelected && 'invisible')} size={16} />All Projects</button>
                         <div className="my-1 border-t border-border-subtle" />
                         <FilterOption checked={includeInbox} icon={<Inbox size={16} />} label="Inbox" onClick={() => onFiltersChange(projectIds, !includeInbox)} />
