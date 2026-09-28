@@ -23,7 +23,7 @@ export function TaskList({ emptyMessage, onAnnounce, onCompleted, onOpen, projec
     }
 
     if (tasks.length === 0) {
-        return <p className="py-12 text-center text-sm text-muted">{emptyMessage}</p>;
+        return <p className="rounded-2xl border border-border-subtle bg-surface px-5 py-12 text-center text-sm text-muted">{emptyMessage}</p>;
     }
 
     return (
