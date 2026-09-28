@@ -11,10 +11,10 @@ export function TaskFilesNavigation({ active, filters }: { active: 'files' | 'ar
                 <Link
                     aria-current={active === view ? 'page' : undefined}
                     className={classNames(
-                        'focus-ring flex min-h-11 flex-1 items-center justify-center rounded-xl px-4 text-sm font-bold transition-colors',
+                        'focus-ring flex min-h-11 flex-1 items-center justify-center rounded-xl px-4 text-sm font-bold transition-[background-color,color,box-shadow] duration-200',
                         active === view
-                            ? 'bg-[color-mix(in_srgb,var(--module-accent)_14%,transparent)] text-foreground'
-                            : 'text-muted hover:bg-surface-hover hover:text-foreground',
+                            ? 'bg-elevated text-foreground shadow-sm'
+                            : 'text-secondary hover:bg-surface-hover hover:text-foreground',
                     )}
                     href={taskNavigationHref(view, filters)}
                     key={view}

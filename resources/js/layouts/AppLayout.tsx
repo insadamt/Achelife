@@ -191,7 +191,7 @@ function AppShell({ children }: PropsWithChildren) {
 
     return (
         <div
-            className={classNames('app-shell min-h-screen bg-app text-foreground', displayedSurfaceStyle === 'glass' && 'app-glass', displayedBackgroundUrl !== null && 'app-wallpaper')}
+            className={classNames('app-shell h-dvh overflow-hidden bg-app text-foreground', displayedSurfaceStyle === 'glass' && 'app-glass', displayedBackgroundUrl !== null && 'app-wallpaper')}
             style={wallpaperStyle}
         >
             {revealingBackgroundUrl !== undefined && (
