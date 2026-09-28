@@ -57,7 +57,7 @@ export function TaskComposer({ explorer, initialProjectId, showProjectControl = 
     return (
         <section className="w-full" aria-label="Create a Task">
             <form
-                className="rounded-[1.5rem] border border-border-strong bg-elevated/96 p-2 shadow-[var(--shadow-raised)] backdrop-blur-xl"
+                className="rounded-[1.5rem] border border-border-strong p-2"
                 onSubmit={submit}
             >
                 <div className="flex items-center gap-2">
@@ -67,7 +67,7 @@ export function TaskComposer({ explorer, initialProjectId, showProjectControl = 
                     <label className="sr-only" htmlFor="quick-task-title">Add a task</label>
                     <input
                         autoComplete="off"
-                        className="focus-ring min-h-12 min-w-0 flex-1 rounded-lg bg-transparent px-1 text-lg font-semibold text-foreground placeholder:text-muted"
+                        className="task-composer-title focus-ring min-h-12 min-w-0 flex-1 rounded-lg bg-transparent px-1 text-lg font-semibold text-foreground placeholder:text-muted"
                         id="quick-task-title"
                         onChange={(event) => form.setData('title', event.target.value)}
                         onFocus={() => setExpanded(true)}

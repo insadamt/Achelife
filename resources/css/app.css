@@ -427,7 +427,7 @@
 }
 
 :root.appearance-circle-reveal::view-transition-new(root) {
-    animation: appearance-circle-reveal 620ms cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation: appearance-circle-reveal 850ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 @keyframes appearance-circle-reveal {

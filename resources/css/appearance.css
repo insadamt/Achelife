@@ -92,7 +92,7 @@
     background-position: center;
     background-repeat: no-repeat;
     background-size: cover;
-    animation: appearance-circle-reveal 620ms cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation: appearance-circle-reveal 850ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 .app-background-reveal-custom {
@@ -233,6 +233,12 @@
     box-shadow: none;
 }
 
+.app-glass .task-composer-title {
+    background-color: transparent;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+}
+
 .app-glass .task-calendar-controls {
     background-color: transparent;
     -webkit-backdrop-filter: none;
@@ -316,7 +322,7 @@
 }
 
 .app-glass main header:has(h1):not(.page-header):not(.page-chrome):not(.today-glass):not(.bg-surface):not(.bg-elevated):not(.bg-overlay),
-.app-glass main nav:not(.module-navigation):not(.bg-surface):not(.bg-elevated):not(.bg-overlay):not(.today-glass) {
+.app-glass main nav:not(.module-navigation):not(.bg-surface):not(.bg-elevated):not(.bg-overlay):not(.today-glass):not(.task-location-nav) {
     border-radius: var(--radius-panel);
     background-color: var(--surface-primary);
     box-shadow: none;
@@ -328,7 +334,7 @@
     padding: 1.25rem 1.5rem;
 }
 
-.app-glass main nav:not(.module-navigation):not(.bg-surface):not(.bg-elevated):not(.bg-overlay):not(.today-glass) {
+.app-glass main nav:not(.module-navigation):not(.bg-surface):not(.bg-elevated):not(.bg-overlay):not(.today-glass):not(.task-location-nav) {
     padding: 0.5rem;
 }
 

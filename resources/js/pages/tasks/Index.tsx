@@ -175,12 +175,12 @@ function TaskLocationBreadcrumb({ explorer, workspace }: {
     const backLabel = folder ? `Back to ${folder.name}` : 'Back to Files';
 
     return (
-        <div className="mb-4 flex flex-wrap items-center gap-x-4 gap-y-2 rounded-[var(--radius-panel)] border border-border-subtle bg-surface px-5 py-3 sm:px-6">
+        <div className="mb-4 flex flex-wrap items-center gap-x-4 gap-y-2 rounded-[var(--radius-panel)] border border-border-subtle px-5 py-3 sm:px-6">
             <Link className="focus-ring inline-flex min-h-10 items-center gap-2 rounded-full px-3 text-sm font-bold text-muted hover:bg-surface-hover hover:text-foreground" href={backHref}>
                 <ArrowLeft aria-hidden="true" size={17} />
                 {backLabel}
             </Link>
-            <nav aria-label="Task location" className="flex items-center gap-1.5 text-sm font-semibold text-muted">
+            <nav aria-label="Task location" className="task-location-nav flex items-center gap-1.5 text-sm font-semibold text-muted">
                 <Link className="focus-ring rounded-md hover:text-foreground" href={taskNavigationHref('files', emptyFilters)}>Files</Link>
                 {folder && (
                     <>

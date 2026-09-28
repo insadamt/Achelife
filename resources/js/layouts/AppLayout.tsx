@@ -14,6 +14,7 @@ import { DynamicIsland } from '../features/focus/DynamicIsland';
 import { FocusTimerProvider, useFocusTimer } from '../features/focus/FocusTimerContext';
 import type { SharedPageProps } from '../types';
 import { ThemeProvider } from '../theme/ThemeProvider';
+import { revealAppearanceFromCenter } from '../theme/appearanceReveal';
 import { useWorkspacePageTransition } from './useWorkspacePageTransition';
 
 interface NavigationDestination {
@@ -123,6 +124,7 @@ function AppShell({ children }: PropsWithChildren) {
     const { mainRef, markPrimaryNavigation } = useWorkspacePageTransition(page.url);
     const { auth } = page.props;
     const { appearance } = page.props;
+    const [displayedSurfaceStyle, setDisplayedSurfaceStyle] = useState(appearance.surfaceStyle);
     const [displayedBackgroundUrl, setDisplayedBackgroundUrl] = useState(appearance.backgroundUrl);
     const [revealingBackgroundUrl, setRevealingBackgroundUrl] = useState<string | null | undefined>(undefined);
     const [mobileNavigationOpen, setMobileNavigationOpen] = useState(false);
@@ -146,6 +148,11 @@ function AppShell({ children }: PropsWithChildren) {
         });
         return () => window.cancelAnimationFrame(frame);
     }, [focus.event, focus.session, spGain.event]);
+
+    useEffect(() => {
+        if (appearance.surfaceStyle === displayedSurfaceStyle) return;
+        revealAppearanceFromCenter(() => setDisplayedSurfaceStyle(appearance.surfaceStyle));
+    }, [appearance.surfaceStyle, displayedSurfaceStyle]);
 
     useEffect(() => {
         const nextBackgroundUrl = appearance.backgroundUrl;
@@ -184,13 +191,13 @@ function AppShell({ children }: PropsWithChildren) {
 
     return (
         <div
-            className={classNames('app-shell min-h-screen bg-app text-foreground', appearance.surfaceStyle === 'glass' && 'app-glass', displayedBackgroundUrl !== null && 'app-wallpaper')}
+            className={classNames('app-shell min-h-screen bg-app text-foreground', displayedSurfaceStyle === 'glass' && 'app-glass', displayedBackgroundUrl !== null && 'app-wallpaper')}
             style={wallpaperStyle}
         >
             {revealingBackgroundUrl !== undefined && (
                 <div
                     aria-hidden="true"
-                    className={classNames('app-background-reveal-layer', revealingBackgroundUrl ? 'app-background-reveal-custom' : appearance.surfaceStyle === 'glass' && 'app-background-reveal-default')}
+                    className={classNames('app-background-reveal-layer', revealingBackgroundUrl ? 'app-background-reveal-custom' : displayedSurfaceStyle === 'glass' && 'app-background-reveal-default')}
                     onAnimationEnd={finishBackgroundReveal}
                     style={revealingBackgroundStyle}
                 />
