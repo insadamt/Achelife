@@ -145,6 +145,11 @@
 }
 
 :root[data-theme='light'] .app-glass {
+    --surface-primary: rgb(231 240 247 / 62%);
+    --surface-elevated: rgb(246 251 254 / 72%);
+    --surface-inset: rgb(217 230 240 / 22%);
+    --surface-overlay: rgb(250 253 255 / 82%);
+    --surface-hover: rgb(235 244 250 / 40%);
     --border-subtle: rgb(92 119 139 / 32%);
     --border-strong: rgb(60 91 115 / 46%);
     --glass-edge-bright: transparent;
