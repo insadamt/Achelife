@@ -1,5 +1,6 @@
 import { useId, useState } from 'react';
 import { ChartTooltipCard } from '../../components/ui/ChartTooltipCard';
+import { useRearrangedLineChart } from '../../components/ui/chartRearrangement';
 
 import { formatFocusDuration } from './taskStatisticsPresentation';
 import type { TaskFocusStatisticsData } from './taskStatisticsTypes';
@@ -15,11 +16,12 @@ export function TaskFocusLineChart({ trend }: { trend: TaskFocusStatisticsData['
     const maximum = Math.max(1, ...values);
     const plotWidth = chartWidth - padding.left - padding.right;
     const plotHeight = chartHeight - padding.top - padding.bottom;
-    const points = trend.buckets.map((bucket, index) => ({
+    const targetPoints = trend.buckets.map((bucket, index) => ({
         ...bucket,
         x: padding.left + (trend.buckets.length === 1 ? plotWidth / 2 : index / (trend.buckets.length - 1) * plotWidth),
-        y: padding.top + plotHeight - bucket.seconds / maximum * plotHeight,
     }));
+    const frame = useRearrangedLineChart({ minimum: 0, maximum, series: [{ key: 'current', points: targetPoints.map((point) => ({ key: point.date, x: point.x, value: point.seconds })) }] });
+    const points = targetPoints.map((point, index) => ({ ...point, x: frame.series[0]?.points[index]?.x ?? point.x, y: padding.top + plotHeight - (frame.series[0]?.points[index]?.value ?? point.seconds) / frame.maximum * plotHeight }));
     const linePath = points.map((point, index) => `${index === 0 ? 'M' : 'L'} ${point.x} ${point.y}`).join(' ');
     const firstPoint = points[0];
     const lastPoint = points.at(-1);
@@ -36,7 +38,7 @@ export function TaskFocusLineChart({ trend }: { trend: TaskFocusStatisticsData['
                 <defs><linearGradient id={gradientId} x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stopColor="var(--module-accent)" stopOpacity="0.28" /><stop offset="100%" stopColor="var(--module-accent)" stopOpacity="0" /></linearGradient></defs>
                 {[1, 0.75, 0.5, 0.25, 0].map((ratio) => {
                     const y = padding.top + plotHeight * (1 - ratio);
-                    return <g key={ratio}><line stroke="var(--border-subtle)" strokeDasharray={ratio === 0 ? undefined : '4 8'} x1={padding.left} x2={chartWidth - padding.right} y1={y} y2={y} /><text fill="var(--text-muted)" fontSize="11" textAnchor="end" x={padding.left - 10} y={y + 4}>{formatFocusDuration(Math.round(maximum * ratio))}</text></g>;
+                    return <g key={ratio}><line stroke="var(--border-subtle)" strokeDasharray={ratio === 0 ? undefined : '4 8'} x1={padding.left} x2={chartWidth - padding.right} y1={y} y2={y} /><text fill="var(--text-muted)" fontSize="11" textAnchor="end" x={padding.left - 10} y={y + 4}>{formatFocusDuration(Math.round(frame.maximum * ratio))}</text></g>;
                 })}
                 <path d={areaPath} fill={`url(#${gradientId})`} />
                 <path d={linePath} fill="none" stroke="var(--module-accent)" strokeLinecap="round" strokeLinejoin="round" strokeWidth="4" />

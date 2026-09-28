@@ -2,6 +2,7 @@ import { useId, useRef, useState } from 'react';
 
 import { Surface } from '../../components/ui';
 import { ChartTooltipCard } from '../../components/ui/ChartTooltipCard';
+import { useRearrangedLineChart } from '../../components/ui/chartRearrangement';
 import { SlidingNavigationIndicator } from '../../components/ui/SlidingNavigationIndicator';
 import { formatMinorUnits } from './moneyPresentation';
 import type { MoneyStatisticsData, MoneyTrendBucket } from './statisticsTypes';
@@ -37,13 +38,15 @@ export function MoneyCashFlowChart({ statistics }: { statistics: MoneyStatistics
     const plotWidth = chartWidth - padding.left - padding.right;
     const plotHeight = chartHeight - padding.top - padding.bottom;
     const x = (index: number) => padding.left + (buckets.length === 1 ? plotWidth / 2 : index / Math.max(1, buckets.length - 1) * plotWidth);
-    const y = (value: number) => padding.top + plotHeight - value / maximumValue * plotHeight;
-    const points = buckets.map((bucket, index) => ({ bucket, value: values[index] ?? 0, x: x(index), y: y(values[index] ?? 0) }));
+    const frame = useRearrangedLineChart({ minimum: 0, maximum: maximumValue, series: [
+        { key: 'current', points: buckets.map((bucket, index) => ({ key: bucket.date, x: x(index), value: values[index] ?? 0 })) },
+        { key: 'previous', points: comparisonEnabled ? previous.map((bucket, index) => ({ key: bucket.date, x: x(index), value: previousValues[index] ?? 0 })) : [] },
+    ] });
+    const y = (value: number) => padding.top + plotHeight - value / frame.maximum * plotHeight;
+    const points = buckets.map((bucket, index) => ({ bucket, value: values[index] ?? 0, x: frame.series[0]?.points[index]?.x ?? x(index), y: y(frame.series[0]?.points[index]?.value ?? values[index] ?? 0) }));
     const currentPath = linePath(points);
     const areaPath = points.length === 0 ? '' : `${currentPath} L ${points.at(-1)?.x} ${padding.top + plotHeight} L ${points[0]?.x} ${padding.top + plotHeight} Z`;
-    const previousPoints = comparisonEnabled
-        ? points.flatMap((point, index) => previous[index] ? [{ x: point.x, y: y(previousValues[index] ?? 0) }] : [])
-        : [];
+    const previousPoints = (frame.series[1]?.points ?? []).map((point) => ({ x: point.x, y: y(point.value ?? 0) }));
     const labelStep = Math.max(1, Math.ceil(buckets.length / 6));
     const yTicks = [1, 0.75, 0.5, 0.25, 0];
     const metricLabel = metric === 'income' ? 'Income' : 'Spending';
@@ -78,7 +81,7 @@ export function MoneyCashFlowChart({ statistics }: { statistics: MoneyStatistics
                     <svg aria-label={`Line chart of ${metricLabel.toLowerCase()} per ${statistics.trend.unit}`} className="block h-auto w-full" role="img" viewBox={`0 0 ${chartWidth} ${chartHeight}`}>
                         <defs><linearGradient id={gradientId} x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stopColor="var(--module-accent)" stopOpacity="0.28" /><stop offset="100%" stopColor="var(--module-accent)" stopOpacity="0" /></linearGradient></defs>
                         {yTicks.map((ratio) => {
-                            const tickValue = maximumValue * ratio;
+                            const tickValue = frame.maximum * ratio;
                             return <g key={ratio}><line stroke="var(--border-subtle)" strokeDasharray={ratio === 0 ? undefined : '4 8'} x1={padding.left} x2={chartWidth - padding.right} y1={y(tickValue)} y2={y(tickValue)} /><text fill="var(--text-muted)" fontSize="10" textAnchor="end" x={padding.left - 8} y={y(tickValue) + 4}>{formatMinorUnits(Math.round(tickValue), statistics.currency ?? '', false)}</text></g>;
                         })}
                         <path d={areaPath} fill={`url(#${gradientId})`} />

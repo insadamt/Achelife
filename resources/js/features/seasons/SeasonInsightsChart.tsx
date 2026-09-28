@@ -1,5 +1,6 @@
 import { useId, useState } from 'react';
 import { ChartTooltipCard } from '../../components/ui/ChartTooltipCard';
+import { useRearrangedLineChart } from '../../components/ui/chartRearrangement';
 
 import type { SeasonTimelinePoint } from './insightsTypes';
 
@@ -16,22 +17,26 @@ export function SeasonInsightsChart({ current, previous, view }: { current: Seas
     const values = [...current, ...(previous ?? [])].map(pointValue);
     const minimum = Math.min(0, ...values);
     const maximum = Math.max(1, ...values);
-    const range = Math.max(1, maximum - minimum);
     const plotWidth = chartWidth - padding.left - padding.right;
     const plotHeight = chartHeight - padding.top - padding.bottom;
     const x = (day: number) => padding.left + (day - 1) / 29 * plotWidth;
-    const y = (value: number) => padding.top + (maximum - value) / range * plotHeight;
-    const path = (points: SeasonTimelinePoint[]) => points.map((point, index) => `${index === 0 ? 'M' : 'L'} ${x(point.day)} ${y(pointValue(point))}`).join(' ');
-    const currentPath = path(current);
+    const frame = useRearrangedLineChart({ minimum, maximum, series: [
+        { key: 'current', points: current.map((point) => ({ key: point.date, x: x(point.day), value: pointValue(point) })) },
+        { key: 'previous', points: (previous ?? []).map((point) => ({ key: point.date, x: x(point.day), value: pointValue(point) })) },
+    ] });
+    const y = (value: number) => padding.top + (frame.maximum - value) / Math.max(1, frame.maximum - frame.minimum) * plotHeight;
+    const path = (points: typeof frame.series[number]['points']) => points.map((point, index) => `${index === 0 ? 'M' : 'L'} ${point.x} ${y(point.value ?? 0)}`).join(' ');
+    const currentPoints = frame.series[0]?.points ?? [];
+    const currentPath = path(currentPoints);
     const firstPoint = current[0];
     const currentLast = current.at(-1);
     const zeroY = y(0);
-    const areaPath = firstPoint && currentLast ? `${currentPath} L ${x(currentLast.day)} ${zeroY} L ${x(firstPoint.day)} ${zeroY} Z` : '';
+    const areaPath = firstPoint && currentLast ? `${currentPath} L ${currentPoints.at(-1)?.x} ${zeroY} L ${currentPoints[0]?.x} ${zeroY} Z` : '';
     const labelStep = Math.max(1, Math.ceil(current.length / 6));
     const yTicks = [1, 0.75, 0.5, 0.25, 0];
     const activePoint = activeIndex === null ? null : current[activeIndex];
-    const activePointX = activePoint ? x(activePoint.day) : 0;
-    const activePointY = activePoint ? y(pointValue(activePoint)) : 0;
+    const activePointX = activeIndex === null ? 0 : currentPoints[activeIndex]?.x ?? 0;
+    const activePointY = activeIndex === null ? 0 : y(currentPoints[activeIndex]?.value ?? 0);
     const tooltipX = Math.min(chartWidth - 74, Math.max(74, activePointX));
     const tooltipY = Math.max(2, activePointY - 64);
 
@@ -47,18 +52,18 @@ export function SeasonInsightsChart({ current, previous, view }: { current: Seas
                         </linearGradient>
                     </defs>
                     {yTicks.map((ratio) => {
-                        const value = minimum + range * ratio;
+                        const value = frame.minimum + (frame.maximum - frame.minimum) * ratio;
                         const tickY = y(value);
 
                         return <g key={ratio}><line stroke="var(--border-subtle)" strokeDasharray={ratio === 0 ? undefined : '4 8'} x1={padding.left} x2={chartWidth - padding.right} y1={tickY} y2={tickY} /><text fill="var(--text-muted)" fontSize="11" textAnchor="end" x={padding.left - 10} y={tickY + 4}>{Math.round(value)}</text></g>;
                     })}
-                    {minimum < 0 && maximum > 0 && <line stroke="var(--border-strong)" x1={padding.left} x2={chartWidth - padding.right} y1={zeroY} y2={zeroY} />}
-                    {previous && <path d={path(previous)} fill="none" stroke="var(--text-muted)" strokeDasharray="5 6" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />}
+                    {frame.minimum < 0 && frame.maximum > 0 && <line stroke="var(--border-strong)" x1={padding.left} x2={chartWidth - padding.right} y1={zeroY} y2={zeroY} />}
+                    {previous && <path d={path(frame.series[1]?.points ?? [])} fill="none" stroke="var(--text-muted)" strokeDasharray="5 6" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />}
                     <path d={areaPath} fill={`url(#${gradientId})`} />
                     <path d={currentPath} fill="none" stroke="var(--module-accent)" strokeLinecap="round" strokeLinejoin="round" strokeWidth="4" />
                     {current.map((point, index) => {
-                        const pointX = x(point.day);
-                        const pointY = y(pointValue(point));
+                        const pointX = currentPoints[index]?.x ?? x(point.day);
+                        const pointY = y(currentPoints[index]?.value ?? pointValue(point));
                         const active = activeIndex === index;
 
                         return (

@@ -3,6 +3,8 @@ import { ChartNoAxesCombined, ChevronDown, ExternalLink } from 'lucide-react';
 import { useMemo, useRef, useState } from 'react';
 
 import { Surface } from '../../components/ui';
+import { useRearrangedDonut } from '../../components/ui/chartRearrangement';
+import type { DonutChartFrame } from '../../components/ui/chartRearrangement';
 import { StatisticDelta } from '../../components/ui/StatisticDelta';
 import { SlidingNavigationIndicator } from '../../components/ui/SlidingNavigationIndicator';
 import { MoneyDrawer } from './MoneyDrawer';
@@ -31,7 +33,9 @@ export function MoneyBreakdownDonut({ statistics }: { statistics: MoneyStatistic
     const items = type === 'income' ? statistics.current.incomeBreakdown : statistics.current.spendingBreakdown;
     const total = type === 'income' ? statistics.current.totalIncomeMinor : statistics.current.spendingMinor;
     const slices = useMemo(() => donutSlices(items, total), [items, total]);
+    const donutFrame = useRearrangedDonut(slices.map((slice) => ({ key: slice.key, value: slice.amountMinor, color: slice.color })));
     const active = slices.find((slice) => slice.key === activeKey) ?? null;
+    const visibleActiveKey = active?.key ?? null;
     const selected = slices.find((slice) => slice.key === selectedKey) ?? null;
 
     function changeType(nextType: DistributionType) {
@@ -43,12 +47,90 @@ export function MoneyBreakdownDonut({ statistics }: { statistics: MoneyStatistic
     return <>
         <Surface className="min-w-0 rounded-3xl p-4 sm:p-6">
             <div className="flex flex-wrap items-start justify-between gap-3"><div><h3 className="flex items-center gap-2 text-lg font-bold"><ChartNoAxesCombined aria-hidden="true" className="text-accent-ink" size={18} />Distribution</h3><p className="mt-1 text-sm text-muted">Choose a segment for its full breakdown and transactions.</p></div><div aria-label="Distribution type" className="relative flex rounded-xl border border-border-subtle bg-app p-1" ref={typeNavigationRef} role="group"><SlidingNavigationIndicator active={type} className="rounded-lg" containerRef={typeNavigationRef} group="money-distribution-type" />{(['expense', 'income'] as const).map((option) => <button aria-pressed={type === option} className={`focus-ring relative z-10 rounded-lg px-3 py-1.5 text-xs font-bold ${type === option ? 'text-foreground' : 'text-secondary hover:bg-surface-hover hover:text-foreground'}`} data-nav-value={option} key={option} onClick={() => changeType(option)} type="button">{option === 'expense' ? 'Spending' : 'Income'}</button>)}</div></div>
-            {slices.length === 0 ? <p className="mt-5 grid min-h-52 place-items-center rounded-2xl border border-dashed border-border-strong bg-app/35 px-5 text-center text-sm text-muted">No {type} activity in this period.</p> : <div className="mt-5"><div aria-label={`${type === 'expense' ? 'Spending by Category' : 'Income sources'}: ${slices.map((slice) => `${slice.name} ${percentage(slice.share)}`).join(', ')}`} className="relative mx-auto size-72 sm:size-80"><svg className="size-full overflow-visible" viewBox="0 0 220 220"><circle cx={center} cy={center} fill="none" r={radius} stroke="var(--border-subtle)" strokeWidth="24" />{arcs(slices).map((arc) => <path aria-label={`Open ${arc.slice.name}: ${formatMinorUnits(arc.slice.amountMinor, statistics.currency ?? '')}, ${percentage(arc.slice.share)}`} className="cursor-pointer outline-none transition-[stroke-width,opacity,filter] duration-200 focus-visible:[filter:drop-shadow(0_0_6px_currentColor)]" d={arcPath(arc.start, arc.end)} fill="none" key={arc.slice.key} onBlur={() => setActiveKey(null)} onClick={() => setSelectedKey(arc.slice.key)} onFocus={() => setActiveKey(arc.slice.key)} onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); setSelectedKey(arc.slice.key); } }} onPointerDown={(event) => event.currentTarget.focus()} onPointerEnter={() => setActiveKey(arc.slice.key)} onPointerLeave={() => setActiveKey(null)} opacity={activeKey !== null && activeKey !== arc.slice.key ? 0.28 : 1} pointerEvents="stroke" role="button" stroke={arc.slice.color} strokeWidth={activeKey === arc.slice.key ? 30 : 24} style={{ filter: activeKey === arc.slice.key ? `drop-shadow(0 0 7px ${arc.slice.color})` : undefined }} tabIndex={0} />)}</svg><div className="pointer-events-none absolute inset-0 grid place-items-center text-center"><div className="grid w-[58%] justify-items-center overflow-hidden">{active ? <><span className="line-clamp-2 text-lg font-bold leading-tight sm:text-xl">{active.name}</span><span className="mt-2 text-sm font-bold tabular-nums" style={{ color: active.color }}>{formatMinorUnits(active.amountMinor, statistics.currency ?? '')} · {percentage(active.share)}</span></> : <><span className="max-w-full truncate text-[clamp(1rem,5vw,1.5rem)] font-bold tabular-nums">{formatMinorUnits(total, statistics.currency ?? '')}</span><span className="mt-1 text-xs font-bold uppercase tracking-[0.12em] text-muted">{type === 'expense' ? 'Spending' : 'Income'}</span></>}</div></div></div>
-                <ul aria-label={`${type === 'expense' ? 'Spending' : 'Income'} distribution legend`} className="mt-6 grid gap-x-8 gap-y-2 border-t border-border-subtle pt-5 sm:grid-cols-2 xl:grid-cols-3">{slices.map((slice) => <li key={slice.key}><button className="focus-ring flex w-full items-center justify-between gap-3 rounded-lg px-1 py-1 text-left hover:bg-surface-hover" onClick={() => setSelectedKey(slice.key)} type="button"><span className="flex min-w-0 items-center gap-2"><span aria-hidden="true" className="size-3 shrink-0 rounded-full" style={{ backgroundColor: slice.color }} /><span className="truncate text-sm font-semibold">{slice.name}</span></span><span className="shrink-0 text-right text-xs font-bold tabular-nums">{formatMinorUnits(slice.amountMinor, statistics.currency ?? '')}<span className="ml-2 text-muted">{percentage(slice.share)}</span></span></button></li>)}</ul>
-            </div>}
+            {slices.length === 0 && donutFrame.slices.length === 0 ? (
+                <p className="mt-5 grid min-h-52 place-items-center rounded-2xl border border-dashed border-border-strong bg-app/35 px-5 text-center text-sm text-muted">No {type} activity in this period.</p>
+            ) : (
+                <div className="mt-5">
+                    <MoneyDistributionChart
+                        activeKey={visibleActiveKey}
+                        currency={statistics.currency ?? ''}
+                        frame={donutFrame}
+                        onActiveKeyChange={setActiveKey}
+                        onSelect={setSelectedKey}
+                        slices={slices}
+                        total={total}
+                        type={type}
+                    />
+                    <ul aria-label={`${type === 'expense' ? 'Spending' : 'Income'} distribution legend`} className="mt-6 grid gap-x-8 gap-y-2 border-t border-border-subtle pt-5 sm:grid-cols-2 xl:grid-cols-3">{slices.map((slice) => <li key={slice.key}><button className="focus-ring flex w-full items-center justify-between gap-3 rounded-lg px-1 py-1 text-left hover:bg-surface-hover" onClick={() => setSelectedKey(slice.key)} type="button"><span className="flex min-w-0 items-center gap-2"><span aria-hidden="true" className="size-3 shrink-0 rounded-full" style={{ backgroundColor: slice.color }} /><span className="truncate text-sm font-semibold">{slice.name}</span></span><span className="shrink-0 text-right text-xs font-bold tabular-nums">{formatMinorUnits(slice.amountMinor, statistics.currency ?? '')}<span className="ml-2 text-muted">{percentage(slice.share)}</span></span></button></li>)}</ul>
+                </div>
+            )}
         </Surface>
         {selected && <BreakdownDrawer onClose={() => setSelectedKey(null)} selected={selected} statistics={statistics} total={total} type={type} />}
     </>;
+}
+
+
+function MoneyDistributionChart({ activeKey, currency, frame, onActiveKeyChange, onSelect, slices, total, type }: {
+    activeKey: string | null;
+    currency: string;
+    frame: DonutChartFrame;
+    onActiveKeyChange: (key: string | null) => void;
+    onSelect: (key: string) => void;
+    slices: Slice[];
+    total: number;
+    type: DistributionType;
+}) {
+    const slicesByKey = new Map(slices.map((slice) => [slice.key, slice]));
+    const renderedByKey = new Map(frame.slices.map((slice) => [slice.key, slice]));
+    const active = slicesByKey.get(activeKey ?? '') ?? null;
+
+    return <div aria-label={`${type === 'expense' ? 'Spending by Category' : 'Income sources'}: ${slices.map((slice) => `${slice.name} ${percentage(slice.share)}`).join(', ')}`} className="relative mx-auto size-72 sm:size-80">
+        <svg className="size-full overflow-visible" viewBox="0 0 220 220">
+            <circle cx={center} cy={center} fill="none" r={radius} stroke="var(--border-subtle)" strokeWidth="24" />
+            {frame.arcs.map((arc) => {
+                const slice = slicesByKey.get(arc.key);
+                const color = renderedByKey.get(arc.key)?.color ?? 'transparent';
+                return <path
+                    aria-hidden={slice ? undefined : true}
+                    aria-label={slice ? `Open ${slice.name}: ${formatMinorUnits(slice.amountMinor, currency)}, ${percentage(slice.share)}` : undefined}
+                    className="cursor-pointer outline-none transition-[stroke-width,opacity,filter] duration-200 focus-visible:[filter:drop-shadow(0_0_6px_currentColor)]"
+                    d={arcPath(arc.start, arc.end)}
+                    fill="none"
+                    key={arc.key}
+                    onBlur={() => onActiveKeyChange(null)}
+                    onClick={() => slice && onSelect(arc.key)}
+                    onFocus={() => onActiveKeyChange(arc.key)}
+                    onKeyDown={(event) => {
+                        if (slice && (event.key === 'Enter' || event.key === ' ')) {
+                            event.preventDefault();
+                            onSelect(arc.key);
+                        }
+                    }}
+                    onPointerDown={(event) => event.currentTarget.focus()}
+                    onPointerEnter={() => onActiveKeyChange(arc.key)}
+                    onPointerLeave={() => onActiveKeyChange(null)}
+                    opacity={activeKey !== null && activeKey !== arc.key ? 0.28 : 1}
+                    pointerEvents={slice ? 'stroke' : 'none'}
+                    role="button"
+                    stroke={color}
+                    strokeWidth={activeKey === arc.key ? 30 : 24}
+                    style={{ filter: activeKey === arc.key ? `drop-shadow(0 0 7px ${color})` : undefined }}
+                    tabIndex={slice ? 0 : -1}
+                />;
+            })}
+        </svg>
+        <div className="pointer-events-none absolute inset-0 grid place-items-center text-center">
+            <div className="grid w-[58%] justify-items-center overflow-hidden">
+                {active ? <>
+                    <span className="line-clamp-2 text-lg font-bold leading-tight sm:text-xl">{active.name}</span>
+                    <span className="mt-2 text-sm font-bold tabular-nums" style={{ color: active.color }}>{formatMinorUnits(active.amountMinor, currency)} · {percentage(active.share)}</span>
+                </> : <>
+                    <span className="max-w-full truncate text-[clamp(1rem,5vw,1.5rem)] font-bold tabular-nums">{formatMinorUnits(total, currency)}</span>
+                    <span className="mt-1 text-xs font-bold uppercase tracking-[0.12em] text-muted">{type === 'expense' ? 'Spending' : 'Income'}</span>
+                </>}
+            </div>
+        </div>
+    </div>;
 }
 
 function BreakdownDrawer({ selected, statistics, total, type, onClose }: { selected: Slice; statistics: MoneyStatisticsData; total: number; type: DistributionType; onClose: () => void }) {
@@ -94,6 +176,5 @@ function donutSlices(items: MoneyStatisticsBreakdownItem[], total: number): Slic
 }
 
 function slice(item: MoneyStatisticsBreakdownItem, total: number): Slice { return { amountMinor: item.amountMinor, color: item.color, items: [item], key: item.key, name: item.name, share: item.amountMinor / total * 100 }; }
-function arcs(slices: Slice[]): Array<{ slice: Slice; start: number; end: number }> { let cursor = 0; return slices.map((slice, index) => { const end = index === slices.length - 1 ? 360 : cursor + slice.share * 3.6; const arc = { slice, start: cursor, end }; cursor = end; return arc; }); }
-function arcPath(start: number, end: number): string { const span = Math.max(0, end - start); if (span >= 359.99) return `M ${center} ${center - radius} A ${radius} ${radius} 0 1 1 ${center} ${center + radius} A ${radius} ${radius} 0 1 1 ${center} ${center - radius}`; const point = (angle: number) => { const radians = (angle - 90) * Math.PI / 180; return { x: center + radius * Math.cos(radians), y: center + radius * Math.sin(radians) }; }; const first = point(start); const second = point(Math.min(360, end + 0.35)); if (span <= 180) return `M ${first.x} ${first.y} A ${radius} ${radius} 0 0 1 ${second.x} ${second.y}`; const middle = point(start + span / 2); return `M ${first.x} ${first.y} A ${radius} ${radius} 0 0 1 ${middle.x} ${middle.y} A ${radius} ${radius} 0 0 1 ${second.x} ${second.y}`; }
+function arcPath(start: number, end: number): string { const span = Math.max(0, end - start); if (span <= 0.01) return ''; if (span >= 359.99) return `M ${center} ${center - radius} A ${radius} ${radius} 0 1 1 ${center} ${center + radius} A ${radius} ${radius} 0 1 1 ${center} ${center - radius}`; const point = (angle: number) => { const radians = (angle - 90) * Math.PI / 180; return { x: center + radius * Math.cos(radians), y: center + radius * Math.sin(radians) }; }; const first = point(start); const second = point(Math.min(360, end + 0.35)); if (span <= 180) return `M ${first.x} ${first.y} A ${radius} ${radius} 0 0 1 ${second.x} ${second.y}`; const middle = point(start + span / 2); return `M ${first.x} ${first.y} A ${radius} ${radius} 0 0 1 ${middle.x} ${middle.y} A ${radius} ${radius} 0 0 1 ${second.x} ${second.y}`; }
 function percentage(value: number): string { return `${value.toFixed(value < 10 ? 1 : 0)}%`; }
