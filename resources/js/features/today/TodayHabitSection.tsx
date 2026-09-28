@@ -2,6 +2,7 @@ import { Link, router } from '@inertiajs/react';
 import gsap from 'gsap';
 import { ChevronDown, MoreVertical, Repeat2 } from 'lucide-react';
 import { useCallback, useLayoutEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 
 import { classNames } from '../../components/ui/classNames';
 import { HabitIcon } from '../habits/HabitIcon';
@@ -158,6 +159,9 @@ export function TodayHabitSection({ required, flexible, headingId }: { required:
     const [skipSelection, setSkipSelection] = useState<SelectedHabitDay | null>(null);
     const resolvedCount = required.filter((habit) => ['completed', 'skipped'].includes(habit.days[0]!.state ?? '')).length;
     const unresolvedCount = required.length - resolvedCount;
+    const dialogContainer = typeof document === 'undefined'
+        ? null
+        : document.querySelector<HTMLElement>('.app-shell') ?? document.body;
 
     return (
         <section aria-labelledby={headingId} className="min-w-0">
@@ -192,8 +196,14 @@ export function TodayHabitSection({ required, flexible, headingId }: { required:
                 </details>
             )}
 
-            {numericSelection && <NumericValueDialog day={numericSelection.day} habit={numericSelection.habit} onClose={() => setNumericSelection(null)} />}
-            {skipSelection && <SkipConfirmationDialog day={skipSelection.day} habit={skipSelection.habit} onClose={() => setSkipSelection(null)} />}
+            {numericSelection && dialogContainer && createPortal(
+                <NumericValueDialog day={numericSelection.day} habit={numericSelection.habit} onClose={() => setNumericSelection(null)} />,
+                dialogContainer,
+            )}
+            {skipSelection && dialogContainer && createPortal(
+                <SkipConfirmationDialog day={skipSelection.day} habit={skipSelection.habit} onClose={() => setSkipSelection(null)} />,
+                dialogContainer,
+            )}
         </section>
     );
 }

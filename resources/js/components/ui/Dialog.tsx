@@ -12,6 +12,9 @@ interface DialogProps {
     description?: string;
     placement?: 'center' | 'right' | 'right-card';
     size?: 'default' | 'large';
+    animateEntrance?: boolean;
+    closing?: boolean;
+    onExitComplete?: () => void;
 }
 
 const focusableSelector =
@@ -25,12 +28,20 @@ export function Dialog({
     description,
     placement = 'center',
     size = 'default',
+    animateEntrance = false,
+    closing = false,
+    onExitComplete,
     children,
 }: PropsWithChildren<DialogProps>) {
     const dialogRef = useRef<HTMLDivElement>(null);
     const dialogKeyRef = useRef(Symbol('dialog'));
+    const onCloseRef = useRef(onClose);
     const titleId = useId();
     const descriptionId = useId();
+
+    useEffect(() => {
+        onCloseRef.current = onClose;
+    }, [onClose]);
 
     useEffect(() => {
         if (!open) {
@@ -56,7 +67,7 @@ export function Dialog({
 
             if (event.key === 'Escape') {
                 event.preventDefault();
-                onClose();
+                onCloseRef.current();
                 return;
             }
 
@@ -93,7 +104,7 @@ export function Dialog({
             document.removeEventListener('keydown', handleKeyDown);
             previouslyFocusedElement?.focus();
         };
-    }, [onClose, open]);
+    }, [open]);
 
     if (!open) {
         return null;
@@ -106,6 +117,7 @@ export function Dialog({
             aria-modal="true"
             className={classNames(
                 'fixed inset-0 z-50 flex bg-black/72 backdrop-blur-[2px]',
+                animateEntrance && (closing ? 'dialog-exit-overlay' : 'dialog-enter-overlay'),
                 placement === 'center'
                     ? 'items-center justify-center p-4'
                     : placement === 'right-card'
@@ -117,11 +129,17 @@ export function Dialog({
                     onClose();
                 }
             }}
+            onAnimationEnd={(event) => {
+                if (event.target === event.currentTarget && event.animationName === 'dialog-overlay-exit') {
+                    onExitComplete?.();
+                }
+            }}
             role="dialog"
         >
             <div
                 className={classNames(
                     'border border-border-strong bg-overlay shadow-[var(--shadow-raised)] transition-[width] duration-300',
+                    animateEntrance && (closing ? 'dialog-exit-panel' : 'dialog-enter-panel'),
                     placement === 'center'
                         ? classNames(
                             'max-h-[calc(100dvh-2rem)] w-full overflow-y-auto rounded-[var(--radius-panel)] p-5 sm:p-6',
