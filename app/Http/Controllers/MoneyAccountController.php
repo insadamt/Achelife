@@ -31,7 +31,7 @@ class MoneyAccountController extends Controller
         $balances = $calculator->forAccounts($request->user(), collect([$account]));
         $transactions = $request->user()->moneyTransactions()
             ->where(fn ($query) => $query->where('account_id', $account->id)->orWhere('destination_account_id', $account->id))
-            ->with(['account', 'destinationAccount', 'category', 'subcategory', 'merchant', 'tags', 'subscriptionOccurrence.subscription', 'openedDebt.person', 'debtSettlement.debt.person'])
+            ->with(['account', 'destinationAccount', 'category', 'subcategory', 'merchant', 'person', 'tags', 'subscriptionOccurrence.subscription', 'openedDebt.person', 'debtSettlement.debt.person'])
             ->orderByDesc('transaction_date')->orderByDesc('created_at')->orderByDesc('id')->limit(30)->get();
         $categories = $request->user()->moneyCategories()
             ->with(['subcategories' => fn ($query) => $query->orderBy('name')])
@@ -45,6 +45,8 @@ class MoneyAccountController extends Controller
             'categories' => $categories->map(fn (MoneyCategory $category) => $factory->category($category)),
             'merchants' => $request->user()->moneyMerchants()->whereNull('archived_at')->withCount('transactions')->orderBy('name')->get()
                 ->map(fn ($merchant) => $factory->merchant($merchant)),
+            'people' => $request->user()->people()->orderBy('name')->get(['id', 'name', 'nickname', 'archived_at'])
+                ->map(fn ($person) => ['id' => $person->id, 'name' => $person->name, 'nickname' => $person->nickname, 'archivedAt' => $person->archived_at?->toIso8601String()]),
             'tags' => $request->user()->moneyTags()->orderBy('name')->get(['id', 'name', 'color', 'archived_at'])
                 ->map(fn ($tag) => ['id' => $tag->id, 'name' => $tag->name, 'color' => $tag->color, 'archivedAt' => $tag->archived_at?->toIso8601String()]),
             'transactions' => $transactions->map(fn (MoneyTransaction $transaction) => $factory->transaction($transaction)),

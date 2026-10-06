@@ -28,6 +28,12 @@ class Person extends Model
         return $this->hasMany(MoneyDebt::class);
     }
 
+    /** @return HasMany<MoneyTransaction, $this> */
+    public function moneyTransactions(): HasMany
+    {
+        return $this->hasMany(MoneyTransaction::class);
+    }
+
     /** @return array<string, string> */
     protected function casts(): array
     {

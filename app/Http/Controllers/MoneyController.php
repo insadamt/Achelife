@@ -49,6 +49,8 @@ class MoneyController extends Controller
             'categories' => $this->categories($user, $viewDataFactory),
             'merchants' => $user->moneyMerchants()->whereNull('archived_at')->withCount('transactions')->orderBy('name')->get()
                 ->map(fn ($merchant) => $viewDataFactory->merchant($merchant)),
+            'people' => $user->people()->orderBy('name')->get(['id', 'name', 'nickname', 'archived_at'])
+                ->map(fn ($person) => ['id' => $person->id, 'name' => $person->name, 'nickname' => $person->nickname, 'archivedAt' => $person->archived_at?->toIso8601String()]),
             'tags' => $user->moneyTags()->orderBy('name')->get(['id', 'name', 'color', 'archived_at'])
                 ->map(fn ($tag) => ['id' => $tag->id, 'name' => $tag->name, 'color' => $tag->color, 'archivedAt' => $tag->archived_at?->toIso8601String()]),
             'recentTransactions' => $this->transactions($user)->limit(8)->get()->map(
@@ -79,7 +81,7 @@ class MoneyController extends Controller
     private function transactions(User $user): HasMany
     {
         return $user->moneyTransactions()
-            ->with(['account', 'destinationAccount', 'category', 'subcategory', 'merchant', 'tags', 'subscriptionOccurrence.subscription', 'openedDebt.person', 'debtSettlement.debt.person'])
+            ->with(['account', 'destinationAccount', 'category', 'subcategory', 'merchant', 'person', 'tags', 'subscriptionOccurrence.subscription', 'openedDebt.person', 'debtSettlement.debt.person'])
             ->orderByDesc('transaction_date')
             ->orderByDesc('created_at')
             ->orderByDesc('id');

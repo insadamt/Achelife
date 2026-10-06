@@ -119,6 +119,12 @@ class MoneyViewDataFactory
                 'name' => $transaction->merchant->name,
                 'archivedAt' => $transaction->merchant->archived_at?->toIso8601String(),
             ] : null,
+            'person' => $transaction->person ? [
+                'id' => $transaction->person->id,
+                'name' => $transaction->person->name,
+                'nickname' => $transaction->person->nickname,
+                'archivedAt' => $transaction->person->archived_at?->toIso8601String(),
+            ] : null,
             'tags' => $transaction->tags->map(fn ($tag): array => [
                 'id' => $tag->id,
                 'name' => $tag->name,

@@ -39,6 +39,7 @@ class MoneyTransactionValidator
         }
 
         $this->validateMetadata($data);
+        $this->validatePerson($user, $data, $existing);
 
         $account = $this->account($user, $data->accountId, 'account_id');
         $this->requireActiveUnlessUnchanged($account, $existing?->account_id ?? $retained?->accountId, 'account_id');
@@ -124,6 +125,29 @@ class MoneyTransactionValidator
         }
 
         return ['account' => $account, 'destination' => null, 'category' => $category, 'subcategory' => $subcategory];
+    }
+
+    private function validatePerson(User $user, MoneyTransactionData $data, ?MoneyTransaction $existing): void
+    {
+        if ($data->personId === null && $data->personName === null) {
+            return;
+        }
+        if ($data->type === MoneyTransactionType::Transfer) {
+            $this->fail('person_id', 'Transfers cannot be linked to a Person.');
+        }
+        if ($data->personId !== null && $data->personName !== null) {
+            $this->fail('person_id', 'Choose an existing Person or create a new one.');
+        }
+        if ($data->personName !== null && (trim($data->personName) === '' || mb_strlen($data->personName) > 120)) {
+            $this->fail('person_name', 'Enter a Person name between 1 and 120 characters.');
+        }
+        if ($data->personId !== null) {
+            $person = $user->people()->find($data->personId);
+            if ($person === null) {
+                $this->fail('person_id', 'The selected Person does not belong to you.');
+            }
+            $this->requireActiveUnlessUnchanged($person, $existing?->person_id, 'person_id');
+        }
     }
 
     private function validateMetadata(MoneyTransactionData $data): void

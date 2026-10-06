@@ -116,7 +116,7 @@ class DiaryViewDataFactory
     /** @return list<array<string, mixed>> */
     private function people(User $user): array
     {
-        return $user->people()->with(['mentions.entry' => fn ($query) => $query->latest('entry_date')])->orderBy('name')->get()
+        return $user->people()->with(['mentions.entry' => fn ($query) => $query->latest('entry_date')])->withCount(['moneyDebts', 'moneyTransactions'])->orderBy('name')->get()
             ->map(function (Person $person): array {
                 $entries = $person->mentions->pluck('entry')->filter()->unique('id')->sortByDesc('entry_date')->values();
 
@@ -127,6 +127,7 @@ class DiaryViewDataFactory
                     'note' => $person->note,
                     'archived' => $person->archived_at !== null,
                     'mentionCount' => $entries->count(),
+                    'hasHistory' => $entries->isNotEmpty() || $person->money_debts_count > 0 || $person->money_transactions_count > 0,
                     'recentEntries' => $entries->take(8)->map(fn (DiaryEntry $entry): array => [
                         'date' => $entry->entry_date->toDateString(),
                         'excerpt' => mb_strimwidth($entry->plain_text, 0, 110, '…'),

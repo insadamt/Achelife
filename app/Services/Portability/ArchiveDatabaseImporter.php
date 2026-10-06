@@ -101,6 +101,10 @@ class ArchiveDatabaseImporter
                 $row['content'] = $this->remapDiaryContent($row['content']);
             }
 
+            if ($definition->name === 'money_transactions' && (int) $archive->manifest['archive_format_version'] <= 11) {
+                $row['person_id'] = null;
+            }
+
             $newId = $this->insertRow($user, $definition, $row);
 
             if ($oldId !== null) {

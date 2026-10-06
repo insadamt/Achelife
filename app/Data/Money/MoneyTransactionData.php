@@ -20,5 +20,7 @@ readonly class MoneyTransactionData
         public ?string $merchantName = null,
         /** @var list<string> */
         public array $tagNames = [],
+        public ?int $personId = null,
+        public ?string $personName = null,
     ) {}
 }

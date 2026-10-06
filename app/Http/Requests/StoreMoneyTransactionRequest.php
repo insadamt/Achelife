@@ -24,6 +24,8 @@ class StoreMoneyTransactionRequest extends FormRequest
             'destination_account_id' => ['nullable', 'integer'],
             'category_id' => ['nullable', 'integer'],
             'subcategory_id' => ['nullable', 'integer'],
+            'person_id' => ['nullable', 'integer'],
+            'person_name' => ['nullable', 'string', 'max:120'],
             'merchant' => ['nullable', 'string', 'max:120'],
             'tags' => ['sometimes', 'array', 'max:10'],
             'tags.*' => ['required', 'string', 'max:50', 'distinct:ignore_case'],

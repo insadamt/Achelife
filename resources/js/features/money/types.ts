@@ -63,6 +63,13 @@ export interface MoneyTagManagementData extends MoneyTagData {
     hasHistory: boolean;
 }
 
+export interface MoneyPersonData {
+    id: number;
+    name: string;
+    nickname: string | null;
+    archivedAt: string | null;
+}
+
 export interface MoneyTransactionData {
     id: number;
     type: MoneyTransactionType;
@@ -78,6 +85,7 @@ export interface MoneyTransactionData {
     category: { id: number; name: string; color: string | null; archived: boolean } | null;
     subcategory: { id: number; name: string; archived: boolean } | null;
     merchant: MoneyMerchantOptionData | null;
+    person: MoneyPersonData | null;
     tags: MoneyTagData[];
     createdAt: string;
     subscriptionOccurrence: { id: number; subscriptionId: number; subscriptionName: string } | null;

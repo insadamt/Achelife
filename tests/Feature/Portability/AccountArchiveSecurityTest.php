@@ -12,12 +12,14 @@ use App\Services\Portability\AccountArchiveValidator;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\BuildsPortableAccounts;
+use Tests\Concerns\NormalizesLegacyArchiveFixtures;
 use Tests\TestCase;
 use ZipArchive;
 
 class AccountArchiveSecurityTest extends TestCase
 {
     use BuildsPortableAccounts;
+    use NormalizesLegacyArchiveFixtures;
     use RefreshDatabase;
 
     /** @var list<string> */
@@ -86,7 +88,7 @@ class AccountArchiveSecurityTest extends TestCase
         });
         $this->expectInvalid($future, 'materially in the future');
 
-        $newer = $this->mutateManifest($valid, fn (array &$manifest) => $manifest['archive_format_version'] = 10, resign: false);
+        $newer = $this->mutateManifest($valid, fn (array &$manifest) => $manifest['archive_format_version'] = AccountArchiveExporter::FORMAT_VERSION + 1, resign: false);
         $this->expectInvalid($newer, 'Update Achelife first');
 
         $older = $this->mutateManifest($valid, fn (array &$manifest) => $manifest['archive_format_version'] = 0, resign: false);
@@ -378,6 +380,9 @@ class AccountArchiveSecurityTest extends TestCase
 
         $zip->close();
         $mutation($entries);
+        if ($resign) {
+            $this->normalizeLegacyArchiveFixture($entries);
+        }
 
         if ($resign) {
             $manifest = json_decode($entries['manifest.json'], true, 512, JSON_THROW_ON_ERROR);

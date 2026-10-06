@@ -6,6 +6,7 @@ use App\Models\MoneyCategory;
 use App\Models\MoneyTransaction;
 use App\Models\User;
 use App\Services\Calendar\UserCalendar;
+use App\Services\Money\MoneyPersonSummary;
 use App\Support\Money\MoneyPresetPack;
 use App\Support\Money\MoneyViewDataFactory;
 use Illuminate\Database\Eloquent\Builder;
@@ -16,7 +17,7 @@ use Inertia\Response;
 
 class MoneyHistoryController extends Controller
 {
-    public function __invoke(Request $request, MoneyViewDataFactory $factory, UserCalendar $calendar): Response
+    public function __invoke(Request $request, MoneyViewDataFactory $factory, UserCalendar $calendar, MoneyPersonSummary $summary): Response
     {
         $user = $request->user();
         $filters = $request->validate([
@@ -25,6 +26,7 @@ class MoneyHistoryController extends Controller
             'account' => ['nullable', 'integer'],
             'category' => ['nullable', 'integer'],
             'subcategory' => ['nullable', 'integer'],
+            'person' => ['nullable', 'integer', Rule::exists('people', 'id')->where('user_id', $user->id)],
             'merchant' => ['nullable', 'integer'],
             'tag' => ['nullable', 'integer'],
             'from' => ['nullable', 'date_format:Y-m-d'],
@@ -32,9 +34,10 @@ class MoneyHistoryController extends Controller
             'search' => ['nullable', 'string', 'max:120'],
         ]);
         $query = MoneyTransaction::query()
-            ->where('user_id', $user->id)
-            ->with(['account', 'destinationAccount', 'category', 'subcategory', 'merchant', 'tags', 'subscriptionOccurrence.subscription', 'openedDebt.person', 'debtSettlement.debt.person']);
+            ->where('money_transactions.user_id', $user->id)
+            ->with(['account', 'destinationAccount', 'category', 'subcategory', 'merchant', 'person', 'tags', 'subscriptionOccurrence.subscription', 'openedDebt.person', 'debtSettlement.debt.person']);
         $this->applyFilters($query, $filters, $user);
+        $personSummary = isset($filters['person']) ? $summary->forFilteredTransactions(clone $query) : [];
         $transactions = $query->orderByDesc('transaction_date')->orderByDesc('created_at')->orderByDesc('id')
             ->paginate(30)->withQueryString()->through(fn (MoneyTransaction $transaction) => $factory->transaction($transaction));
         $categories = $user->moneyCategories()->with(['subcategories' => fn ($query) => $query->orderBy('name')])
@@ -47,8 +50,11 @@ class MoneyHistoryController extends Controller
             'categories' => $categories->map(fn (MoneyCategory $category) => $factory->category($category)),
             'merchants' => $user->moneyMerchants()->withCount('transactions')->orderBy('name')->get()
                 ->map(fn ($merchant) => $factory->merchant($merchant)),
+            'people' => $user->people()->orderBy('name')->get(['id', 'name', 'nickname', 'archived_at'])
+                ->map(fn ($person) => ['id' => $person->id, 'name' => $person->name, 'nickname' => $person->nickname, 'archivedAt' => $person->archived_at?->toIso8601String()]),
             'tags' => $user->moneyTags()->orderBy('name')->get(['id', 'name', 'color', 'archived_at'])
                 ->map(fn ($tag) => ['id' => $tag->id, 'name' => $tag->name, 'color' => $tag->color, 'archivedAt' => $tag->archived_at?->toIso8601String()]),
+            'personSummary' => $personSummary,
             'filters' => $filters,
         ]);
     }
@@ -75,6 +81,7 @@ class MoneyHistoryController extends Controller
             fn (Builder $accounts) => $accounts->where('account_id', $id)->orWhere('destination_account_id', $id),
         ));
         $this->applyCategoryFilters($query, $filters, $user);
+        $query->when($filters['person'] ?? null, fn (Builder $builder, int|string $id) => $builder->where('person_id', $id));
         $query->when($filters['merchant'] ?? null, fn (Builder $builder, int|string $id) => $builder->where('merchant_id', $id));
         $query->when($filters['tag'] ?? null, fn (Builder $builder, int|string $id) => $builder->whereHas('tags', fn (Builder $tags) => $tags->where('money_tags.id', $id)));
         $query->when($filters['from'] ?? null, fn (Builder $builder, string $date) => $builder->whereDate('transaction_date', '>=', $date));
@@ -87,6 +94,7 @@ class MoneyHistoryController extends Controller
                 $matches->where('note', 'like', $pattern)
                     ->orWhereHas('category', fn (Builder $category) => $category->where('name', 'like', $pattern))
                     ->orWhereHas('subcategory', fn (Builder $subcategory) => $subcategory->where('name', 'like', $pattern))
+                    ->orWhereHas('person', fn (Builder $person) => $person->where('name', 'like', $pattern)->orWhere('nickname', 'like', $pattern))
                     ->orWhereHas('merchant', fn (Builder $merchant) => $merchant->where('name', 'like', $pattern))
                     ->orWhereHas('tags', fn (Builder $tags) => $tags->where('name', 'like', $pattern))
                     ->orWhereHas('openedDebt.person', fn (Builder $person) => $person->where('name', 'like', $pattern))

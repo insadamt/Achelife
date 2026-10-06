@@ -52,6 +52,8 @@ Create personal Laws and record violations. Penalties follow each Law's rules; h
 
 ## Money
 
+Income and Expenses may link one optional Person from the shared Diary and Debt contacts, independently from their Merchant. Create a Person inline or select an existing contact. In History, filter by Person to view their transactions and separate Income and Expense totals for each currency. Linking a Person does not create a Debt. See [Money People](money-people.md).
+
 Track Accounts, income, expenses, Transfers, fees, categories, recurring Subscriptions, and Debts. Use the fixed **Add** control for new activity. Income and Expense entry uses a searchable visual Category and Subcategory picker. You can also add one Merchant and up to ten colored Tags to Income or Expenses. Merchant identifies where money came from or went, while Tags add reusable dimensions across Categories. Install the editable category pack during setup or from Money settings.
 
 Open **Money → History** to search Merchant and Tag names or filter activity by a specific Merchant or Tag. Transfers do not use Merchants or Tags because both Accounts already identify the movement endpoints.

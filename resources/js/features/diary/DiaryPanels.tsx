@@ -111,9 +111,9 @@ function PeoplePanel({ open, onClose, people, selectedPersonId, onOpenPerson, on
     const archivedPeople = matchingPeople.filter((person) => person.archived);
 
     function remove(person: DiaryPerson) {
-        const action = person.mentionCount > 0 ? 'archive' : 'delete';
-        if (!window.confirm(`${titleCase(action)} ${person.name}? ${person.mentionCount > 0 ? 'Historical mentions will remain readable.' : 'This cannot be undone.'}`)) return;
-        if (person.mentionCount > 0) router.post(`/diary/people/${person.id}/archive`, {}, { preserveScroll: true });
+        const action = (person.hasHistory ?? person.mentionCount > 0) ? 'archive' : 'delete';
+        if (!window.confirm(`${titleCase(action)} ${person.name}? ${(person.hasHistory ?? person.mentionCount > 0) ? 'Historical activity will remain readable.' : 'This cannot be undone.'}`)) return;
+        if ((person.hasHistory ?? person.mentionCount > 0)) router.post(`/diary/people/${person.id}/archive`, {}, { preserveScroll: true });
         else router.delete(`/diary/people/${person.id}`, { preserveScroll: true });
     }
 
@@ -180,7 +180,7 @@ function PersonProfile({ person, onBack, onRemove, onOpenEntry }: { person: Diar
             <div className="mt-3 space-y-2">
                 {person.recentEntries.map((entry) => <button className="focus-ring w-full rounded-xl border border-border-subtle p-3 text-left hover:border-border-strong hover:bg-surface-hover" key={entry.date} onClick={() => onOpenEntry(entry.date)} type="button"><span className="font-bold">{formatDiaryDate(entry.date)}</span><span className="mt-1 block text-xs text-muted">{entry.excerpt}</span></button>)}
             </div>
-            {!person.archived && <Button className="mt-6" onClick={onRemove} variant="secondary">{person.mentionCount > 0 ? 'Archive Person' : 'Delete Person'}</Button>}
+            {!person.archived && <Button className="mt-6" onClick={onRemove} variant="secondary">{(person.hasHistory ?? person.mentionCount > 0) ? 'Archive Person' : 'Delete Person'}</Button>}
             {person.archived && <p className="mt-6 text-sm font-semibold text-muted">Archived · historical profile remains readable.</p>}
         </div>
     );

@@ -16,11 +16,13 @@ use App\Services\Portability\AccountArchiveExporter;
 use App\Services\Portability\AccountArchiveValidator;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\Concerns\NormalizesLegacyArchiveFixtures;
 use Tests\TestCase;
 use ZipArchive;
 
 class TaskFocusPortabilityTest extends TestCase
 {
+    use NormalizesLegacyArchiveFixtures;
     use RefreshDatabase;
 
     /** @var list<string> */
@@ -46,7 +48,7 @@ class TaskFocusPortabilityTest extends TestCase
 
         $restoredCompleted = $target->taskFocusSessions()->whereHas('task', fn ($query) => $query->where('title', 'Completed Focus'))->with('intervals')->sole();
         $restoredPaused = $target->taskFocusSessions()->whereHas('task', fn ($query) => $query->where('title', 'Running Focus'))->with('intervals')->sole();
-        $this->assertSame(9, $archive->manifest['archive_format_version']);
+        $this->assertSame(AccountArchiveExporter::FORMAT_VERSION, $archive->manifest['archive_format_version']);
         $this->assertSame(TaskFocusSessionState::Completed, $restoredCompleted->state);
         $this->assertSame(300, $restoredCompleted->accumulated_seconds);
         $this->assertSame(TaskFocusSessionState::Paused, $restoredPaused->state);
@@ -210,6 +212,7 @@ class TaskFocusPortabilityTest extends TestCase
         }
         $source->close();
         $mutate($entries);
+        $this->normalizeLegacyArchiveFixture($entries);
         unset($entries['checksums.json']);
         $checksums = [];
 

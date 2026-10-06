@@ -222,7 +222,7 @@ class ArchiveSemanticValidator
         if ((int) $row['amount_minor'] < 1
             || $fee < 0
             || ($row['type'] !== 'transfer' && $fee !== 0)
-            || ($row['type'] === 'transfer' && ($row['destination_account_id'] === null || $row['category_id'] !== null || $row['subcategory_id'] !== null || ($row['merchant_id'] ?? null) !== null))
+            || ($row['type'] === 'transfer' && ($row['destination_account_id'] === null || $row['category_id'] !== null || $row['subcategory_id'] !== null || ($row['merchant_id'] ?? null) !== null || ($row['person_id'] ?? null) !== null))
             || ($row['type'] !== 'transfer' && $row['destination_account_id'] !== null)) {
             throw new InvalidAccountArchive('A Money transaction contains an invalid Transfer fee.');
         }
@@ -404,7 +404,7 @@ class ArchiveSemanticValidator
 
             if (! in_array($intermission['reason'], ['manual_rollover', 'one_time_hold', 'restore'], true)
                 || ! $startedOn->equalTo($expectedStart)
-                || ($endedBefore !== null && ! $endedBefore->isAfter($startedOn))) {
+                || ($endedBefore !== null && $endedBefore->isBefore($startedOn))) {
                 throw new InvalidAccountArchive('The imported intermission timeline is impossible.');
             }
         }

@@ -21,6 +21,7 @@ export function ActivityItem({ transaction, contextAccountId, onClick }: { trans
                 <span className="mt-0.5 block truncate text-sm text-muted">
                     {transaction.type === 'transfer' ? `${transaction.account.name} → ${transaction.destinationAccount?.name}` : transaction.account.name}
                     {transaction.debtMovement ? ' · Debt principal' : ''}
+                    {transaction.person ? ` · ${transaction.person.name}` : ''}
                     {transaction.merchant ? ` · ${transaction.merchant.name}` : ''}
                     {transaction.tags.length > 0 ? ` · ${transaction.tags.map((tag) => `#${tag.name}`).join(' ')}` : ''}
                     {transaction.type === 'transfer' && transaction.feeMinor > 0 ? ` · Fee ${formatMinorUnits(transaction.feeMinor, currency)}` : ''}

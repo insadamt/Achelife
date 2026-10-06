@@ -26,7 +26,11 @@ class MoneyTransactionController extends Controller
     public function update(UpdateMoneyTransactionRequest $request, MoneyTransaction $transaction, SaveMoneyTransaction $save, MoneyAmount $amount): RedirectResponse
     {
         Gate::authorize('update', $transaction);
-        $save->update($request->user(), $transaction, $this->data($request->validated(), $transaction->type, $amount));
+        $validated = $request->validated();
+        if (! array_key_exists('person_id', $validated) && ! $request->filled('person_name')) {
+            $validated['person_id'] = $transaction->person_id;
+        }
+        $save->update($request->user(), $transaction, $this->data($validated, $transaction->type, $amount));
 
         return back();
     }
@@ -54,6 +58,8 @@ class MoneyTransactionController extends Controller
             feeMinor: $amount->toMinorUnits($validated['fee'] ?? '0'),
             merchantName: isset($validated['merchant']) && trim($validated['merchant']) !== '' ? $validated['merchant'] : null,
             tagNames: $validated['tags'] ?? [],
+            personId: isset($validated['person_id']) ? (int) $validated['person_id'] : null,
+            personName: $validated['person_name'] ?? null,
         );
     }
 }

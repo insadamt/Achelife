@@ -62,8 +62,8 @@ class PortableTableRegistry
             $this->table(
                 'money_transactions',
                 'money',
-                ['id', 'user_id', 'type', 'amount_minor', 'fee_minor', 'account_id', 'destination_account_id', 'category_id', 'subcategory_id', ...($formatVersion >= 3 ? ['merchant_id'] : []), 'transaction_date', 'note', 'created_at', 'updated_at'],
-                ['account_id' => 'money_accounts', 'destination_account_id' => 'money_accounts', 'category_id' => 'money_categories', 'subcategory_id' => 'money_subcategories', ...($formatVersion >= 3 ? ['merchant_id' => 'money_merchants'] : [])],
+                ['id', 'user_id', 'type', 'amount_minor', 'fee_minor', 'account_id', 'destination_account_id', 'category_id', 'subcategory_id', ...($formatVersion >= 3 ? ['merchant_id'] : []), ...($formatVersion >= 12 ? ['person_id'] : []), 'transaction_date', 'note', 'created_at', 'updated_at'],
+                ['account_id' => 'money_accounts', 'destination_account_id' => 'money_accounts', 'category_id' => 'money_categories', 'subcategory_id' => 'money_subcategories', ...($formatVersion >= 3 ? ['merchant_id' => 'money_merchants'] : []), ...($formatVersion >= 12 ? ['person_id' => 'people'] : [])],
             ),
             ...($formatVersion >= 3 ? [
                 $this->table('money_transaction_tags', 'money', ['id', 'user_id', 'transaction_id', 'tag_id', 'created_at', 'updated_at'], ['transaction_id' => 'money_transactions', 'tag_id' => 'money_tags']),

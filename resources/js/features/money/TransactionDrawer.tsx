@@ -9,10 +9,11 @@ import { MoneyCategoryIcon } from './MoneyCategoryIcon';
 import { MoneyCategoryPickerDialog } from './MoneyCategoryPickerDialog';
 import { MoneyConfirmationDialog } from './MoneyConfirmationDialog';
 import { MoneyDrawer } from './MoneyDrawer';
+import { MoneyPersonFields } from './MoneyPersonFields';
 import { MoneyMetadataFields } from './MoneyMetadataFields';
 import { MoneyMerchantPickerDialog } from './MoneyMerchantPickerDialog';
 import { formatMinorUnits, formatMoneyDate, minorUnitsInput, transactionTitle } from './moneyPresentation';
-import type { MoneyAccountData, MoneyCategoryData, MoneyMerchantOptionData, MoneyTagData, MoneyTransactionData, MoneyTransactionType } from './types';
+import type { MoneyAccountData, MoneyCategoryData, MoneyMerchantOptionData, MoneyPersonData, MoneyTagData, MoneyTransactionData, MoneyTransactionType } from './types';
 
 interface TransactionPayload {
     type: MoneyTransactionType;
@@ -22,6 +23,8 @@ interface TransactionPayload {
     destination_account_id: number | '';
     category_id: number | '';
     subcategory_id: number | '';
+    person_id: number | '';
+    person_name: string;
     merchant: string;
     tags: string[];
     date: string;
@@ -82,6 +85,7 @@ export function TransactionDrawer({
     accounts,
     categories,
     merchants,
+    people,
     tags,
     today,
     transaction = null,
@@ -92,6 +96,7 @@ export function TransactionDrawer({
     accounts: MoneyAccountData[];
     categories: MoneyCategoryData[];
     merchants: MoneyMerchantOptionData[];
+    people: MoneyPersonData[];
     tags: MoneyTagData[];
     today: string;
     transaction?: MoneyTransactionData | null;
@@ -112,6 +117,8 @@ export function TransactionDrawer({
         destination_account_id: transaction?.destinationAccount?.id ?? '',
         category_id: transaction?.category?.id ?? '',
         subcategory_id: transaction?.subcategory?.id ?? '',
+        person_id: transaction?.person?.id ?? '',
+        person_name: '',
         merchant: transaction?.merchant?.name ?? '',
         tags: transaction?.tags.map((tag) => tag.name) ?? [],
         date: transaction?.date ?? today,
@@ -132,7 +139,7 @@ export function TransactionDrawer({
     const selectedSubcategory = subcategories.find((subcategory) => subcategory.id === Number(form.data.subcategory_id));
 
     function chooseType(nextType: MoneyTransactionType) {
-        form.setData({ ...form.data, type: nextType, destination_account_id: '', category_id: '', subcategory_id: '', merchant: '', tags: [] });
+        form.setData({ ...form.data, type: nextType, destination_account_id: '', category_id: '', subcategory_id: '', person_id: '', person_name: '', merchant: '', tags: [] });
     }
 
     function chooseAccount(accountId: number) {
@@ -147,6 +154,8 @@ export function TransactionDrawer({
             fee: type === 'transfer' ? data.fee : '0.00',
             category_id: type === 'transfer' ? null : data.category_id,
             subcategory_id: type === 'transfer' || data.subcategory_id === '' ? null : data.subcategory_id,
+            person_id: type === 'transfer' || data.person_id === '' ? null : data.person_id,
+            person_name: type === 'transfer' || !data.person_name.trim() ? null : data.person_name,
             merchant: type === 'transfer' ? null : data.merchant,
             tags: type === 'transfer' ? [] : data.tags,
         }));
@@ -179,6 +188,7 @@ export function TransactionDrawer({
                             {formatMinorUnits(transaction.amountMinor, transaction.account.currency)}
                         </p>
                         <p className="mt-2 font-bold text-secondary">{transactionTitle(transaction)}</p>
+                        {transaction.person && <p className="mt-3 text-sm font-semibold">Person: <Link className="text-accent-ink hover:underline" href={`/money/history?person=${transaction.person.id}`}>{transaction.person.name}</Link></p>}
                         <dl className="mt-6 divide-y divide-border-subtle text-sm">
                             <div className="py-3"><dt className="text-muted">Account{transaction.type === 'transfer' ? 's' : ''}</dt><dd className="mt-1 font-semibold">{transaction.type === 'transfer' ? `${transaction.account.name} → ${transaction.destinationAccount?.name}` : transaction.account.name}</dd></div>
                             {transaction.type === 'transfer' && (
@@ -333,6 +343,16 @@ export function TransactionDrawer({
                         )}
                     </div>
                 )}
+
+                {type !== 'transfer' && <MoneyPersonFields
+                    people={people}
+                    selectedPerson={transaction?.person ?? null}
+                    personId={form.data.person_id}
+                    personName={form.data.person_name}
+                    personError={form.errors.person_id}
+                    nameError={form.errors.person_name}
+                    onChange={(personId, personName) => form.setData({ ...form.data, person_id: personId, person_name: personName })}
+                />}
 
                 {type !== 'transfer' && <MoneyMetadataFields
                     onTagsChange={(nextTags) => form.setData('tags', nextTags)}

@@ -25,7 +25,7 @@ class SaveMoneyTransaction
             $this->lockAccounts($user, $data);
             $this->validator->validate($user, $data);
             $metadata = $this->metadata->createOrFind($user, $data);
-            $transaction = $user->moneyTransactions()->create($this->attributes($data, $metadata['merchantId']));
+            $transaction = $user->moneyTransactions()->create($this->attributes($data, $metadata['merchantId']) + ['person_id' => $this->createOrSelectPerson($user, $data)]);
             $this->metadata->assignTags($user, $transaction, $metadata['tags']);
 
             return $transaction->refresh();
@@ -41,7 +41,7 @@ class SaveMoneyTransaction
             $this->lockAccounts($user, $data);
             $this->validator->validate($user, $data, retained: $retained);
             $metadata = $this->metadata->createOrFind($user, $data);
-            $transaction = $user->moneyTransactions()->create($this->attributes($data, $metadata['merchantId']));
+            $transaction = $user->moneyTransactions()->create($this->attributes($data, $metadata['merchantId']) + ['person_id' => $this->createOrSelectPerson($user, $data)]);
             $this->metadata->assignTags($user, $transaction, $metadata['tags']);
 
             return $transaction->refresh();
@@ -73,7 +73,7 @@ class SaveMoneyTransaction
             $this->lockAccounts($user, $data, $lockedTransaction);
             $this->validator->validate($user, $data, $lockedTransaction);
             $metadata = $this->metadata->createOrFind($user, $data, $lockedTransaction);
-            $lockedTransaction->update($this->attributes($data, $metadata['merchantId']));
+            $lockedTransaction->update($this->attributes($data, $metadata['merchantId']) + ['person_id' => $this->createOrSelectPerson($user, $data)]);
             $this->metadata->assignTags($user, $lockedTransaction, $metadata['tags']);
 
             return $lockedTransaction->refresh();
@@ -97,6 +97,15 @@ class SaveMoneyTransaction
         if ($lockedCount !== count(array_unique($ids))) {
             throw ValidationException::withMessages(['account_id' => 'Every Account must belong to you.']);
         }
+    }
+
+    private function createOrSelectPerson(User $user, MoneyTransactionData $data): ?int
+    {
+        if ($data->personName !== null) {
+            return $user->people()->create(['name' => trim($data->personName)])->id;
+        }
+
+        return $data->personId;
     }
 
     /** @return array<string, mixed> */

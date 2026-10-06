@@ -51,6 +51,7 @@ export interface DiaryPerson {
     note: string | null;
     archived: boolean;
     mentionCount: number;
+    hasHistory?: boolean;
     recentEntries: Array<{ date: string; excerpt: string }>;
 }
 

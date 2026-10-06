@@ -31,7 +31,7 @@ class PersonController extends Controller
     {
         Gate::authorize('update', $person);
 
-        if (! $person->mentions()->exists() && ! $person->moneyDebts()->exists()) {
+        if (! $person->mentions()->exists() && ! $person->moneyDebts()->exists() && ! $person->moneyTransactions()->exists()) {
             throw ValidationException::withMessages(['person' => 'Delete an unused Person instead of archiving them.']);
         }
 
@@ -44,8 +44,8 @@ class PersonController extends Controller
     {
         Gate::authorize('delete', $person);
 
-        if ($person->mentions()->exists() || $person->moneyDebts()->exists()) {
-            throw ValidationException::withMessages(['person' => 'People with Diary or Debt history cannot be deleted. Archive this Person instead.']);
+        if ($person->mentions()->exists() || $person->moneyDebts()->exists() || $person->moneyTransactions()->exists()) {
+            throw ValidationException::withMessages(['person' => 'People with Diary, Debt, or transaction history cannot be deleted. Archive this Person instead.']);
         }
 
         $person->delete();
@@ -73,6 +73,7 @@ class PersonController extends Controller
             'note' => $person->note,
             'archived' => false,
             'mentionCount' => 0,
+            'hasHistory' => false,
             'recentEntries' => [],
         ];
     }
