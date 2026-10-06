@@ -65,7 +65,7 @@ function HabitCard({ habit, onNumeric, onSkip }: {
             .to(checkPath, { strokeDashoffset: 0, duration: 0.38, ease: 'power2.inOut' })
             .call(submitBooleanToggle, [], '+=0.45');
 
-        return () => drawMark.kill();
+        return () => { drawMark.kill(); };
     }, [markingComplete, submitBooleanToggle]);
 
     useLayoutEffect(() => {
@@ -77,7 +77,7 @@ function HabitCard({ habit, onNumeric, onSkip }: {
             const skipMark = markContainerRef.current;
             if (!skipMark) return;
             const acknowledgeSkip = gsap.fromTo(skipMark, { scale: 0.88 }, { scale: 1, duration: 0.22, ease: 'back.out(2)' });
-            return () => acknowledgeSkip.kill();
+            return () => { acknowledgeSkip.kill(); };
         }
 
         if (habit.type !== 'numeric' || !completed) return;
@@ -89,7 +89,7 @@ function HabitCard({ habit, onNumeric, onSkip }: {
         gsap.set(checkPath, { strokeDasharray: pathLength, strokeDashoffset: pathLength });
         const drawMark = gsap.to(checkPath, { strokeDashoffset: 0, duration: 0.38, ease: 'power2.inOut' });
 
-        return () => drawMark.kill();
+        return () => { drawMark.kill(); };
     }, [completed, day.state, habit.type, skipped]);
 
     function performPrimaryAction() {

@@ -42,7 +42,7 @@ function queryTabIndex(url: URL, parameter: string, values: string[]): number {
     const value = parameter === 'task_view'
         ? url.searchParams.get('task_view') ?? url.searchParams.get('view') ?? 'today'
         : url.searchParams.get(parameter) ?? values[0];
-    return values.indexOf(value);
+    return values.indexOf(value ?? '');
 }
 
 function taskFilesTransition(currentUrl: URL, destinationUrl: URL): { direction: 'left' | 'right'; boundarySelector: string } | null {

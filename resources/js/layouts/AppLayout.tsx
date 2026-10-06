@@ -24,7 +24,7 @@ interface NavigationDestination {
 
 function isActiveDestination(destination: NavigationDestination, url: string) {
     if (!destination.href) return false;
-    const pathname = url.split('?')[0];
+    const pathname = url.split('?')[0] ?? '/';
     if (destination.href === '/settings/general') return pathname.startsWith('/settings/');
     return pathname === destination.href || pathname.startsWith(`${destination.href}/`);
 }
@@ -52,7 +52,7 @@ function useSidebarActiveIndicator(url: string) {
         const navigation = navigationRef.current;
         if (!sidebar || !navigation) return;
 
-        function updateIndicatorPosition() {
+        const updateIndicatorPosition = () => {
             const activeLink = sidebar.querySelector<HTMLAnchorElement>('a[aria-current="page"]');
             if (!activeLink || sidebar.getClientRects().length === 0) {
                 setIndicatorTop(null);
@@ -62,7 +62,7 @@ function useSidebarActiveIndicator(url: string) {
             const linkBounds = activeLink.getBoundingClientRect();
             const sidebarBounds = sidebar.getBoundingClientRect();
             setIndicatorTop(linkBounds.top - sidebarBounds.top + (linkBounds.height - 48) / 2);
-        }
+        };
 
         updateIndicatorPosition();
         window.addEventListener('resize', updateIndicatorPosition);

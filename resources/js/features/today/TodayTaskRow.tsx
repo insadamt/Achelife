@@ -43,7 +43,7 @@ export function TodayTaskRow({ task, onOpen }: { task: TaskViewData; onOpen: () 
             .to(checkPath, { strokeDashoffset: 0, duration: 0.38, ease: 'power2.inOut' })
             .call(submitCompletion, [], '+=0.45');
 
-        return () => drawMark.kill();
+        return () => { drawMark.kill(); };
     }, [markingComplete, submitCompletion]);
 
     function toggleCompletion() {

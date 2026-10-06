@@ -79,7 +79,9 @@ export function useRearrangedLineChart(target: LineChartFrame): LineChartFrame {
     const targetRef = useRef(target);
     const signatureRef = useRef(signature);
     const tweenRef = useRef<gsap.core.Tween | null>(null);
-    targetRef.current = target;
+    useLayoutEffect(() => {
+        targetRef.current = target;
+    }, [target]);
 
     useLayoutEffect(() => {
         if (signatureRef.current === signature) return;
@@ -157,7 +159,9 @@ export function useRearrangedDonut(target: DonutValueSlice[]): DonutChartFrame {
     const targetRef = useRef(target);
     const signatureRef = useRef(signature);
     const tweenRef = useRef<gsap.core.Tween | null>(null);
-    targetRef.current = orderedTarget;
+    useLayoutEffect(() => {
+        targetRef.current = orderedTarget;
+    }, [orderedTarget]);
 
     useLayoutEffect(() => {
         if (signatureRef.current === signature) return;

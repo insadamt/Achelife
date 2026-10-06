@@ -121,5 +121,4 @@ class ArchiveAppearanceValidator
 
         $this->chunks[$sequence] = $bytes;
     }
-
 }

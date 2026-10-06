@@ -2,8 +2,8 @@
 
 namespace App\Http\Middleware;
 
-use App\Services\Calendar\UserCalendar;
 use App\Models\AppearanceSetting;
+use App\Services\Calendar\UserCalendar;
 use App\Support\Progress\ProgressPanelViewDataFactory;
 use App\Support\Tasks\TaskFocusSessionViewDataFactory;
 use Illuminate\Http\Request;

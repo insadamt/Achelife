@@ -38,7 +38,7 @@ fi
 
 cat >>"$output_file" <<EOF
 
-This ${version} build is an internal release candidate for testing and requires explicit RC opt-in. It is not a stable release.
+This ${version} build is a release candidate for testing and requires explicit RC opt-in. It is not a stable release.
 
 Free and open-source under the MIT License.
 

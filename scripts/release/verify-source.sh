@@ -27,6 +27,7 @@ verify_file_sizes()
         printf '%s\n' achelife Dockerfile README.md SELF_HOSTING.md CONTRIBUTING.md SECURITY.md LICENSE
     } \
         | while IFS= read -r source_file; do
+            LC_ALL=C grep -Iq '' "$source_file" || continue
             line_count="$(wc -l <"$source_file")"
             [ "$line_count" -le 500 ] || printf '%s: %s lines\n' "$source_file" "$line_count"
         done)"
