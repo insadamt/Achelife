@@ -1,6 +1,6 @@
 # Phase 9 — Full-app review, documentation, and internal RC
 
-**Status:** Not started. [Roadmap](../v2.0.0_design_plan.md) · [UI guide](../ui-design-and-motion.md) · [Layout guide](../ui-layout-and-hierarchy.md)
+**Status:** In progress; public RC published, full manual review pending. [Roadmap](../v2.0.0_design_plan.md) · [UI guide](../ui-design-and-motion.md) · [Layout guide](../ui-layout-and-hierarchy.md)
 
 ## Plan
 
@@ -26,4 +26,4 @@ Audit the complete app and prepare an internal release candidate. Read the [UI r
 
 Exit when the RC, documentation, compatibility evidence, and user review are accepted. Stable promotion remains subject to the repository release rules.
 
-**Handoff record:** Date: — · Last completed task: — · Files/commit: — · RC identifier: — · Compatibility results: — · User feedback: — · Open issues: — · Next task: collect Phase 0 route inventory and all phase findings.
+**Handoff record:** Date: 2026-10-06 · Last completed task: published public `v2.0.0-rc.1` from `301da1e912b7166da6767b8fad8582dab40b2423` · Files/report: [release report](../releases/2.0.0-rc.1.md) · RC identifier: `v2.0.0-rc.1` · Compatibility results: 465 PHP tests and CI isolated Docker acceptance passed; four image scans passed · User feedback: explicitly requested public publication, overriding the internal-only distribution plan for this RC · Open issues: prior phase/manual gates and full visual matrix remain pending; no stable promotion · Next task: run the report manual checklist against the published candidate, then reconcile remaining phase findings.
