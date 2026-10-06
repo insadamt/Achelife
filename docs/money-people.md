@@ -4,7 +4,7 @@ Ordinary Income and Expense transactions support one optional Person, reusing th
 
 ## Recording and reviewing
 
-The transaction drawer offers No Person, existing People, and inline creation of a named Person. Larger contact lists have a search field matching names and nicknames. New People are created atomically with the transaction; failed transaction validation leaves no new contact. Existing contacts are selected by ID, so two People sharing a name remain independent.
+The transaction drawer offers No Person, existing People, and inline creation of a named Person. The Person field opens a searchable visual card modal, matching the Merchant and Category pickers. Search matches names and nicknames. Choose No Person to clear the link, or Add a new Person to enter a name; the contact is created only when the transaction is saved. New People are created atomically with the transaction; failed transaction validation leaves no new contact. Existing contacts are selected by ID, so two People sharing a name remain independent.
 
 Overview, Account activity, History rows, and transaction details show the Person. Select their name in transaction details to open their filtered Money History. History supports a Person filter on desktop and in the mobile filter drawer, and text search matches linked names and nicknames.
 
@@ -47,9 +47,28 @@ No stable release is published as part of this change. Verify upgrades and resto
 - Browser visual verification was unavailable because the in-app browser could not be connected. The manual checklist above remains pending.
 - The existing intermission portability edits and their regression tests were preserved. Stale archive test fixtures were updated to omit tables and columns unsupported by their declared legacy format; the future-format test now derives its version from the current exporter.
 
-Library decision: reviewed [React Aria ComboBox](https://react-aria.adobe.com/ComboBox), which supplies accessible picker behavior but would require a new dependency and styling/integration. The user chose to reuse Achelife's existing controls. The Person field uses the shared native SelectField, Field, and Button components, following the existing Debt composer pattern.
+Library decision: reviewed [React Aria ComboBox](https://react-aria.adobe.com/ComboBox), which supplies accessible picker behavior but would require a new dependency and styling/integration. The user chose to reuse Achelife's existing controls. The Person picker uses the shared Dialog, Field, and Button components and the same visual card layout as Merchants and Categories.
 
 Suggested commit messages:
 
 - `feat(money): link people to income and expenses`
 - `feat(portability): preserve money person links in archive format 12`
+
+## Picker refinement — 2026-10-06
+
+Person selection now uses the same searchable visual card modal as Merchant and Category selection. It shows names, nicknames, selected checks, No Person, and inline creation. Cancel leaves the transaction selection unchanged. Retained archived People stay readable; other archived People are unavailable for new selection.
+
+Category search now returns directly selectable Subcategories with parent names. Searching a parent name also shows its available children and a parent-only result. Selecting a Subcategory sets both IDs and closes the modal. Clearing search returns to the normal browse flow. Archived Subcategories are excluded except the transaction's existing selection.
+
+Validation: changed-file ESLint, production build, and whitespace checks passed. Global TypeScript checking still reports the same nine unrelated errors described above. Browser visual verification remains pending. No new library, migration, or archive format change was needed.
+
+Manual test checklist:
+
+- [ ] Open Person selection and search by name or nickname; choose a card and verify the check when reopened.
+- [ ] Choose No Person, add a new Person, and cancel a draft name; verify the resulting transaction field.
+- [ ] Search a Subcategory name and select it directly; verify both Category and Subcategory in the transaction.
+- [ ] Search a parent Category name and choose a child or the parent-only result.
+- [ ] Clear search and verify normal parent-to-child browsing, empty results, and archived selection rules.
+- [ ] Check keyboard/Escape/focus return, narrow screens, long names, Light/Dark, and surface styles.
+
+Suggested commit: `feat(money): use visual person picker and direct subcategory search`
